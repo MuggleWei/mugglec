@@ -27,6 +27,9 @@ set(MUGGLE_INSTALL_LIBRARY_PATH lib/muggle)
 set(MUGGLE_INSTALL_ARCHIVE_PATH lib/muggle)
 set(MUGGLE_INSTALL_INCLUDE_PATH include/muggle)
 
+# set rpath
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../../lib/muggle:$ORIGIN:${CMAKE_INSTALL_PREFIX}/lib")
+
 # architecture 32bit or 64bit
 set(MG_ARCHITECTURE "")
 if( CMAKE_SIZEOF_VOID_P EQUAL 8 )

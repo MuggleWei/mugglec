@@ -10,13 +10,25 @@
 #include <string.h>
 #include "muggle/base/log.h"
 
-void MemoryPoolInit(MemoryPool* pool, unsigned int init_capacity, unsigned int block_size)
+bool MemoryPoolInit(MemoryPool* pool, unsigned int init_capacity, unsigned int block_size)
 {
 	init_capacity = init_capacity == 0 ? 8 : init_capacity;
 
 	pool->memory_pool_data_bufs = (void**)malloc(sizeof(void*));
+	if (pool->memory_pool_data_bufs == NULL)
+	{
+		goto fail;
+	}
 	pool->memory_pool_ptr_buf = (void**)malloc(sizeof(void*) * init_capacity);
+	if (pool->memory_pool_ptr_buf == NULL)
+	{
+		goto fail;
+	}
 	pool->memory_pool_data_bufs[0] = (void*)malloc(block_size * init_capacity);
+	if (pool->memory_pool_data_bufs[0] == NULL)
+	{
+		goto fail;
+	}
 
 	pool->alloc_index = pool->free_index = 0;
 	pool->capacity = init_capacity;
@@ -36,6 +48,25 @@ void MemoryPoolInit(MemoryPool* pool, unsigned int init_capacity, unsigned int b
 		pool->memory_pool_ptr_buf[i] = (void*)((char*)ptr_buf + i * block_size);
 	}
 
+	return true;
+
+fail:
+	MUGGLE_DEBUG_ERROR("Failed in MemoryPoolInit, can't allocate memory\n");
+
+	if (pool->memory_pool_data_bufs != NULL)
+	{
+		free(pool->memory_pool_data_bufs);
+	}
+	if (pool->memory_pool_ptr_buf != NULL)
+	{
+		free(pool->memory_pool_ptr_buf);
+	}
+	if (pool->memory_pool_data_bufs[0] != NULL)
+	{
+		free(pool->memory_pool_data_bufs[0]);
+	}
+
+	return false;
 }
 void MemoryPoolDestroy(MemoryPool* pool)
 {
@@ -64,13 +95,21 @@ void* MemoryPoolAlloc(MemoryPool* pool)
 #endif
 
 	void* ret = pool->memory_pool_ptr_buf[pool->alloc_index];
-	pool->alloc_index = (pool->alloc_index + 1) % pool->capacity;
+	++pool->alloc_index;
+	if (pool->alloc_index == pool->capacity)
+	{
+		pool->alloc_index = 0;
+	}
 	return ret;
 }
 void MemoryPoolFree(MemoryPool* pool, void* p_data)
 {
 	pool->memory_pool_ptr_buf[pool->free_index] = (void*)p_data;
-	pool->free_index = (pool->free_index + 1) % pool->capacity;
+	++pool->free_index;
+	if (pool->free_index == pool->capacity)
+	{
+		pool->free_index = 0;
+	}
 	--pool->used;
 }
 

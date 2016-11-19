@@ -9,6 +9,7 @@
 #define __MUGGLE_MEMORY_POOL_H__
 
 #include "muggle/base/macro.h"
+#include <stdbool.h>
 
 EXTERN_C_BEGIN
 
@@ -42,7 +43,7 @@ typedef struct MemoryPool_tag
 }MemoryPool;
 
 MUGGLE_MEMORY_POOL_EXPORT 
-void MemoryPoolInit(MemoryPool* pool, unsigned int init_capacity, unsigned int block_size);
+bool MemoryPoolInit(MemoryPool* pool, unsigned int init_capacity, unsigned int block_size);
 
 MUGGLE_MEMORY_POOL_EXPORT 
 void MemoryPoolDestroy(MemoryPool* pool);
