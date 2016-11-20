@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <errno.h>
 #include "muggle/base/log.h"
 
 char* StrAllocByDiff(const char* p_start, const char* p_end)
@@ -121,4 +122,139 @@ char* StrSplitLineToWords(char* line, char** words, int* word_idx, int max_word_
 	}
 
 	return q;
+}
+
+bool StrToi(char *str, int *pval, int base)
+{
+	long ret;
+
+	MUGGLE_ASSERT(str != NULL && *str != '\0');
+
+	errno = 0;
+    ret = strtol(str, NULL, base);
+    if (errno != 0)
+	{
+		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		return false;
+	}
+
+	*pval = (int)ret;
+
+	return true;
+}
+bool StrToui(char *str, unsigned int *pval, int base)
+{
+	unsigned long ret;
+
+	MUGGLE_ASSERT(str != NULL && *str != '\0');
+
+	errno = 0;
+    ret = strtoul(str, NULL, base);
+    if (errno != 0)
+	{
+		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		return false;
+	}
+
+	*pval = (unsigned int)ret;
+
+	return true;
+}
+bool StrTol(char *str, long *pval, int base)
+{
+	MUGGLE_ASSERT(str != NULL && *str != '\0');
+
+	errno = 0;
+    *pval = strtol(str, NULL, base);
+    if (errno != 0)
+	{
+		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		return false;
+	}
+
+	return true;
+}
+bool StrToul(char *str, unsigned long *pval, int base)
+{
+	MUGGLE_ASSERT(str != NULL && *str != '\0');
+
+	errno = 0;
+    *pval = strtoul(str, NULL, base);
+    if (errno != 0)
+	{
+		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		return false;
+	}
+
+	return true;
+}
+bool StrToll(char *str, long long *pval, int base)
+{
+	MUGGLE_ASSERT(str != NULL && *str != '\0');
+
+	errno = 0;
+    *pval = strtoll(str, NULL, base);
+    if (errno != 0)
+	{
+		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		return false;
+	}
+
+	return true;
+}
+bool StrToull(char *str, unsigned long long *pval, int base)
+{
+	MUGGLE_ASSERT(str != NULL && *str != '\0');
+
+	errno = 0;
+    *pval = strtoull(str, NULL, base);
+    if (errno != 0)
+	{
+		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		return false;
+	}
+
+	return true;
+}
+bool StrTof(char *str, float *pval)
+{
+	MUGGLE_ASSERT(str != NULL && *str != '\0');
+
+	errno = 0;
+    *pval = strtof(str, NULL);
+    if (errno != 0)
+	{
+		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		return false;
+	}
+
+	return true;
+}
+bool StrTod(char *str, double *pval)
+{
+	MUGGLE_ASSERT(str != NULL && *str != '\0');
+
+	errno = 0;
+    *pval = strtod(str, NULL);
+    if (errno != 0)
+	{
+		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		return false;
+	}
+
+	return true;
+}
+bool StrTold(char *str, double *pval)
+{
+	MUGGLE_ASSERT(str != NULL && *str != '\0');
+
+	errno = 0;
+    *pval = strtold(str, NULL);
+    if (errno != 0)
+	{
+		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		return false;
+	}
+
+	return true;
 }

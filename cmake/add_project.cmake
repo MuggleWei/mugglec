@@ -1,3 +1,4 @@
+# add muggle library
 function(addMuggleLib name is_pure_c export_macro folder_name link_targets dependencies)
 
 	# files
@@ -67,6 +68,7 @@ function(addMuggleLib name is_pure_c export_macro folder_name link_targets depen
 
 endfunction(addMuggleLib)
 
+# add simple project
 function(addProject name folder_name dependencies type)
 	file(GLOB ${name}_H ${folder_name}/*.h)
 	file(GLOB ${name}_C ${folder_name}/*.c)

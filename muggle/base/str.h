@@ -54,14 +54,27 @@ MUGGLE_BASE_EXPORT bool StrStartsWith(const char* str, const char* sub_str);
 MUGGLE_BASE_EXPORT bool StrEndsWith(const char* str, const char* sub_str);
 
 /*
-*  StrUtils_SplitLineToWords: split line to words
-*  @line: input line
-*  @words: output words
-*  @word_idx: record number words in this line
-*  @max_word_num: up limit number of words in this line
-*  @return value: return next line
-*/
+ *  StrUtils_SplitLineToWords: split line to words
+ *  @line: input line
+ *  @words: output words
+ *  @word_idx: record number words in this line
+ *  @max_word_num: up limit number of words in this line
+ *  @return value: return next line
+ */
 MUGGLE_BASE_EXPORT char* StrSplitLineToWords(char* line, char** words, int* word_idx, int max_word_num);
+
+/*
+ *	string to number
+ */
+MUGGLE_BASE_EXPORT bool StrToi(char *str, int *pval, int base);
+MUGGLE_BASE_EXPORT bool StrToui(char *str, unsigned int *pval, int base); 
+MUGGLE_BASE_EXPORT bool StrTol(char *str, long *pval, int base);
+MUGGLE_BASE_EXPORT bool StrToul(char *str, unsigned long *pval, int base);
+MUGGLE_BASE_EXPORT bool StrToll(char *str, long long *pval, int base);
+MUGGLE_BASE_EXPORT bool StrToull(char *str, unsigned long long *pval, int base);
+MUGGLE_BASE_EXPORT bool StrTof(char *str, float *pval);
+MUGGLE_BASE_EXPORT bool StrTod(char *str, double *pval);
+MUGGLE_BASE_EXPORT bool StrTold(char *str, double *pval);
 
 EXTERN_C_END
 
