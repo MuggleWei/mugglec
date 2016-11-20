@@ -15,6 +15,34 @@
 	#define MUGGLE_RELEASE 1
 #endif
 
+// detect platform
+#ifdef _WIN32
+	#define MUGGLE_PLATFORM_WINDOWS 1
+	#ifdef _WIN64
+		#define MUGGLE_PLATFORM_WIN64 1
+	#endif
+#elif __APPLE__
+	#define MUGGLE_PLATFORM_APPLE 1
+	#include "TargetConditionals.h"
+	#if TARGET_IPHONE_SIMULATOR
+		// iOS Simulator
+	#elif TARGET_OS_IPHONE
+		// iOS device
+	#elif TARGET_OS_MAC
+		// Other kinds of Mac OS
+	#else
+		// Unknown Apple platform
+	#endif
+#elif __linux__
+	#define MUGGLE_PLATFORM_LINUX 1
+#elif __unix__
+	#define MUGGLE_PLATFORM_UNIX 1
+#elif defined(_POSIX_VERSION)
+	// POSIX
+#else
+	// Unknown compiler
+#endif
+
 // extern c
 #ifdef __cplusplus
 	#define EXTERN_C_BEGIN extern "C" {

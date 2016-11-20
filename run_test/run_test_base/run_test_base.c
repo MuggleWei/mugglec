@@ -18,6 +18,19 @@ int main(int argc, char *argv[])
 	unsigned long ulval;
 	float fval;
 
+	// platform macro
+#if MUGGLE_PLATFORM_WIN64
+	MUGGLE_DEBUG_LOG("Win64\n");
+#elif MUGGLE_PLATFORM_WINDOWS
+	MUGGLE_DEBUG_LOG("Win32\n");
+#elif MUGGLE_PLATFORM_LINUX
+	MUGGLE_DEBUG_LOG("Linux\n");
+#elif MUGGLE_PLATFORM_APPLE
+	MUGGLE_DEBUG_LOG("Apple\n");
+#elif MUGGLE_PLATFORM_UNIX
+	MUGGLE_DEBUG_LOG("Unix\n");
+#endif
+
 	// log
 	MUGGLE_DEBUG_LOG("Hello world\n");
 
@@ -44,7 +57,7 @@ int main(int argc, char *argv[])
 	{
 		MUGGLE_DEBUG_LOG("long: %ld\n", lval);
 	}
-	if (StrToul("-1024", &ulval, 0))
+	if (StrToul("102400", &ulval, 0))
 	{
 		MUGGLE_DEBUG_LOG("ulong: %uld\n", ulval);
 	}
