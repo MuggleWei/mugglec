@@ -22,7 +22,10 @@
 // muggle base header
 #include "muggle/base/macro.h"
 #include "muggle/base/log.h"
+#include "muggle/base/file.h"
+#include "muggle/base/str.h"
 #include "muggle/base/dll.h"
 #include "muggle/base/sleep.h"
+#include "muggle/base/delta_time.h"
 
 #endif

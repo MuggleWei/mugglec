@@ -7,6 +7,7 @@
 
 #include "muggle/base/dll.h"
 #include "muggle/base/log.h"
+#include "muggle/base/str.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 
@@ -20,7 +21,10 @@ void* DllLoad(const char* name)
 
 	size_t len = strlen(name);
 	memcpy(buf, name, len);
-	memcpy(buf + len, suffix, 4);
+	if (!StrEndsWith(buf, suffix))
+	{
+		memcpy(buf + len, suffix, 4);
+	}
 
 	// convert to utf16 characters
 	WCHAR unicode_buf[MG_MAX_PATH] = { 0 };
@@ -52,7 +56,10 @@ void* DllLoad(const char* name)
 
 	size_t len = strlen(name);
 	memcpy(buf, name, len);
-	memcpy(buf + len, suffix, 3);
+	if (!StrEndsWith(buf, suffix))
+	{
+		memcpy(buf + len, suffix, 3);
+	}	
 
 	return dlopen(buf, RTLD_NOW);
 }
