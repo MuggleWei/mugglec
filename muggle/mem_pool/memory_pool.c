@@ -12,6 +12,7 @@
 
 bool MemoryPoolInit(MemoryPool* pool, unsigned int init_capacity, unsigned int block_size)
 {
+	memset(pool, 0, sizeof(MemoryPool));
 	init_capacity = init_capacity == 0 ? 8 : init_capacity;
 
 	pool->memory_pool_data_bufs = (void**)malloc(sizeof(void*));
@@ -55,17 +56,19 @@ fail:
 
 	if (pool->memory_pool_data_bufs != NULL)
 	{
+		if (pool->memory_pool_data_bufs[0] != NULL)
+		{
+			free(pool->memory_pool_data_bufs[0]);
+		}
 		free(pool->memory_pool_data_bufs);
+		pool->memory_pool_data_bufs = NULL;
 	}
 	if (pool->memory_pool_ptr_buf != NULL)
 	{
 		free(pool->memory_pool_ptr_buf);
+		pool->memory_pool_ptr_buf = NULL;
 	}
-	if (pool->memory_pool_data_bufs[0] != NULL)
-	{
-		free(pool->memory_pool_data_bufs[0]);
-	}
-
+	
 	return false;
 }
 void MemoryPoolDestroy(MemoryPool* pool)
