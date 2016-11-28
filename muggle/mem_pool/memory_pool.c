@@ -18,17 +18,23 @@ bool MemoryPoolInit(MemoryPool* pool, unsigned int init_capacity, unsigned int b
 	pool->memory_pool_data_bufs = (void**)malloc(sizeof(void*));
 	if (pool->memory_pool_data_bufs == NULL)
 	{
-		goto fail;
+		return false;
 	}
 	pool->memory_pool_ptr_buf = (void**)malloc(sizeof(void*) * init_capacity);
 	if (pool->memory_pool_ptr_buf == NULL)
 	{
-		goto fail;
+		free(pool->memory_pool_data_bufs);
+		pool->memory_pool_data_bufs = NULL;
+		return false;
 	}
 	pool->memory_pool_data_bufs[0] = (void*)malloc(block_size * init_capacity);
 	if (pool->memory_pool_data_bufs[0] == NULL)
 	{
-		goto fail;
+		free(pool->memory_pool_data_bufs);
+		pool->memory_pool_data_bufs = NULL;
+		free(pool->memory_pool_ptr_buf);
+		pool->memory_pool_ptr_buf = NULL;
+		return false;
 	}
 
 	pool->alloc_index = pool->free_index = 0;
@@ -37,6 +43,8 @@ bool MemoryPoolInit(MemoryPool* pool, unsigned int init_capacity, unsigned int b
 
 	pool->block_size = block_size;
 	pool->num_buf = 1;
+
+	pool->flag = 0;
 
 #if MUGGLE_DEBUG
 	pool->peak = 0;
@@ -50,26 +58,6 @@ bool MemoryPoolInit(MemoryPool* pool, unsigned int init_capacity, unsigned int b
 	}
 
 	return true;
-
-fail:
-	MUGGLE_DEBUG_ERROR("Failed in MemoryPoolInit, can't allocate memory\n");
-
-	if (pool->memory_pool_data_bufs != NULL)
-	{
-		if (pool->memory_pool_data_bufs[0] != NULL)
-		{
-			free(pool->memory_pool_data_bufs[0]);
-		}
-		free(pool->memory_pool_data_bufs);
-		pool->memory_pool_data_bufs = NULL;
-	}
-	if (pool->memory_pool_ptr_buf != NULL)
-	{
-		free(pool->memory_pool_ptr_buf);
-		pool->memory_pool_ptr_buf = NULL;
-	}
-	
-	return false;
 }
 void MemoryPoolDestroy(MemoryPool* pool)
 {
@@ -87,7 +75,10 @@ void* MemoryPoolAlloc(MemoryPool* pool)
 {
 	if (pool->used == pool->capacity)
 	{
-		MemoryPoolEnsureSpace(pool, pool->capacity * 2);
+		if (!MemoryPoolEnsureSpace(pool, pool->capacity * 2))
+		{
+			return NULL;
+		}
 	}
 	++pool->used;
 #if MUGGLE_DEBUG
@@ -116,20 +107,45 @@ void MemoryPoolFree(MemoryPool* pool, void* p_data)
 	--pool->used;
 }
 
-void MemoryPoolEnsureSpace(MemoryPool* pool, unsigned int capacity)
+bool MemoryPoolEnsureSpace(MemoryPool* pool, unsigned int capacity)
 {
-	// capacity must increase
-	if (capacity < pool->capacity)
+	// already have enough capacity
+	if (capacity <= pool->capacity)
 	{
-		return;
+		return true;
+	}
+
+	// if this is constant size pool, refuse to allocate new memory
+	if (pool->flag & MUGGLE_MEMORY_POOL_CONTANT_SIZE)
+	{
+		return false;
 	}
 
 	// allocate new data buffer
 	unsigned int delta_size = capacity - pool->capacity;
 	void** new_bufs = (void**)malloc(sizeof(void*) * (pool->num_buf + 1));
+	if (new_bufs == NULL)
+	{
+		return false;
+	}
 	memcpy(new_bufs, pool->memory_pool_data_bufs, sizeof(void*) * pool->num_buf);
 	new_bufs[pool->num_buf] = (void*)malloc(pool->block_size * delta_size);
+	if (new_bufs[pool->num_buf] == NULL)
+	{
+		free(new_bufs);
+		return false;
+	}
 
+	// allocate new pointer buffer
+	void** new_ptr_buf = (void**)malloc(sizeof(void*) * capacity);
+	if (new_ptr_buf == NULL)
+	{
+		free(new_bufs[pool->num_buf]);
+		free(new_bufs);
+		return false;
+	}
+
+	// free old data buffer and reset data buffer
 	free((void*)pool->memory_pool_data_bufs);
 	pool->memory_pool_data_bufs = new_bufs;
 
@@ -188,11 +204,8 @@ void MemoryPoolEnsureSpace(MemoryPool* pool, unsigned int capacity)
 		num_alloc_section1 = pool->free_index - pool->alloc_index;
 	}
 
-	// realloc pointer buffer
-	void** new_ptr_buf = (void**)malloc(sizeof(void*) * capacity);
-	unsigned int offset = 0;
-
 	// copy free section
+	unsigned int offset = 0;
 	pool->free_index = 0;
 	memcpy(&new_ptr_buf[offset], (void*)free_section1, sizeof(void*) * num_free_section1);
 	offset += num_free_section1;
@@ -222,10 +235,25 @@ void MemoryPoolEnsureSpace(MemoryPool* pool, unsigned int capacity)
 		new_ptr_buf[offset + i] = (void*)((char*)pool->memory_pool_data_bufs[pool->num_buf] + i * pool->block_size);
 	}
 
+	// free old pointer buffer and reset pointer buffer
 	free(pool->memory_pool_ptr_buf);
 	pool->memory_pool_ptr_buf = new_ptr_buf;
 
 	// update pool data
 	++pool->num_buf;
 	pool->capacity = capacity;
+
+	return true;
+}
+
+MUGGLE_MEMORY_POOL_EXPORT
+unsigned int MemoryPoolGetFlag(MemoryPool* pool)
+{
+	return pool->flag;
+}
+
+MUGGLE_MEMORY_POOL_EXPORT
+void MemoryPoolSetFlag(MemoryPool* pool, unsigned int flag)
+{
+	pool->flag = flag;
 }

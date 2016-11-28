@@ -23,6 +23,9 @@ EXTERN_C_BEGIN
 	#define MUGGLE_MEMORY_POOL_EXPORT
 #endif
 
+// memory pool flag
+#define MUGGLE_MEMORY_POOL_CONTANT_SIZE	0x01
+
 typedef struct MemoryPool_tag
 {
 	void**			memory_pool_data_bufs;  // data buffer array
@@ -36,6 +39,8 @@ typedef struct MemoryPool_tag
 
 	unsigned int	block_size;             // size of single block
 	unsigned int	num_buf;                // the number of data buffer
+
+	unsigned int	flag;					// flags
 
 #if MUGGLE_DEBUG
 	unsigned int	peak;                   // record max number of block in use
@@ -55,7 +60,13 @@ MUGGLE_MEMORY_POOL_EXPORT
 void MemoryPoolFree(MemoryPool* pool, void* p_data);
 
 MUGGLE_MEMORY_POOL_EXPORT 
-void MemoryPoolEnsureSpace(MemoryPool* pool, unsigned int capacity);
+bool MemoryPoolEnsureSpace(MemoryPool* pool, unsigned int capacity);
+
+MUGGLE_MEMORY_POOL_EXPORT
+unsigned int MemoryPoolGetFlag(MemoryPool* pool);
+
+MUGGLE_MEMORY_POOL_EXPORT
+void MemoryPoolSetFlag(MemoryPool* pool, unsigned int flag);
 
 EXTERN_C_END
 
