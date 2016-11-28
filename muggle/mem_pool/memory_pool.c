@@ -116,7 +116,7 @@ bool MemoryPoolEnsureSpace(MemoryPool* pool, unsigned int capacity)
 	}
 
 	// if this is constant size pool, refuse to allocate new memory
-	if (pool->flag & MUGGLE_MEMORY_POOL_CONTANT_SIZE)
+	if (pool->flag & MUGGLE_MEMORY_POOL_CONSTANT_SIZE)
 	{
 		return false;
 	}

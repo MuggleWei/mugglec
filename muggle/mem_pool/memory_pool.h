@@ -24,7 +24,7 @@ EXTERN_C_BEGIN
 #endif
 
 // memory pool flag
-#define MUGGLE_MEMORY_POOL_CONTANT_SIZE	0x01
+#define MUGGLE_MEMORY_POOL_CONSTANT_SIZE	0x01
 
 typedef struct MemoryPool_tag
 {
