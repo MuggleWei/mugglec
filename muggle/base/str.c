@@ -81,7 +81,7 @@ char* StrSplitLineToWords(char* line, char** words, int* word_idx, int max_word_
 	*word_idx = 0;
 
 	q = line;
-	MG_SKIP_BLANK(q);
+	MUGGLE_SKIP_BLANK(q);
 	r = q;
 	while (*q != '\n' && *q != '\r' && *q != '\0')
 	{
@@ -96,7 +96,7 @@ char* StrSplitLineToWords(char* line, char** words, int* word_idx, int max_word_
 			*q = '\0';
 			++q;
 			words[(*word_idx)++] = r;
-			MG_SKIP_BLANK(q);
+			MUGGLE_SKIP_BLANK(q);
 			r = q;
 		}
 		else

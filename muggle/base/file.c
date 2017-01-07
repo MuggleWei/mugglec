@@ -10,82 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
+#include <Windows.h>
 #include "muggle/base/log.h"
-
-#if MUGGLE_PLATFORM_WINDOWS
-
-#include <windows.h>
-
-void FileGetProcessPath(char* file_path)
-{
-	// convert to unicode characters
-	WCHAR unicode_buf[MG_MAX_PATH] = { 0 };
-	GetModuleFileNameW(NULL, unicode_buf, MG_MAX_PATH);
-
-	// convert to utf8
-	WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, file_path, MG_MAX_PATH, NULL, FALSE);
-}
-bool FileIsExist(const char* file_path)
-{
-	// convert to utf16 characters
-	WCHAR unicode_buf[MG_MAX_PATH] = { 0 };
-	MultiByteToWideChar(CP_UTF8, 0, file_path, -1, unicode_buf, MG_MAX_PATH);
-
-	// get file attributes
-	DWORD attr = GetFileAttributesW(unicode_buf);
-	if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY))
-		return false;
-	return true;
-}
-bool FileIsAbsolutePath(const char* file_path)
-{
-	size_t len = strlen(file_path);
-	if (len > 2 &&
-		((file_path[0] >= 'a' && file_path[0] <= 'z') || (file_path[0] >= 'A' && file_path[0] <= 'Z')) &&
-		file_path[1] == ':' &&
-		(file_path[2] == '/' || file_path[2] == '\\'))
-	{
-		return true;
-	}
-
-	return false;
-}
-
-#else
-
-#include <sys/types.h>
-#include <unistd.h>
-
-void FileGetProcessPath(char* file_path)
-{
-	char sz_tmp[64], buf[MG_MAX_PATH];
-	ssize_t len;
-
-	sprintf_s(sz_tmp, 63, "/proc/%ld/exe", (long)getpid());
-	len = readlink(sz_tmp, file_path, MG_MAX_PATH);
-	MUGGLE_ASSERT_MSG(len >= 0, "something wrong in readlink function");
-	if (len >= 0)
-		file_path[len] = '\0';
-}
-bool FileIsExist(const char* file_path)
-{
-	if (access(file_path, F_OK) != -1)
-		return true;
-
-	return false;
-}
-bool FileIsAbsolutePath(const char* file_path)
-{
-	size_t len = strlen(file_path);
-	if (len > 1 && file_path[0] == '/')
-	{
-		return true;
-	}
-
-	return false;
-}
-
-#endif
 
 bool FileGetAbsolutePath(const char* in_file_name, char* out_file_path)
 {
@@ -94,7 +20,7 @@ bool FileGetAbsolutePath(const char* in_file_name, char* out_file_path)
 		return true;
 	}
 
-	char module_path[MG_MAX_PATH];
+	char module_path[MUGGLE_MAX_PATH];
 	FileGetProcessPath(module_path);
 
 	FileGetDirectory(module_path, out_file_path);
@@ -161,12 +87,299 @@ bool FileRead(const char* file_path, char** ptr_bytes, long* ptr_num)
 	return true;
 }
 
-void* FileGetHandle(const char* file_path, const char* mode)
+#if MUGGLE_PLATFORM_WINDOWS
+
+#include <windows.h>
+
+void FileGetProcessPath(char* file_path)
 {
-	return (void*)fopen(file_path, mode);
+	// convert to unicode characters
+	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
+	GetModuleFileNameW(NULL, unicode_buf, MUGGLE_MAX_PATH);
+
+	// convert to utf8
+	WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, file_path, MUGGLE_MAX_PATH, NULL, FALSE);
 }
-void FileCloseHandle(void* file_handle)
+bool FileIsExist(const char* file_path)
 {
-	MUGGLE_ASSERT_MSG(file_handle, "Try to close empty file handle");
-	fclose(file_handle);
+	// convert to utf16 characters
+	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
+	MultiByteToWideChar(CP_UTF8, 0, file_path, -1, unicode_buf, MUGGLE_MAX_PATH);
+
+	// get file attributes
+	DWORD attr = GetFileAttributesW(unicode_buf);
+	if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY))
+		return false;
+	return true;
 }
+bool FileIsAbsolutePath(const char* file_path)
+{
+	size_t len = strlen(file_path);
+	if (len > 2 &&
+		((file_path[0] >= 'a' && file_path[0] <= 'z') || (file_path[0] >= 'A' && file_path[0] <= 'Z')) &&
+		file_path[1] == ':' &&
+		(file_path[2] == '/' || file_path[2] == '\\'))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool FileHandleIsValid(FileHandle fh)
+{
+	return fh.fd != NULL;
+}
+FileHandle FileHandleOpen(const char* file_path, int flags, int mode)
+{
+	FileHandle fh;
+	DWORD dwDesiredAccess, dwShareMode, dwCreationDisposition;
+
+	// convert to utf16 characters
+	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
+	MultiByteToWideChar(CP_UTF8, 0, file_path, -1, unicode_buf, MUGGLE_MAX_PATH);
+
+	// access mode
+	dwDesiredAccess =
+		((flags &  MUGGLE_FILE_WRITE) ? FILE_WRITE_DATA : 0) |
+		((flags &  MUGGLE_FILE_READ) ? FILE_READ_DATA : 0) |
+		((flags &  MUGGLE_FILE_APPEND) ? FILE_APPEND_DATA : 0);
+
+	// share mode, alway allow subsequent open operations to request read, write and delete
+	dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+
+	// creation disposition
+	if (flags & MUGGLE_FILE_CREAT)
+	{
+		if (flags & MUGGLE_FILE_EXCL)
+		{
+			dwCreationDisposition = CREATE_NEW;
+		}
+		else
+		{
+			dwCreationDisposition = OPEN_ALWAYS;
+		}
+	}
+	else
+	{
+		if (flags & MUGGLE_FILE_TRUNC)
+		{
+			dwCreationDisposition = TRUNCATE_EXISTING;
+		}
+		else
+		{
+			dwCreationDisposition = OPEN_EXISTING;
+		}		
+	}
+
+	fh.fd = (void*)CreateFile(
+		unicode_buf, dwDesiredAccess, dwShareMode,
+		NULL, dwCreationDisposition, FILE_ATTRIBUTE_NORMAL,
+		NULL);
+	if (fh.fd == INVALID_HANDLE_VALUE)
+	{
+		fh.fd = NULL;
+		MUGGLE_DEBUG_WARNING("Failed open file %s - error code %ld\n", file_path, (long)GetLastError());
+	}
+
+	return fh;
+}
+bool FileHandleClose(FileHandle fh)
+{
+	if (!CloseHandle((HANDLE)fh.fd))
+	{
+		MUGGLE_DEBUG_WARNING("Failed close file handle: %d - error code %ld\n", fh.fd, (long)GetLastError());
+		return false;
+	}
+
+	fh.fd = NULL;
+
+	return true;
+}
+long long FileHandleSeek(FileHandle fh, long long offset, int whence)
+{
+	LARGE_INTEGER li, li_ret;
+	DWORD move_method;
+
+	li.QuadPart = (LONGLONG)offset;
+	move_method =
+		(whence == MUGGLE_FILE_SEEK_BEGIN) ? FILE_BEGIN :
+		((whence == MUGGLE_FILE_SEEK_CURRENT) ? FILE_CURRENT : FILE_END);
+
+	if (!SetFilePointerEx(fh.fd, li, &li_ret, move_method))
+	{
+		MUGGLE_DEBUG_WARNING("Failed file seek - error code %ld\n", (long)GetLastError());
+		return -1;
+	}
+
+	return (long long)li_ret.QuadPart;
+}
+long FileHandleWrite(FileHandle fh, void *buf, long cnt_bytes)
+{
+	DWORD num_write;
+	if (!WriteFile((HANDLE)fh.fd, (LPCVOID)buf, (DWORD)cnt_bytes, &num_write, NULL))
+	{
+		MUGGLE_DEBUG_WARNING("Failed write data into file - error code: %ld\n", (long)GetLastError());
+		return (long)-1;
+	}
+
+	return (long)num_write;
+}
+long FileHandleRead(FileHandle fh, void *buf, long cnt_bytes)
+{
+	DWORD num_read;
+	if (!ReadFile((HANDLE)fh.fd, buf, (DWORD)cnt_bytes, &num_read, NULL))
+	{
+		MUGGLE_DEBUG_WARNING("Failed read data from file - error code: %ld\n", (long)GetLastError());
+		return (long)-1;
+	}
+
+	return (long)num_read;
+}
+
+#else
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+void FileGetProcessPath(char* file_path)
+{
+	char sz_tmp[64], buf[MUGGLE_MAX_PATH];
+	ssize_t len;
+
+	sprintf_s(sz_tmp, 63, "/proc/%ld/exe", (long)getpid());
+	len = readlink(sz_tmp, file_path, MUGGLE_MAX_PATH);
+	MUGGLE_ASSERT_MSG(len >= 0, "something wrong in readlink function");
+	if (len >= 0)
+		file_path[len] = '\0';
+}
+bool FileIsExist(const char* file_path)
+{
+	if (access(file_path, F_OK) != -1)
+		return true;
+
+	return false;
+}
+bool FileIsAbsolutePath(const char* file_path)
+{
+	size_t len = strlen(file_path);
+	if (len > 1 && file_path[0] == '/')
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool FileHandleIsValid(FileHandle fh)
+{
+	return fh.fd != -1;
+}
+FileHandle FileHandleOpen(const char* file_path, int flags, int attr)
+{
+	FileHandle fh;
+	int access_mode, addition_flags;
+	mode_t mode;
+
+	// flags
+	if (flags & MUGGLE_FILE_MODE_WRITE)
+	{
+		if (flags & MUGGLE_FILE_MODE_READ)
+		{
+			access_mode = O_RDWR;
+		}
+		else
+		{
+			access_mode = O_WRONLY;
+		}
+	}
+	else if (flags & MUGGLE_FILE_MODE_READ)
+	{
+		access_mode = O_RDONLY;
+	}
+	else
+	{
+		MUGGLE_DEBUG_WARNING("Must Contain write or read mode\n");
+		fh.fd = -1;
+		return fh;
+	}
+
+	// addition flags
+	addition_flags =
+		((flags & MUGGLE_FILE_APPEND) ? O_APPEND : 0) |
+		((flags & MUGGLE_FILE_CREAT) ? O_CREAT : 0) |
+		((flags & MUGGLE_FILE_EXCL) ? O_EXCL : 0);
+
+	// mode
+	mode =
+		((attr & MUGGLE_FILE_ATTR_USER_READ) ? S_IRUSR) |
+		((attr & MUGGLE_FILE_ATTR_USER_WRITE) ? S_IWUSR) |
+		((attr & MUGGLE_FILE_ATTR_USER_EXECUTE) ? S_IXUSR) |
+		((attr & MUGGLE_FILE_ATTR_GRP_READ) ? S_IRGRP) |
+		((attr & MUGGLE_FILE_ATTR_GRP_WRITE) ? S_IWGRP) |
+		((attr & MUGGLE_FILE_ATTR_GRP_EXECUTE) ? S_IXGRP) |
+		((attr & MUGGLE_FILE_ATTR_OTHER_READ) ? S_IROTH) |
+		((attr & MUGGLE_FILE_ATTR_OTHER_WRITE) ? S_IWOTH) |
+		((attr & MUGGLE_FILE_ATTR_OTHER_EXECUTE) ? S_IXOTH);
+	
+	fh.fd = open(file_path, access_mode | addition_flags, mode);
+	if (fh.fd == -1)
+	{
+		MUGGLE_DEBUG_WARNING("Failed open file %s - %s\n", file_path, strerror(errno));
+	}
+
+	return fh;
+}
+bool FileHandleClose(FileHandle fh)
+{
+	if (close(fh.fd) == -1)
+	{
+		MUGGLE_DEBUG_WARNING("Failed close file handle: %d - %s\n", fh.fd, strerror(errno));
+		return false;
+	}
+
+	fh.fd = -1;
+
+	return true;
+}
+long long FileHandleSeek(FileHandle fh, long long offset, int whence)
+{
+	off_t new_pos;
+	int w = 
+		(whence == MUGGLE_FILE_SEEK_BEGIN) ? SEEK_SET :
+		((whence == MUGGLE_FILE_SEEK_CURRENT) ? SEEK_CUR : SEEK_END);
+
+	new_pos = lseek(fh.fd, (off_t)offset, w);
+	if (new_pos == -1)
+	{
+		MUGGLE_DEBUG_WARNING("Failed file seek - %s\n", strerror(errno));
+	}
+
+	return (long long)new_pos;
+}
+long FileHandleWrite(FileHandle fh, void *buf, long cnt_bytes)
+{
+	ssize_t num_write;
+	num_write = write(fh.fd, buf, (size_t)cnt_bytes);
+	if (num_write == -1)
+	{
+		MUGGLE_DEBUG_WARNING("Failed write data into file - %s\n", strerror(errno));
+	}
+
+	return (long)num_write;
+}
+long FileHandleRead(FileHandle fh, void *buf, long cnt_bytes)
+{
+	ssize_t num_read;
+	num_read = read(fh.fd, buf, cnt_bytes);
+	if (num_read == -1)
+	{
+		MUGGLE_DEBUG_WARNING("Failed read data from file - %s\n", strerror(errno));
+	}
+
+	return num_read;
+}
+
+#endif

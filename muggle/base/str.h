@@ -13,39 +13,39 @@
 
 EXTERN_C_BEGIN
 
-#define MG_SKIP_BLANK(p) \
+#define MUGGLE_SKIP_BLANK(p) \
 while (*p == ' ' || *p == '\t') \
 { \
 	++p; \
 }
 
-#define MG_SKIP_BLANK_AND_LFCR(p) \
+#define MUGGLE_SKIP_BLANK_AND_LFCR(p) \
 while (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n') \
 { \
 	++p; \
 }
 
-#define MG_SKIP_WORD(p) \
+#define MUGGLE_SKIP_WORD(p) \
 while (*p != ' ' && *p != '\t' && *p != '\r' && *p != '\n' && *p != '\0') \
 { \
 	++p; \
 }
 
-#define MG_SKIP_TO_NEXT_WORD(p) \
-MG_SKIP_WORD(p) \
-MG_SKIP_BLANK_AND_LFCR(p)
+#define MUGGLE_SKIP_TO_NEXT_WORD(p) \
+MUGGLE_SKIP_WORD(p) \
+MUGGLE_SKIP_BLANK_AND_LFCR(p)
 
-#define MG_SKIP_TO_LINE_END(p) \
+#define MUGGLE_SKIP_TO_LINE_END(p) \
 while (*p != '\n' && *p != '\r' && *p != '\0') \
 { \
 	++p; \
 }
 
-#define MG_SKIP_TO_NEXT_LINE(p) \
-MG_SKIP_TO_LINE_END(p); \
+#define MUGGLE_SKIP_TO_NEXT_LINE(p) \
+MUGGLE_SKIP_TO_LINE_END(p); \
 if (*p != '\0') \
 { \
-	MG_SKIP_TO_NEXT_WORD(p); \
+	MUGGLE_SKIP_TO_NEXT_WORD(p); \
 }
 
 // note: the range is [p_start, p_end], so generate char* is "p_start ... p_end '\0'"

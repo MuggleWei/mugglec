@@ -16,8 +16,8 @@
 void* DllLoad(const char* name)
 {
 	const char* suffix = ".dll";
-	char buf[MG_MAX_PATH];
-	memset(buf, 0, MG_MAX_PATH);
+	char buf[MUGGLE_MAX_PATH];
+	memset(buf, 0, MUGGLE_MAX_PATH);
 
 	size_t len = strlen(name);
 	memcpy(buf, name, len);
@@ -27,8 +27,8 @@ void* DllLoad(const char* name)
 	}
 
 	// convert to utf16 characters
-	WCHAR unicode_buf[MG_MAX_PATH] = { 0 };
-	MultiByteToWideChar(CP_UTF8, 0, buf, -1, unicode_buf, MG_MAX_PATH);
+	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
+	MultiByteToWideChar(CP_UTF8, 0, buf, -1, unicode_buf, MUGGLE_MAX_PATH);
 
 	return (void*)LoadLibraryW(unicode_buf);
 }
@@ -51,8 +51,8 @@ bool DllFree(void* dll)
 void* DllLoad(const char* name)
 {
 	const char* suffix = ".so";
-	char buf[MG_MAX_PATH];
-	memset(buf, 0, MG_MAX_PATH);
+	char buf[MUGGLE_MAX_PATH];
+	memset(buf, 0, MUGGLE_MAX_PATH);
 
 	size_t len = strlen(name);
 	memcpy(buf, name, len);

@@ -2,6 +2,88 @@
 
 typedef void(*emptyFunc)();
 
+void TestFileHandle()
+{
+	FileHandle fh;
+	int flags, attr;
+	char buf1[] = "hello world", buf2[64] = { 0 };
+	long num_read;
+
+	flags = 
+		MUGGLE_FILE_WRITE | MUGGLE_FILE_READ | MUGGLE_FILE_APPEND | 
+		MUGGLE_FILE_CREAT | MUGGLE_FILE_EXCL;
+	attr = MUGGLE_FILE_ATTR_USER_READ | MUGGLE_FILE_ATTR_USER_WRITE;
+	fh = FileHandleOpen("tmp.txt", flags, attr);
+	if (!FileHandleIsValid(fh))
+	{
+		flags &= ~MUGGLE_FILE_EXCL;
+		flags |= MUGGLE_FILE_TRUNC;
+		fh = FileHandleOpen("tmp.txt", flags, attr);
+		if (!FileHandleIsValid(fh))
+		{
+			MUGGLE_DEBUG_ERROR("Can't get file handle of tmp.txt\n");
+			return;
+		}
+		else
+		{
+			MUGGLE_DEBUG_INFO("Open tmp.txt and truncate\n");
+		}
+	}
+	else
+	{
+		MUGGLE_DEBUG_INFO("I create tmp.txt\n");
+	}
+
+	if (FileHandleWrite(fh, buf1, (long)strlen(buf1)) == -1)
+	{
+		MUGGLE_DEBUG_ERROR("Failed write into file handle\n");
+		return;
+	}
+
+	if (!FileHandleClose(fh))
+	{
+		MUGGLE_DEBUG_ERROR("Failed close file handle\n");
+		return;
+	}
+
+	flags &= ~(MUGGLE_FILE_EXCL | MUGGLE_FILE_TRUNC);
+	fh = FileHandleOpen("tmp.txt", flags, attr);
+	if (!FileHandleIsValid(fh))
+	{
+		MUGGLE_DEBUG_ERROR("Can't open tmp.txt\n");
+		return;
+	}
+
+	num_read = FileHandleRead(fh, buf2, 64);
+	if (num_read == -1)
+	{
+		MUGGLE_DEBUG_ERROR("Failed read data from file handle\n");
+		return;
+	}
+	buf2[num_read] = '\0';
+	MUGGLE_INFO("Read data: %s\n", buf2);
+
+	if (FileHandleSeek(fh, 6L, MUGGLE_FILE_SEEK_BEGIN) == -1)
+	{
+		MUGGLE_DEBUG_ERROR("Failed seek in file handle\n");
+		return;
+	}
+	num_read = FileHandleRead(fh, buf2, 64);
+	if (num_read == -1)
+	{
+		MUGGLE_DEBUG_ERROR("Failed read data file handle\n");
+		return;
+	}
+	buf2[num_read] = '\0';
+	MUGGLE_INFO("Read data: %s\n", buf2);
+
+	if (!FileHandleClose(fh))
+	{
+		MUGGLE_DEBUG_ERROR("Failed close file handle\n");
+		return;
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	void* dllHandle;
@@ -9,7 +91,7 @@ int main(int argc, char *argv[])
 	emptyFunc func;
 	deltaTime dt;
 	double ms;
-	char buf[MG_MAX_PATH];
+	char buf[MUGGLE_MAX_PATH];
 	char dll_name[] = "RunTestEmpty", dll_name2[] = "../lib/libRunTestEmpty";
 	size_t len;
 	int ival;
@@ -65,6 +147,9 @@ int main(int argc, char *argv[])
 	{
 		MUGGLE_DEBUG_INFO("float: %f\n", fval);
 	}
+
+	// file handle
+	TestFileHandle();
 
 	// file and dll
 	FileGetProcessPath(buf);

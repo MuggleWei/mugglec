@@ -20,14 +20,14 @@ void LogFunction(const char *format, ...)
 	va_list args;
 	va_start(args, format);
 
-	char buf[MG_MAX_PATH];
-	vsnprintf(buf, MG_MAX_PATH, format, args);
+	char buf[MUGGLE_MAX_PATH];
+	vsnprintf(buf, MUGGLE_MAX_PATH, format, args);
 
 #if MUGGLE_PLATFORM_WINDOWS
-	WCHAR w_buf[MG_MAX_PATH];
-	MultiByteToWideChar(CP_UTF8, 0, buf, -1, w_buf, MG_MAX_PATH);
+	WCHAR w_buf[MUGGLE_MAX_PATH];
+	MultiByteToWideChar(CP_UTF8, 0, buf, -1, w_buf, MUGGLE_MAX_PATH);
 	OutputDebugStringW(w_buf);
-	WideCharToMultiByte(CP_ACP, 0, w_buf, -1, buf, MG_MAX_PATH, NULL, FALSE);
+	WideCharToMultiByte(CP_ACP, 0, w_buf, -1, buf, MUGGLE_MAX_PATH, NULL, FALSE);
 #endif
 
 	fprintf(stdout, "%s", buf);
@@ -40,14 +40,14 @@ void ExportWarning(const char* cond, const char* file_name, int line, const char
 	va_list args;
 	va_start(args, format);
 
-	char buf[MG_MAX_PATH];
-	vsnprintf(buf, MG_MAX_PATH, format, args);
+	char buf[MUGGLE_MAX_PATH];
+	vsnprintf(buf, MUGGLE_MAX_PATH, format, args);
 
 #if MUGGLE_PLATFORM_WINDOWS
-	WCHAR w_buf[MG_MAX_PATH];
-	MultiByteToWideChar(CP_UTF8, 0, buf, -1, w_buf, MG_MAX_PATH);
+	WCHAR w_buf[MUGGLE_MAX_PATH];
+	MultiByteToWideChar(CP_UTF8, 0, buf, -1, w_buf, MUGGLE_MAX_PATH);
 	OutputDebugStringW(w_buf);
-	WideCharToMultiByte(CP_ACP, 0, w_buf, -1, buf, MG_MAX_PATH, NULL, FALSE);
+	WideCharToMultiByte(CP_ACP, 0, w_buf, -1, buf, MUGGLE_MAX_PATH, NULL, FALSE);
 #endif
 
 	fprintf(stderr, "[%s: %d] Warning: %s. %s\n", file_name, line, cond, buf);
@@ -60,14 +60,14 @@ void ExportFailure(const char* cond, const char* file_name, int line, const char
 	va_list args;
 	va_start(args, format);
 
-	char buf[MG_MAX_PATH];
-	vsnprintf(buf, MG_MAX_PATH, format, args);
+	char buf[MUGGLE_MAX_PATH];
+	vsnprintf(buf, MUGGLE_MAX_PATH, format, args);
 
 #if MUGGLE_PLATFORM_WINDOWS
-	WCHAR w_buf[MG_MAX_PATH];
-	MultiByteToWideChar(CP_UTF8, 0, buf, -1, w_buf, MG_MAX_PATH);
+	WCHAR w_buf[MUGGLE_MAX_PATH];
+	MultiByteToWideChar(CP_UTF8, 0, buf, -1, w_buf, MUGGLE_MAX_PATH);
 	OutputDebugStringW(w_buf);
-	WideCharToMultiByte(CP_ACP, 0, w_buf, -1, buf, MG_MAX_PATH, NULL, FALSE);
+	WideCharToMultiByte(CP_ACP, 0, w_buf, -1, buf, MUGGLE_MAX_PATH, NULL, FALSE);
 #endif
 	
 	fprintf(stderr, "[%s: %d] Assertion failed: %s. %s\n", file_name, line, cond, buf);

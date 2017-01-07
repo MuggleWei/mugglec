@@ -86,9 +86,9 @@
 
 // max length of path
 #if MUGGLE_PLATFORM_WINDOWS
-	#define MG_MAX_PATH 260
+	#define MUGGLE_MAX_PATH 260
 #else
-	#define MG_MAX_PATH 1024
+	#define MUGGLE_MAX_PATH 1024
 #endif
 
 // sprintf_s, _strdup
