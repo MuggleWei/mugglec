@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 	dt.End();
 
 	double ms = dt.GetElapsedMilliseconds();
-	MUGGLE_DEBUG_LOG("delta time: %f\n", ms);
+	MUGGLE_DEBUG_INFO("delta time: %f\n", ms);
 
 	return 0;
 }

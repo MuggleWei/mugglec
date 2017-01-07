@@ -11,7 +11,7 @@
 #include "muggle/base/macro.h"
 
 // log
-#define MUGGLE_LOG(format, ...) LogFunction(format, ##__VA_ARGS__)
+#define MUGGLE_INFO(format, ...) LogFunction(format, ##__VA_ARGS__)
 #define MUGGLE_WARNING(format, ...) \
 do \
 { \
@@ -33,7 +33,7 @@ do \
 #if MUGGLE_RELEASE
 #define MUGGLE_ASSERT(x)
 #define MUGGLE_ASSERT_MSG(x, format, ...)
-#define MUGGLE_DEBUG_LOG(format, ...)
+#define MUGGLE_DEBUG_INFO(format, ...)
 #define MUGGLE_DEBUG_WARNING(format, ...)
 #define MUGGLE_DEBUG_ERROR(format, ...)
 #else
@@ -53,7 +53,7 @@ do \
 		ExportFailure(#x, __FILE__, __LINE__, format, ##__VA_ARGS__);  \
 	} \
 } while(0)
-#define MUGGLE_DEBUG_LOG(format, ...) MUGGLE_LOG(format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_INFO(format, ...) MUGGLE_INFO(format, ##__VA_ARGS__)
 #define MUGGLE_DEBUG_WARNING(format, ...) MUGGLE_WARNING(format, ##__VA_ARGS__)
 #define MUGGLE_DEBUG_ERROR(format, ...) MUGGLE_ERROR(format, ##__VA_ARGS__)
 #endif
