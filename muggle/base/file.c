@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
-#include <Windows.h>
+#include <errno.h>
 #include "muggle/base/log.h"
 
 bool FileGetAbsolutePath(const char* in_file_name, char* out_file_path)
@@ -284,9 +284,9 @@ FileHandle FileHandleOpen(const char* file_path, int flags, int attr)
 	mode_t mode;
 
 	// flags
-	if (flags & MUGGLE_FILE_MODE_WRITE)
+	if (flags & MUGGLE_FILE_WRITE)
 	{
-		if (flags & MUGGLE_FILE_MODE_READ)
+		if (flags & MUGGLE_FILE_READ)
 		{
 			access_mode = O_RDWR;
 		}
@@ -295,7 +295,7 @@ FileHandle FileHandleOpen(const char* file_path, int flags, int attr)
 			access_mode = O_WRONLY;
 		}
 	}
-	else if (flags & MUGGLE_FILE_MODE_READ)
+	else if (flags & MUGGLE_FILE_READ)
 	{
 		access_mode = O_RDONLY;
 	}
@@ -310,19 +310,20 @@ FileHandle FileHandleOpen(const char* file_path, int flags, int attr)
 	addition_flags =
 		((flags & MUGGLE_FILE_APPEND) ? O_APPEND : 0) |
 		((flags & MUGGLE_FILE_CREAT) ? O_CREAT : 0) |
-		((flags & MUGGLE_FILE_EXCL) ? O_EXCL : 0);
+		((flags & MUGGLE_FILE_EXCL) ? O_EXCL : 0) |
+		((flags & MUGGLE_FILE_TRUNC) ? O_TRUNC : 0);
 
 	// mode
 	mode =
-		((attr & MUGGLE_FILE_ATTR_USER_READ) ? S_IRUSR) |
-		((attr & MUGGLE_FILE_ATTR_USER_WRITE) ? S_IWUSR) |
-		((attr & MUGGLE_FILE_ATTR_USER_EXECUTE) ? S_IXUSR) |
-		((attr & MUGGLE_FILE_ATTR_GRP_READ) ? S_IRGRP) |
-		((attr & MUGGLE_FILE_ATTR_GRP_WRITE) ? S_IWGRP) |
-		((attr & MUGGLE_FILE_ATTR_GRP_EXECUTE) ? S_IXGRP) |
-		((attr & MUGGLE_FILE_ATTR_OTHER_READ) ? S_IROTH) |
-		((attr & MUGGLE_FILE_ATTR_OTHER_WRITE) ? S_IWOTH) |
-		((attr & MUGGLE_FILE_ATTR_OTHER_EXECUTE) ? S_IXOTH);
+		((attr & MUGGLE_FILE_ATTR_USER_READ) ? S_IRUSR : 0) |
+		((attr & MUGGLE_FILE_ATTR_USER_WRITE) ? S_IWUSR : 0) |
+		((attr & MUGGLE_FILE_ATTR_USER_EXECUTE) ? S_IXUSR : 0) |
+		((attr & MUGGLE_FILE_ATTR_GRP_READ) ? S_IRGRP : 0) |
+		((attr & MUGGLE_FILE_ATTR_GRP_WRITE) ? S_IWGRP : 0) |
+		((attr & MUGGLE_FILE_ATTR_GRP_EXECUTE) ? S_IXGRP : 0) |
+		((attr & MUGGLE_FILE_ATTR_OTHER_READ) ? S_IROTH : 0) |
+		((attr & MUGGLE_FILE_ATTR_OTHER_WRITE) ? S_IWOTH : 0) |
+		((attr & MUGGLE_FILE_ATTR_OTHER_EXECUTE) ? S_IXOTH : 0);
 	
 	fh.fd = open(file_path, access_mode | addition_flags, mode);
 	if (fh.fd == -1)
