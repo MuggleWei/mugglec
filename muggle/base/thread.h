@@ -1,0 +1,47 @@
+#ifndef __MUGGLE_THREAD_H__
+#define __MUGGLE_THREAD_H__
+
+#include "muggle/base/macro.h"
+#include <stdbool.h>
+
+#if MUGGLE_PLATFORM_WINDOWS
+
+#include <windows.h>
+
+#else
+
+#include <pthread.h>
+
+#endif
+
+typedef struct ThreadHandle_tag
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	HANDLE handle;
+	DWORD id;
+#else
+	pthread_t th;
+#endif
+}ThreadHandle;
+
+typedef struct ThreadAttribute_tag
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	SECURITY_ATTRIBUTES security;
+	DWORD flags;
+#else
+	pthread_attr_t attr;
+#endif
+}ThreadAttribute;
+
+typedef void* (*ThreadStartRoutine)(void *args);
+
+MUGGLE_BASE_EXPORT bool ThreadCreate(
+	ThreadHandle *thread_handle, const ThreadAttribute *attr,
+	ThreadStartRoutine routine, void *args);
+
+MUGGLE_BASE_EXPORT bool ThreadWaitExit(ThreadHandle *thread_handle);
+
+MUGGLE_BASE_EXPORT void ThreadAttributeSet(int flags);
+
+#endif

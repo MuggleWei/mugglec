@@ -84,6 +84,46 @@ void TestFileHandle()
 	}
 }
 
+void* threadFunc(void *args)
+{
+	int idx = *(int*)args;
+
+	MUGGLE_INFO("#%d thread run\n", idx);
+
+	return NULL;
+}
+
+void TestThread()
+{
+	ThreadHandle th[5];
+	int idx[5] = { 0, 1, 2, 3, 4};
+	int i;
+
+	for (i = 0; i < 5; ++i)
+	{
+		if (ThreadCreate(&th[i], NULL, threadFunc, (void*)&idx[i]))
+		{
+			MUGGLE_DEBUG_INFO("start #%d thread\n", i);
+		}
+		else
+		{
+			MUGGLE_DEBUG_ERROR("Failed create thread\n");
+		}
+	}
+
+	for (i = 0; i < 5; ++i)
+	{
+		if (ThreadWaitExit(&th[i]))
+		{
+			MUGGLE_DEBUG_INFO("#%d thread joined\n", i);
+		}
+		else
+		{
+			MUGGLE_DEBUG_ERROR("Failed create thread\n");
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	void* dllHandle;
@@ -148,9 +188,6 @@ int main(int argc, char *argv[])
 		MUGGLE_DEBUG_INFO("float: %f\n", fval);
 	}
 
-	// file handle
-	TestFileHandle();
-
 	// file and dll
 	FileGetProcessPath(buf);
 	FileGetDirectory(buf, buf);
@@ -186,6 +223,14 @@ int main(int argc, char *argv[])
 		MUGGLE_DEBUG_ERROR("Failed in free dll\n");
 		exit(EXIT_FAILURE);
 	}
+
+	// file handle
+	MUGGLE_DEBUG_INFO("\n===== Test File Handle\n");
+	TestFileHandle();
+
+	// thread
+	MUGGLE_DEBUG_INFO("\n===== Test Thread\n");
+	TestThread();
 
 	return 0;
 }

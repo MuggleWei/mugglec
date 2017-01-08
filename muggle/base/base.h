@@ -27,5 +27,6 @@
 #include "muggle/base/dll.h"
 #include "muggle/base/sleep.h"
 #include "muggle/base/delta_time.h"
+#include "muggle/base/thread.h"
 
 #endif
