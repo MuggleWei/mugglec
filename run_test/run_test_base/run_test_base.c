@@ -13,13 +13,13 @@ void TestFileHandle()
 		MUGGLE_FILE_WRITE | MUGGLE_FILE_READ | MUGGLE_FILE_APPEND | 
 		MUGGLE_FILE_CREAT | MUGGLE_FILE_EXCL;
 	attr = MUGGLE_FILE_ATTR_USER_READ | MUGGLE_FILE_ATTR_USER_WRITE;
-	fh = FileHandleOpen("tmp.txt", flags, attr);
-	if (!FileHandleIsValid(fh))
+	FileHandleOpen(&fh, "tmp.txt", flags, attr);
+	if (!FileHandleIsValid(&fh))
 	{
 		flags &= ~MUGGLE_FILE_EXCL;
 		flags |= MUGGLE_FILE_TRUNC;
-		fh = FileHandleOpen("tmp.txt", flags, attr);
-		if (!FileHandleIsValid(fh))
+		FileHandleOpen(&fh, "tmp.txt", flags, attr);
+		if (!FileHandleIsValid(&fh))
 		{
 			MUGGLE_DEBUG_ERROR("Can't get file handle of tmp.txt\n");
 			return;
@@ -34,27 +34,27 @@ void TestFileHandle()
 		MUGGLE_DEBUG_INFO("I create tmp.txt\n");
 	}
 
-	if (FileHandleWrite(fh, buf1, (long)strlen(buf1)) == -1)
+	if (FileHandleWrite(&fh, buf1, (long)strlen(buf1)) == -1)
 	{
 		MUGGLE_DEBUG_ERROR("Failed write into file handle\n");
 		return;
 	}
 
-	if (!FileHandleClose(fh))
+	if (!FileHandleClose(&fh))
 	{
 		MUGGLE_DEBUG_ERROR("Failed close file handle\n");
 		return;
 	}
 
 	flags &= ~(MUGGLE_FILE_EXCL | MUGGLE_FILE_TRUNC);
-	fh = FileHandleOpen("tmp.txt", flags, attr);
-	if (!FileHandleIsValid(fh))
+	FileHandleOpen(&fh, "tmp.txt", flags, attr);
+	if (!FileHandleIsValid(&fh))
 	{
 		MUGGLE_DEBUG_ERROR("Can't open tmp.txt\n");
 		return;
 	}
 
-	num_read = FileHandleRead(fh, buf2, 64);
+	num_read = FileHandleRead(&fh, buf2, 64);
 	if (num_read == -1)
 	{
 		MUGGLE_DEBUG_ERROR("Failed read data from file handle\n");
@@ -63,12 +63,12 @@ void TestFileHandle()
 	buf2[num_read] = '\0';
 	MUGGLE_INFO("Read data: %s\n", buf2);
 
-	if (FileHandleSeek(fh, 6L, MUGGLE_FILE_SEEK_BEGIN) == -1)
+	if (FileHandleSeek(&fh, 6L, MUGGLE_FILE_SEEK_BEGIN) == -1)
 	{
 		MUGGLE_DEBUG_ERROR("Failed seek in file handle\n");
 		return;
 	}
-	num_read = FileHandleRead(fh, buf2, 64);
+	num_read = FileHandleRead(&fh, buf2, 64);
 	if (num_read == -1)
 	{
 		MUGGLE_DEBUG_ERROR("Failed read data file handle\n");
@@ -77,7 +77,7 @@ void TestFileHandle()
 	buf2[num_read] = '\0';
 	MUGGLE_INFO("Read data: %s\n", buf2);
 
-	if (!FileHandleClose(fh))
+	if (!FileHandleClose(&fh))
 	{
 		MUGGLE_DEBUG_ERROR("Failed close file handle\n");
 		return;

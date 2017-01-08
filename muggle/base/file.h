@@ -17,8 +17,10 @@ typedef struct FileHandle_tag
 {
 #if MUGGLE_PLATFORM_WINDOWS
 	void* fd;
+	char file_path[MUGGLE_MAX_PATH];
 #else
 	int fd;
+	char file_path[MUGGLE_MAX_PATH];
 #endif
 }FileHandle;
 
@@ -64,12 +66,12 @@ MUGGLE_BASE_EXPORT void FileGetProcessPath(char* file_path);
 MUGGLE_BASE_EXPORT bool FileIsExist(const char* file_path);
 MUGGLE_BASE_EXPORT bool FileIsAbsolutePath(const char* file_path);
 
-MUGGLE_BASE_EXPORT bool FileHandleIsValid(FileHandle fh);
-MUGGLE_BASE_EXPORT FileHandle FileHandleOpen(const char* file_path, int flags, int attr);
-MUGGLE_BASE_EXPORT bool FileHandleClose(FileHandle fh);
-MUGGLE_BASE_EXPORT long long FileHandleSeek(FileHandle fh, long long offset, int whence);
-MUGGLE_BASE_EXPORT long FileHandleWrite(FileHandle fh, void *buf, long cnt_bytes);
-MUGGLE_BASE_EXPORT long FileHandleRead(FileHandle fh, void *buf, long cnt_bytes);
+MUGGLE_BASE_EXPORT bool FileHandleIsValid(FileHandle *fh);
+MUGGLE_BASE_EXPORT bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int attr);
+MUGGLE_BASE_EXPORT bool FileHandleClose(FileHandle *fh);
+MUGGLE_BASE_EXPORT long long FileHandleSeek(FileHandle *fh, long long offset, int whence);
+MUGGLE_BASE_EXPORT long FileHandleWrite(FileHandle *fh, void *buf, long cnt_bytes);
+MUGGLE_BASE_EXPORT long FileHandleRead(FileHandle *fh, void *buf, long cnt_bytes);
 
 EXTERN_C_END
 

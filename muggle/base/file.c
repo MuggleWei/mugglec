@@ -126,17 +126,36 @@ bool FileIsAbsolutePath(const char* file_path)
 	return false;
 }
 
-bool FileHandleIsValid(FileHandle fh)
+bool FileHandleIsValid(FileHandle *fh)
 {
-	return fh.fd != NULL;
+	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
+	if (fh == NULL)
+	{
+		return false;
+	}
+
+	return fh->fd != NULL;
 }
-FileHandle FileHandleOpen(const char* file_path, int flags, int mode)
+bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int mode)
 {
-	FileHandle fh;
 	DWORD dwDesiredAccess, dwShareMode, dwCreationDisposition;
+	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
+	size_t len;
+
+	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
+	if (fh == NULL)
+	{
+		return false;
+	}
+
+	len = strlen(file_path);
+	if (len >= MUGGLE_MAX_PATH)
+	{
+		MUGGLE_DEBUG_WARNING("path name is too long\n");
+		return false;
+	}
 
 	// convert to utf16 characters
-	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
 	MultiByteToWideChar(CP_UTF8, 0, file_path, -1, unicode_buf, MUGGLE_MAX_PATH);
 
 	// access mode
@@ -172,41 +191,58 @@ FileHandle FileHandleOpen(const char* file_path, int flags, int mode)
 		}		
 	}
 
-	fh.fd = (void*)CreateFile(
+	fh->fd = (void*)CreateFile(
 		unicode_buf, dwDesiredAccess, dwShareMode,
 		NULL, dwCreationDisposition, FILE_ATTRIBUTE_NORMAL,
 		NULL);
-	if (fh.fd == INVALID_HANDLE_VALUE)
+	if (fh->fd == INVALID_HANDLE_VALUE)
 	{
-		fh.fd = NULL;
+		fh->fd = NULL;
 		MUGGLE_DEBUG_WARNING("Failed open file %s - error code %ld\n", file_path, (long)GetLastError());
-	}
-
-	return fh;
-}
-bool FileHandleClose(FileHandle fh)
-{
-	if (!CloseHandle((HANDLE)fh.fd))
-	{
-		MUGGLE_DEBUG_WARNING("Failed close file handle: %d - error code %ld\n", fh.fd, (long)GetLastError());
 		return false;
 	}
 
-	fh.fd = NULL;
+	memcpy(fh->file_path, file_path, len);
+	fh->file_path[len] = '\0';
 
 	return true;
 }
-long long FileHandleSeek(FileHandle fh, long long offset, int whence)
+bool FileHandleClose(FileHandle *fh)
+{
+	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
+	if (fh == NULL)
+	{
+		return false;
+	}
+
+	if (!CloseHandle((HANDLE)fh->fd))
+	{
+		MUGGLE_DEBUG_WARNING("Failed close file handle: %d - error code %ld\n", fh->fd, (long)GetLastError());
+		return false;
+	}
+
+	fh->fd = NULL;
+	fh->file_path[0] = '\0';
+
+	return true;
+}
+long long FileHandleSeek(FileHandle *fh, long long offset, int whence)
 {
 	LARGE_INTEGER li, li_ret;
 	DWORD move_method;
+
+	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
+	if (fh == NULL)
+	{
+		return -1;
+	}
 
 	li.QuadPart = (LONGLONG)offset;
 	move_method =
 		(whence == MUGGLE_FILE_SEEK_BEGIN) ? FILE_BEGIN :
 		((whence == MUGGLE_FILE_SEEK_CURRENT) ? FILE_CURRENT : FILE_END);
 
-	if (!SetFilePointerEx(fh.fd, li, &li_ret, move_method))
+	if (!SetFilePointerEx(fh->fd, li, &li_ret, move_method))
 	{
 		MUGGLE_DEBUG_WARNING("Failed file seek - error code %ld\n", (long)GetLastError());
 		return -1;
@@ -214,10 +250,17 @@ long long FileHandleSeek(FileHandle fh, long long offset, int whence)
 
 	return (long long)li_ret.QuadPart;
 }
-long FileHandleWrite(FileHandle fh, void *buf, long cnt_bytes)
+long FileHandleWrite(FileHandle *fh, void *buf, long cnt_bytes)
 {
 	DWORD num_write;
-	if (!WriteFile((HANDLE)fh.fd, (LPCVOID)buf, (DWORD)cnt_bytes, &num_write, NULL))
+
+	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
+	if (fh == NULL)
+	{
+		return -1;
+	}
+
+	if (!WriteFile((HANDLE)fh->fd, (LPCVOID)buf, (DWORD)cnt_bytes, &num_write, NULL))
 	{
 		MUGGLE_DEBUG_WARNING("Failed write data into file - error code: %ld\n", (long)GetLastError());
 		return (long)-1;
@@ -225,10 +268,17 @@ long FileHandleWrite(FileHandle fh, void *buf, long cnt_bytes)
 
 	return (long)num_write;
 }
-long FileHandleRead(FileHandle fh, void *buf, long cnt_bytes)
+long FileHandleRead(FileHandle *fh, void *buf, long cnt_bytes)
 {
 	DWORD num_read;
-	if (!ReadFile((HANDLE)fh.fd, buf, (DWORD)cnt_bytes, &num_read, NULL))
+
+	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
+	if (fh == NULL)
+	{
+		return -1;
+	}
+
+	if (!ReadFile((HANDLE)fh->fd, buf, (DWORD)cnt_bytes, &num_read, NULL))
 	{
 		MUGGLE_DEBUG_WARNING("Failed read data from file - error code: %ld\n", (long)GetLastError());
 		return (long)-1;
@@ -273,15 +323,34 @@ bool FileIsAbsolutePath(const char* file_path)
 	return false;
 }
 
-bool FileHandleIsValid(FileHandle fh)
+bool FileHandleIsValid(FileHandle *fh)
 {
-	return fh.fd != -1;
+	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
+	if (fh == NULL)
+	{
+		return false;
+	}
+
+	return fh->fd != -1;
 }
-FileHandle FileHandleOpen(const char* file_path, int flags, int attr)
+bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int attr)
 {
-	FileHandle fh;
 	int access_mode, addition_flags;
 	mode_t mode;
+	size_t len;
+
+	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
+	if (fh == NULL)
+	{
+		return false;
+	}
+
+	len = strlen(file_path);
+	if (len >= MUGGLE_MAX_PATH)
+	{
+		MUGGLE_DEBUG_WARNING("path name is too long\n");
+		return false;
+	}
 
 	// flags
 	if (flags & MUGGLE_FILE_WRITE)
@@ -302,8 +371,8 @@ FileHandle FileHandleOpen(const char* file_path, int flags, int attr)
 	else
 	{
 		MUGGLE_DEBUG_WARNING("Must Contain write or read mode\n");
-		fh.fd = -1;
-		return fh;
+		fh->fd = -1;
+		return false;
 	}
 
 	// addition flags
@@ -325,34 +394,52 @@ FileHandle FileHandleOpen(const char* file_path, int flags, int attr)
 		((attr & MUGGLE_FILE_ATTR_OTHER_WRITE) ? S_IWOTH : 0) |
 		((attr & MUGGLE_FILE_ATTR_OTHER_EXECUTE) ? S_IXOTH : 0);
 	
-	fh.fd = open(file_path, access_mode | addition_flags, mode);
-	if (fh.fd == -1)
+	fh->fd = open(file_path, access_mode | addition_flags, mode);
+	if (fh->fd == -1)
 	{
 		MUGGLE_DEBUG_WARNING("Failed open file %s - %s\n", file_path, strerror(errno));
-	}
-
-	return fh;
-}
-bool FileHandleClose(FileHandle fh)
-{
-	if (close(fh.fd) == -1)
-	{
-		MUGGLE_DEBUG_WARNING("Failed close file handle: %d - %s\n", fh.fd, strerror(errno));
 		return false;
 	}
 
-	fh.fd = -1;
+	memcpy(fh->file_path, file_path, len);
+	fh->file_path[len] = '\0';
 
 	return true;
 }
-long long FileHandleSeek(FileHandle fh, long long offset, int whence)
+bool FileHandleClose(FileHandle *fh)
+{
+	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
+	if (fh == NULL)
+	{
+		return false;
+	}
+
+	if (close(fh->fd) == -1)
+	{
+		MUGGLE_DEBUG_WARNING("Failed close file handle: %d - %s\n", fh->fd, strerror(errno));
+		return false;
+	}
+
+	fh->fd = -1;
+	fh->file_path[0] = '\0';
+
+	return true;
+}
+long long FileHandleSeek(FileHandle *fh, long long offset, int whence)
 {
 	off_t new_pos;
+
+	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
+	if (fh == NULL)
+	{
+		return -1;
+	}
+
 	int w = 
 		(whence == MUGGLE_FILE_SEEK_BEGIN) ? SEEK_SET :
 		((whence == MUGGLE_FILE_SEEK_CURRENT) ? SEEK_CUR : SEEK_END);
 
-	new_pos = lseek(fh.fd, (off_t)offset, w);
+	new_pos = lseek(fh->fd, (off_t)offset, w);
 	if (new_pos == -1)
 	{
 		MUGGLE_DEBUG_WARNING("Failed file seek - %s\n", strerror(errno));
@@ -360,10 +447,17 @@ long long FileHandleSeek(FileHandle fh, long long offset, int whence)
 
 	return (long long)new_pos;
 }
-long FileHandleWrite(FileHandle fh, void *buf, long cnt_bytes)
+long FileHandleWrite(FileHandle *fh, void *buf, long cnt_bytes)
 {
 	ssize_t num_write;
-	num_write = write(fh.fd, buf, (size_t)cnt_bytes);
+
+	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
+	if (fh == NULL)
+	{
+		return -1;
+	}
+
+	num_write = write(fh->fd, buf, (size_t)cnt_bytes);
 	if (num_write == -1)
 	{
 		MUGGLE_DEBUG_WARNING("Failed write data into file - %s\n", strerror(errno));
@@ -371,10 +465,17 @@ long FileHandleWrite(FileHandle fh, void *buf, long cnt_bytes)
 
 	return (long)num_write;
 }
-long FileHandleRead(FileHandle fh, void *buf, long cnt_bytes)
+long FileHandleRead(FileHandle *fh, void *buf, long cnt_bytes)
 {
 	ssize_t num_read;
-	num_read = read(fh.fd, buf, cnt_bytes);
+
+	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
+	if (fh == NULL)
+	{
+		return -1;
+	}
+
+	num_read = read(fh->fd, buf, cnt_bytes);
 	if (num_read == -1)
 	{
 		MUGGLE_DEBUG_WARNING("Failed read data from file - %s\n", strerror(errno));
