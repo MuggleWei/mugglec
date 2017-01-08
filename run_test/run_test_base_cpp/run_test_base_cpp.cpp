@@ -1,9 +1,9 @@
 #include "muggle/base/base.h"
-#include "muggle/cpp_utils/cpp_utils.h"
+#include "muggle/base_cpp/base_cpp.h"
 
 int main(int argc, char *argv[])
 {
-	muggle::DeltaTimer dt;
+	muggle::DeltaTime dt;
 
 	dt.Start();
 

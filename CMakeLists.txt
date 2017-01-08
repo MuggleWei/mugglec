@@ -26,11 +26,11 @@ set(targetDependencies "")
 set(is_pure_c ON)
 addMuggleLib("${muggle_memory_pool}" "${is_pure_c}" "MUGGLE_MEMORY_POOL_EXPORTS" "mem_pool" "${targetLinks}" "${targetDependencies}")
 
-# cpp utils
+# base cpp
 set(targetLinks ${muggle_base})
 set(targetDependencies ${muggle_base})
 set(is_pure_c OFF)
-addMuggleLib("${muggle_cpp_utils}" "${is_pure_c}" "MUGGLE_CPP_UTLS_EXPORTS" "cpp_utils" "${targetLinks}" "${targetDependencies}")
+addMuggleLib("${muggle_base_cpp}" "${is_pure_c}" "MUGGLE_BASE_CPP_EXPORTS" "base_cpp" "${targetLinks}" "${targetDependencies}")
 
 # test
 option(BUILD_RUN_TEST "Build run test" ON)

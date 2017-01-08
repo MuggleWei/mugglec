@@ -8,7 +8,7 @@
 #include <vector>
 #include <assert.h>
 
-#include "muggle/cpp_utils/cpp_utils.h"
+#include "muggle/base_cpp/base_cpp.h"
 #include "muggle/mem_pool/memory_pool.h"
 
 #define TEST_NUM 1024
@@ -89,7 +89,7 @@ void UnitTestPerformance_Origin(std::vector<int>& nums, std::vector<double>& tim
 	int max_size = nums[nums.size() - 1];
 	int** arr = (int**)malloc(sizeof(int*) * max_size);
 
-	muggle::DeltaTimer t;
+	muggle::DeltaTime t;
 
 	for (decltype(nums.size()) cur_num = 0; cur_num < nums.size(); ++cur_num)
 	{
@@ -121,7 +121,7 @@ void UnitTestPerformance_Pool(std::vector<int>& nums, std::vector<double>& times
 	int max_size = nums[nums.size() - 1];
 	int** arr = (int**)malloc(sizeof(int*) * max_size);
 
-	muggle::DeltaTimer t;
+	muggle::DeltaTime t;
 	MemoryPool pool;
 	MemoryPoolInit(&pool, 8, sizeof(int));
 

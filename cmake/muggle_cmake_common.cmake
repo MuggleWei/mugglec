@@ -48,4 +48,4 @@ include_directories(
 # set variables
 set(muggle_base muggleBase)
 set(muggle_memory_pool muggleMemPool)
-set(muggle_cpp_utils muggleCppUtils)
+set(muggle_base_cpp muggleBaseCpp)

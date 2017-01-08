@@ -5,22 +5,22 @@
  *	found in the LICENSE file.
  */
 
-#include "muggle/cpp_utils/delta_timer.h"
+#include "muggle/base_cpp/delta_time.h"
 #include <stddef.h>
 
 NS_MUGGLE_BEGIN
 
 #if MUGGLE_PLATFORM_WINDOWS
 
-void DeltaTimer::Start()
+void DeltaTime::Start()
 {
 	QueryPerformanceCounter(&start_);
 }
-void DeltaTimer::End()
+void DeltaTime::End()
 {
 	QueryPerformanceCounter(&end_);
 }
-double DeltaTimer::GetElapsedMilliseconds()
+double DeltaTime::GetElapsedMilliseconds()
 {
     LARGE_INTEGER freq;
     QueryPerformanceFrequency(&freq);
@@ -29,17 +29,17 @@ double DeltaTimer::GetElapsedMilliseconds()
 
 #else
 
-void DeltaTimer::Start()
+void DeltaTime::Start()
 {
 	gettimeofday(&start_, NULL);
 }
 
-void DeltaTimer::End()
+void DeltaTime::End()
 {
 	gettimeofday(&end_, NULL);
 }
 
-double DeltaTimer::GetElapsedMilliseconds()
+double DeltaTime::GetElapsedMilliseconds()
 {
 	return (end_.tv_sec - start_.tv_sec) * 1000.0 + (end_.tv_usec - start_.tv_usec) / 1000.0;
 }

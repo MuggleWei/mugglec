@@ -9,7 +9,7 @@
 #define __MUGGLE_DELTA_TIMER_H__
 
 #include "muggle/base/macro.h"
-#include "muggle/cpp_utils/cpp_utils_macro.h"
+#include "muggle/base_cpp/base_cpp_macro.h"
 
 NS_MUGGLE_BEGIN
 
@@ -17,10 +17,10 @@ NS_MUGGLE_BEGIN
 
 #include <windows.h>
 
-class MUGGLE_CPP_UTLS_EXPORT DeltaTimer
+class MUGGLE_BASE_CPP_EXPORT DeltaTime
 {
 public:
-	DeltaTimer() : start_(), end_() {}
+	DeltaTime() : start_(), end_() {}
 
 	void Start();
 	void End();
@@ -35,10 +35,10 @@ private:
 
 #include <sys/time.h>
 
-class DeltaTimer
+class MUGGLE_BASE_CPP_EXPORT DeltaTime
 {
 public:
-	DeltaTimer() : start_(), end_() {}
+	DeltaTime() : start_(), end_() {}
 
 	void Start();
 	void End();
