@@ -8,7 +8,7 @@
 #include "muggle/mem_pool/memory_pool.h"
 #include <stdlib.h>
 #include <string.h>
-#include "muggle/base/log.h"
+#include <assert.h>
 
 bool MemoryPoolInit(MemoryPool* pool, unsigned int init_capacity, unsigned int block_size)
 {
@@ -161,7 +161,7 @@ bool MemoryPoolEnsureSpace(MemoryPool* pool, unsigned int capacity)
 		*                  fm
 		*  [x] [x] [x] [x] [x] [x] [x] [x] [x] [x] [x] [x]
 		*/
-		MUGGLE_ASSERT(pool->alloc_index == pool->free_index);
+		assert(pool->alloc_index == pool->free_index);
 
 		free_section1 = (void**)&pool->memory_pool_ptr_buf[pool->free_index];
 		num_free_section1 = pool->capacity - pool->free_index;

@@ -21,8 +21,8 @@ set(is_pure_c ON)
 addMuggleLib("${muggle_base}" "${is_pure_c}" "MUGGLE_BASE_EXPORTS" "base" "${targetLinks}" "${targetDependencies}")
 
 # memory pool
-set(targetLinks ${muggle_base})
-set(targetDependencies ${muggle_base})
+set(targetLinks "")
+set(targetDependencies "")
 set(is_pure_c ON)
 addMuggleLib("${muggle_memory_pool}" "${is_pure_c}" "MUGGLE_MEMORY_POOL_EXPORTS" "mem_pool" "${targetLinks}" "${targetDependencies}")
 
