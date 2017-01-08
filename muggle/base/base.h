@@ -28,5 +28,6 @@
 #include "muggle/base/sleep.h"
 #include "muggle/base/delta_time.h"
 #include "muggle/base/thread.h"
+#include "muggle/base/mutex.h"
 
 #endif

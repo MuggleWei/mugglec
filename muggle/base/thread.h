@@ -39,7 +39,6 @@ typedef void* (*ThreadStartRoutine)(void *args);
 MUGGLE_BASE_EXPORT bool ThreadCreate(
 	ThreadHandle *thread_handle, const ThreadAttribute *attr,
 	ThreadStartRoutine routine, void *args);
-
 MUGGLE_BASE_EXPORT bool ThreadWaitExit(ThreadHandle *thread_handle);
 
 MUGGLE_BASE_EXPORT void ThreadAttributeSet(int flags);

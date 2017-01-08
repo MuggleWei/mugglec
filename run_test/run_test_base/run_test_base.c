@@ -2,6 +2,9 @@
 
 typedef void(*emptyFunc)();
 
+static MutexHandle mtx;
+static int thread_loops = 0;
+
 void TestFileHandle()
 {
 	FileHandle fh;
@@ -90,6 +93,15 @@ void* threadFunc(void *args)
 
 	MUGGLE_INFO("#%d thread run\n", idx);
 
+	for (int i = 0; i < 10000; ++i)
+	{
+		MutexLock(&mtx);
+
+		++thread_loops;
+
+		MutexUnLock(&mtx);
+	}	
+
 	return NULL;
 }
 
@@ -98,6 +110,12 @@ void TestThread()
 	ThreadHandle th[5];
 	int idx[5] = { 0, 1, 2, 3, 4};
 	int i;
+
+	if (!MutexInit(&mtx))
+	{
+		MUGGLE_DEBUG_ERROR("Failed init mutex\n");
+		return;
+	}
 
 	for (i = 0; i < 5; ++i)
 	{
@@ -122,6 +140,14 @@ void TestThread()
 			MUGGLE_DEBUG_ERROR("Failed create thread\n");
 		}
 	}
+
+	if (!MutexDestroy(&mtx))
+	{
+		MUGGLE_DEBUG_ERROR("Failed destroy mutex\n");
+		return;
+	}
+
+	MUGGLE_INFO("thread loop count: %d\n", thread_loops);
 }
 
 int main(int argc, char *argv[])
