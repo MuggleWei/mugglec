@@ -165,6 +165,7 @@ int main(int argc, char *argv[])
 	long lval;
 	unsigned long ulval;
 	float fval;
+	int i;
 
 	// platform macro
 #if MUGGLE_PLATFORM_WIN64
@@ -181,6 +182,16 @@ int main(int argc, char *argv[])
 
 	// log
 	MUGGLE_DEBUG_INFO("Hello world\n");
+
+	// log default init
+	LogDefaultInit("logout.txt", 1);
+
+	// test log color
+	for (i = 0; i < 3; ++i)
+	{
+		MUGGLE_INFO("Info\n");
+		MUGGLE_WARNING("Warning\n");
+	}
 
 	// sleep and delta time
 	MUGGLE_DEBUG_INFO("I will sleep 3000ms\n");
