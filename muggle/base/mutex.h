@@ -14,6 +14,8 @@
 
 #endif
 
+EXTERN_C_BEGIN
+
 typedef struct MutexHandle_tag
 {
 #if MUGGLE_PLATFORM_WINDOWS
@@ -27,5 +29,7 @@ MUGGLE_BASE_EXPORT bool MutexInit(MutexHandle *mtx);
 MUGGLE_BASE_EXPORT bool MutexDestroy(MutexHandle *mtx);
 MUGGLE_BASE_EXPORT bool MutexLock(MutexHandle *mtx);
 MUGGLE_BASE_EXPORT bool MutexUnLock(MutexHandle *mtx);
+
+EXTERN_C_END
 
 #endif

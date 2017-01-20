@@ -8,53 +8,9 @@
 #ifndef __MUGGLE_LOG_H__
 #define __MUGGLE_LOG_H__
 
+#include <time.h>
 #include "muggle/base/macro.h"
 #include "muggle/base/mutex.h"
-
-enum eMuggleLogLevel
-{
-	MUGGLE_LOG_LEVEL_OFFSET = 8,
-	MUGGLE_LOG_LEVEL_INFO = 1 << MUGGLE_LOG_LEVEL_OFFSET,
-	MUGGLE_LOG_LEVEL_WARNING = 2 << MUGGLE_LOG_LEVEL_OFFSET,
-	MUGGLE_LOG_LEVEL_ERROR = 3 << MUGGLE_LOG_LEVEL_OFFSET,
-	MUGGLE_LOG_LEVEL_MAX = 4,
-};
-
-enum eMuggleLogFormat
-{
-	MUGGLE_LOG_FMT_LEVEL = 0x01,
-	MUGGLE_LOG_FMT_FILE = 0x02,
-	MUGGLE_LOG_FMT_LINE = 0x04,
-	MUGGLE_LOG_FMT_FUNC = 0x08,
-	MUGGLE_LOG_FMT_DATE = 0x10,
-	MUGGLE_LOG_FMT_TIME = 0x20,
-};
-
-struct LogHandle_tag;
-struct LogAttribute_tag;
-
-typedef void (*ptrLogFunc)(
-	struct LogHandle_tag *log_handle, 
-	struct LogAttribute_tag *attr,
-	const char *msg);
-
-typedef struct LogHandle_tag
-{
-	void *io_target;
-	ptrLogFunc func;
-	MutexHandle *mtx;
-	int format;
-}LogHandle;
-
-typedef struct LogAttribute_tag
-{
-	int level;
-	int line;
-	const char *file;
-	const char *func;
-	const char *date;
-	const char *time;
-}LogAttribute;
 
 #define MUGGLE_LOG_DEFAULT(level, format, ...) \
 do \
@@ -63,7 +19,7 @@ do \
 	{ \
 		LogAttribute attr = { \
 			level, __LINE__, __FILE__, \
-			__FUNCTION__, __DATE__, __TIME__ \
+			__FUNCTION__, time(NULL) \
 		}; \
 		LogDefault(&attr, format, ##__VA_ARGS__); \
 	} \
@@ -87,7 +43,7 @@ do \
 	{ \
 		LogAttribute attr = { \
 			MUGGLE_LOG_LEVEL_ERROR, __LINE__, __FILE__, \
-			__FUNCTION__, __DATE__, __TIME__ \
+			__FUNCTION__, time(NULL) \
 		}; \
 		LogDefault(&attr, "Assertion: "#x); \
 	} \
@@ -99,7 +55,7 @@ do \
 	{ \
 		LogAttribute attr = { \
 			MUGGLE_LOG_LEVEL_ERROR, __LINE__, __FILE__, \
-			__FUNCTION__, __DATE__, __TIME__ \
+			__FUNCTION__, time(NULL) \
 		}; \
 		LogDefault(&attr, "Assertion: "#x format, ##__VA_ARGS__); \
 	} \
@@ -110,6 +66,49 @@ do \
 #endif
 
 EXTERN_C_BEGIN
+
+enum eMuggleLogLevel
+{
+	MUGGLE_LOG_LEVEL_OFFSET = 8,
+	MUGGLE_LOG_LEVEL_INFO = 1 << MUGGLE_LOG_LEVEL_OFFSET,
+	MUGGLE_LOG_LEVEL_WARNING = 2 << MUGGLE_LOG_LEVEL_OFFSET,
+	MUGGLE_LOG_LEVEL_ERROR = 3 << MUGGLE_LOG_LEVEL_OFFSET,
+	MUGGLE_LOG_LEVEL_MAX = 4,
+};
+
+enum eMuggleLogFormat
+{
+	MUGGLE_LOG_FMT_LEVEL = 0x01,
+	MUGGLE_LOG_FMT_FILE = 0x02,
+	MUGGLE_LOG_FMT_LINE = 0x04,
+	MUGGLE_LOG_FMT_FUNC = 0x08,
+	MUGGLE_LOG_FMT_TIME = 0x20,
+};
+
+struct LogHandle_tag;
+struct LogAttribute_tag;
+
+typedef void(*ptrLogFunc)(
+	struct LogHandle_tag *log_handle,
+	struct LogAttribute_tag *attr,
+	const char *msg);
+
+typedef struct LogHandle_tag
+{
+	void *io_target;
+	ptrLogFunc func;
+	MutexHandle *mtx;
+	int format;
+}LogHandle;
+
+typedef struct LogAttribute_tag
+{
+	int level;
+	int line;
+	const char *file;
+	const char *func;
+	time_t time;
+}LogAttribute;
 
 /*
  *	generate format log text

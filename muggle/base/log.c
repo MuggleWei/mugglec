@@ -72,9 +72,10 @@ int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, ch
 
 	if (log_handle->format & MUGGLE_LOG_FMT_LEVEL)
 	{
-		if (attr->level > 0 && attr->level < MUGGLE_LOG_LEVEL_MAX)
+		int level = attr->level >> MUGGLE_LOG_LEVEL_OFFSET;
+		if (level > 0 && level < MUGGLE_LOG_LEVEL_MAX)
 		{
-			num_write = snprintf(p, remaining, "|L>%s", g_log_level_str[attr->level]);
+			num_write = snprintf(p, remaining, "|L>%s", g_log_level_str[level]);
 			if (num_write == -1)
 			{
 				return max_len;
@@ -113,19 +114,9 @@ int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, ch
 		remaining -= num_write;
 		p += num_write;
 	}
-	if (log_handle->format & MUGGLE_LOG_FMT_DATE)
-	{
-		num_write = snprintf(p, remaining, "|D>%s", attr->date);
-		if (num_write == -1)
-		{
-			return max_len;
-		}
-		remaining -= num_write;
-		p += num_write;
-	}
 	if (log_handle->format & MUGGLE_LOG_FMT_TIME)
 	{
-		num_write = snprintf(p, remaining, "|T>%s", attr->time);
+		num_write = snprintf(p, remaining, "|T>%ld", (long)attr->time);
 		if (num_write == -1)
 		{
 			return max_len;

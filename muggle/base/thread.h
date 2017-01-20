@@ -14,6 +14,8 @@
 
 #endif
 
+EXTERN_C_BEGIN
+
 typedef struct ThreadHandle_tag
 {
 #if MUGGLE_PLATFORM_WINDOWS
@@ -42,5 +44,7 @@ MUGGLE_BASE_EXPORT bool ThreadCreate(
 MUGGLE_BASE_EXPORT bool ThreadWaitExit(ThreadHandle *thread_handle);
 
 MUGGLE_BASE_EXPORT void ThreadAttributeSet(int flags);
+
+EXTERN_C_END
 
 #endif
