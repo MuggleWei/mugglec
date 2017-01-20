@@ -16,16 +16,6 @@
 #endif
 #include "muggle/base/file.h"
 
-#define MUGGLE_MAX_LOG_LEN 2048
-
-enum eMuggleLogDefault
-{
-	MUGGLE_LOG_DEFAULT_CONSOLE = 0,
-	MUGGLE_LOG_DEFAULT_FILE,
-	MUGGLE_LOG_DEFAULT_WIN_DEBUG_OUT,
-	MUGGLE_LOG_DEFAULT_MAX,
-};
-
 // terminal color for *nix
 #define UNIX_TERMINAL_COLOR_NRM  "\x1B[0m"
 #define UNIX_TERMINAL_COLOR_RED  "\x1B[31m"
@@ -75,7 +65,7 @@ int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, ch
 		int level = attr->level >> MUGGLE_LOG_LEVEL_OFFSET;
 		if (level > 0 && level < MUGGLE_LOG_LEVEL_MAX)
 		{
-			num_write = snprintf(p, remaining, "|L>%s", g_log_level_str[level]);
+			num_write = snprintf(p, remaining, "<L>%s|", g_log_level_str[level]);
 			if (num_write == -1)
 			{
 				return max_len;
@@ -86,7 +76,7 @@ int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, ch
 	}
 	if (log_handle->format & MUGGLE_LOG_FMT_FILE)
 	{
-		num_write = snprintf(p, remaining, "|F>%s", attr->file);
+		num_write = snprintf(p, remaining, "<F>%s|", attr->file);
 		if (num_write == -1)
 		{
 			return max_len;
@@ -96,7 +86,7 @@ int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, ch
 	}
 	if (log_handle->format & MUGGLE_LOG_FMT_LINE)
 	{
-		num_write = snprintf(p, remaining, "|l>%d", attr->line);
+		num_write = snprintf(p, remaining, "<l>%d|", attr->line);
 		if (num_write == -1)
 		{
 			return max_len;
@@ -106,7 +96,7 @@ int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, ch
 	}
 	if (log_handle->format & MUGGLE_LOG_FMT_FUNC)
 	{
-		num_write = snprintf(p, remaining, "|f>%s", attr->func);
+		num_write = snprintf(p, remaining, "<f>%s|", attr->func);
 		if (num_write == -1)
 		{
 			return max_len;
@@ -116,7 +106,7 @@ int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, ch
 	}
 	if (log_handle->format & MUGGLE_LOG_FMT_TIME)
 	{
-		num_write = snprintf(p, remaining, "|T>%ld", (long)attr->time);
+		num_write = snprintf(p, remaining, "<T>%ld|", (long)attr->time);
 		if (num_write == -1)
 		{
 			return max_len;
@@ -126,7 +116,7 @@ int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, ch
 	}
 	if (msg != NULL)
 	{
-		num_write = snprintf(p, remaining, "|M>%s", msg);
+		num_write = snprintf(p, remaining, "%s", msg);
 		if (num_write == -1)
 		{
 			return max_len;
@@ -145,7 +135,9 @@ void LogDefaultInit(const char *log_file_path, int enable_console_color)
 	int attr = MUGGLE_FILE_ATTR_USER_READ | MUGGLE_FILE_ATTR_USER_WRITE | MUGGLE_FILE_ATTR_GRP_READ;
 	if (log_file_path == NULL)
 	{
-		FileHandleOpen(&g_log_default_file, "log.txt", flags, attr);
+		char log_file[MUGGLE_MAX_PATH];
+		FileGetAbsolutePath("log.txt", log_file);
+		FileHandleOpen(&g_log_default_file, log_file, flags, attr);
 	}
 	else
 	{
@@ -160,6 +152,30 @@ void LogDefaultInit(const char *log_file_path, int enable_console_color)
 		MutexInit(&g_log_default_mtx[i]);
 		g_log_default_handles[i].mtx = &g_log_default_mtx[i];
 		g_log_default_active[i] = &g_log_default_handles[i];
+	}
+}
+void LogDefaultSwitch(int log_idx, LogHandle *log_handle, int enable, int fmt)
+{
+	if (log_idx < 0 || log_idx >= MUGGLE_LOG_DEFAULT_MAX)
+	{
+		return;
+	}
+
+	if (log_handle != NULL)
+	{
+		g_log_default_active[log_idx] = log_handle;
+	}
+	else
+	{
+		if (enable)
+		{
+			g_log_default_handles[log_idx].format = fmt;
+			g_log_default_active[log_idx] = &g_log_default_handles[log_idx];
+		}
+		else
+		{
+			g_log_default_active[log_idx] = NULL;
+		}
 	}
 }
 void LogDefault(LogAttribute *attr, const char *format, ...)
@@ -189,6 +205,23 @@ void LogDefault(LogAttribute *attr, const char *format, ...)
 		abort();
 	}
 #endif
+}
+
+void LogFunction(LogHandle *log_handle, LogAttribute *attr, const char *format, ...)
+{
+	char msg[MUGGLE_MAX_LOG_LEN];
+	va_list args;
+
+	if (log_handle == NULL || log_handle->func == NULL || attr == NULL)
+	{
+		return;
+	}
+
+	va_start(args, format);
+	vsnprintf(msg, MUGGLE_MAX_LOG_LEN, format, args);
+	va_end(args);
+
+	log_handle->func(log_handle, attr, msg);
 }
 
 void LogDefaultConsole(LogHandle *log_handle, LogAttribute *attr, const char *msg)
@@ -268,7 +301,10 @@ void LogDefaultFile(LogHandle *log_handle, LogAttribute *attr, const char *msg)
 	}
 
 	FileHandle *fh = (FileHandle*)log_handle->io_target;
-	FileHandleWrite(fh, buf, (long)write_num);
+	if (fh != NULL)
+	{
+		FileHandleWrite(fh, buf, (long)write_num);
+	}	
 
 	if (log_handle->mtx != NULL)
 	{

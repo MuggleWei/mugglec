@@ -1,4 +1,5 @@
 #include "muggle/base/base.h"
+#include "run_test_base_log.h"
 
 typedef void(*emptyFunc)();
 
@@ -167,6 +168,8 @@ int main(int argc, char *argv[])
 	float fval;
 	int i;
 
+	TestLog();
+
 	// platform macro
 #if MUGGLE_PLATFORM_WIN64
 	MUGGLE_DEBUG_INFO("Win64\n");
@@ -179,19 +182,6 @@ int main(int argc, char *argv[])
 #elif MUGGLE_PLATFORM_UNIX
 	MUGGLE_DEBUG_INFO("Unix\n");
 #endif
-
-	// log
-	MUGGLE_DEBUG_INFO("Hello world\n");
-
-	// log default init
-	LogDefaultInit("logout.txt", 1);
-
-	// test log color
-	for (i = 0; i < 3; ++i)
-	{
-		MUGGLE_INFO("Info\n");
-		MUGGLE_WARNING("Warning\n");
-	}
 
 	// sleep and delta time
 	MUGGLE_DEBUG_INFO("I will sleep 3000ms\n");
