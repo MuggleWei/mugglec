@@ -21,7 +21,7 @@ do \
 	{ \
 		LogAttribute attr = { \
 			level, __LINE__, __FILE__, \
-			__FUNCTION__, time(NULL) \
+			__FUNCTION__, 0 \
 		}; \
 		LogDefault(&attr, format, ##__VA_ARGS__); \
 	} \
@@ -34,7 +34,7 @@ do \
 	{ \
 		LogAttribute attr = { \
 			level, __LINE__, __FILE__, \
-			__FUNCTION__, time(NULL) \
+			__FUNCTION__, 0 \
 		}; \
 		LogFunction(ptr_log_handle, &attr, format, ##__VA_ARGS__); \
 	} \
@@ -59,7 +59,7 @@ do \
 	{ \
 		LogAttribute attr = { \
 			MUGGLE_LOG_LEVEL_ERROR, __LINE__, __FILE__, \
-			__FUNCTION__, time(NULL) \
+			__FUNCTION__, 0 \
 		}; \
 		LogDefault(&attr, "Assertion: "#x); \
 	} \
@@ -71,7 +71,7 @@ do \
 	{ \
 		LogAttribute attr = { \
 			MUGGLE_LOG_LEVEL_ERROR, __LINE__, __FILE__, \
-			__FUNCTION__, time(NULL) \
+			__FUNCTION__, 0 \
 		}; \
 		LogDefault(&attr, "Assertion: "#x format, ##__VA_ARGS__); \
 	} \

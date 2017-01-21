@@ -106,6 +106,7 @@ int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, ch
 	}
 	if (log_handle->format & MUGGLE_LOG_FMT_TIME)
 	{
+		attr->time = time(NULL);
 		num_write = snprintf(p, remaining, "<T>%ld|", (long)attr->time);
 		if (num_write == -1)
 		{
