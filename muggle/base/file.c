@@ -299,7 +299,7 @@ void FileGetProcessPath(char* file_path)
 	char sz_tmp[64], buf[MUGGLE_MAX_PATH];
 	ssize_t len;
 
-	sprintf_s(sz_tmp, 63, "/proc/%ld/exe", (long)getpid());
+	snprintf(sz_tmp, 63, "/proc/%ld/exe", (long)getpid());
 	len = readlink(sz_tmp, file_path, MUGGLE_MAX_PATH);
 	MUGGLE_ASSERT_MSG(len >= 0, "something wrong in readlink function");
 	if (len >= 0)

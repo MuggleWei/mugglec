@@ -91,11 +91,11 @@
 	#define MUGGLE_MAX_PATH 1024
 #endif
 
-// sprintf_s, _strdup
+// snprintf
 #if MUGGLE_PLATFORM_WINDOWS
-#else
-	#define sprintf_s(buf, size_in_byte, format, ...) sprintf(buf, format, ##__VA_ARGS__)
-	#define _strdup strdup
+#if _MSC_VER <= 1800 // VS 2013
+	#define snprintf(buf, size_in_byte, format, ...) sprintf_s(buf, size_in_byte, format, ##__VA_ARGS__)
+#endif
 #endif
 
 #endif

@@ -6,7 +6,9 @@
  */
 
 #include "muggle/base_cpp/delta_time.h"
+#if !MUGGLE_PLATFORM_WINDOWS
 #include <stddef.h>
+#endif
 
 NS_MUGGLE_BEGIN
 
