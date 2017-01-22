@@ -37,6 +37,8 @@ void LogDefaultConsole(LogHandle *log_handle, LogAttribute *attr, const char *ms
 void LogDefaultFile(LogHandle *log_handle, LogAttribute *attr, const char *msg);
 void LogDefaultWindowsDebugOut(LogHandle *log_handle, LogAttribute *attr, const char *msg);
 
+void LogDefaultExit(void);
+
 LogHandle g_log_default_handles[MUGGLE_LOG_DEFAULT_MAX] = {
 	{NULL, LogDefaultConsole, NULL, MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_LINE },
 	{NULL, LogDefaultFile, NULL, MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE  | MUGGLE_LOG_FMT_LINE},
@@ -144,6 +146,7 @@ void LogDefaultInit(const char *log_file_path, int enable_console_color)
 	{
 		FileHandleOpen(&g_log_default_file, log_file_path, flags, attr);
 	}
+	atexit(LogDefaultExit);
 	g_log_default_handles[MUGGLE_LOG_DEFAULT_FILE].io_target = (void*)&g_log_default_file;
 
 	g_enable_console_color = enable_console_color;
@@ -332,4 +335,13 @@ void LogDefaultWindowsDebugOut(LogHandle *log_handle, LogAttribute *attr, const 
 		MutexUnLock(log_handle->mtx);
 	}
 #endif
+}
+
+void LogDefaultExit(void)
+{
+	MUGGLE_INFO("Muggle Default Log Exit\n");
+	if (FileHandleIsValid(&g_log_default_file))
+	{
+		FileHandleClose(&g_log_default_file);
+	}
 }
