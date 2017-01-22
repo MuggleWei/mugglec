@@ -7,8 +7,8 @@ set(is_pure_c ON)
 
 # cmake
 set(muggle_source_dir ${CMAKE_CURRENT_SOURCE_DIR})
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/muggle_cmake_common.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_project.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/muggle_cmake_common.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/add_project.cmake)
 
 # base
 if (WIN32)
@@ -34,12 +34,17 @@ addMuggleLib("${muggle_base_cpp}" "${is_pure_c}" "MUGGLE_BASE_CPP_EXPORTS" "base
 
 # options for build example and test
 option(BUILD_EXAMPLE "Build example" ON)
-option(BUILD_RUN_TEST "Build run test" ON)
+option(BUILD_RUN_TEST "Build test" ON)
 
 if (${BUILD_EXAMPLE})
 	add_subdirectory(example)
 endif()
 
 if (${BUILD_RUN_TEST})
-	add_subdirectory(run_test)
+	# find googletest source
+	include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindGTestSrc.cmake)
+	if(GTESTSRC_FOUND)
+		add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/gtest)
+		add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test)
+	endif()
 endif()
