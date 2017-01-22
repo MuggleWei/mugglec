@@ -32,8 +32,14 @@ set(targetDependencies ${muggle_base})
 set(is_pure_c OFF)
 addMuggleLib("${muggle_base_cpp}" "${is_pure_c}" "MUGGLE_BASE_CPP_EXPORTS" "base_cpp" "${targetLinks}" "${targetDependencies}")
 
-# test
+# options for build example and test
+option(BUILD_EXAMPLE "Build example" ON)
 option(BUILD_RUN_TEST "Build run test" ON)
+
+if (${BUILD_EXAMPLE})
+	add_subdirectory(example)
+endif()
+
 if (${BUILD_RUN_TEST})
 	add_subdirectory(run_test)
 endif()

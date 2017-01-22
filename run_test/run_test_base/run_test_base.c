@@ -1,5 +1,4 @@
 #include "muggle/base/base.h"
-#include "run_test_base_log.h"
 
 typedef void(*emptyFunc)();
 
@@ -167,8 +166,6 @@ int main(int argc, char *argv[])
 	unsigned long ulval;
 	float fval;
 	int i;
-
-	TestLog();
 
 	// platform macro
 #if MUGGLE_PLATFORM_WIN64

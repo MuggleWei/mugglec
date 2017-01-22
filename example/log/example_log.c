@@ -1,7 +1,7 @@
-#include "run_test_base_log.h"
+#include "example_log.h"
 #include "muggle/base/base.h"
 
-void TestLog()
+int main(int argc, char *argv[])
 {
 	char log_file[MUGGLE_MAX_PATH];
 
@@ -13,6 +13,8 @@ void TestLog()
 	LogDefaultInit(log_file, 1);
 
 	exampleLog();
+
+	return 0;
 }
 
 void CustomLogFunc(struct LogHandle_tag *log_handle,struct LogAttribute_tag *attr,const char *msg)
