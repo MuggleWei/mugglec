@@ -65,12 +65,13 @@ MUGGLE_BASE_EXPORT bool FileRead(const char* file_path, char** ptr_bytes, long* 
 MUGGLE_BASE_EXPORT void FileGetProcessPath(char* file_path);
 MUGGLE_BASE_EXPORT bool FileIsExist(const char* file_path);
 MUGGLE_BASE_EXPORT bool FileIsAbsolutePath(const char* file_path);
+MUGGLE_BASE_EXPORT bool FileDelete(const char *file_path);
 
 MUGGLE_BASE_EXPORT bool FileHandleIsValid(FileHandle *fh);
 MUGGLE_BASE_EXPORT bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int attr);
 MUGGLE_BASE_EXPORT bool FileHandleClose(FileHandle *fh);
 MUGGLE_BASE_EXPORT long long FileHandleSeek(FileHandle *fh, long long offset, int whence);
-MUGGLE_BASE_EXPORT long FileHandleWrite(FileHandle *fh, void *buf, long cnt_bytes);
+MUGGLE_BASE_EXPORT long FileHandleWrite(FileHandle *fh, const void *buf, long cnt_bytes);
 MUGGLE_BASE_EXPORT long FileHandleRead(FileHandle *fh, void *buf, long cnt_bytes);
 
 EXTERN_C_END

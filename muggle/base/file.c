@@ -125,6 +125,14 @@ bool FileIsAbsolutePath(const char* file_path)
 
 	return false;
 }
+bool FileDelete(const char *file_path)
+{
+	// convert to utf16 characters
+	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
+	MultiByteToWideChar(CP_UTF8, 0, file_path, -1, unicode_buf, MUGGLE_MAX_PATH);
+
+	return DeleteFileW(unicode_buf);
+}
 
 bool FileHandleIsValid(FileHandle *fh)
 {
@@ -160,8 +168,8 @@ bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int mode)
 
 	// access mode
 	dwDesiredAccess =
-		((flags &  MUGGLE_FILE_WRITE) ? FILE_WRITE_DATA : 0) |
-		((flags &  MUGGLE_FILE_READ) ? FILE_READ_DATA : 0) |
+		(((flags &  MUGGLE_FILE_WRITE) && !(flags &  MUGGLE_FILE_APPEND)) ? GENERIC_WRITE : 0) |
+		((flags &  MUGGLE_FILE_READ) ? GENERIC_READ : 0) |
 		((flags &  MUGGLE_FILE_APPEND) ? FILE_APPEND_DATA : 0);
 
 	// share mode, alway allow subsequent open operations to request read, write and delete
@@ -174,6 +182,10 @@ bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int mode)
 		{
 			dwCreationDisposition = CREATE_NEW;
 		}
+		else if (flags & MUGGLE_FILE_TRUNC)
+		{
+			dwCreationDisposition = CREATE_ALWAYS;
+		}
 		else
 		{
 			dwCreationDisposition = OPEN_ALWAYS;
@@ -184,6 +196,7 @@ bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int mode)
 		if (flags & MUGGLE_FILE_TRUNC)
 		{
 			dwCreationDisposition = TRUNCATE_EXISTING;
+			dwDesiredAccess |= GENERIC_WRITE;
 		}
 		else
 		{
@@ -250,7 +263,7 @@ long long FileHandleSeek(FileHandle *fh, long long offset, int whence)
 
 	return (long long)li_ret.QuadPart;
 }
-long FileHandleWrite(FileHandle *fh, void *buf, long cnt_bytes)
+long FileHandleWrite(FileHandle *fh, const void *buf, long cnt_bytes)
 {
 	DWORD num_write;
 
@@ -289,6 +302,7 @@ long FileHandleRead(FileHandle *fh, void *buf, long cnt_bytes)
 
 #else
 
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -322,6 +336,10 @@ bool FileIsAbsolutePath(const char* file_path)
 
 	return false;
 }
+bool FileDelete(const char *file_path)
+{
+	return remove(file_path) != -1;
+}
 
 bool FileHandleIsValid(FileHandle *fh)
 {
@@ -353,7 +371,7 @@ bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int attr)
 	}
 
 	// flags
-	if (flags & MUGGLE_FILE_WRITE)
+	if ((flags & MUGGLE_FILE_WRITE) || (flags & MUGGLE_FILE_APPEND))
 	{
 		if (flags & MUGGLE_FILE_READ)
 		{
@@ -447,7 +465,7 @@ long long FileHandleSeek(FileHandle *fh, long long offset, int whence)
 
 	return (long long)new_pos;
 }
-long FileHandleWrite(FileHandle *fh, void *buf, long cnt_bytes)
+long FileHandleWrite(FileHandle *fh, const void *buf, long cnt_bytes)
 {
 	ssize_t num_write;
 
