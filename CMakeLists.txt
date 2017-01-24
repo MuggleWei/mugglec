@@ -10,6 +10,11 @@ set(muggle_source_dir ${CMAKE_CURRENT_SOURCE_DIR})
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/muggle_cmake_common.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/add_project.cmake)
 
+# for vim plugin - YCM
+if (NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+	set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+endif()
+
 # base
 if (WIN32)
 	set(targetLinks "")
