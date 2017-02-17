@@ -10,6 +10,9 @@
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
+#include <limits.h>
+#include <float.h>
+#include <math.h>
 #include "muggle/base/log.h"
 
 char* StrAllocByDiff(const char* p_start, const char* p_end)
@@ -72,20 +75,20 @@ bool StrEndsWith(const char* str, const char* sub_str)
 	return true;
 }
 
-char* StrSplitLineToWords(char* line, char** words, int* word_idx, int max_word_num)
+char* StrSplitLineToWords(char* line, char** words, int* cnt, int max_word_num)
 {
 	char *q = NULL, *r = NULL;
 
 	// initialize words
 	memset(words, 0, sizeof(char*) * max_word_num);
-	*word_idx = 0;
+	*cnt = 0;
 
 	q = line;
 	MUGGLE_SKIP_BLANK(q);
 	r = q;
 	while (*q != '\n' && *q != '\r' && *q != '\0')
 	{
-		if (*word_idx == max_word_num)
+		if (*cnt == max_word_num)
 		{
 			MUGGLE_DEBUG_WARNING(0, "It's has no enough space to split line to words");
 			return q;
@@ -95,7 +98,7 @@ char* StrSplitLineToWords(char* line, char** words, int* word_idx, int max_word_
 		{
 			*q = '\0';
 			++q;
-			words[(*word_idx)++] = r;
+			words[(*cnt)++] = r;
 			MUGGLE_SKIP_BLANK(q);
 			r = q;
 		}
@@ -105,14 +108,14 @@ char* StrSplitLineToWords(char* line, char** words, int* word_idx, int max_word_
 		}
 	}
 
-	if (*word_idx == max_word_num)
+	if (*cnt == max_word_num)
 	{
 		MUGGLE_DEBUG_WARNING(0, "It's has no enough space to split line to words");
 		return q;
 	}
 	if (*r != '\r' && *r != '\n' && *r != '\0')
 	{
-		words[(*word_idx)++] = r;
+		words[(*cnt)++] = r;
 	}
 	while (*q == '\n' || *q == '\r')
 	{
@@ -124,17 +127,35 @@ char* StrSplitLineToWords(char* line, char** words, int* word_idx, int max_word_
 	return q;
 }
 
-bool StrToi(char *str, int *pval, int base)
+bool StrToi(const char *str, int *pval, int base)
 {
 	long ret;
-
-	MUGGLE_ASSERT(str != NULL && *str != '\0');
+	char *endptr;
 
 	errno = 0;
-    ret = strtol(str, NULL, base);
-    if (errno != 0)
+    ret = strtol(str, &endptr, base);
+	if (endptr == str)
 	{
-		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		// failed parse
+		return false;
+	}
+	else if (*endptr != '\0')
+	{
+		MUGGLE_SKIP_BLANK(endptr);
+		if (*endptr != '\0')
+		{
+			// this function only parse one word
+			return false;
+		}
+	}
+	else if ((ret == LONG_MAX || ret == LONG_MIN) && errno == ERANGE)
+	{
+		// out of range
+		return false;
+	}
+	else if (ret > INT_MAX || ret < INT_MIN)
+	{
+		// out of integer range
 		return false;
 	}
 
@@ -142,17 +163,35 @@ bool StrToi(char *str, int *pval, int base)
 
 	return true;
 }
-bool StrToui(char *str, unsigned int *pval, int base)
+bool StrToui(const char *str, unsigned int *pval, int base)
 {
 	unsigned long ret;
-
-	MUGGLE_ASSERT(str != NULL && *str != '\0');
+	char *endptr;
 
 	errno = 0;
-    ret = strtoul(str, NULL, base);
-    if (errno != 0)
+	ret = strtoul(str, &endptr, base);
+	if (endptr == str)
 	{
-		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		// failed parse
+		return false;
+	}
+	else if (*endptr != '\0')
+	{
+		MUGGLE_SKIP_BLANK(endptr);
+		if (*endptr != '\0')
+		{
+			// this function only parse one word
+			return false;
+		}
+	}
+	else if (ret == ULONG_MAX && errno == ERANGE)
+	{
+		// out of range or negative integer
+		return false;
+	}
+	else if (ret > UINT_MAX)
+	{
+		// out of unsigned integer range
 		return false;
 	}
 
@@ -160,99 +199,197 @@ bool StrToui(char *str, unsigned int *pval, int base)
 
 	return true;
 }
-bool StrTol(char *str, long *pval, int base)
+bool StrTol(const char *str, long *pval, int base)
 {
-	MUGGLE_ASSERT(str != NULL && *str != '\0');
+	char *endptr;
 
 	errno = 0;
-    *pval = strtol(str, NULL, base);
-    if (errno != 0)
+	*pval = strtol(str, &endptr, base);
+	if (endptr == str)
 	{
-		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		// failed parse
+		return false;
+	}
+	else if (*endptr != '\0')
+	{
+		MUGGLE_SKIP_BLANK(endptr);
+		if (*endptr != '\0')
+		{
+			// this function only parse one word
+			return false;
+		}
+	}
+	else if ((*pval == LONG_MAX || *pval == LONG_MIN) && errno == ERANGE)
+	{
+		// out of range
 		return false;
 	}
 
 	return true;
 }
-bool StrToul(char *str, unsigned long *pval, int base)
+bool StrToul(const char *str, unsigned long *pval, int base)
 {
-	MUGGLE_ASSERT(str != NULL && *str != '\0');
+	char *endptr;
 
 	errno = 0;
-    *pval = strtoul(str, NULL, base);
-    if (errno != 0)
+    *pval = strtoul(str, &endptr, base);
+	if (endptr == str)
 	{
-		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		// failed parse
+		return false;
+	}
+	else if (*endptr != '\0')
+	{
+		MUGGLE_SKIP_BLANK(endptr);
+		if (*endptr != '\0')
+		{
+			// this function only parse one word
+			return false;
+		}
+	}
+	else if (*pval == ULONG_MAX && errno == ERANGE)
+	{
+		// out of range
 		return false;
 	}
 
 	return true;
 }
-bool StrToll(char *str, long long *pval, int base)
+bool StrToll(const char *str, long long *pval, int base)
 {
-	MUGGLE_ASSERT(str != NULL && *str != '\0');
+	char *endptr;
 
 	errno = 0;
-    *pval = strtoll(str, NULL, base);
-    if (errno != 0)
+    *pval = strtoll(str, &endptr, base);
+	if (endptr == str)
 	{
-		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		// failed parse
+		return false;
+	}
+	else if (*endptr != '\0')
+	{
+		MUGGLE_SKIP_BLANK(endptr);
+		if (*endptr != '\0')
+		{
+			// this function only parse one word
+			return false;
+		}
+	}
+	else if ((*pval == LLONG_MAX || *pval == LLONG_MIN) && errno == ERANGE)
+	{
+		// out of range
 		return false;
 	}
 
 	return true;
 }
-bool StrToull(char *str, unsigned long long *pval, int base)
+bool StrToull(const char *str, unsigned long long *pval, int base)
 {
-	MUGGLE_ASSERT(str != NULL && *str != '\0');
+	char *endptr;
 
 	errno = 0;
-    *pval = strtoull(str, NULL, base);
-    if (errno != 0)
+    *pval = strtoull(str, &endptr, base);
+	if (endptr == str)
 	{
-		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		// failed parse
+		return false;
+	}
+	else if (*endptr != '\0')
+	{
+		MUGGLE_SKIP_BLANK(endptr);
+		if (*endptr != '\0')
+		{
+			// this function only parse one word
+			return false;
+		}
+	}
+	else if (*pval == ULLONG_MAX && errno == ERANGE)
+	{
+		// out of range
 		return false;
 	}
 
 	return true;
 }
-bool StrTof(char *str, float *pval)
+bool StrTof(const char *str, float *pval)
 {
-	MUGGLE_ASSERT(str != NULL && *str != '\0');
+	char *endptr;
 
 	errno = 0;
-    *pval = strtof(str, NULL);
-    if (errno != 0)
+    *pval = strtof(str, &endptr);
+	if (endptr == str)
 	{
-		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		// failed parse
+		return false;
+	}
+	else if (*endptr != '\0')
+	{
+		MUGGLE_SKIP_BLANK(endptr);
+		if (*endptr != '\0')
+		{
+			// this function only parse one word
+			return false;
+		}
+	}
+	else if ((*pval == HUGE_VAL || *pval == HUGE_VALF || *pval == HUGE_VALL) && errno == ERANGE)
+	{
+		// out of range
 		return false;
 	}
 
 	return true;
 }
-bool StrTod(char *str, double *pval)
+bool StrTod(const char *str, double *pval)
 {
-	MUGGLE_ASSERT(str != NULL && *str != '\0');
+	char *endptr;
 
 	errno = 0;
-    *pval = strtod(str, NULL);
-    if (errno != 0)
+    *pval = strtod(str, &endptr);
+	if (endptr == str)
 	{
-		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		// failed parse
+		return false;
+	}
+	else if (*endptr != '\0')
+	{
+		MUGGLE_SKIP_BLANK(endptr);
+		if (*endptr != '\0')
+		{
+			// this function only parse one word
+			return false;
+		}
+	}
+	else if ((*pval == HUGE_VAL || *pval == HUGE_VALF || *pval == HUGE_VALL) && errno == ERANGE)
+	{
+		// out of range
 		return false;
 	}
 
 	return true;
 }
-bool StrTold(char *str, double *pval)
+bool StrTold(const char *str, long double *pval)
 {
-	MUGGLE_ASSERT(str != NULL && *str != '\0');
+	char *endptr;
 
 	errno = 0;
-    *pval = strtold(str, NULL);
-    if (errno != 0)
+    *pval = strtold(str, &endptr);
+	if (endptr == str)
 	{
-		MUGGLE_DEBUG_WARNING("string convert failed: %s\n", strerror(errno));
+		// failed parse
+		return false;
+	}
+	else if (*endptr != '\0')
+	{
+		MUGGLE_SKIP_BLANK(endptr);
+		if (*endptr != '\0')
+		{
+			// this function only parse one word
+			return false;
+		}
+	}
+	else if ((*pval == HUGE_VAL || *pval == HUGE_VALF || *pval == HUGE_VALL) && errno == ERANGE)
+	{
+		// out of range
 		return false;
 	}
 

@@ -5,7 +5,7 @@ set release_dir=%build_dir%\bin\Release
 set debug_report_dir=%debug_dir%\UnitTest
 set release_report_dir=%release_dir%\UnitTest
 
-set "unit_tests=UnitTest_File"
+set "unit_tests=UnitTest_File UnitTest_Str"
 
 set report_debug="0"
 set report_release="0"
@@ -25,10 +25,17 @@ if exist %build_dir% (
 )
 
 for %%t in (%unit_tests%) do (
+
+	echo ============= %%t =============
+
 	if %report_debug% == "1" (
 		%debug_dir%\%%t.exe --gtest_output=xml:%debug_report_dir%\%%t_report.xml
 	)
 	if %report_release% == "1" (
 		%release_dir%\%%t.exe --gtest_output=xml:%release_report_dir%\%%t_report.xml
 	)
+	
+	echo =============
 )
+
+pause

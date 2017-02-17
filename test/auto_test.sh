@@ -3,7 +3,7 @@ build_dir=../build
 bin_dir=${build_dir}/bin
 report_dir=${bin_dir}/UnitTest
 
-unit_tests=(UnitTest_File)
+unit_tests=(UnitTest_File UnitTest_Str)
 
 for item in ${unit_tests[@]};do
 	if [ -f "${bin_dir}/${item}" ]; then
