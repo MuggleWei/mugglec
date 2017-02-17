@@ -25,17 +25,10 @@ if exist %build_dir% (
 )
 
 for %%t in (%unit_tests%) do (
-
-	echo ============= %%t =============
-
 	if %report_debug% == "1" (
 		%debug_dir%\%%t.exe --gtest_output=xml:%debug_report_dir%\%%t_report.xml
 	)
 	if %report_release% == "1" (
 		%release_dir%\%%t.exe --gtest_output=xml:%release_report_dir%\%%t_report.xml
 	)
-	
-	echo =============
 )
-
-pause

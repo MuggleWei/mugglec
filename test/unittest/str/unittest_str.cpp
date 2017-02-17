@@ -164,17 +164,18 @@ TEST(Str, Tou)
 	unsigned int val;
 
 	EXPECT_TRUE(StrToui("1", &val, 0));
-	EXPECT_EQ(val, 1);
+	EXPECT_EQ(val, 1u);
 	EXPECT_TRUE(StrToui("22", &val, 0));
-	EXPECT_EQ(val, 22);
+	EXPECT_EQ(val, 22u);
 	EXPECT_TRUE(StrToui("0x10", &val, 0));
-	EXPECT_EQ(val, 0x10);
+	EXPECT_EQ(val, (unsigned int)0x10);
 	EXPECT_TRUE(StrToui("0xA6", &val, 0));
-	EXPECT_EQ(val, 0xA6);
+	EXPECT_EQ(val, (unsigned int)0xA6);
 	EXPECT_TRUE(StrToui("010", &val, 0));
-	EXPECT_EQ(val, 010);
-	EXPECT_TRUE(StrToui("-15", &val, 0));
-	EXPECT_EQ(val, (unsigned int)-15);
+	EXPECT_EQ(val, (unsigned int)010);
+	// This is not sure, dependent the size of ULONG_MAX and UINT_MAX
+	// EXPECT_TRUE(StrToui("-15", &val, 0));
+	// EXPECT_EQ(val, (unsigned int)-15);
 	snprintf(buf, buf_size, "%u", UINT_MAX);
 	EXPECT_TRUE(StrToui(buf, &val, 0));
 	EXPECT_EQ(val, UINT_MAX);
@@ -228,15 +229,15 @@ TEST(Str, Toul)
 	unsigned long val;
 
 	EXPECT_TRUE(StrToul("1", &val, 0));
-	EXPECT_EQ(val, 1);
+	EXPECT_EQ(val, 1u);
 	EXPECT_TRUE(StrToul("22", &val, 0));
-	EXPECT_EQ(val, 22);
+	EXPECT_EQ(val, 22u);
 	EXPECT_TRUE(StrToul("0x10", &val, 0));
-	EXPECT_EQ(val, 0x10);
+	EXPECT_EQ(val, (unsigned long)0x10);
 	EXPECT_TRUE(StrToul("0xA6", &val, 0));
-	EXPECT_EQ(val, 0xA6);
+	EXPECT_EQ(val, (unsigned long)0xA6);
 	EXPECT_TRUE(StrToul("010", &val, 0));
-	EXPECT_EQ(val, 010);
+	EXPECT_EQ(val, (unsigned long)010);
 	EXPECT_TRUE(StrToul("-15", &val, 0));
 	EXPECT_EQ(val, (unsigned long)-15);
 	snprintf(buf, buf_size, "%lu", ULONG_MAX);
@@ -257,17 +258,17 @@ TEST(Str, Toll)
 	long long val;
 
 	EXPECT_TRUE(StrToll("1", &val, 0));
-	EXPECT_EQ(val, 1);
+	EXPECT_EQ(val, (long long)1);
 	EXPECT_TRUE(StrToll("22", &val, 0));
-	EXPECT_EQ(val, 22);
+	EXPECT_EQ(val, (long long)22);
 	EXPECT_TRUE(StrToll("0x10", &val, 0));
-	EXPECT_EQ(val, 0x10);
+	EXPECT_EQ(val, (long long)0x10);
 	EXPECT_TRUE(StrToll("0xA6", &val, 0));
-	EXPECT_EQ(val, 0xA6);
+	EXPECT_EQ(val, (long long)0xA6);
 	EXPECT_TRUE(StrToll("010", &val, 0));
-	EXPECT_EQ(val, 010);
+	EXPECT_EQ(val, (long long)010);
 	EXPECT_TRUE(StrToll("-15", &val, 0));
-	EXPECT_EQ(val, -15);
+	EXPECT_EQ(val, (long long)-15);
 	snprintf(buf, buf_size, "%lld", LLONG_MAX);
 	EXPECT_TRUE(StrToll(buf, &val, 0));
 	EXPECT_EQ(val, LLONG_MAX);
@@ -292,15 +293,15 @@ TEST(Str, Toull)
 	unsigned long long val;
 
 	EXPECT_TRUE(StrToull("1", &val, 0));
-	EXPECT_EQ(val, 1);
+	EXPECT_EQ(val, (unsigned long long)1);
 	EXPECT_TRUE(StrToull("22", &val, 0));
-	EXPECT_EQ(val, 22);
+	EXPECT_EQ(val, (unsigned long long)22);
 	EXPECT_TRUE(StrToull("0x10", &val, 0));
-	EXPECT_EQ(val, 0x10);
+	EXPECT_EQ(val, (unsigned long long)0x10);
 	EXPECT_TRUE(StrToull("0xA6", &val, 0));
-	EXPECT_EQ(val, 0xA6);
+	EXPECT_EQ(val, (unsigned long long)0xA6);
 	EXPECT_TRUE(StrToull("010", &val, 0));
-	EXPECT_EQ(val, 010);
+	EXPECT_EQ(val, (unsigned long long)010);
 	EXPECT_TRUE(StrToull("-15", &val, 0));
 	EXPECT_EQ(val, (unsigned long long)-15);
 	snprintf(buf, buf_size, "%llu", ULLONG_MAX);

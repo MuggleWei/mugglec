@@ -50,8 +50,10 @@ if (${BUILD_RUN_TEST})
 	include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindGTestSrc.cmake)
 	if(GTESTSRC_FOUND)
 	
-		# without this, will cause error: Debug Assertion Failed! Expression: __acrt_first_block == header
-		SET(BUILD_SHARED_LIBS ON CACHE BOOL "build google test as dynamic lib")
+		if (WIN32)
+			# without this, will cause error: Debug Assertion Failed! Expression: __acrt_first_block == header
+			SET(BUILD_SHARED_LIBS ON CACHE BOOL "build google test as dynamic lib")
+		endif()
 		
 		add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/gtest)
 		add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test)
