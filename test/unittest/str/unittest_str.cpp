@@ -147,6 +147,8 @@ TEST(Str, Toi)
 	EXPECT_TRUE(StrToi(buf, &val, 0));
 	EXPECT_EQ(val, INT_MIN);
 
+	EXPECT_FALSE(StrToi(NULL, &val, 0));
+	EXPECT_FALSE(StrToi("", NULL, 0));
 	EXPECT_FALSE(StrToi("", &val, 0));
 	EXPECT_FALSE(StrToi("1L", &val, 0));
 	EXPECT_FALSE(StrToi("22l", &val, 0));
@@ -180,6 +182,8 @@ TEST(Str, Tou)
 	EXPECT_TRUE(StrToui(buf, &val, 0));
 	EXPECT_EQ(val, UINT_MAX);
 
+	EXPECT_FALSE(StrToui(NULL, &val, 0));
+	EXPECT_FALSE(StrToui("", NULL, 0));
 	EXPECT_FALSE(StrToui("", &val, 0));
 	EXPECT_FALSE(StrToui("1L", &val, 0));
 	EXPECT_FALSE(StrToui("22l", &val, 0));
@@ -212,6 +216,8 @@ TEST(Str, Tol)
 	EXPECT_TRUE(StrTol(buf, &val, 0));
 	EXPECT_EQ(val, LONG_MIN);
 
+	EXPECT_FALSE(StrTol(NULL, &val, 0));
+	EXPECT_FALSE(StrTol("", NULL, 0));
 	EXPECT_FALSE(StrTol("", &val, 0));
 	EXPECT_FALSE(StrTol("1L", &val, 0));
 	EXPECT_FALSE(StrTol("22l", &val, 0));
@@ -244,6 +250,8 @@ TEST(Str, Toul)
 	EXPECT_TRUE(StrToul(buf, &val, 0));
 	EXPECT_EQ(val, ULONG_MAX);
 
+	EXPECT_FALSE(StrToul(NULL, &val, 0));
+	EXPECT_FALSE(StrToul("", NULL, 0));
 	EXPECT_FALSE(StrToul("", &val, 0));
 	EXPECT_FALSE(StrToul("1L", &val, 0));
 	EXPECT_FALSE(StrToul("22l", &val, 0));
@@ -276,6 +284,8 @@ TEST(Str, Toll)
 	EXPECT_TRUE(StrToll(buf, &val, 0));
 	EXPECT_EQ(val, LLONG_MIN);
 
+	EXPECT_FALSE(StrToll(NULL, &val, 0));
+	EXPECT_FALSE(StrToll("", NULL, 0));
 	EXPECT_FALSE(StrToll("", &val, 0));
 	EXPECT_FALSE(StrToll("1L", &val, 0));
 	EXPECT_FALSE(StrToll("22l", &val, 0));
@@ -308,6 +318,8 @@ TEST(Str, Toull)
 	EXPECT_TRUE(StrToull(buf, &val, 0));
 	EXPECT_EQ(val, ULLONG_MAX);
 
+	EXPECT_FALSE(StrToull(NULL, &val, 0));
+	EXPECT_FALSE(StrToull("", NULL, 0));
 	EXPECT_FALSE(StrToull("", &val, 0));
 	EXPECT_FALSE(StrToull("1L", &val, 0));
 	EXPECT_FALSE(StrToull("22l", &val, 0));
@@ -334,6 +346,8 @@ TEST(Str, Tof)
 	EXPECT_TRUE(StrTof(buf, &val));
 	EXPECT_NEAR(val, FLT_MIN, FLT_EPSILON);
 
+	EXPECT_FALSE(StrTof(NULL, &val));
+	EXPECT_FALSE(StrTof("", NULL));
 	EXPECT_FALSE(StrTof("", &val));
 	EXPECT_FALSE(StrTof("1f", &val));
 	EXPECT_FALSE(StrTof("1.1.1", &val));
@@ -359,6 +373,8 @@ TEST(Str, Tod)
 	EXPECT_TRUE(StrTod(buf, &val));
 	EXPECT_NEAR(val, FLT_MIN, DBL_EPSILON);
 
+	EXPECT_FALSE(StrTod(NULL, &val));
+	EXPECT_FALSE(StrTod("", NULL));
 	EXPECT_FALSE(StrTod("", &val));
 	EXPECT_FALSE(StrTod("1f", &val));
 	EXPECT_FALSE(StrTod("1.1.1", &val));

@@ -37,6 +37,13 @@ set(targetDependencies ${muggle_base})
 set(is_pure_c OFF)
 addMuggleLib("${muggle_base_cpp}" "${is_pure_c}" "MUGGLE_BASE_CPP_EXPORTS" "base_cpp" "${targetLinks}" "${targetDependencies}")
 
+# set folder in vs
+set_target_properties(
+	${muggle_base} ${muggle_memory_pool} ${muggle_base_cpp}
+	PROPERTIES
+	FOLDER "muggle"
+)
+
 # options for build example and test
 option(BUILD_EXAMPLE "Build example" ON)
 option(BUILD_RUN_TEST "Build test" ON)
@@ -57,5 +64,11 @@ if (${BUILD_RUN_TEST})
 		
 		add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/gtest)
 		add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test)
+
+		set_target_properties(
+			gtest gtest_main gmock gmock_main
+			PROPERTIES
+			FOLDER "thirdparty"
+		)
 	endif()
 endif()

@@ -132,6 +132,11 @@ bool StrToi(const char *str, int *pval, int base)
 	long ret;
 	char *endptr;
 
+	if (str == NULL || pval == NULL)
+	{
+		return false;
+	}
+
 	errno = 0;
     ret = strtol(str, &endptr, base);
 	if (endptr == str)
@@ -168,6 +173,11 @@ bool StrToui(const char *str, unsigned int *pval, int base)
 	unsigned long ret;
 	char *endptr;
 
+	if (str == NULL || pval == NULL)
+	{
+		return false;
+	}
+
 	errno = 0;
 	ret = strtoul(str, &endptr, base);
 	if (endptr == str)
@@ -203,6 +213,11 @@ bool StrTol(const char *str, long *pval, int base)
 {
 	char *endptr;
 
+	if (str == NULL || pval == NULL)
+	{
+		return false;
+	}
+
 	errno = 0;
 	*pval = strtol(str, &endptr, base);
 	if (endptr == str)
@@ -230,6 +245,11 @@ bool StrTol(const char *str, long *pval, int base)
 bool StrToul(const char *str, unsigned long *pval, int base)
 {
 	char *endptr;
+
+	if (str == NULL || pval == NULL)
+	{
+		return false;
+	}
 
 	errno = 0;
     *pval = strtoul(str, &endptr, base);
@@ -259,6 +279,11 @@ bool StrToll(const char *str, long long *pval, int base)
 {
 	char *endptr;
 
+	if (str == NULL || pval == NULL)
+	{
+		return false;
+	}
+
 	errno = 0;
     *pval = strtoll(str, &endptr, base);
 	if (endptr == str)
@@ -286,6 +311,11 @@ bool StrToll(const char *str, long long *pval, int base)
 bool StrToull(const char *str, unsigned long long *pval, int base)
 {
 	char *endptr;
+
+	if (str == NULL || pval == NULL)
+	{
+		return false;
+	}
 
 	errno = 0;
     *pval = strtoull(str, &endptr, base);
@@ -315,6 +345,11 @@ bool StrTof(const char *str, float *pval)
 {
 	char *endptr;
 
+	if (str == NULL || pval == NULL)
+	{
+		return false;
+	}
+
 	errno = 0;
     *pval = strtof(str, &endptr);
 	if (endptr == str)
@@ -343,6 +378,11 @@ bool StrTod(const char *str, double *pval)
 {
 	char *endptr;
 
+	if (str == NULL || pval == NULL)
+	{
+		return false;
+	}
+
 	errno = 0;
     *pval = strtod(str, &endptr);
 	if (endptr == str)
@@ -370,6 +410,11 @@ bool StrTod(const char *str, double *pval)
 bool StrTold(const char *str, long double *pval)
 {
 	char *endptr;
+
+	if (str == NULL || pval == NULL)
+	{
+		return false;
+	}
 
 	errno = 0;
     *pval = strtold(str, &endptr);
