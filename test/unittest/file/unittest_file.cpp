@@ -1,7 +1,7 @@
 #include <time.h>
 #include <stddef.h>
 #include "gtest/gtest.h"
-#include "muggle/base/base.h"
+#include "muggle/base_c/base.h"
 
 TEST(File, OpenCreateDelete)
 {

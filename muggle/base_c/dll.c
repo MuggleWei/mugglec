@@ -5,9 +5,9 @@
  *	found in the LICENSE file.
  */
 
-#include "muggle/base/dll.h"
-#include "muggle/base/log.h"
-#include "muggle/base/str.h"
+#include "muggle/base_c/dll.h"
+#include "muggle/base_c/log.h"
+#include "muggle/base_c/str.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 

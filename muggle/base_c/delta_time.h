@@ -8,7 +8,7 @@
  #ifndef __MUGGLE_DELTA_TIME_H__
  #define __MUGGLE_DELTA_TIME_H__
 
-#include "muggle/base/macro.h"
+#include "muggle/base_c/macro.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 	#include <windows.h>
@@ -36,9 +36,9 @@ typedef struct deltaTime_tag
 
 #endif
 
-MUGGLE_BASE_EXPORT void DTStart(deltaTime *dt);
-MUGGLE_BASE_EXPORT void DTEnd(deltaTime *dt);
-MUGGLE_BASE_EXPORT double DTGetElapsedMilliseconds(deltaTime *dt);
+MUGGLE_BASE_C_EXPORT void DTStart(deltaTime *dt);
+MUGGLE_BASE_C_EXPORT void DTEnd(deltaTime *dt);
+MUGGLE_BASE_C_EXPORT double DTGetElapsedMilliseconds(deltaTime *dt);
 
 EXTERN_C_END
 

@@ -9,8 +9,8 @@
 #define __MUGGLE_LOG_H__
 
 #include <time.h>
-#include "muggle/base/macro.h"
-#include "muggle/base/mutex.h"
+#include "muggle/base_c/macro.h"
+#include "muggle/base_c/mutex.h"
 
 #define MUGGLE_MAX_LOG_LEN 2048
 
@@ -152,7 +152,7 @@ typedef struct LogAttribute_tag
  *	@max_len: the max number of bytes that buffer can store
  *	RETURN: number of bytes in buffer
  */
-MUGGLE_BASE_EXPORT int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, char *buf, int max_len);
+MUGGLE_BASE_C_EXPORT int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, char *buf, int max_len);
 /*
  *	initialize default logs, without this, output log in console by default.
  *	note: don't invoke this more than once
@@ -160,7 +160,7 @@ MUGGLE_BASE_EXPORT int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, 
  *	@log_file_path: the file path for log output
  *	@enable_console_color: whether or not enable colored print in console
  */
-MUGGLE_BASE_EXPORT void LogDefaultInit(const char *log_file_path, int enable_console_color);
+MUGGLE_BASE_C_EXPORT void LogDefaultInit(const char *log_file_path, int enable_console_color);
 /*
  *	switch default log output, before invoke this
  *	NOTE: ensure LogDefaultInit was invoked if you want invoke default log output function
@@ -169,12 +169,12 @@ MUGGLE_BASE_EXPORT void LogDefaultInit(const char *log_file_path, int enable_con
  *	@enable: active or inactive this default output
  *	@fmt: reset the format of this default output (operator or in eMuggleLogFormat, 0 represent only output message text)
  */
-MUGGLE_BASE_EXPORT void LogDefaultSwitch(int log_idx, LogHandle *log_handle, int enable, int fmt);
+MUGGLE_BASE_C_EXPORT void LogDefaultSwitch(int log_idx, LogHandle *log_handle, int enable, int fmt);
 /*
  *	the two function below just for macro invoke, don't use them directly
  */
-MUGGLE_BASE_EXPORT void LogDefault(LogAttribute *attr, const char *format, ...);
-MUGGLE_BASE_EXPORT void LogFunction(LogHandle *log_handle, LogAttribute *attr, const char *format, ...);
+MUGGLE_BASE_C_EXPORT void LogDefault(LogAttribute *attr, const char *format, ...);
+MUGGLE_BASE_C_EXPORT void LogFunction(LogHandle *log_handle, LogAttribute *attr, const char *format, ...);
 
 EXTERN_C_END
 

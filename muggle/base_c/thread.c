@@ -6,7 +6,7 @@
 */
 
 #include "thread.h"
-#include "muggle/base/log.h"
+#include "muggle/base_c/log.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 

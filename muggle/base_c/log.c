@@ -5,7 +5,7 @@
  *	found in the LICENSE file.
  */
 
-#include "muggle/base/log.h"
+#include "muggle/base_c/log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -14,7 +14,7 @@
 #else
 	#include <unistd.h>
 #endif
-#include "muggle/base/file.h"
+#include "muggle/base_c/file.h"
 
 // terminal color for *nix
 #define UNIX_TERMINAL_COLOR_NRM  "\x1B[0m"

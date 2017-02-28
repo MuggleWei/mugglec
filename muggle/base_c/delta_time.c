@@ -5,7 +5,7 @@
  *	found in the LICENSE file.
  */
 
-#include "muggle/base/delta_time.h"
+#include "muggle/base_c/delta_time.h"
 #include <stdlib.h>
 #include <stddef.h>
 

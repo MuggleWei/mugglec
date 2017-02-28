@@ -20,14 +20,14 @@
 #include <time.h>
 
 // muggle base header
-#include "muggle/base/macro.h"
-#include "muggle/base/log.h"
-#include "muggle/base/file.h"
-#include "muggle/base/str.h"
-#include "muggle/base/dll.h"
-#include "muggle/base/sleep.h"
-#include "muggle/base/delta_time.h"
-#include "muggle/base/thread.h"
-#include "muggle/base/mutex.h"
+#include "muggle/base_c/macro.h"
+#include "muggle/base_c/log.h"
+#include "muggle/base_c/file.h"
+#include "muggle/base_c/str.h"
+#include "muggle/base_c/dll.h"
+#include "muggle/base_c/sleep.h"
+#include "muggle/base_c/delta_time.h"
+#include "muggle/base_c/thread.h"
+#include "muggle/base_c/mutex.h"
 
 #endif

@@ -5,13 +5,13 @@
  *	found in the LICENSE file.
  */
 
-#include "muggle/base/file.h"
+#include "muggle/base_c/file.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
 #include <errno.h>
-#include "muggle/base/log.h"
+#include "muggle/base_c/log.h"
 
 bool FileGetAbsolutePath(const char* in_file_name, char* out_file_path)
 {

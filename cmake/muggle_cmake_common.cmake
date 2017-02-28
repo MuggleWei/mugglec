@@ -46,6 +46,5 @@ include_directories(
 )
 
 # set variables
-set(muggle_base muggleBase)
-set(muggle_memory_pool muggleMemPool)
+set(muggle_base_c muggleBaseC)
 set(muggle_base_cpp muggleBaseCpp)

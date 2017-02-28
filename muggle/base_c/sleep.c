@@ -5,7 +5,7 @@
 *	found in the LICENSE file.
 */
 
-#include "muggle/base/sleep.h"
+#include "muggle/base_c/sleep.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 	#include <windows.h>

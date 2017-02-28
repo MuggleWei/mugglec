@@ -8,7 +8,7 @@
 #ifndef __MUGGLE_THREAD_H__
 #define __MUGGLE_THREAD_H__
 
-#include "muggle/base/macro.h"
+#include "muggle/base_c/macro.h"
 #include <stdbool.h>
 
 #if MUGGLE_PLATFORM_WINDOWS
@@ -45,12 +45,12 @@ typedef struct ThreadAttribute_tag
 
 typedef void* (*ThreadStartRoutine)(void *args);
 
-MUGGLE_BASE_EXPORT bool ThreadCreate(
+MUGGLE_BASE_C_EXPORT bool ThreadCreate(
 	ThreadHandle *thread_handle, const ThreadAttribute *attr,
 	ThreadStartRoutine routine, void *args);
-MUGGLE_BASE_EXPORT bool ThreadWaitExit(ThreadHandle *thread_handle);
+MUGGLE_BASE_C_EXPORT bool ThreadWaitExit(ThreadHandle *thread_handle);
 
-MUGGLE_BASE_EXPORT void ThreadAttributeSet(int flags);
+MUGGLE_BASE_C_EXPORT void ThreadAttributeSet(int flags);
 
 EXTERN_C_END
 

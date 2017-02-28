@@ -5,7 +5,7 @@
  *	found in the LICENSE file.
  */
 
-#include "muggle/mem_pool/memory_pool.h"
+#include "muggle/base_c/memory_pool.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -246,13 +246,13 @@ bool MemoryPoolEnsureSpace(MemoryPool* pool, unsigned int capacity)
 	return true;
 }
 
-MUGGLE_MEMORY_POOL_EXPORT
+MUGGLE_BASE_C_EXPORT
 unsigned int MemoryPoolGetFlag(MemoryPool* pool)
 {
 	return pool->flag;
 }
 
-MUGGLE_MEMORY_POOL_EXPORT
+MUGGLE_BASE_C_EXPORT
 void MemoryPoolSetFlag(MemoryPool* pool, unsigned int flag)
 {
 	pool->flag = flag;

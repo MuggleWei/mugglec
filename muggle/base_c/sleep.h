@@ -8,14 +8,14 @@
 #ifndef __MUGGLE_SLEEP_H__
 #define __MUGGLE_SLEEP_H__
 
-#include "muggle/base/macro.h"
+#include "muggle/base_c/macro.h"
 
 EXTERN_C_BEGIN
 
 // sleep
 #define MSleep(ms) SleepFunction(ms)
 
-MUGGLE_BASE_EXPORT void SleepFunction(unsigned long ms);
+MUGGLE_BASE_C_EXPORT void SleepFunction(unsigned long ms);
 
 EXTERN_C_END
 

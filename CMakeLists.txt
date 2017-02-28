@@ -15,7 +15,7 @@ if (NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif()
 
-# base
+# base c
 if (WIN32)
 	set(targetLinks "")
 else()
@@ -23,23 +23,21 @@ else()
 endif()
 set(targetDependencies "")
 set(is_pure_c ON)
-addMuggleLib("${muggle_base}" "${is_pure_c}" "MUGGLE_BASE_EXPORTS" "base" "${targetLinks}" "${targetDependencies}")
-
-# memory pool
-set(targetLinks "")
-set(targetDependencies "")
-set(is_pure_c ON)
-addMuggleLib("${muggle_memory_pool}" "${is_pure_c}" "MUGGLE_MEMORY_POOL_EXPORTS" "mem_pool" "${targetLinks}" "${targetDependencies}")
+addMuggleLib("${muggle_base_c}" "${is_pure_c}" "MUGGLE_BASE_C_EXPORTS" "base_c" "${targetLinks}" "${targetDependencies}")
 
 # base cpp
-set(targetLinks ${muggle_base})
-set(targetDependencies ${muggle_base})
+if (WIN32)
+	set(targetLinks ${muggle_base_c})
+else()
+	set(targetLinks pthread dl ${muggle_base_c})
+endif()
+set(targetDependencies ${muggle_base_c})
 set(is_pure_c OFF)
 addMuggleLib("${muggle_base_cpp}" "${is_pure_c}" "MUGGLE_BASE_CPP_EXPORTS" "base_cpp" "${targetLinks}" "${targetDependencies}")
 
 # set folder in vs
 set_target_properties(
-	${muggle_base} ${muggle_memory_pool} ${muggle_base_cpp}
+	${muggle_base_c} ${muggle_base_cpp}
 	PROPERTIES
 	FOLDER "muggle"
 )

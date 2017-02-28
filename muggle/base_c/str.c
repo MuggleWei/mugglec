@@ -5,7 +5,7 @@
  *	found in the LICENSE file.
  */
 
-#include "muggle/base/str.h"
+#include "muggle/base_c/str.h"
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
@@ -13,7 +13,7 @@
 #include <limits.h>
 #include <float.h>
 #include <math.h>
-#include "muggle/base/log.h"
+#include "muggle/base_c/log.h"
 
 char* StrAllocByDiff(const char* p_start, const char* p_end)
 {

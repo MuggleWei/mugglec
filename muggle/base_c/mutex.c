@@ -5,8 +5,8 @@
 *	found in the LICENSE file.
 */
 
-#include "muggle/base/mutex.h"
-#include "muggle/base/log.h"
+#include "muggle/base_c/mutex.h"
+#include "muggle/base_c/log.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 

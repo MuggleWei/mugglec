@@ -8,7 +8,7 @@
 #ifndef __MUGGLE_BASE_CPP_MACRO_H__
 #define __MUGGLE_BASE_CPP_MACRO_H__
 
-#include "muggle/base/macro.h"
+#include "muggle/base_c/macro.h"
 
 #if MUGGLE_PLATFORM_WINDOWS && defined(MUGGLE_USE_DLLS)
 	#ifdef MUGGLE_BASE_CPP_EXPORTS

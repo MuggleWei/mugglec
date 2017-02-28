@@ -8,7 +8,7 @@
 #ifndef __MUGGLE_FILE_H__
 #define __MUGGLE_FILE_H__
 
-#include "muggle/base/macro.h"
+#include "muggle/base_c/macro.h"
 #include <stdbool.h>
 
 EXTERN_C_BEGIN
@@ -58,21 +58,21 @@ enum eFileSeekWhence
  *  Get current process path
  *  @file_path: out path represent current process path, use MUGGLE_MAX_PATH char buffer
  */
-MUGGLE_BASE_EXPORT bool FileGetAbsolutePath(const char* in_file_name, char* out_file_path);
-MUGGLE_BASE_EXPORT bool FileGetDirectory(const char* file_path, char* dir);
-MUGGLE_BASE_EXPORT bool FileRead(const char* file_path, char** ptr_bytes, long* ptr_num);
+MUGGLE_BASE_C_EXPORT bool FileGetAbsolutePath(const char* in_file_name, char* out_file_path);
+MUGGLE_BASE_C_EXPORT bool FileGetDirectory(const char* file_path, char* dir);
+MUGGLE_BASE_C_EXPORT bool FileRead(const char* file_path, char** ptr_bytes, long* ptr_num);
 
-MUGGLE_BASE_EXPORT void FileGetProcessPath(char* file_path);
-MUGGLE_BASE_EXPORT bool FileIsExist(const char* file_path);
-MUGGLE_BASE_EXPORT bool FileIsAbsolutePath(const char* file_path);
-MUGGLE_BASE_EXPORT bool FileDelete(const char *file_path);
+MUGGLE_BASE_C_EXPORT void FileGetProcessPath(char* file_path);
+MUGGLE_BASE_C_EXPORT bool FileIsExist(const char* file_path);
+MUGGLE_BASE_C_EXPORT bool FileIsAbsolutePath(const char* file_path);
+MUGGLE_BASE_C_EXPORT bool FileDelete(const char *file_path);
 
-MUGGLE_BASE_EXPORT bool FileHandleIsValid(FileHandle *fh);
-MUGGLE_BASE_EXPORT bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int attr);
-MUGGLE_BASE_EXPORT bool FileHandleClose(FileHandle *fh);
-MUGGLE_BASE_EXPORT long long FileHandleSeek(FileHandle *fh, long long offset, int whence);
-MUGGLE_BASE_EXPORT long FileHandleWrite(FileHandle *fh, const void *buf, long cnt_bytes);
-MUGGLE_BASE_EXPORT long FileHandleRead(FileHandle *fh, void *buf, long cnt_bytes);
+MUGGLE_BASE_C_EXPORT bool FileHandleIsValid(FileHandle *fh);
+MUGGLE_BASE_C_EXPORT bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int attr);
+MUGGLE_BASE_C_EXPORT bool FileHandleClose(FileHandle *fh);
+MUGGLE_BASE_C_EXPORT long long FileHandleSeek(FileHandle *fh, long long offset, int whence);
+MUGGLE_BASE_C_EXPORT long FileHandleWrite(FileHandle *fh, const void *buf, long cnt_bytes);
+MUGGLE_BASE_C_EXPORT long FileHandleRead(FileHandle *fh, void *buf, long cnt_bytes);
 
 EXTERN_C_END
 

@@ -8,7 +8,7 @@
 #ifndef __MUGGLE_MUTEX_H__
 #define __MUGGLE_MUTEX_H__
 
-#include "muggle/base/macro.h"
+#include "muggle/base_c/macro.h"
 #include <stdbool.h>
 
 #if MUGGLE_PLATFORM_WINDOWS
@@ -32,10 +32,10 @@ typedef struct MutexHandle_tag
 #endif
 }MutexHandle;
 
-MUGGLE_BASE_EXPORT bool MutexInit(MutexHandle *mtx);
-MUGGLE_BASE_EXPORT bool MutexDestroy(MutexHandle *mtx);
-MUGGLE_BASE_EXPORT bool MutexLock(MutexHandle *mtx);
-MUGGLE_BASE_EXPORT bool MutexUnLock(MutexHandle *mtx);
+MUGGLE_BASE_C_EXPORT bool MutexInit(MutexHandle *mtx);
+MUGGLE_BASE_C_EXPORT bool MutexDestroy(MutexHandle *mtx);
+MUGGLE_BASE_C_EXPORT bool MutexLock(MutexHandle *mtx);
+MUGGLE_BASE_C_EXPORT bool MutexUnLock(MutexHandle *mtx);
 
 EXTERN_C_END
 
