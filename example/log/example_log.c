@@ -1,5 +1,5 @@
 #include "example_log.h"
-#include "muggle/base_c/base.h"
+#include "muggle/base_c/base_c.h"
 
 int main(int argc, char *argv[])
 {

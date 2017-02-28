@@ -3,7 +3,7 @@
 #include <limits.h>
 #include <float.h>
 #include "gtest/gtest.h"
-#include "muggle/base_c/base.h"
+#include "muggle/base_c/base_c.h"
 
 const char *str1 = "\
 	  First line(1).\n\

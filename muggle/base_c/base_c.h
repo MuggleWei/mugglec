@@ -5,8 +5,8 @@
  *	found in the LICENSE file.
  */
 
-#ifndef __MUGGLE_BASE_H__
-#define __MUGGLE_BASE_H__
+#ifndef MUGGLE_BASE_C_H_
+#define MUGGLE_BASE_C_H_
 
 // base c header
 #include <stdio.h>
@@ -29,5 +29,6 @@
 #include "muggle/base_c/delta_time.h"
 #include "muggle/base_c/thread.h"
 #include "muggle/base_c/mutex.h"
+#include "muggle/base_c/memory_pool.h"
 
 #endif

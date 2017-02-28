@@ -5,8 +5,8 @@
  *	found in the LICENSE file.
  */
 
-#ifndef __MUGGLE_LOG_H__
-#define __MUGGLE_LOG_H__
+#ifndef MUGGLE_C_LOG_H_
+#define MUGGLE_C_LOG_H_
 
 #include <time.h>
 #include "muggle/base_c/macro.h"

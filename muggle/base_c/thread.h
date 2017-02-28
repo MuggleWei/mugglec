@@ -1,12 +1,12 @@
 /*
-*	author: muggle wei <mugglewei@gmail.com>
-*
-*	Use of this source code is governed by the MIT license that can be
-*	found in the LICENSE file.
-*/
+ *	author: muggle wei <mugglewei@gmail.com>
+ *
+ *	Use of this source code is governed by the MIT license that can be
+ *	found in the LICENSE file.
+ */
 
-#ifndef __MUGGLE_THREAD_H__
-#define __MUGGLE_THREAD_H__
+#ifndef MUGGLE_C_THREAD_H__
+#define MUGGLE_C_THREAD_H__
 
 #include "muggle/base_c/macro.h"
 #include <stdbool.h>

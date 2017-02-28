@@ -5,8 +5,8 @@
  *	found in the LICENSE file.
  */
 
-#ifndef __MUGGLE_STR_H__
-#define __MUGGLE_STR_H__
+#ifndef MUGGLE_C_STR_H__
+#define MUGGLE_C_STR_H__
 
 #include "muggle/base_c/macro.h"
 #include <stdbool.h>

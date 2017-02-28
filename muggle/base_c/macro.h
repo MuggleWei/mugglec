@@ -5,8 +5,8 @@
  *	found in the LICENSE file.
  */
 
-#ifndef __MUGGLE_MACRO_H__
-#define __MUGGLE_MACRO_H__
+#ifndef MUGGLE_MACRO_H_
+#define MUGGLE_MACRO_H_
 
 // debug and release macro
 #if ! defined(NDEBUG)

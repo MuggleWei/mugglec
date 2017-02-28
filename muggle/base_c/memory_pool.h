@@ -5,8 +5,8 @@
  *	found in the LICENSE file.
  */
 
-#ifndef __MUGGLE_MEMORY_POOL_H__
-#define __MUGGLE_MEMORY_POOL_H__
+#ifndef MUGGLE_MEMORY_POOL_H__
+#define MUGGLE_MEMORY_POOL_H__
 
 #include "muggle/base_c/macro.h"
 #include <stdbool.h>

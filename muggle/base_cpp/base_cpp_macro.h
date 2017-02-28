@@ -5,8 +5,8 @@
  *	found in the LICENSE file.
  */
 
-#ifndef __MUGGLE_BASE_CPP_MACRO_H__
-#define __MUGGLE_BASE_CPP_MACRO_H__
+#ifndef MUGGLE_BASE_CPP_MACRO_H__
+#define MUGGLE_BASE_CPP_MACRO_H__
 
 #include "muggle/base_c/macro.h"
 
