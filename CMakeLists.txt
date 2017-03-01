@@ -10,8 +10,8 @@ set(muggle_source_dir ${CMAKE_CURRENT_LIST_DIR})
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/muggle_cmake_common.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/add_project.cmake)
 
-option(BUILD_MUGGLE_BASE_ALONE_C_CPP "Build muggle c lib and muggle cpp lib" ON)
-option(BUILD_MUGGLE_BASE_INTEGRATION "Build muggle base" ON)
+option(BUILD_MUGGLE_BASE_SEPARATE "Build muggle lib separately" ON)
+option(BUILD_MUGGLE_BASE_INTEGRATION "Build a integration muggle lib" OFF)
 
 # for vim plugin - YCM
 if (NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
@@ -28,6 +28,9 @@ if (${BUILD_MUGGLE_BASE_ALONE_C_CPP})
 	set(targetDependencies "")
 	set(is_pure_c ON)
 	addMuggleLib("${muggle_base_c}" "${is_pure_c}" "MUGGLE_BASE_C_EXPORTS" "base_c" "${targetLinks}" "${targetDependencies}")
+
+	# utils c
+	addMuggleLibRecurs(${muggle_base_utils_c} ON "MUGGLE_BASE_UTILS_C_EXPORTS" "utlis_c" ${muggle_base_c} ${muggle_base_c})
 
 	# base cpp
 	if (WIN32)
