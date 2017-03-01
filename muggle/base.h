@@ -9,7 +9,7 @@
 #define MUGGLE_BASE_H_
 
 #include "muggle/base_c/base_c.h"
-#include "muggle/utlis_c/utlis_c.h"
+#include "muggle/utils_c/utils_c.h"
 #include "muggle/base_cpp/base_cpp.h"
 
 #endif

@@ -9,7 +9,7 @@
  #define MUGGLE_C_DELTA_TIME_H_
 
 #include "muggle/base_c/macro.h"
-#include "muggle/utlis_c/utils_c_macro.h"
+#include "muggle/utils_c/utils_c_macro.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 	#include <windows.h>

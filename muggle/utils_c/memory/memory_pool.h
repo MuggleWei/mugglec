@@ -9,7 +9,7 @@
 #define MUGGLE_MEMORY_POOL_H__
 
 #include "muggle/base_c/macro.h"
-#include "muggle/utlis_c/utils_c_macro.h"
+#include "muggle/utils_c/utils_c_macro.h"
 #include <stdbool.h>
 
 EXTERN_C_BEGIN

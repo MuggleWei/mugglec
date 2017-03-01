@@ -29,7 +29,7 @@ if (${BUILD_MUGGLE_BASE_SEPARATE})
 	addMuggleLib("${muggle_base_c}" "${is_pure_c}" "MUGGLE_BASE_C_EXPORTS" "base_c" "${targetLinks}" "${targetDependencies}")
 
 	# utils c
-	addMuggleLibRecurs(${muggle_utils_c} ON "MUGGLE_UTILS_C_EXPORTS" "utlis_c" ${muggle_base_c} ${muggle_base_c})
+	addMuggleLibRecurs(${muggle_utils_c} ON "MUGGLE_UTILS_C_EXPORTS" "utils_c" ${muggle_base_c} ${muggle_base_c})
 
 	# base cpp
 	if (WIN32)

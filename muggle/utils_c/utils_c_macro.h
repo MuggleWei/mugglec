@@ -17,7 +17,7 @@
 		#define MUGGLE_UTILS_C_EXPORT __declspec(dllimport)
 	#endif
 #else
-	#define MUGGLE_BASE_CPP_EXPORT
+	#define MUGGLE_UTILS_C_EXPORT
 #endif
 
 #endif

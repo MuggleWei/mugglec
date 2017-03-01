@@ -5,7 +5,7 @@
  *	found in the LICENSE file.
  */
 
-#include "muggle/utlis_c/memory/memory_pool.h"
+#include "muggle/utils_c/memory/memory_pool.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
