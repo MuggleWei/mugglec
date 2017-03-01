@@ -5,11 +5,9 @@
  *	found in the LICENSE file.
  */
 
-#ifndef MUGGLE_BASE_H_
-#define MUGGLE_BASE_H_
-
+// dependencies header
 #include "muggle/base_c/base_c.h"
-#include "muggle/utlis_c/utlis_c.h"
-#include "muggle/base_cpp/base_cpp.h"
 
-#endif
+// header
+#include "muggle/utlis_c/memory/memory_pool.h"
+#include "muggle/utlis_c/time/delta_time.h"

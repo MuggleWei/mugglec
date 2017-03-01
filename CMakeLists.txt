@@ -11,14 +11,13 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/muggle_cmake_common.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/add_project.cmake)
 
 option(BUILD_MUGGLE_BASE_SEPARATE "Build muggle lib separately" ON)
-option(BUILD_MUGGLE_BASE_INTEGRATION "Build a integration muggle lib" OFF)
 
 # for vim plugin - YCM
 if (NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif()
 
-if (${BUILD_MUGGLE_BASE_ALONE_C_CPP})
+if (${BUILD_MUGGLE_BASE_SEPARATE})
 	# base c
 	if (WIN32)
 		set(targetLinks "")
@@ -30,7 +29,7 @@ if (${BUILD_MUGGLE_BASE_ALONE_C_CPP})
 	addMuggleLib("${muggle_base_c}" "${is_pure_c}" "MUGGLE_BASE_C_EXPORTS" "base_c" "${targetLinks}" "${targetDependencies}")
 
 	# utils c
-	addMuggleLibRecurs(${muggle_base_utils_c} ON "MUGGLE_BASE_UTILS_C_EXPORTS" "utlis_c" ${muggle_base_c} ${muggle_base_c})
+	addMuggleLibRecurs(${muggle_utils_c} ON "MUGGLE_UTILS_C_EXPORTS" "utlis_c" ${muggle_base_c} ${muggle_base_c})
 
 	# base cpp
 	if (WIN32)
@@ -41,35 +40,43 @@ if (${BUILD_MUGGLE_BASE_ALONE_C_CPP})
 	set(targetDependencies ${muggle_base_c})
 	set(is_pure_c OFF)
 	addMuggleLib("${muggle_base_cpp}" "${is_pure_c}" "MUGGLE_BASE_CPP_EXPORTS" "base_cpp" "${targetLinks}" "${targetDependencies}")
-endif()
 
-if (${BUILD_MUGGLE_BASE_INTEGRATION})
-	# base
-	if (${BUILD_MUGGLE_BASE_ALONE_C_CPP})
-		set(install_base_child_h OFF)
+	# set folder in vs
+	set_target_properties(
+		${muggle_base_c} ${muggle_base_cpp} ${muggle_utils_c}
+		PROPERTIES
+		FOLDER "muggle"
+	)
+else()
+	if (WIN32)
+		set(targetLinks "")
 	else()
-		set(install_base_child_h ON)
+		set(targetLinks pthread dl)
 	endif()
+	set(targetDependencies "")
+	set(is_pure_c ON)
+	list(APPEND exports_macros "MUGGLE_BASE_C_EXPORTS")
+	list(APPEND exports_macros "MUGGLE_UTILS_C_EXPORTS")
+	list(APPEND exports_macros "MUGGLE_BASE_CPP_EXPORTS")
+	addMuggleLibRecurs(${muggle_base} OFF "${exports_macros}" "" "" "")
 
-	addMuggleBase(${muggle_base} ${install_base_child_h})
+	# set folder in vs
+	set_target_properties(
+		${muggle_base}
+		PROPERTIES
+		FOLDER "muggle"
+	)
 endif()
-
-# set folder in vs
-set_target_properties(
-	${muggle_base_c} ${muggle_base_cpp} ${muggle_base}
-	PROPERTIES
-	FOLDER "muggle"
-)
 
 # options for build example and test
 option(BUILD_EXAMPLE "Build example" ON)
 option(BUILD_RUN_TEST "Build test" ON)
 
-if (${BUILD_EXAMPLE})
+if (${BUILD_EXAMPLE} AND ${BUILD_MUGGLE_BASE_SEPARATE})
 	add_subdirectory(example)
 endif()
 
-if (${BUILD_RUN_TEST} AND ${BUILD_MUGGLE_BASE_ALONE_C_CPP})
+if (${BUILD_RUN_TEST} AND ${BUILD_MUGGLE_BASE_SEPARATE})
 	# find googletest source
 	include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindGTestSrc.cmake)
 	if(GTESTSRC_FOUND)

@@ -26,9 +26,7 @@
 #include "muggle/base_c/str.h"
 #include "muggle/base_c/dll.h"
 #include "muggle/base_c/sleep.h"
-#include "muggle/base_c/delta_time.h"
 #include "muggle/base_c/thread.h"
 #include "muggle/base_c/mutex.h"
-#include "muggle/base_c/memory_pool.h"
 
 #endif
