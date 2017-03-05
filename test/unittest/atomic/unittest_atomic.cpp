@@ -4,37 +4,49 @@
 TEST(Atomic, Size)
 {
 	volatile int16_t i16;
+#if MUGGLE_PLATFORM_WINDOWS
 	volatile long ilong;
+#else
 	volatile int32_t i32;
+#endif
 	volatile int64_t i64;
 
 	i16 = 0;
+#if MUGGLE_PLATFORM_WINDOWS
 	ilong = 0;
+#else
 	i32 = 0;
+#endif
 	i64 = 0;
 
-	ASSERT_EQ(sizeof(i16), 2);
+	ASSERT_EQ((int)sizeof(i16), 2);
 #if MUGGLE_PLATFORM_WINDOWS
-	ASSERT_EQ(sizeof(ilong), 4);
+	ASSERT_EQ((int)sizeof(ilong), 4);
 #else
-	ASSERT_EQ(sizeof(i32), 4);
+	ASSERT_EQ((int)sizeof(i32), 4);
 #endif
-	ASSERT_EQ(sizeof(i64), 8);
+	ASSERT_EQ((int)sizeof(i64), 8);
 }
 
 TEST(Atomic, Set)
 {
 	char ch;
 	volatile int16_t i16;
+#if MUGGLE_PLATFORM_WINDOWS
 	volatile long ilong;
+#else
 	volatile int32_t i32;
+#endif
 	volatile int64_t i64;
 	void *volatile p, *volatile q;
 
 	ch = '\0';
 	i16 = 0;
+#if MUGGLE_PLATFORM_WINDOWS
 	ilong = 0;
+#else
 	i32 = 0;
+#endif
 	i64 = 0;
 	p = NULL;
 	q = (void*)&ch;
@@ -63,13 +75,19 @@ TEST(Atomic, Set)
 TEST(Atomic, InDecrement)
 {
 	volatile int16_t i16;
+#if MUGGLE_PLATFORM_WINDOWS
 	volatile long ilong;
+#else
 	volatile int32_t i32;
+#endif
 	volatile int64_t i64;
 
 	i16 = 0;
+#if MUGGLE_PLATFORM_WINDOWS
 	ilong = 0;
+#else
 	i32 = 0;
+#endif
 	i64 = 0;
 
 	ATOMIC_Increment_16(i16);
@@ -107,12 +125,18 @@ TEST(Atomic, InDecrement)
 
 TEST(Atomic, AddSub)
 {
+#if MUGGLE_PLATFORM_WINDOWS
 	volatile long ilong;
+#else
 	volatile int32_t i32;
+#endif
 	volatile int64_t i64;
 
+#if MUGGLE_PLATFORM_WINDOWS
 	ilong = 0;
+#else
 	i32 = 0;
+#endif
 	i64 = 0;
 
 #if MUGGLE_PLATFORM_WINDOWS
@@ -134,15 +158,21 @@ TEST(Atomic, CAS)
 {
 	char ch = '\0';
 	volatile int16_t i16;
+#if MUGGLE_PLATFORM_WINDOWS
 	volatile long ilong;
+#else
 	volatile int32_t i32;
+#endif
 	volatile int64_t i64;
 	void *volatile p, *volatile q;
 
 	ch = '\0';
 	i16 = 0;
+#if MUGGLE_PLATFORM_WINDOWS
 	ilong = 0;
+#else
 	i32 = 0;
+#endif
 	i64 = 0;
 	p = NULL;
 	q = (void*)&ch;
