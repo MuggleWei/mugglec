@@ -29,5 +29,6 @@
 #include "muggle/base_c/thread.h"
 #include "muggle/base_c/lock.h"
 #include "muggle/base_c/atomic.h"
+#include "muggle/base_c/cond.h"
 
 #endif
