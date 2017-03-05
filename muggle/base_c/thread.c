@@ -76,7 +76,7 @@ bool ThreadCreate(
 	ThreadHandle *thread_handle, const ThreadAttribute *attr,
 	ThreadStartRoutine routine, void *args)
 {
-	pthread_attr_t *thread_attr;
+	const pthread_attr_t *thread_attr;
 
 	MUGGLE_ASSERT_MSG(thread_handle != NULL, "Thread handle is NULL\n");
 	if (thread_handle == NULL)
