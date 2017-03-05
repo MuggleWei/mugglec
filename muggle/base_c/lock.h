@@ -33,7 +33,7 @@ enum eLockStatus
 typedef struct MutexLockHandle_tag
 {
 #if MUGGLE_PLATFORM_WINDOWS
-	HANDLE mtx;
+	CRITICAL_SECTION cs;
 #else
 	pthread_mutex_t mtx;
 #endif

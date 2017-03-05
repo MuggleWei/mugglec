@@ -12,8 +12,6 @@
 // mutex lock
 #if MUGGLE_PLATFORM_WINDOWS
 
-#include <WinBase.h>
-
 bool InitMutexLock(MutexLockHandle *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "Mutex handle is NULL\n");
@@ -22,12 +20,7 @@ bool InitMutexLock(MutexLockHandle *lock)
 		return false;
 	}
 
-	lock->mtx = CreateMutex(NULL, FALSE, NULL);
-	if (lock->mtx == NULL)
-	{
-		MUGGLE_DEBUG_WARNING("Failed create Mutex - error code %ld\n", (long)GetLastError());
-		return false;
-	}
+	InitializeCriticalSection(&lock->cs);
 
 	return true;
 }
@@ -39,13 +32,7 @@ bool DestroyMutexLock(MutexLockHandle *lock)
 		return false;
 	}
 
-	if (!CloseHandle(lock->mtx))
-	{
-		MUGGLE_DEBUG_WARNING("Failed close Mutex - error code %ld\n", (long)GetLastError());
-		return false;
-	}
-
-	lock->mtx = NULL;
+	DeleteCriticalSection(&lock->cs);
 
 	return true;
 }
@@ -57,11 +44,7 @@ bool LockMutexLock(MutexLockHandle *lock)
 		return false;
 	}
 
-	if (WaitForSingleObject(lock->mtx, INFINITE) == WAIT_FAILED)
-	{
-		MUGGLE_DEBUG_WARNING("Failed lock mutex - error code %ld\n", (long)GetLastError());
-		return false;
-	}
+	EnterCriticalSection(&lock->cs);
 
 	return true;
 }
@@ -73,13 +56,7 @@ bool TryLockMutexLock(MutexLockHandle *lock)
 		return false;
 	}
 
-	if (WaitForSingleObject(lock->mtx, 0) == WAIT_FAILED)
-	{
-		MUGGLE_DEBUG_WARNING("Failed lock mutex - error code %ld\n", (long)GetLastError());
-		return false;
-	}
-
-	return true;
+	return TryEnterCriticalSection(&lock->cs);
 }
 bool UnlockMutexLock(MutexLockHandle *lock)
 {
@@ -89,11 +66,7 @@ bool UnlockMutexLock(MutexLockHandle *lock)
 		return false;
 	}
 
-	if (!ReleaseMutex(lock->mtx))
-	{
-		MUGGLE_DEBUG_WARNING("Failed unlock mutex - error code %ld\n", (long)GetLastError());
-		return false;
-	}
+	LeaveCriticalSection(&lock->cs);
 
 	return true;
 }

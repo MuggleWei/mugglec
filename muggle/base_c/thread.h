@@ -15,9 +15,13 @@
 
 #include <windows.h>
 
+#define THREAD_ROUTINE_RETURN unsigned int
+
 #else
 
 #include <pthread.h>
+
+#define THREAD_ROUTINE_RETURN void*
 
 #endif
 
@@ -27,7 +31,7 @@ typedef struct ThreadHandle_tag
 {
 #if MUGGLE_PLATFORM_WINDOWS
 	HANDLE handle;
-	DWORD id;
+	unsigned int id;
 #else
 	pthread_t th;
 #endif
@@ -43,7 +47,7 @@ typedef struct ThreadAttribute_tag
 #endif
 }ThreadAttribute;
 
-typedef void* (*ThreadStartRoutine)(void *args);
+typedef THREAD_ROUTINE_RETURN (*ThreadStartRoutine)(void *args);
 
 MUGGLE_BASE_C_EXPORT bool ThreadCreate(
 	ThreadHandle *thread_handle, const ThreadAttribute *attr,
