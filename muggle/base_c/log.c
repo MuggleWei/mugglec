@@ -50,7 +50,7 @@ LogHandle* g_log_default_active[MUGGLE_LOG_DEFAULT_MAX] = {
 
 int g_enable_console_color = 0;
 FileHandle g_log_default_file = { 0 };
-MutexHandle g_log_default_mtx[MUGGLE_LOG_DEFAULT_MAX] = { 0 };
+MutexLockHandle g_log_default_mtx[MUGGLE_LOG_DEFAULT_MAX] = { 0 };
 
 int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, char *buf, int max_len)
 {
@@ -153,7 +153,7 @@ void LogDefaultInit(const char *log_file_path, int enable_console_color)
 	
 	for (i = 0; i < MUGGLE_LOG_DEFAULT_MAX; ++i)
 	{
-		MutexInit(&g_log_default_mtx[i]);
+		InitMutexLock(&g_log_default_mtx[i]);
 		g_log_default_handles[i].mtx = &g_log_default_mtx[i];
 		g_log_default_active[i] = &g_log_default_handles[i];
 	}
@@ -238,7 +238,7 @@ void LogDefaultConsole(LogHandle *log_handle, LogAttribute *attr, const char *ms
 
 	if (log_handle->mtx != NULL)
 	{
-		MutexLock(log_handle->mtx);
+		LockMutexLock(log_handle->mtx);
 	}
 
 	if (attr->level >= MUGGLE_LOG_LEVEL_WARNING)
@@ -291,7 +291,7 @@ void LogDefaultConsole(LogHandle *log_handle, LogAttribute *attr, const char *ms
 
 	if (log_handle->mtx != NULL)
 	{
-		MutexUnLock(log_handle->mtx);
+		UnlockMutexLock(log_handle->mtx);
 	}
 }
 void LogDefaultFile(LogHandle *log_handle, LogAttribute *attr, const char *msg)
@@ -301,7 +301,7 @@ void LogDefaultFile(LogHandle *log_handle, LogAttribute *attr, const char *msg)
 
 	if (log_handle->mtx != NULL)
 	{
-		MutexLock(log_handle->mtx);
+		LockMutexLock(log_handle->mtx);
 	}
 
 	FileHandle *fh = (FileHandle*)log_handle->io_target;
@@ -312,7 +312,7 @@ void LogDefaultFile(LogHandle *log_handle, LogAttribute *attr, const char *msg)
 
 	if (log_handle->mtx != NULL)
 	{
-		MutexUnLock(log_handle->mtx);
+		UnlockMutexLock(log_handle->mtx);
 	}
 }
 void LogDefaultWindowsDebugOut(LogHandle *log_handle, LogAttribute *attr, const char *msg)
@@ -323,7 +323,7 @@ void LogDefaultWindowsDebugOut(LogHandle *log_handle, LogAttribute *attr, const 
 
 	if (log_handle->mtx != NULL)
 	{
-		MutexLock(log_handle->mtx);
+		LockMutexLock(log_handle->mtx);
 	}
 
 	WCHAR w_buf[MUGGLE_MAX_LOG_LEN];
@@ -332,7 +332,7 @@ void LogDefaultWindowsDebugOut(LogHandle *log_handle, LogAttribute *attr, const 
 
 	if (log_handle->mtx != NULL)
 	{
-		MutexUnLock(log_handle->mtx);
+		UnlockMutexLock(log_handle->mtx);
 	}
 #endif
 }

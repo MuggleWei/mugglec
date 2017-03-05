@@ -10,7 +10,7 @@
 
 #include <time.h>
 #include "muggle/base_c/macro.h"
-#include "muggle/base_c/mutex.h"
+#include "muggle/base_c/lock.h"
 
 #define MUGGLE_MAX_LOG_LEN 2048
 
@@ -132,7 +132,7 @@ typedef struct LogHandle_tag
 {
 	void *io_target;
 	ptrLogFunc func;
-	MutexHandle *mtx;
+	MutexLockHandle *mtx;
 	int format;
 }LogHandle;
 

@@ -24,7 +24,7 @@ void CustomLogFunc(struct LogHandle_tag *log_handle,struct LogAttribute_tag *att
 
 	if (log_handle->mtx != NULL)
 	{
-		MutexLock(log_handle->mtx);
+		LockMutexLock(log_handle->mtx);
 	}
 
 	FileHandle *fh = (FileHandle*)log_handle->io_target;
@@ -35,7 +35,7 @@ void CustomLogFunc(struct LogHandle_tag *log_handle,struct LogAttribute_tag *att
 
 	if (log_handle->mtx != NULL)
 	{
-		MutexUnLock(log_handle->mtx);
+		UnlockMutexLock(log_handle->mtx);
 	}
 }
 
@@ -43,7 +43,7 @@ void exampleLog()
 {
 	LogHandle lh = { 0 };
 	FileHandle fh;
-	MutexHandle mtx;
+	MutexLockHandle mtx;
 	char file_path[MUGGLE_MAX_PATH] = { 0 };
 	int flags, attr;
 
@@ -101,7 +101,7 @@ void exampleLog()
 		MUGGLE_ERROR("Failed create file handle: %s\n", file_path);
 	}
 
-	if (!MutexInit(&mtx))
+	if (!InitMutexLock(&mtx))
 	{
 		MUGGLE_ERROR("Failed init a mutex\n");
 	}
@@ -120,6 +120,6 @@ void exampleLog()
 	LogDefaultSwitch(MUGGLE_LOG_DEFAULT_FILE, NULL, 1, 0);
 	MUGGLE_INFO("Restore default file log handle\n");
 
-	MutexDestroy(&mtx);
+	DestroyMutexLock(&mtx);
 	FileHandleClose(&fh);
 }
