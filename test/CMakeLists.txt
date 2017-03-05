@@ -9,13 +9,14 @@ config_compiler_and_linker()
 include_directories(${GTEST_INCLUDE_DIR})
 
 # unit test
-set(run_test_dependencies ${muggle_base_cpp} gtest_main)
+set(run_test_dependencies ${muggle_base_c} gtest_main)
 addProject("UnitTest_File" "${CMAKE_CURRENT_LIST_DIR}/unittest/file" "${run_test_dependencies}" "EXE")
 addProject("UnitTest_Str" "${CMAKE_CURRENT_LIST_DIR}/unittest/str" "${run_test_dependencies}" "EXE")
+addProject("UnitTest_Atomic" "${CMAKE_CURRENT_LIST_DIR}/unittest/atomic" "${run_test_dependencies}" "EXE")
 
 # folder
 set_target_properties(
-	UnitTest_File UnitTest_Str
+	UnitTest_File UnitTest_Str UnitTest_Atomic
 	PROPERTIES
 	FOLDER "UnitTest"
 )

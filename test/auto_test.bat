@@ -5,7 +5,7 @@ set release_dir=%build_dir%\bin\Release
 set debug_report_dir=%debug_dir%\UnitTest
 set release_report_dir=%release_dir%\UnitTest
 
-set "unit_tests=UnitTest_File UnitTest_Str"
+set "unit_tests=UnitTest_File UnitTest_Str unitTest_Atomic"
 
 set report_debug="0"
 set report_release="0"

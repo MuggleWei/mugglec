@@ -28,5 +28,6 @@
 #include "muggle/base_c/sleep.h"
 #include "muggle/base_c/thread.h"
 #include "muggle/base_c/mutex.h"
+#include "muggle/base_c/atomic.h"
 
 #endif

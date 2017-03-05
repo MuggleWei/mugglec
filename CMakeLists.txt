@@ -69,14 +69,14 @@ else()
 endif()
 
 # options for build example and test
-option(BUILD_EXAMPLE "Build example" ON)
-option(BUILD_RUN_TEST "Build test" ON)
+option(BUILD_MUGGLE_EXAMPLE "Build example" ON)
+option(BUILD_MUGGLE_TEST "Build test" ON)
 
-if (${BUILD_EXAMPLE} AND ${BUILD_MUGGLE_BASE_SEPARATE})
+if (${BUILD_MUGGLE_EXAMPLE} AND ${BUILD_MUGGLE_BASE_SEPARATE})
 	add_subdirectory(example)
 endif()
 
-if (${BUILD_RUN_TEST} AND ${BUILD_MUGGLE_BASE_SEPARATE})
+if (${BUILD_MUGGLE_TEST} AND ${BUILD_MUGGLE_BASE_SEPARATE})
 	# find googletest source
 	include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindGTestSrc.cmake)
 	if(GTESTSRC_FOUND)
