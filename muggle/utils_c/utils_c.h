@@ -12,7 +12,6 @@
 #include "muggle/base_c/base_c.h"
 
 // header
-#include "muggle/utils_c/memory/memory_pool.h"
 #include "muggle/utils_c/time/delta_time.h"
 
 #endif
