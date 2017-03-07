@@ -58,11 +58,11 @@ else()
 	list(APPEND exports_macros "MUGGLE_BASE_C_EXPORTS")
 	list(APPEND exports_macros "MUGGLE_UTILS_C_EXPORTS")
 	list(APPEND exports_macros "MUGGLE_BASE_CPP_EXPORTS")
-	addMuggleLibRecurs(${muggle_base} OFF "${exports_macros}" "" "" "")
+	addMuggleLibRecurs(${muggle_cc} OFF "${exports_macros}" "" "" "")
 
 	# set folder in vs
 	set_target_properties(
-		${muggle_base}
+		${muggle_cc}
 		PROPERTIES
 		FOLDER "muggle"
 	)
@@ -70,7 +70,7 @@ endif()
 
 # options for build example and test
 option(BUILD_MUGGLE_EXAMPLE "Build example" ON)
-option(BUILD_MUGGLE_TEST "Build test" ON)
+option(BUILD_MUGGLE_TEST "Build test" OFF)
 
 if (${BUILD_MUGGLE_EXAMPLE} AND ${BUILD_MUGGLE_BASE_SEPARATE})
 	add_subdirectory(example)
