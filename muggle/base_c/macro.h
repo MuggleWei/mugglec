@@ -98,4 +98,11 @@
 #endif
 #endif
 
+// wait ifinite macro for mutex,cond,semaphore etc
+#if MUGGLE_PLATFORM_WINDOWS
+#define MUGGLE_WAIT_INFINITE INFINITE
+#else
+#define MUGGLE_WAIT_INFINITE ULONG_MAX
+#endif
+
 #endif

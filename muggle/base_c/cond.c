@@ -22,17 +22,15 @@ bool MuggleInitCondVar(MuggleCondVar *cond)
 
 	return true;
 }
-bool MuggleWaitCondVar(MuggleCondVar *cond, MuggleMutexLock *mtx, long wait_ms)
+bool MuggleWaitCondVar(MuggleCondVar *cond, MuggleMutexLock *mtx, unsigned long wait_ms)
 {
-	DWORD ms;
 	MUGGLE_ASSERT_MSG(cond != NULL, "Condition variable pointer is NULL\n");
 	if (cond == NULL)
 	{
 		return false;
 	}
 
-	ms = (wait_ms == -1) ? INFINITE : (DWORD)wait_ms;
-	return SleepConditionVariableCS(&cond->cond_var, &mtx->cs, ms);
+	return SleepConditionVariableCS(&cond->cond_var, &mtx->cs, wait_ms);
 }
 bool MuggleWakeCondVar(MuggleCondVar *cond)
 {
@@ -76,7 +74,7 @@ bool MuggleInitCondVar(MuggleCondVar *cond)
 
 	return pthread_cond_init(&cond->cond_var, NULL) == 0;
 }
-bool MuggleWaitCondVar(MuggleCondVar *cond, MuggleMutexLock *mtx, long wait_ms)
+bool MuggleWaitCondVar(MuggleCondVar *cond, MuggleMutexLock *mtx, unsigned long wait_ms)
 {
 	MUGGLE_ASSERT_MSG(cond != NULL, "Condition variable pointer is NULL\n");
 	if (cond == NULL)
@@ -84,7 +82,7 @@ bool MuggleWaitCondVar(MuggleCondVar *cond, MuggleMutexLock *mtx, long wait_ms)
 		return false;
 	}
 
-	if (wait_ms == -1)
+	if (wait_ms == MUGGLE_WAIT_INFINITE)
 	{
 		return pthread_cond_wait(&cond->cond_var, &mtx->mtx) == 0;
 	}

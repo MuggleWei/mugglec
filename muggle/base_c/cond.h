@@ -13,6 +13,7 @@
 #include <windows.h>
 #else
 #include <pthread.h>
+#include <limits.h>	// for ULONG_MAX (MUGGLE_WAIT_INFINITE expand)
 #endif
 #include <stdbool.h>
 #include "muggle/base_c/lock.h"
@@ -29,7 +30,7 @@ typedef struct MuggleCondVar_tag
 }MuggleCondVar;
 
 MUGGLE_BASE_C_EXPORT bool MuggleInitCondVar(MuggleCondVar *cond);
-MUGGLE_BASE_C_EXPORT bool MuggleWaitCondVar(MuggleCondVar *cond, MuggleMutexLock *mtx, long wait_ms);
+MUGGLE_BASE_C_EXPORT bool MuggleWaitCondVar(MuggleCondVar *cond, MuggleMutexLock *mtx, unsigned long wait_ms);
 MUGGLE_BASE_C_EXPORT bool MuggleWakeCondVar(MuggleCondVar *cond);
 MUGGLE_BASE_C_EXPORT bool MuggleWakeAllCondVar(MuggleCondVar *cond);
 MUGGLE_BASE_C_EXPORT bool MuggleDestroyCondVar(MuggleCondVar *cond);
