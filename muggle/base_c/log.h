@@ -17,27 +17,21 @@
 #define MUGGLE_LOG_DEFAULT(level, format, ...) \
 do \
 { \
-	if (!(0)) \
-	{ \
-		LogAttribute attr = { \
-			level, __LINE__, __FILE__, \
-			__FUNCTION__, 0 \
-		}; \
-		LogDefault(&attr, format, ##__VA_ARGS__); \
-	} \
+	LogAttribute attr = { \
+		level, __LINE__, __FILE__, \
+		__FUNCTION__, 0 \
+	}; \
+	LogDefault(&attr, format, ##__VA_ARGS__); \
 } while (0)
 
 #define MUGGLE_LOG(ptr_log_handle, level, format, ...) \
 do \
 { \
-	if (!(0)) \
-	{ \
-		LogAttribute attr = { \
-			level, __LINE__, __FILE__, \
-			__FUNCTION__, 0 \
-		}; \
-		LogFunction(ptr_log_handle, &attr, format, ##__VA_ARGS__); \
-	} \
+	LogAttribute attr = { \
+		level, __LINE__, __FILE__, \
+		__FUNCTION__, 0 \
+	}; \
+	LogFunction(ptr_log_handle, &attr, format, ##__VA_ARGS__); \
 } while (0)
 
 #define MUGGLE_INFO(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_INFO, format, ##__VA_ARGS__)

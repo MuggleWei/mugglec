@@ -91,11 +91,14 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 
-		if (!WaitCondVar(&cond, &mtx, -1))
+		while (cur_prod == 0)
 		{
-			MUGGLE_ERROR("Failed wait condition variable\n");
-			exit(EXIT_FAILURE);
-		}
+			if (!WaitCondVar(&cond, &mtx, -1))
+			{
+				MUGGLE_ERROR("Failed wait condition variable\n");
+				exit(EXIT_FAILURE);
+			}
+		}		
 
 		while (cur_prod > 0)
 		{
