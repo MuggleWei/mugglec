@@ -49,9 +49,9 @@ if (*p != '\0') \
 }
 
 // note: the range is [p_start, p_end], so generate char* is "p_start ... p_end '\0'"
-MUGGLE_BASE_C_EXPORT char* StrAllocByDiff(const char* p_start, const char* p_end);
-MUGGLE_BASE_C_EXPORT bool StrStartsWith(const char* str, const char* sub_str);
-MUGGLE_BASE_C_EXPORT bool StrEndsWith(const char* str, const char* sub_str);
+MUGGLE_BASE_C_EXPORT char* MuggleStrAllocByDiff(const char* p_start, const char* p_end);
+MUGGLE_BASE_C_EXPORT bool MuggleStrStartsWith(const char* str, const char* sub_str);
+MUGGLE_BASE_C_EXPORT bool MuggleStrEndsWith(const char* str, const char* sub_str);
 
 /*
  *  StrUtils_SplitLineToWords: split line to words
@@ -62,20 +62,20 @@ MUGGLE_BASE_C_EXPORT bool StrEndsWith(const char* str, const char* sub_str);
  *  @return value: return next line
  *	NOTE: This function will break the original data
  */
-MUGGLE_BASE_C_EXPORT char* StrSplitLineToWords(char* line, char** words, int* cnt, int max_word_num);
+MUGGLE_BASE_C_EXPORT char* MuggleStrSplitLineToWords(char* line, char** words, int* cnt, int max_word_num);
 
 /*
  *	string to number
  */
-MUGGLE_BASE_C_EXPORT bool StrToi(const char *str, int *pval, int base);
-MUGGLE_BASE_C_EXPORT bool StrToui(const char *str, unsigned int *pval, int base); 
-MUGGLE_BASE_C_EXPORT bool StrTol(const char *str, long *pval, int base);
-MUGGLE_BASE_C_EXPORT bool StrToul(const char *str, unsigned long *pval, int base);
-MUGGLE_BASE_C_EXPORT bool StrToll(const char *str, long long *pval, int base);
-MUGGLE_BASE_C_EXPORT bool StrToull(const char *str, unsigned long long *pval, int base);
-MUGGLE_BASE_C_EXPORT bool StrTof(const char *str, float *pval);
-MUGGLE_BASE_C_EXPORT bool StrTod(const char *str, double *pval);
-MUGGLE_BASE_C_EXPORT bool StrTold(const char *str, long double *pval);
+MUGGLE_BASE_C_EXPORT bool MuggleStrToi(const char *str, int *pval, int base);
+MUGGLE_BASE_C_EXPORT bool MuggleStrToui(const char *str, unsigned int *pval, int base); 
+MUGGLE_BASE_C_EXPORT bool MuggleStrTol(const char *str, long *pval, int base);
+MUGGLE_BASE_C_EXPORT bool MuggleStrToul(const char *str, unsigned long *pval, int base);
+MUGGLE_BASE_C_EXPORT bool MuggleStrToll(const char *str, long long *pval, int base);
+MUGGLE_BASE_C_EXPORT bool MuggleStrToull(const char *str, unsigned long long *pval, int base);
+MUGGLE_BASE_C_EXPORT bool MuggleStrTof(const char *str, float *pval);
+MUGGLE_BASE_C_EXPORT bool MuggleStrTod(const char *str, double *pval);
+MUGGLE_BASE_C_EXPORT bool MuggleStrTold(const char *str, long double *pval);
 
 EXTERN_C_END
 

@@ -13,9 +13,9 @@
 
 EXTERN_C_BEGIN
 
-MUGGLE_BASE_C_EXPORT void* DllLoad(const char* name);
-MUGGLE_BASE_C_EXPORT void* DllQueryFunc(void* dll, const char* func_name);
-MUGGLE_BASE_C_EXPORT bool DllFree(void* dll);
+MUGGLE_BASE_C_EXPORT void* MuggleDllLoad(const char* name);
+MUGGLE_BASE_C_EXPORT void* MuggleDllQueryFunc(void* dll, const char* func_name);
+MUGGLE_BASE_C_EXPORT bool MuggleDllFree(void* dll);
 
 EXTERN_C_END
 

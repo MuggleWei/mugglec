@@ -126,7 +126,7 @@ typedef struct LogHandle_tag
 {
 	void *io_target;
 	ptrLogFunc func;
-	MutexLockHandle *mtx;
+	MuggleMutexLock *mtx;
 	int format;
 }LogHandle;
 

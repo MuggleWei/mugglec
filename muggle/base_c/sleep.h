@@ -13,9 +13,9 @@
 EXTERN_C_BEGIN
 
 // sleep
-#define MSleep(ms) SleepFunction(ms)
+#define MSleep(ms) MuggleSleepFunction(ms)
 
-MUGGLE_BASE_C_EXPORT void SleepFunction(unsigned long ms);
+MUGGLE_BASE_C_EXPORT void MuggleSleepFunction(unsigned long ms);
 
 EXTERN_C_END
 

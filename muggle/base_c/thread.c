@@ -12,9 +12,9 @@
 
 #include <process.h>
 
-bool ThreadCreate(
-	ThreadHandle *thread_handle, const ThreadAttribute *attr,
-	ThreadStartRoutine routine, void *args)
+bool MuggleThreadCreate(
+	MuggleThread *thread_handle, const MuggleThreadAttribute *attr,
+	MuggleThreadStartRoutine routine, void *args)
 {
 	DWORD create_flags;
 	LPSECURITY_ATTRIBUTES security_attr;
@@ -39,7 +39,7 @@ bool ThreadCreate(
 	return true;
 }
 
-bool ThreadWaitExit(ThreadHandle *thread_handle)
+bool MuggleThreadWaitExit(MuggleThread *thread_handle)
 {
 	MUGGLE_ASSERT_MSG(thread_handle != NULL, "Thread handle is NULL\n");
 	if (thread_handle == NULL)
@@ -62,7 +62,7 @@ bool ThreadWaitExit(ThreadHandle *thread_handle)
 	return true;
 }
 
-void ThreadAttributeSet(int flags)
+void MuggleThreadAttributeSet(int flags)
 {
 	// TODO: 
 }
@@ -72,9 +72,9 @@ void ThreadAttributeSet(int flags)
 #include <string.h>
 #include <errno.h>
 
-bool ThreadCreate(
-	ThreadHandle *thread_handle, const ThreadAttribute *attr,
-	ThreadStartRoutine routine, void *args)
+bool MuggleThreadCreate(
+	MuggleThread *thread_handle, const MuggleThreadAttribute *attr,
+	MuggleThreadStartRoutine routine, void *args)
 {
 	const pthread_attr_t *thread_attr;
 
@@ -94,7 +94,7 @@ bool ThreadCreate(
 	return true;
 }
 
-bool ThreadWaitExit(ThreadHandle *thread_handle)
+bool MuggleThreadWaitExit(MuggleThread *thread_handle)
 {
 	MUGGLE_ASSERT_MSG(thread_handle != NULL, "Thread handle is NULL\n");
 	if (thread_handle == NULL)
@@ -111,7 +111,7 @@ bool ThreadWaitExit(ThreadHandle *thread_handle)
 	return true;
 }
 
-void ThreadAttributeSet(int flags)
+void MuggleThreadAttributeSet(int flags)
 {
 	// TODO: 
 }

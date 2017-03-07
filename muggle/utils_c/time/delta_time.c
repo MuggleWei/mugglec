@@ -11,15 +11,15 @@
 
 #if MUGGLE_PLATFORM_WINDOWS
 
-void DTStart(deltaTime *dt)
+void MuggleDeltaTimeStart(MuggleDeltaTime *dt)
 {
 	QueryPerformanceCounter(&dt->start);
 }
-void DTEnd(deltaTime *dt)
+void MuggleDeltaTimeEnd(MuggleDeltaTime *dt)
 {
 	QueryPerformanceCounter(&dt->end);
 }
-double DTGetElapsedMilliseconds(deltaTime *dt)
+double MuggleGetElapsedMilliseconds(MuggleDeltaTime *dt)
 {
 	LARGE_INTEGER freq;
     QueryPerformanceFrequency(&freq);
@@ -28,15 +28,15 @@ double DTGetElapsedMilliseconds(deltaTime *dt)
 
 #else
 
-void DTStart(deltaTime *dt)
+void MuggleDeltaTimeStart(MuggleDeltaTime *dt)
 {
 	gettimeofday(&dt->start, NULL);
 }
-void DTEnd(deltaTime *dt)
+void MuggleDeltaTimeEnd(MuggleDeltaTime *dt)
 {
 	gettimeofday(&dt->end, NULL);
 }
-double DTGetElapsedMilliseconds(deltaTime *dt)
+double MuggleGetElapsedMilliseconds(MuggleDeltaTime *dt)
 {
 	return (dt->end.tv_sec - dt->start.tv_sec) * 1000.0 + (dt->end.tv_usec - dt->start.tv_usec) / 1000.0;
 }

@@ -30,31 +30,31 @@ enum eLockStatus
 	MUGGLE_LOCK_LOCKED,
 };
 
-typedef struct MutexLockHandle_tag
+typedef struct MuggleMutexLock_tag
 {
 #if MUGGLE_PLATFORM_WINDOWS
 	CRITICAL_SECTION cs;
 #else
 	pthread_mutex_t mtx;
 #endif
-}MutexLockHandle;
+}MuggleMutexLock;
 
-typedef struct SpinLockHandle_tag
+typedef struct MuggleSpinLock_tag
 {
 	volatile int64_t status;
-}SpinLockHandle;
+}MuggleSpinLock;
 
-MUGGLE_BASE_C_EXPORT bool InitMutexLock(MutexLockHandle *lock);
-MUGGLE_BASE_C_EXPORT bool DestroyMutexLock(MutexLockHandle *lock);
-MUGGLE_BASE_C_EXPORT bool LockMutexLock(MutexLockHandle *lock);
-MUGGLE_BASE_C_EXPORT bool TryLockMutexLock(MutexLockHandle *lock);
-MUGGLE_BASE_C_EXPORT bool UnlockMutexLock(MutexLockHandle *lock);
+MUGGLE_BASE_C_EXPORT bool MuggleInitMutexLock(MuggleMutexLock *lock);
+MUGGLE_BASE_C_EXPORT bool MuggleDestroyMutexLock(MuggleMutexLock *lock);
+MUGGLE_BASE_C_EXPORT bool MuggleLockMutexLock(MuggleMutexLock *lock);
+MUGGLE_BASE_C_EXPORT bool MuggleTryLockMutexLock(MuggleMutexLock *lock);
+MUGGLE_BASE_C_EXPORT bool MuggleUnlockMutexLock(MuggleMutexLock *lock);
 
-MUGGLE_BASE_C_EXPORT bool InitSpinLock(SpinLockHandle *lock);
-MUGGLE_BASE_C_EXPORT bool DestroySpinLock(SpinLockHandle *lock);
-MUGGLE_BASE_C_EXPORT bool LockSpinLock(SpinLockHandle *lock);
-MUGGLE_BASE_C_EXPORT bool TryLockSpinLock(SpinLockHandle *lock);
-MUGGLE_BASE_C_EXPORT bool UnlockSpinLock(SpinLockHandle *lock);
+MUGGLE_BASE_C_EXPORT bool MuggleInitSpinLock(MuggleSpinLock *lock);
+MUGGLE_BASE_C_EXPORT bool MuggleDestroySpinLock(MuggleSpinLock *lock);
+MUGGLE_BASE_C_EXPORT bool MuggleLockSpinLock(MuggleSpinLock *lock);
+MUGGLE_BASE_C_EXPORT bool MuggleTryLockSpinLock(MuggleSpinLock *lock);
+MUGGLE_BASE_C_EXPORT bool MuggleUnlockSpinLock(MuggleSpinLock *lock);
 
 EXTERN_C_END
 

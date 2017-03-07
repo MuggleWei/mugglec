@@ -51,14 +51,14 @@ TEST(Atomic, Set)
 	p = NULL;
 	q = (void*)&ch;
 
-	ATOMIC_Set_16(i16, 1);
+	MUGGLE_ATOMIC_Set_16(i16, 1);
 #if MUGGLE_PLATFORM_WINDOWS
-	ATOMIC_Set_32(ilong, 1);
+	MUGGLE_ATOMIC_Set_32(ilong, 1);
 #else
-	ATOMIC_Set_32(i32, 1);
+	MUGGLE_ATOMIC_Set_32(i32, 1);
 #endif
-	ATOMIC_Set_64(i64, 1);
-	ATOMIC_Set_Pointer(p, q);
+	MUGGLE_ATOMIC_Set_64(i64, 1);
+	MUGGLE_ATOMIC_Set_Pointer(p, q);
 
 	
 	EXPECT_EQ(i16, 1);
@@ -90,13 +90,13 @@ TEST(Atomic, InDecrement)
 #endif
 	i64 = 0;
 
-	ATOMIC_Increment_16(i16);
+	MUGGLE_ATOMIC_Increment_16(i16);
 #if MUGGLE_PLATFORM_WINDOWS
-	ATOMIC_Increment_32(ilong);
+	MUGGLE_ATOMIC_Increment_32(ilong);
 #else
-	ATOMIC_Increment_32(i32);
+	MUGGLE_ATOMIC_Increment_32(i32);
 #endif
-	ATOMIC_Increment_64(i64);
+	MUGGLE_ATOMIC_Increment_64(i64);
 
 	EXPECT_EQ(i16, 1);
 #if MUGGLE_PLATFORM_WINDOWS
@@ -106,13 +106,13 @@ TEST(Atomic, InDecrement)
 #endif
 	EXPECT_EQ(i64, 1);
 
-	ATOMIC_Decrement_16(i16);
+	MUGGLE_ATOMIC_Decrement_16(i16);
 #if MUGGLE_PLATFORM_WINDOWS
-	ATOMIC_Decrement_32(ilong);
+	MUGGLE_ATOMIC_Decrement_32(ilong);
 #else
-	ATOMIC_Decrement_32(i32);
+	MUGGLE_ATOMIC_Decrement_32(i32);
 #endif
-	ATOMIC_Decrement_64(i64);
+	MUGGLE_ATOMIC_Decrement_64(i64);
 
 	EXPECT_EQ(i16, 0);
 #if MUGGLE_PLATFORM_WINDOWS
@@ -140,11 +140,11 @@ TEST(Atomic, AddSub)
 	i64 = 0;
 
 #if MUGGLE_PLATFORM_WINDOWS
-	ATOMIC_Add_32(ilong, 5);
+	MUGGLE_ATOMIC_Add_32(ilong, 5);
 #else
-	ATOMIC_Add_32(i32, 5);
+	MUGGLE_ATOMIC_Add_32(i32, 5);
 #endif
-	ATOMIC_Add_64(i64, 5);
+	MUGGLE_ATOMIC_Add_64(i64, 5);
 
 #if MUGGLE_PLATFORM_WINDOWS
 	EXPECT_EQ(ilong, 5);
@@ -177,14 +177,14 @@ TEST(Atomic, CAS)
 	p = NULL;
 	q = (void*)&ch;
 
-	ATOMIC_CAS_16(i16, 0, 5);
+	MUGGLE_ATOMIC_CAS_16(i16, 0, 5);
 #if MUGGLE_PLATFORM_WINDOWS
-	ATOMIC_CAS_32(ilong, 0, 5);
+	MUGGLE_ATOMIC_CAS_32(ilong, 0, 5);
 #else
-	ATOMIC_CAS_32(i32, 0, 5);
+	MUGGLE_ATOMIC_CAS_32(i32, 0, 5);
 #endif
-	ATOMIC_CAS_64(i64, 0, 5);
-	ATOMIC_CAS_Pointer(p, NULL, q);
+	MUGGLE_ATOMIC_CAS_64(i64, 0, 5);
+	MUGGLE_ATOMIC_CAS_Pointer(p, NULL, q);
 
 	EXPECT_EQ(i16, 5);
 #if MUGGLE_PLATFORM_WINDOWS

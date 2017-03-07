@@ -13,7 +13,7 @@
 
 #include <windows.h>
 
-void* DllLoad(const char* name)
+void* MuggleDllLoad(const char* name)
 {
 	const char* suffix = ".dll";
 	char buf[MUGGLE_MAX_PATH];
@@ -21,7 +21,7 @@ void* DllLoad(const char* name)
 
 	size_t len = strlen(name);
 	memcpy(buf, name, len);
-	if (!StrEndsWith(buf, suffix))
+	if (!MuggleStrEndsWith(buf, suffix))
 	{
 		memcpy(buf + len, suffix, 4);
 	}
@@ -32,12 +32,12 @@ void* DllLoad(const char* name)
 
 	return (void*)LoadLibraryW(unicode_buf);
 }
-void* DllQueryFunc(void* dll, const char* func_name)
+void* MuggleDllQueryFunc(void* dll, const char* func_name)
 {
 	MUGGLE_ASSERT_MSG(dll != NULL, "Dynamic library is null");
 	return (void*)GetProcAddress((HMODULE)dll, func_name);
 }
-bool DllFree(void* dll)
+bool MuggleDllFree(void* dll)
 {
 	MUGGLE_ASSERT_MSG(dll != NULL, "Dynamic library is null");
 	return (bool)FreeLibrary((HMODULE)dll);
@@ -48,7 +48,7 @@ bool DllFree(void* dll)
 #include <dlfcn.h>
 #include <string.h>
 
-void* DllLoad(const char* name)
+void* MuggleDllLoad(const char* name)
 {
 	const char* suffix = ".so";
 	char buf[MUGGLE_MAX_PATH];
@@ -56,19 +56,19 @@ void* DllLoad(const char* name)
 
 	size_t len = strlen(name);
 	memcpy(buf, name, len);
-	if (!StrEndsWith(buf, suffix))
+	if (!MuggleStrEndsWith(buf, suffix))
 	{
 		memcpy(buf + len, suffix, 3);
 	}	
 
 	return dlopen(buf, RTLD_NOW);
 }
-void* DllQueryFunc(void* dll, const char* func_name)
+void* MuggleDllQueryFunc(void* dll, const char* func_name)
 {
 	MUGGLE_ASSERT_MSG(dll != NULL, "Dynamic library is null");
 	return dlsym(dll, func_name);
 }
-bool DllFree(void* dll)
+bool MuggleDllFree(void* dll)
 {
 	MUGGLE_ASSERT_MSG(dll != NULL, "Dynamic library is null");
 	return dlclose(dll) == 0;

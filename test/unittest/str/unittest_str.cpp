@@ -68,7 +68,7 @@ TEST(Str, Operator)
 	}
 	--q;
 
-	char *str = StrAllocByDiff(p, q);
+	char *str = MuggleStrAllocByDiff(p, q);
 	ASSERT_TRUE(strcmp(str, p) == 0);	
 
 	// split line into words
@@ -80,7 +80,7 @@ TEST(Str, Operator)
 	do
 	{
 		MUGGLE_SKIP_BLANK(p_line);
-		p_line = StrSplitLineToWords(p_line, w + sum, &cnt, max_word_num - sum);
+		p_line = MuggleStrSplitLineToWords(p_line, w + sum, &cnt, max_word_num - sum);
 		sum += cnt;
 		MUGGLE_SKIP_BLANK(p_line);
 	} while (*p_line != '\0');
@@ -96,29 +96,29 @@ TEST(Str, Operator)
 	free(str);
 
 	// sub string
-	ASSERT_TRUE(StrStartsWith("Hello world", "H"));
-	ASSERT_TRUE(StrStartsWith("Hello world", "He"));
-	ASSERT_TRUE(StrStartsWith("Hello world", "Hel"));
-	ASSERT_TRUE(StrStartsWith("Hello world", "Hell"));
-	ASSERT_TRUE(StrStartsWith("Hello world", "Hello"));
-	ASSERT_TRUE(StrStartsWith("Hello world", "Hello "));
-	ASSERT_TRUE(StrStartsWith("Hello world", "Hello w"));
-	ASSERT_TRUE(StrStartsWith("Hello world", "Hello wo"));
-	ASSERT_TRUE(StrStartsWith("Hello world", "Hello wor"));
-	ASSERT_TRUE(StrStartsWith("Hello world", "Hello worl"));
-	ASSERT_TRUE(StrStartsWith("Hello world", "Hello world"));
+	ASSERT_TRUE(MuggleStrStartsWith("Hello world", "H"));
+	ASSERT_TRUE(MuggleStrStartsWith("Hello world", "He"));
+	ASSERT_TRUE(MuggleStrStartsWith("Hello world", "Hel"));
+	ASSERT_TRUE(MuggleStrStartsWith("Hello world", "Hell"));
+	ASSERT_TRUE(MuggleStrStartsWith("Hello world", "Hello"));
+	ASSERT_TRUE(MuggleStrStartsWith("Hello world", "Hello "));
+	ASSERT_TRUE(MuggleStrStartsWith("Hello world", "Hello w"));
+	ASSERT_TRUE(MuggleStrStartsWith("Hello world", "Hello wo"));
+	ASSERT_TRUE(MuggleStrStartsWith("Hello world", "Hello wor"));
+	ASSERT_TRUE(MuggleStrStartsWith("Hello world", "Hello worl"));
+	ASSERT_TRUE(MuggleStrStartsWith("Hello world", "Hello world"));
 
-	ASSERT_TRUE(StrEndsWith("Hello world", "d"));
-	ASSERT_TRUE(StrEndsWith("Hello world", "ld"));
-	ASSERT_TRUE(StrEndsWith("Hello world", "rld"));
-	ASSERT_TRUE(StrEndsWith("Hello world", "orld"));
-	ASSERT_TRUE(StrEndsWith("Hello world", "world"));
-	ASSERT_TRUE(StrEndsWith("Hello world", " world"));
-	ASSERT_TRUE(StrEndsWith("Hello world", "o world"));
-	ASSERT_TRUE(StrEndsWith("Hello world", "lo world"));
-	ASSERT_TRUE(StrEndsWith("Hello world", "llo world"));
-	ASSERT_TRUE(StrEndsWith("Hello world", "ello world"));
-	ASSERT_TRUE(StrEndsWith("Hello world", "Hello world"));
+	ASSERT_TRUE(MuggleStrEndsWith("Hello world", "d"));
+	ASSERT_TRUE(MuggleStrEndsWith("Hello world", "ld"));
+	ASSERT_TRUE(MuggleStrEndsWith("Hello world", "rld"));
+	ASSERT_TRUE(MuggleStrEndsWith("Hello world", "orld"));
+	ASSERT_TRUE(MuggleStrEndsWith("Hello world", "world"));
+	ASSERT_TRUE(MuggleStrEndsWith("Hello world", " world"));
+	ASSERT_TRUE(MuggleStrEndsWith("Hello world", "o world"));
+	ASSERT_TRUE(MuggleStrEndsWith("Hello world", "lo world"));
+	ASSERT_TRUE(MuggleStrEndsWith("Hello world", "llo world"));
+	ASSERT_TRUE(MuggleStrEndsWith("Hello world", "ello world"));
+	ASSERT_TRUE(MuggleStrEndsWith("Hello world", "Hello world"));
 
 }
 
@@ -128,36 +128,36 @@ TEST(Str, Toi)
 	char buf[buf_size];
 	int val;
 
-	EXPECT_TRUE(StrToi("1", &val, 0));
+	EXPECT_TRUE(MuggleStrToi("1", &val, 0));
 	EXPECT_EQ(val, 1);
-	EXPECT_TRUE(StrToi("22", &val, 0));
+	EXPECT_TRUE(MuggleStrToi("22", &val, 0));
 	EXPECT_EQ(val, 22);
-	EXPECT_TRUE(StrToi("0x10", &val, 0));
+	EXPECT_TRUE(MuggleStrToi("0x10", &val, 0));
 	EXPECT_EQ(val, 0x10);
-	EXPECT_TRUE(StrToi("0xA6", &val, 0));
+	EXPECT_TRUE(MuggleStrToi("0xA6", &val, 0));
 	EXPECT_EQ(val, 0xA6);
-	EXPECT_TRUE(StrToi("010", &val, 0));
+	EXPECT_TRUE(MuggleStrToi("010", &val, 0));
 	EXPECT_EQ(val, 010);
-	EXPECT_TRUE(StrToi("-15", &val, 0));
+	EXPECT_TRUE(MuggleStrToi("-15", &val, 0));
 	EXPECT_EQ(val, -15);
 	snprintf(buf, buf_size, "%d", INT_MAX);
-	EXPECT_TRUE(StrToi(buf, &val, 0));
+	EXPECT_TRUE(MuggleStrToi(buf, &val, 0));
 	EXPECT_EQ(val, INT_MAX);
 	snprintf(buf, buf_size, "%d", INT_MIN);
-	EXPECT_TRUE(StrToi(buf, &val, 0));
+	EXPECT_TRUE(MuggleStrToi(buf, &val, 0));
 	EXPECT_EQ(val, INT_MIN);
 
-	EXPECT_FALSE(StrToi(NULL, &val, 0));
-	EXPECT_FALSE(StrToi("", NULL, 0));
-	EXPECT_FALSE(StrToi("", &val, 0));
-	EXPECT_FALSE(StrToi("1L", &val, 0));
-	EXPECT_FALSE(StrToi("22l", &val, 0));
-	EXPECT_FALSE(StrToi("jdkf", &val, 0));
-	EXPECT_FALSE(StrToi("1.1f", &val, 0));
+	EXPECT_FALSE(MuggleStrToi(NULL, &val, 0));
+	EXPECT_FALSE(MuggleStrToi("", NULL, 0));
+	EXPECT_FALSE(MuggleStrToi("", &val, 0));
+	EXPECT_FALSE(MuggleStrToi("1L", &val, 0));
+	EXPECT_FALSE(MuggleStrToi("22l", &val, 0));
+	EXPECT_FALSE(MuggleStrToi("jdkf", &val, 0));
+	EXPECT_FALSE(MuggleStrToi("1.1f", &val, 0));
 	snprintf(buf, buf_size, "1%d", INT_MAX);
-	EXPECT_FALSE(StrToi(buf, &val, 0));
+	EXPECT_FALSE(MuggleStrToi(buf, &val, 0));
 	snprintf(buf, buf_size, "%d1", INT_MIN);
-	EXPECT_FALSE(StrToi(buf, &val, 0));
+	EXPECT_FALSE(MuggleStrToi(buf, &val, 0));
 }
 TEST(Str, Tou)
 {
@@ -165,30 +165,30 @@ TEST(Str, Tou)
 	char buf[buf_size];
 	unsigned int val;
 
-	EXPECT_TRUE(StrToui("1", &val, 0));
+	EXPECT_TRUE(MuggleStrToui("1", &val, 0));
 	EXPECT_EQ(val, 1u);
-	EXPECT_TRUE(StrToui("22", &val, 0));
+	EXPECT_TRUE(MuggleStrToui("22", &val, 0));
 	EXPECT_EQ(val, 22u);
-	EXPECT_TRUE(StrToui("0x10", &val, 0));
+	EXPECT_TRUE(MuggleStrToui("0x10", &val, 0));
 	EXPECT_EQ(val, (unsigned int)0x10);
-	EXPECT_TRUE(StrToui("0xA6", &val, 0));
+	EXPECT_TRUE(MuggleStrToui("0xA6", &val, 0));
 	EXPECT_EQ(val, (unsigned int)0xA6);
-	EXPECT_TRUE(StrToui("010", &val, 0));
+	EXPECT_TRUE(MuggleStrToui("010", &val, 0));
 	EXPECT_EQ(val, (unsigned int)010);
 	// This is not sure, dependent the size of ULONG_MAX and UINT_MAX
-	// EXPECT_TRUE(StrToui("-15", &val, 0));
+	// EXPECT_TRUE(MuggleStrToui("-15", &val, 0));
 	// EXPECT_EQ(val, (unsigned int)-15);
 	snprintf(buf, buf_size, "%u", UINT_MAX);
-	EXPECT_TRUE(StrToui(buf, &val, 0));
+	EXPECT_TRUE(MuggleStrToui(buf, &val, 0));
 	EXPECT_EQ(val, UINT_MAX);
 
-	EXPECT_FALSE(StrToui(NULL, &val, 0));
-	EXPECT_FALSE(StrToui("", NULL, 0));
-	EXPECT_FALSE(StrToui("", &val, 0));
-	EXPECT_FALSE(StrToui("1L", &val, 0));
-	EXPECT_FALSE(StrToui("22l", &val, 0));
-	EXPECT_FALSE(StrToui("jdkf", &val, 0));
-	EXPECT_FALSE(StrToui("1.1f", &val, 0));
+	EXPECT_FALSE(MuggleStrToui(NULL, &val, 0));
+	EXPECT_FALSE(MuggleStrToui("", NULL, 0));
+	EXPECT_FALSE(MuggleStrToui("", &val, 0));
+	EXPECT_FALSE(MuggleStrToui("1L", &val, 0));
+	EXPECT_FALSE(MuggleStrToui("22l", &val, 0));
+	EXPECT_FALSE(MuggleStrToui("jdkf", &val, 0));
+	EXPECT_FALSE(MuggleStrToui("1.1f", &val, 0));
 	snprintf(buf, buf_size, "1%u", UINT_MAX);
 }
 TEST(Str, Tol)
@@ -197,36 +197,36 @@ TEST(Str, Tol)
 	char buf[buf_size];
 	long val;
 
-	EXPECT_TRUE(StrTol("1", &val, 0));
+	EXPECT_TRUE(MuggleStrTol("1", &val, 0));
 	EXPECT_EQ(val, 1);
-	EXPECT_TRUE(StrTol("22", &val, 0));
+	EXPECT_TRUE(MuggleStrTol("22", &val, 0));
 	EXPECT_EQ(val, 22);
-	EXPECT_TRUE(StrTol("0x10", &val, 0));
+	EXPECT_TRUE(MuggleStrTol("0x10", &val, 0));
 	EXPECT_EQ(val, 0x10);
-	EXPECT_TRUE(StrTol("0xA6", &val, 0));
+	EXPECT_TRUE(MuggleStrTol("0xA6", &val, 0));
 	EXPECT_EQ(val, 0xA6);
-	EXPECT_TRUE(StrTol("010", &val, 0));
+	EXPECT_TRUE(MuggleStrTol("010", &val, 0));
 	EXPECT_EQ(val, 010);
-	EXPECT_TRUE(StrTol("-15", &val, 0));
+	EXPECT_TRUE(MuggleStrTol("-15", &val, 0));
 	EXPECT_EQ(val, -15);
 	snprintf(buf, buf_size, "%ld", LONG_MAX);
-	EXPECT_TRUE(StrTol(buf, &val, 0));
+	EXPECT_TRUE(MuggleStrTol(buf, &val, 0));
 	EXPECT_EQ(val, LONG_MAX);
 	snprintf(buf, buf_size, "%ld", LONG_MIN);
-	EXPECT_TRUE(StrTol(buf, &val, 0));
+	EXPECT_TRUE(MuggleStrTol(buf, &val, 0));
 	EXPECT_EQ(val, LONG_MIN);
 
-	EXPECT_FALSE(StrTol(NULL, &val, 0));
-	EXPECT_FALSE(StrTol("", NULL, 0));
-	EXPECT_FALSE(StrTol("", &val, 0));
-	EXPECT_FALSE(StrTol("1L", &val, 0));
-	EXPECT_FALSE(StrTol("22l", &val, 0));
-	EXPECT_FALSE(StrTol("jdkf", &val, 0));
-	EXPECT_FALSE(StrTol("1.1f", &val, 0));
+	EXPECT_FALSE(MuggleStrTol(NULL, &val, 0));
+	EXPECT_FALSE(MuggleStrTol("", NULL, 0));
+	EXPECT_FALSE(MuggleStrTol("", &val, 0));
+	EXPECT_FALSE(MuggleStrTol("1L", &val, 0));
+	EXPECT_FALSE(MuggleStrTol("22l", &val, 0));
+	EXPECT_FALSE(MuggleStrTol("jdkf", &val, 0));
+	EXPECT_FALSE(MuggleStrTol("1.1f", &val, 0));
 	snprintf(buf, buf_size, "1%ld", LONG_MAX);
-	EXPECT_FALSE(StrTol(buf, &val, 0));
+	EXPECT_FALSE(MuggleStrTol(buf, &val, 0));
 	snprintf(buf, buf_size, "%ld1", LONG_MIN);
-	EXPECT_FALSE(StrTol(buf, &val, 0));
+	EXPECT_FALSE(MuggleStrTol(buf, &val, 0));
 }
 TEST(Str, Toul)
 {
@@ -234,29 +234,29 @@ TEST(Str, Toul)
 	char buf[buf_size];
 	unsigned long val;
 
-	EXPECT_TRUE(StrToul("1", &val, 0));
+	EXPECT_TRUE(MuggleStrToul("1", &val, 0));
 	EXPECT_EQ(val, 1u);
-	EXPECT_TRUE(StrToul("22", &val, 0));
+	EXPECT_TRUE(MuggleStrToul("22", &val, 0));
 	EXPECT_EQ(val, 22u);
-	EXPECT_TRUE(StrToul("0x10", &val, 0));
+	EXPECT_TRUE(MuggleStrToul("0x10", &val, 0));
 	EXPECT_EQ(val, (unsigned long)0x10);
-	EXPECT_TRUE(StrToul("0xA6", &val, 0));
+	EXPECT_TRUE(MuggleStrToul("0xA6", &val, 0));
 	EXPECT_EQ(val, (unsigned long)0xA6);
-	EXPECT_TRUE(StrToul("010", &val, 0));
+	EXPECT_TRUE(MuggleStrToul("010", &val, 0));
 	EXPECT_EQ(val, (unsigned long)010);
-	EXPECT_TRUE(StrToul("-15", &val, 0));
+	EXPECT_TRUE(MuggleStrToul("-15", &val, 0));
 	EXPECT_EQ(val, (unsigned long)-15);
 	snprintf(buf, buf_size, "%lu", ULONG_MAX);
-	EXPECT_TRUE(StrToul(buf, &val, 0));
+	EXPECT_TRUE(MuggleStrToul(buf, &val, 0));
 	EXPECT_EQ(val, ULONG_MAX);
 
-	EXPECT_FALSE(StrToul(NULL, &val, 0));
-	EXPECT_FALSE(StrToul("", NULL, 0));
-	EXPECT_FALSE(StrToul("", &val, 0));
-	EXPECT_FALSE(StrToul("1L", &val, 0));
-	EXPECT_FALSE(StrToul("22l", &val, 0));
-	EXPECT_FALSE(StrToul("jdkf", &val, 0));
-	EXPECT_FALSE(StrToul("1.1f", &val, 0));
+	EXPECT_FALSE(MuggleStrToul(NULL, &val, 0));
+	EXPECT_FALSE(MuggleStrToul("", NULL, 0));
+	EXPECT_FALSE(MuggleStrToul("", &val, 0));
+	EXPECT_FALSE(MuggleStrToul("1L", &val, 0));
+	EXPECT_FALSE(MuggleStrToul("22l", &val, 0));
+	EXPECT_FALSE(MuggleStrToul("jdkf", &val, 0));
+	EXPECT_FALSE(MuggleStrToul("1.1f", &val, 0));
 	snprintf(buf, buf_size, "1%lu", ULONG_MAX);
 }
 TEST(Str, Toll)
@@ -265,36 +265,36 @@ TEST(Str, Toll)
 	char buf[buf_size];
 	long long val;
 
-	EXPECT_TRUE(StrToll("1", &val, 0));
+	EXPECT_TRUE(MuggleStrToll("1", &val, 0));
 	EXPECT_EQ(val, (long long)1);
-	EXPECT_TRUE(StrToll("22", &val, 0));
+	EXPECT_TRUE(MuggleStrToll("22", &val, 0));
 	EXPECT_EQ(val, (long long)22);
-	EXPECT_TRUE(StrToll("0x10", &val, 0));
+	EXPECT_TRUE(MuggleStrToll("0x10", &val, 0));
 	EXPECT_EQ(val, (long long)0x10);
-	EXPECT_TRUE(StrToll("0xA6", &val, 0));
+	EXPECT_TRUE(MuggleStrToll("0xA6", &val, 0));
 	EXPECT_EQ(val, (long long)0xA6);
-	EXPECT_TRUE(StrToll("010", &val, 0));
+	EXPECT_TRUE(MuggleStrToll("010", &val, 0));
 	EXPECT_EQ(val, (long long)010);
-	EXPECT_TRUE(StrToll("-15", &val, 0));
+	EXPECT_TRUE(MuggleStrToll("-15", &val, 0));
 	EXPECT_EQ(val, (long long)-15);
 	snprintf(buf, buf_size, "%lld", LLONG_MAX);
-	EXPECT_TRUE(StrToll(buf, &val, 0));
+	EXPECT_TRUE(MuggleStrToll(buf, &val, 0));
 	EXPECT_EQ(val, LLONG_MAX);
 	snprintf(buf, buf_size, "%lld", LLONG_MIN);
-	EXPECT_TRUE(StrToll(buf, &val, 0));
+	EXPECT_TRUE(MuggleStrToll(buf, &val, 0));
 	EXPECT_EQ(val, LLONG_MIN);
 
-	EXPECT_FALSE(StrToll(NULL, &val, 0));
-	EXPECT_FALSE(StrToll("", NULL, 0));
-	EXPECT_FALSE(StrToll("", &val, 0));
-	EXPECT_FALSE(StrToll("1L", &val, 0));
-	EXPECT_FALSE(StrToll("22l", &val, 0));
-	EXPECT_FALSE(StrToll("jdkf", &val, 0));
-	EXPECT_FALSE(StrToll("1.1f", &val, 0));
+	EXPECT_FALSE(MuggleStrToll(NULL, &val, 0));
+	EXPECT_FALSE(MuggleStrToll("", NULL, 0));
+	EXPECT_FALSE(MuggleStrToll("", &val, 0));
+	EXPECT_FALSE(MuggleStrToll("1L", &val, 0));
+	EXPECT_FALSE(MuggleStrToll("22l", &val, 0));
+	EXPECT_FALSE(MuggleStrToll("jdkf", &val, 0));
+	EXPECT_FALSE(MuggleStrToll("1.1f", &val, 0));
 	snprintf(buf, buf_size, "1%lld", LLONG_MAX);
-	EXPECT_FALSE(StrToll(buf, &val, 0));
+	EXPECT_FALSE(MuggleStrToll(buf, &val, 0));
 	snprintf(buf, buf_size, "%lld1", LLONG_MIN);
-	EXPECT_FALSE(StrToll(buf, &val, 0));
+	EXPECT_FALSE(MuggleStrToll(buf, &val, 0));
 }
 TEST(Str, Toull)
 {
@@ -302,29 +302,29 @@ TEST(Str, Toull)
 	char buf[buf_size];
 	unsigned long long val;
 
-	EXPECT_TRUE(StrToull("1", &val, 0));
+	EXPECT_TRUE(MuggleStrToull("1", &val, 0));
 	EXPECT_EQ(val, (unsigned long long)1);
-	EXPECT_TRUE(StrToull("22", &val, 0));
+	EXPECT_TRUE(MuggleStrToull("22", &val, 0));
 	EXPECT_EQ(val, (unsigned long long)22);
-	EXPECT_TRUE(StrToull("0x10", &val, 0));
+	EXPECT_TRUE(MuggleStrToull("0x10", &val, 0));
 	EXPECT_EQ(val, (unsigned long long)0x10);
-	EXPECT_TRUE(StrToull("0xA6", &val, 0));
+	EXPECT_TRUE(MuggleStrToull("0xA6", &val, 0));
 	EXPECT_EQ(val, (unsigned long long)0xA6);
-	EXPECT_TRUE(StrToull("010", &val, 0));
+	EXPECT_TRUE(MuggleStrToull("010", &val, 0));
 	EXPECT_EQ(val, (unsigned long long)010);
-	EXPECT_TRUE(StrToull("-15", &val, 0));
+	EXPECT_TRUE(MuggleStrToull("-15", &val, 0));
 	EXPECT_EQ(val, (unsigned long long)-15);
 	snprintf(buf, buf_size, "%llu", ULLONG_MAX);
-	EXPECT_TRUE(StrToull(buf, &val, 0));
+	EXPECT_TRUE(MuggleStrToull(buf, &val, 0));
 	EXPECT_EQ(val, ULLONG_MAX);
 
-	EXPECT_FALSE(StrToull(NULL, &val, 0));
-	EXPECT_FALSE(StrToull("", NULL, 0));
-	EXPECT_FALSE(StrToull("", &val, 0));
-	EXPECT_FALSE(StrToull("1L", &val, 0));
-	EXPECT_FALSE(StrToull("22l", &val, 0));
-	EXPECT_FALSE(StrToull("jdkf", &val, 0));
-	EXPECT_FALSE(StrToull("1.1f", &val, 0));
+	EXPECT_FALSE(MuggleStrToull(NULL, &val, 0));
+	EXPECT_FALSE(MuggleStrToull("", NULL, 0));
+	EXPECT_FALSE(MuggleStrToull("", &val, 0));
+	EXPECT_FALSE(MuggleStrToull("1L", &val, 0));
+	EXPECT_FALSE(MuggleStrToull("22l", &val, 0));
+	EXPECT_FALSE(MuggleStrToull("jdkf", &val, 0));
+	EXPECT_FALSE(MuggleStrToull("1.1f", &val, 0));
 	snprintf(buf, buf_size, "1%llu", ULLONG_MAX);
 }
 TEST(Str, Tof)
@@ -333,26 +333,26 @@ TEST(Str, Tof)
 	char buf[buf_size];
 	float val;
 
-	EXPECT_TRUE(StrTof("1.0", &val));
+	EXPECT_TRUE(MuggleStrTof("1.0", &val));
 	EXPECT_FLOAT_EQ(val, 1.0f);
-	EXPECT_TRUE(StrTof("20.0", &val));
+	EXPECT_TRUE(MuggleStrTof("20.0", &val));
 	EXPECT_FLOAT_EQ(val, 20.0f);
-	EXPECT_TRUE(StrTof("-15.0", &val));
+	EXPECT_TRUE(MuggleStrTof("-15.0", &val));
 	EXPECT_FLOAT_EQ(val, -15.0f);
 	snprintf(buf, buf_size, "%.10e", FLT_MAX);
-	EXPECT_TRUE(StrTof(buf, &val));
+	EXPECT_TRUE(MuggleStrTof(buf, &val));
 	EXPECT_FLOAT_EQ(val, FLT_MAX);
 	snprintf(buf, buf_size, "%.10e", FLT_MIN);
-	EXPECT_TRUE(StrTof(buf, &val));
+	EXPECT_TRUE(MuggleStrTof(buf, &val));
 	EXPECT_NEAR(val, FLT_MIN, FLT_EPSILON);
 
-	EXPECT_FALSE(StrTof(NULL, &val));
-	EXPECT_FALSE(StrTof("", NULL));
-	EXPECT_FALSE(StrTof("", &val));
-	EXPECT_FALSE(StrTof("1f", &val));
-	EXPECT_FALSE(StrTof("1.1.1", &val));
+	EXPECT_FALSE(MuggleStrTof(NULL, &val));
+	EXPECT_FALSE(MuggleStrTof("", NULL));
+	EXPECT_FALSE(MuggleStrTof("", &val));
+	EXPECT_FALSE(MuggleStrTof("1f", &val));
+	EXPECT_FALSE(MuggleStrTof("1.1.1", &val));
 	snprintf(buf, buf_size, "1%.10e", FLT_MAX);
-	EXPECT_FALSE(StrTof(buf, &val));
+	EXPECT_FALSE(MuggleStrTof(buf, &val));
 }
 TEST(Str, Tod)
 {
@@ -360,24 +360,24 @@ TEST(Str, Tod)
 	char buf[buf_size];
 	double val;
 
-	EXPECT_TRUE(StrTod("1.0", &val));
+	EXPECT_TRUE(MuggleStrTod("1.0", &val));
 	EXPECT_DOUBLE_EQ(val, 1.0);
-	EXPECT_TRUE(StrTod("20.0", &val));
+	EXPECT_TRUE(MuggleStrTod("20.0", &val));
 	EXPECT_DOUBLE_EQ(val, 20.0);
-	EXPECT_TRUE(StrTod("-15.0", &val));
+	EXPECT_TRUE(MuggleStrTod("-15.0", &val));
 	EXPECT_DOUBLE_EQ(val, -15.0);
 	// snprintf(buf, buf_size, "%.10e", DBL_MAX);
-	// EXPECT_TRUE(StrTod(buf, &val));
+	// EXPECT_TRUE(MuggleStrTod(buf, &val));
 	// EXPECT_DOUBLE_EQ(val, DBL_MAX);
 	snprintf(buf, buf_size, "%.10e", DBL_MIN);
-	EXPECT_TRUE(StrTod(buf, &val));
+	EXPECT_TRUE(MuggleStrTod(buf, &val));
 	EXPECT_NEAR(val, FLT_MIN, DBL_EPSILON);
 
-	EXPECT_FALSE(StrTod(NULL, &val));
-	EXPECT_FALSE(StrTod("", NULL));
-	EXPECT_FALSE(StrTod("", &val));
-	EXPECT_FALSE(StrTod("1f", &val));
-	EXPECT_FALSE(StrTod("1.1.1", &val));
+	EXPECT_FALSE(MuggleStrTod(NULL, &val));
+	EXPECT_FALSE(MuggleStrTod("", NULL));
+	EXPECT_FALSE(MuggleStrTod("", &val));
+	EXPECT_FALSE(MuggleStrTod("1f", &val));
+	EXPECT_FALSE(MuggleStrTod("1.1.1", &val));
 	snprintf(buf, buf_size, "1%.10e", DBL_MAX);
-	EXPECT_FALSE(StrTod(buf, &val));
+	EXPECT_FALSE(MuggleStrTod(buf, &val));
 }

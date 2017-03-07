@@ -13,24 +13,24 @@
 #include <errno.h>
 #include "muggle/base_c/log.h"
 
-bool FileGetAbsolutePath(const char* in_file_name, char* out_file_path)
+bool MuggleGetAbsolutePath(const char* in_file_name, char* out_file_path)
 {
-	if (FileIsAbsolutePath(in_file_name))
+	if (MuggleIsAbsolutePath(in_file_name))
 	{
 		return true;
 	}
 
 	char module_path[MUGGLE_MAX_PATH];
-	FileGetProcessPath(module_path);
+	MuggleGetProcessPath(module_path);
 
-	FileGetDirectory(module_path, out_file_path);
+	MuggleGetDirectory(module_path, out_file_path);
 	size_t len = strlen(out_file_path);
 
 	memcpy(&out_file_path[len], in_file_name, strlen(in_file_name) + 1);
 
 	return true;
 }
-bool FileGetDirectory(const char* file_path, char* dir)
+bool MuggleGetDirectory(const char* file_path, char* dir)
 {
 	size_t len = strlen(file_path);
 	while (len > 0)
@@ -52,7 +52,7 @@ bool FileGetDirectory(const char* file_path, char* dir)
 
 	return true;
 }
-bool FileRead(const char* file_path, char** ptr_bytes, long* ptr_num)
+bool MuggleReadFromFile(const char* file_path, char** ptr_bytes, long* ptr_num)
 {
 	long file_size;
 	size_t read_size;
@@ -91,7 +91,7 @@ bool FileRead(const char* file_path, char** ptr_bytes, long* ptr_num)
 
 #include <windows.h>
 
-void FileGetProcessPath(char* file_path)
+void MuggleGetProcessPath(char* file_path)
 {
 	// convert to unicode characters
 	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
@@ -100,7 +100,7 @@ void FileGetProcessPath(char* file_path)
 	// convert to utf8
 	WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, file_path, MUGGLE_MAX_PATH, NULL, FALSE);
 }
-bool FileIsExist(const char* file_path)
+bool MuggleIsFileExist(const char* file_path)
 {
 	// convert to utf16 characters
 	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
@@ -112,7 +112,7 @@ bool FileIsExist(const char* file_path)
 		return false;
 	return true;
 }
-bool FileIsAbsolutePath(const char* file_path)
+bool MuggleIsAbsolutePath(const char* file_path)
 {
 	size_t len = strlen(file_path);
 	if (len > 2 &&
@@ -125,7 +125,7 @@ bool FileIsAbsolutePath(const char* file_path)
 
 	return false;
 }
-bool FileDelete(const char *file_path)
+bool MuggleDeleteFile(const char *file_path)
 {
 	// convert to utf16 characters
 	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
@@ -134,7 +134,7 @@ bool FileDelete(const char *file_path)
 	return DeleteFileW(unicode_buf);
 }
 
-bool FileHandleIsValid(FileHandle *fh)
+bool MuggleFileIsValid(MuggleFile *fh)
 {
 	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
 	if (fh == NULL)
@@ -144,7 +144,7 @@ bool FileHandleIsValid(FileHandle *fh)
 
 	return fh->fd != NULL;
 }
-bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int mode)
+bool MuggleFileOpen(MuggleFile *fh, const char* file_path, int flags, int mode)
 {
 	DWORD dwDesiredAccess, dwShareMode, dwCreationDisposition;
 	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
@@ -220,7 +220,7 @@ bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int mode)
 
 	return true;
 }
-bool FileHandleClose(FileHandle *fh)
+bool MuggleFileClose(MuggleFile *fh)
 {
 	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
 	if (fh == NULL)
@@ -239,7 +239,7 @@ bool FileHandleClose(FileHandle *fh)
 
 	return true;
 }
-long long FileHandleSeek(FileHandle *fh, long long offset, int whence)
+long long MuggleFileSeek(MuggleFile *fh, long long offset, int whence)
 {
 	LARGE_INTEGER li, li_ret;
 	DWORD move_method;
@@ -263,7 +263,7 @@ long long FileHandleSeek(FileHandle *fh, long long offset, int whence)
 
 	return (long long)li_ret.QuadPart;
 }
-long FileHandleWrite(FileHandle *fh, const void *buf, long cnt_bytes)
+long MuggleFileWrite(MuggleFile *fh, const void *buf, long cnt_bytes)
 {
 	DWORD num_write;
 
@@ -281,7 +281,7 @@ long FileHandleWrite(FileHandle *fh, const void *buf, long cnt_bytes)
 
 	return (long)num_write;
 }
-long FileHandleRead(FileHandle *fh, void *buf, long cnt_bytes)
+long MuggleFileRead(MuggleFile *fh, void *buf, long cnt_bytes)
 {
 	DWORD num_read;
 
@@ -308,7 +308,7 @@ long FileHandleRead(FileHandle *fh, void *buf, long cnt_bytes)
 #include <fcntl.h>
 #include <unistd.h>
 
-void FileGetProcessPath(char* file_path)
+void MuggleGetProcessPath(char* file_path)
 {
 	char sz_tmp[64], buf[MUGGLE_MAX_PATH];
 	ssize_t len;
@@ -319,14 +319,14 @@ void FileGetProcessPath(char* file_path)
 	if (len >= 0)
 		file_path[len] = '\0';
 }
-bool FileIsExist(const char* file_path)
+bool MuggleIsFileExist(const char* file_path)
 {
 	if (access(file_path, F_OK) != -1)
 		return true;
 
 	return false;
 }
-bool FileIsAbsolutePath(const char* file_path)
+bool MuggleIsAbsolutePath(const char* file_path)
 {
 	size_t len = strlen(file_path);
 	if (len > 1 && file_path[0] == '/')
@@ -336,12 +336,12 @@ bool FileIsAbsolutePath(const char* file_path)
 
 	return false;
 }
-bool FileDelete(const char *file_path)
+bool MuggleDeleteFile(const char *file_path)
 {
 	return remove(file_path) != -1;
 }
 
-bool FileHandleIsValid(FileHandle *fh)
+bool MuggleFileIsValid(MuggleFile *fh)
 {
 	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
 	if (fh == NULL)
@@ -351,7 +351,7 @@ bool FileHandleIsValid(FileHandle *fh)
 
 	return fh->fd != -1;
 }
-bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int attr)
+bool MuggleFileOpen(MuggleFile *fh, const char* file_path, int flags, int attr)
 {
 	int access_mode, addition_flags;
 	mode_t mode;
@@ -424,7 +424,7 @@ bool FileHandleOpen(FileHandle *fh, const char* file_path, int flags, int attr)
 
 	return true;
 }
-bool FileHandleClose(FileHandle *fh)
+bool MuggleFileClose(MuggleFile *fh)
 {
 	MUGGLE_ASSERT_MSG(fh != NULL, "File handle is NULL\n");
 	if (fh == NULL)
@@ -443,7 +443,7 @@ bool FileHandleClose(FileHandle *fh)
 
 	return true;
 }
-long long FileHandleSeek(FileHandle *fh, long long offset, int whence)
+long long MuggleFileSeek(MuggleFile *fh, long long offset, int whence)
 {
 	off_t new_pos;
 
@@ -465,7 +465,7 @@ long long FileHandleSeek(FileHandle *fh, long long offset, int whence)
 
 	return (long long)new_pos;
 }
-long FileHandleWrite(FileHandle *fh, const void *buf, long cnt_bytes)
+long MuggleFileWrite(MuggleFile *fh, const void *buf, long cnt_bytes)
 {
 	ssize_t num_write;
 
@@ -483,7 +483,7 @@ long FileHandleWrite(FileHandle *fh, const void *buf, long cnt_bytes)
 
 	return (long)num_write;
 }
-long FileHandleRead(FileHandle *fh, void *buf, long cnt_bytes)
+long MuggleFileRead(MuggleFile *fh, void *buf, long cnt_bytes)
 {
 	ssize_t num_read;
 

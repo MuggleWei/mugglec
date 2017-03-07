@@ -27,7 +27,7 @@
 
 EXTERN_C_BEGIN
 
-typedef struct ThreadHandle_tag
+typedef struct MuggleThread_tag
 {
 #if MUGGLE_PLATFORM_WINDOWS
 	HANDLE handle;
@@ -35,7 +35,7 @@ typedef struct ThreadHandle_tag
 #else
 	pthread_t th;
 #endif
-}ThreadHandle;
+}MuggleThread;
 
 typedef struct ThreadAttribute_tag
 {
@@ -45,16 +45,16 @@ typedef struct ThreadAttribute_tag
 #else
 	pthread_attr_t attr;
 #endif
-}ThreadAttribute;
+}MuggleThreadAttribute;
 
-typedef THREAD_ROUTINE_RETURN (*ThreadStartRoutine)(void *args);
+typedef THREAD_ROUTINE_RETURN (*MuggleThreadStartRoutine)(void *args);
 
-MUGGLE_BASE_C_EXPORT bool ThreadCreate(
-	ThreadHandle *thread_handle, const ThreadAttribute *attr,
-	ThreadStartRoutine routine, void *args);
-MUGGLE_BASE_C_EXPORT bool ThreadWaitExit(ThreadHandle *thread_handle);
+MUGGLE_BASE_C_EXPORT bool MuggleThreadCreate(
+	MuggleThread *thread_handle, const MuggleThreadAttribute *attr,
+	MuggleThreadStartRoutine routine, void *args);
+MUGGLE_BASE_C_EXPORT bool MuggleThreadWaitExit(MuggleThread *thread_handle);
 
-MUGGLE_BASE_C_EXPORT void ThreadAttributeSet(int flags);
+MUGGLE_BASE_C_EXPORT void MuggleThreadAttributeSet(int flags);
 
 EXTERN_C_END
 

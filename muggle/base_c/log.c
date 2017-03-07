@@ -49,8 +49,8 @@ LogHandle* g_log_default_active[MUGGLE_LOG_DEFAULT_MAX] = {
 };
 
 int g_enable_console_color = 0;
-FileHandle g_log_default_file = { 0 };
-MutexLockHandle g_log_default_mtx[MUGGLE_LOG_DEFAULT_MAX] = { 0 };
+MuggleFile g_log_default_file = { 0 };
+MuggleMutexLock g_log_default_mtx[MUGGLE_LOG_DEFAULT_MAX] = { 0 };
 
 int LogGenFmtText(LogHandle *log_handle, LogAttribute *attr, const char *msg, char *buf, int max_len)
 {
@@ -139,12 +139,12 @@ void LogDefaultInit(const char *log_file_path, int enable_console_color)
 	if (log_file_path == NULL)
 	{
 		char log_file[MUGGLE_MAX_PATH];
-		FileGetAbsolutePath("log.txt", log_file);
-		FileHandleOpen(&g_log_default_file, log_file, flags, attr);
+		MuggleGetAbsolutePath("log.txt", log_file);
+		MuggleFileOpen(&g_log_default_file, log_file, flags, attr);
 	}
 	else
 	{
-		FileHandleOpen(&g_log_default_file, log_file_path, flags, attr);
+		MuggleFileOpen(&g_log_default_file, log_file_path, flags, attr);
 	}
 	atexit(LogDefaultExit);
 	g_log_default_handles[MUGGLE_LOG_DEFAULT_FILE].io_target = (void*)&g_log_default_file;
@@ -153,7 +153,7 @@ void LogDefaultInit(const char *log_file_path, int enable_console_color)
 	
 	for (i = 0; i < MUGGLE_LOG_DEFAULT_MAX; ++i)
 	{
-		InitMutexLock(&g_log_default_mtx[i]);
+		MuggleInitMutexLock(&g_log_default_mtx[i]);
 		g_log_default_handles[i].mtx = &g_log_default_mtx[i];
 		g_log_default_active[i] = &g_log_default_handles[i];
 	}
@@ -238,7 +238,7 @@ void LogDefaultConsole(LogHandle *log_handle, LogAttribute *attr, const char *ms
 
 	if (log_handle->mtx != NULL)
 	{
-		LockMutexLock(log_handle->mtx);
+		MuggleLockMutexLock(log_handle->mtx);
 	}
 
 	if (attr->level >= MUGGLE_LOG_LEVEL_WARNING)
@@ -291,7 +291,7 @@ void LogDefaultConsole(LogHandle *log_handle, LogAttribute *attr, const char *ms
 
 	if (log_handle->mtx != NULL)
 	{
-		UnlockMutexLock(log_handle->mtx);
+		MuggleUnlockMutexLock(log_handle->mtx);
 	}
 }
 void LogDefaultFile(LogHandle *log_handle, LogAttribute *attr, const char *msg)
@@ -301,18 +301,18 @@ void LogDefaultFile(LogHandle *log_handle, LogAttribute *attr, const char *msg)
 
 	if (log_handle->mtx != NULL)
 	{
-		LockMutexLock(log_handle->mtx);
+		MuggleLockMutexLock(log_handle->mtx);
 	}
 
-	FileHandle *fh = (FileHandle*)log_handle->io_target;
+	MuggleFile *fh = (MuggleFile*)log_handle->io_target;
 	if (fh != NULL)
 	{
-		FileHandleWrite(fh, buf, (long)write_num);
+		MuggleFileWrite(fh, buf, (long)write_num);
 	}	
 
 	if (log_handle->mtx != NULL)
 	{
-		UnlockMutexLock(log_handle->mtx);
+		MuggleUnlockMutexLock(log_handle->mtx);
 	}
 }
 void LogDefaultWindowsDebugOut(LogHandle *log_handle, LogAttribute *attr, const char *msg)
@@ -323,7 +323,7 @@ void LogDefaultWindowsDebugOut(LogHandle *log_handle, LogAttribute *attr, const 
 
 	if (log_handle->mtx != NULL)
 	{
-		LockMutexLock(log_handle->mtx);
+		MuggleLockMutexLock(log_handle->mtx);
 	}
 
 	WCHAR w_buf[MUGGLE_MAX_LOG_LEN];
@@ -332,7 +332,7 @@ void LogDefaultWindowsDebugOut(LogHandle *log_handle, LogAttribute *attr, const 
 
 	if (log_handle->mtx != NULL)
 	{
-		UnlockMutexLock(log_handle->mtx);
+		MuggleUnlockMutexLock(log_handle->mtx);
 	}
 #endif
 }
@@ -340,8 +340,8 @@ void LogDefaultWindowsDebugOut(LogHandle *log_handle, LogAttribute *attr, const 
 void LogDefaultExit(void)
 {
 	MUGGLE_INFO("Muggle Default Log Exit\n");
-	if (FileHandleIsValid(&g_log_default_file))
+	if (MuggleFileIsValid(&g_log_default_file))
 	{
-		FileHandleClose(&g_log_default_file);
+		MuggleFileClose(&g_log_default_file);
 	}
 }

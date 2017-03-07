@@ -13,7 +13,7 @@
 	#include <unistd.h>
 #endif
 
-void SleepFunction(unsigned long ms)
+void MuggleSleepFunction(unsigned long ms)
 {
 #if MUGGLE_PLATFORM_WINDOWS
 	Sleep(ms);

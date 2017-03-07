@@ -15,7 +15,7 @@
 #include <math.h>
 #include "muggle/base_c/log.h"
 
-char* StrAllocByDiff(const char* p_start, const char* p_end)
+char* MuggleStrAllocByDiff(const char* p_start, const char* p_end)
 {
 	char* buf = NULL;
 	ptrdiff_t diff = p_end - p_start + 1;
@@ -25,7 +25,7 @@ char* StrAllocByDiff(const char* p_start, const char* p_end)
 
 	return buf;
 }
-bool StrStartsWith(const char* str, const char* sub_str)
+bool MuggleStrStartsWith(const char* str, const char* sub_str)
 {
 	if (str == NULL || sub_str == NULL)
 	{
@@ -41,7 +41,7 @@ bool StrStartsWith(const char* str, const char* sub_str)
 
 	return false;
 }
-bool StrEndsWith(const char* str, const char* sub_str)
+bool MuggleStrEndsWith(const char* str, const char* sub_str)
 {
 	size_t str_len, sub_str_len, i;
 	const char *p, *q;
@@ -75,7 +75,7 @@ bool StrEndsWith(const char* str, const char* sub_str)
 	return true;
 }
 
-char* StrSplitLineToWords(char* line, char** words, int* cnt, int max_word_num)
+char* MuggleStrSplitLineToWords(char* line, char** words, int* cnt, int max_word_num)
 {
 	char *q = NULL, *r = NULL;
 
@@ -127,7 +127,7 @@ char* StrSplitLineToWords(char* line, char** words, int* cnt, int max_word_num)
 	return q;
 }
 
-bool StrToi(const char *str, int *pval, int base)
+bool MuggleStrToi(const char *str, int *pval, int base)
 {
 	long ret;
 	char *endptr;
@@ -168,7 +168,7 @@ bool StrToi(const char *str, int *pval, int base)
 
 	return true;
 }
-bool StrToui(const char *str, unsigned int *pval, int base)
+bool MuggleStrToui(const char *str, unsigned int *pval, int base)
 {
 	unsigned long ret;
 	char *endptr;
@@ -209,7 +209,7 @@ bool StrToui(const char *str, unsigned int *pval, int base)
 
 	return true;
 }
-bool StrTol(const char *str, long *pval, int base)
+bool MuggleStrTol(const char *str, long *pval, int base)
 {
 	char *endptr;
 
@@ -242,7 +242,7 @@ bool StrTol(const char *str, long *pval, int base)
 
 	return true;
 }
-bool StrToul(const char *str, unsigned long *pval, int base)
+bool MuggleStrToul(const char *str, unsigned long *pval, int base)
 {
 	char *endptr;
 
@@ -275,7 +275,7 @@ bool StrToul(const char *str, unsigned long *pval, int base)
 
 	return true;
 }
-bool StrToll(const char *str, long long *pval, int base)
+bool MuggleStrToll(const char *str, long long *pval, int base)
 {
 	char *endptr;
 
@@ -308,7 +308,7 @@ bool StrToll(const char *str, long long *pval, int base)
 
 	return true;
 }
-bool StrToull(const char *str, unsigned long long *pval, int base)
+bool MuggleStrToull(const char *str, unsigned long long *pval, int base)
 {
 	char *endptr;
 
@@ -341,7 +341,7 @@ bool StrToull(const char *str, unsigned long long *pval, int base)
 
 	return true;
 }
-bool StrTof(const char *str, float *pval)
+bool MuggleStrTof(const char *str, float *pval)
 {
 	char *endptr;
 
@@ -374,7 +374,7 @@ bool StrTof(const char *str, float *pval)
 
 	return true;
 }
-bool StrTod(const char *str, double *pval)
+bool MuggleStrTod(const char *str, double *pval)
 {
 	char *endptr;
 
@@ -407,7 +407,7 @@ bool StrTod(const char *str, double *pval)
 
 	return true;
 }
-bool StrTold(const char *str, long double *pval)
+bool MuggleStrTold(const char *str, long double *pval)
 {
 	char *endptr;
 

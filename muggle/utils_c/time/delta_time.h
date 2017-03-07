@@ -21,25 +21,25 @@ EXTERN_C_BEGIN
 
 #if MUGGLE_PLATFORM_WINDOWS
 
-typedef struct deltaTime_tag
+typedef struct MuggleDeltaTime_tag
 {
 	LARGE_INTEGER start;
 	LARGE_INTEGER end;
-}deltaTime;
+}MuggleDeltaTime;
 
 #else
 
-typedef struct deltaTime_tag
+typedef struct MuggleDeltaTime_tag
 {
 	struct timeval start;
 	struct timeval end;
-}deltaTime;
+}MuggleDeltaTime;
 
 #endif
 
-MUGGLE_UTILS_C_EXPORT void DTStart(deltaTime *dt);
-MUGGLE_UTILS_C_EXPORT void DTEnd(deltaTime *dt);
-MUGGLE_UTILS_C_EXPORT double DTGetElapsedMilliseconds(deltaTime *dt);
+MUGGLE_UTILS_C_EXPORT void MuggleDeltaTimeStart(MuggleDeltaTime *dt);
+MUGGLE_UTILS_C_EXPORT void MuggleDeltaTimeEnd(MuggleDeltaTime *dt);
+MUGGLE_UTILS_C_EXPORT double MuggleGetElapsedMilliseconds(MuggleDeltaTime *dt);
 
 EXTERN_C_END
 

@@ -12,7 +12,7 @@
 // mutex lock
 #if MUGGLE_PLATFORM_WINDOWS
 
-bool InitMutexLock(MutexLockHandle *lock)
+bool MuggleInitMutexLock(MuggleMutexLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "Mutex handle is NULL\n");
 	if (lock == NULL)
@@ -24,7 +24,7 @@ bool InitMutexLock(MutexLockHandle *lock)
 
 	return true;
 }
-bool DestroyMutexLock(MutexLockHandle *lock)
+bool MuggleDestroyMutexLock(MuggleMutexLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "Mutex handle is NULL\n");
 	if (lock == NULL)
@@ -36,7 +36,7 @@ bool DestroyMutexLock(MutexLockHandle *lock)
 
 	return true;
 }
-bool LockMutexLock(MutexLockHandle *lock)
+bool MuggleLockMutexLock(MuggleMutexLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "Mutex handle is NULL\n");
 	if (lock == NULL)
@@ -48,7 +48,7 @@ bool LockMutexLock(MutexLockHandle *lock)
 
 	return true;
 }
-bool TryLockMutexLock(MutexLockHandle *lock)
+bool MuggleTryLockMutexLock(MuggleMutexLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "Mutex handle is NULL\n");
 	if (lock == NULL)
@@ -58,7 +58,7 @@ bool TryLockMutexLock(MutexLockHandle *lock)
 
 	return TryEnterCriticalSection(&lock->cs);
 }
-bool UnlockMutexLock(MutexLockHandle *lock)
+bool MuggleUnlockMutexLock(MuggleMutexLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "Mutex handle is NULL\n");
 	if (lock == NULL)
@@ -76,7 +76,7 @@ bool UnlockMutexLock(MutexLockHandle *lock)
 #include <string.h>
 #include <errno.h>
 
-bool InitMutexLock(MutexLockHandle *lock)
+bool MuggleInitMutexLock(MuggleMutexLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "Mutex handle is NULL\n");
 	if (lock == NULL)
@@ -92,7 +92,7 @@ bool InitMutexLock(MutexLockHandle *lock)
 
 	return true;
 }
-bool DestroyMutexLock(MutexLockHandle *lock)
+bool MuggleDestroyMutexLock(MuggleMutexLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "Mutex handle is NULL\n");
 	if (lock == NULL)
@@ -108,7 +108,7 @@ bool DestroyMutexLock(MutexLockHandle *lock)
 
 	return true;
 }
-bool LockMutexLock(MutexLockHandle *lock)
+bool MuggleLockMutexLock(MuggleMutexLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "Mutex handle is NULL\n");
 	if (lock == NULL)
@@ -124,7 +124,7 @@ bool LockMutexLock(MutexLockHandle *lock)
 
 	return true;
 }
-bool TryLockMutexLock(MutexLockHandle *lock)
+bool MuggleTryLockMutexLock(MuggleMutexLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "Mutex handle is NULL\n");
 	if (lock == NULL)
@@ -140,7 +140,7 @@ bool TryLockMutexLock(MutexLockHandle *lock)
 
 	return true;
 }
-bool UnlockMutexLock(MutexLockHandle *lock)
+bool MuggleUnlockMutexLock(MuggleMutexLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "Mutex handle is NULL\n");
 	if (lock == NULL)
@@ -160,7 +160,7 @@ bool UnlockMutexLock(MutexLockHandle *lock)
 #endif
 
 // spin lock
-bool InitSpinLock(SpinLockHandle *lock)
+bool MuggleInitSpinLock(MuggleSpinLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "SpinLock handle is NULL\n");
 	if (lock == NULL)
@@ -172,7 +172,7 @@ bool InitSpinLock(SpinLockHandle *lock)
 
 	return true;
 }
-bool DestroySpinLock(SpinLockHandle *lock)
+bool MuggleDestroySpinLock(MuggleSpinLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "SpinLock handle is NULL\n");
 	if (lock == NULL)
@@ -182,7 +182,7 @@ bool DestroySpinLock(SpinLockHandle *lock)
 
 	return true;
 }
-bool LockSpinLock(SpinLockHandle *lock)
+bool MuggleLockSpinLock(MuggleSpinLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "SpinLock handle is NULL\n");
 	if (lock == NULL)
@@ -190,14 +190,14 @@ bool LockSpinLock(SpinLockHandle *lock)
 		return false;
 	}
 
-	while (ATOMIC_CAS_64(lock->status, MUGGLE_LOCK_UNLOCK, MUGGLE_LOCK_LOCKED) != MUGGLE_LOCK_UNLOCK)
+	while (MUGGLE_ATOMIC_CAS_64(lock->status, MUGGLE_LOCK_UNLOCK, MUGGLE_LOCK_LOCKED) != MUGGLE_LOCK_UNLOCK)
 	{
 		continue;
 	}
 
 	return true;
 }
-bool TryLockSpinLock(SpinLockHandle *lock)
+bool MuggleTryLockSpinLock(MuggleSpinLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "SpinLock handle is NULL\n");
 	if (lock == NULL)
@@ -205,9 +205,9 @@ bool TryLockSpinLock(SpinLockHandle *lock)
 		return false;
 	}
 
-	return ATOMIC_CAS_64(lock->status, MUGGLE_LOCK_UNLOCK, MUGGLE_LOCK_LOCKED) == MUGGLE_LOCK_UNLOCK;
+	return MUGGLE_ATOMIC_CAS_64(lock->status, MUGGLE_LOCK_UNLOCK, MUGGLE_LOCK_LOCKED) == MUGGLE_LOCK_UNLOCK;
 }
-bool UnlockSpinLock(SpinLockHandle *lock)
+bool MuggleUnlockSpinLock(MuggleSpinLock *lock)
 {
 	MUGGLE_ASSERT_MSG(lock != NULL, "SpinLock handle is NULL\n");
 	if (lock == NULL)
@@ -215,5 +215,5 @@ bool UnlockSpinLock(SpinLockHandle *lock)
 		return false;
 	}
 
-	return ATOMIC_CAS_64(lock->status, MUGGLE_LOCK_LOCKED, MUGGLE_LOCK_UNLOCK) == MUGGLE_LOCK_LOCKED;
+	return MUGGLE_ATOMIC_CAS_64(lock->status, MUGGLE_LOCK_LOCKED, MUGGLE_LOCK_UNLOCK) == MUGGLE_LOCK_LOCKED;
 }

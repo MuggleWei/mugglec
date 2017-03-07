@@ -19,20 +19,20 @@
 
 EXTERN_C_BEGIN
 
-typedef struct CondVarHandle_tag
+typedef struct MuggleCondVar_tag
 {
 #if MUGGLE_PLATFORM_WINDOWS
 	CONDITION_VARIABLE cond_var;
 #else
 	pthread_cond_t cond_var;
 #endif
-}CondVarHandle;
+}MuggleCondVar;
 
-MUGGLE_BASE_C_EXPORT bool InitCondVar(CondVarHandle *cond);
-MUGGLE_BASE_C_EXPORT bool WaitCondVar(CondVarHandle *cond, MutexLockHandle *mtx, long wait_ms);
-MUGGLE_BASE_C_EXPORT bool WakeCondVar(CondVarHandle *cond);
-MUGGLE_BASE_C_EXPORT bool WakeAllCondVar(CondVarHandle *cond);
-MUGGLE_BASE_C_EXPORT bool DestroyCondVar(CondVarHandle *cond);
+MUGGLE_BASE_C_EXPORT bool MuggleInitCondVar(MuggleCondVar *cond);
+MUGGLE_BASE_C_EXPORT bool MuggleWaitCondVar(MuggleCondVar *cond, MuggleMutexLock *mtx, long wait_ms);
+MUGGLE_BASE_C_EXPORT bool MuggleWakeCondVar(MuggleCondVar *cond);
+MUGGLE_BASE_C_EXPORT bool MuggleWakeAllCondVar(MuggleCondVar *cond);
+MUGGLE_BASE_C_EXPORT bool MuggleDestroyCondVar(MuggleCondVar *cond);
 
 EXTERN_C_END
 

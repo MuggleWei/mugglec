@@ -2,14 +2,14 @@
 
 typedef struct ProduceThread
 {
-	ThreadHandle tid;
+	MuggleThread tid;
 	int idx;
 	int task_cnt;
 }ThreadWithTask;
 
 volatile int cur_prod = 0;
-MutexLockHandle mtx;
-CondVarHandle cond;
+MuggleMutexLock mtx;
+MuggleCondVar cond;
 
 THREAD_ROUTINE_RETURN ProducerRoutine(void *args)
 {
@@ -18,7 +18,7 @@ THREAD_ROUTINE_RETURN ProducerRoutine(void *args)
 	int i = 0;
 	for (i = 0; i < p->task_cnt; ++i)
 	{
-		if (!LockMutexLock(&mtx))
+		if (!MuggleLockMutexLock(&mtx))
 		{
 			MUGGLE_ERROR("Failed lock mutex lock in producer: %d\n", p->idx);
 			exit(EXIT_FAILURE);
@@ -26,13 +26,13 @@ THREAD_ROUTINE_RETURN ProducerRoutine(void *args)
 
 		++cur_prod;
 
-		if (!UnlockMutexLock(&mtx))
+		if (!MuggleUnlockMutexLock(&mtx))
 		{
 			MUGGLE_ERROR("Failed unlock mutex lock in producer: %d\n", p->idx);
 			exit(EXIT_FAILURE);
 		}
 
-		if (!WakeCondVar(&cond))
+		if (!MuggleWakeCondVar(&cond))
 		{
 			MUGGLE_ERROR("Failed wake condition variable: %d\n", p->idx);
 			exit(EXIT_FAILURE);
@@ -56,14 +56,14 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	ret = InitMutexLock(&mtx);
+	ret = MuggleInitMutexLock(&mtx);
 	if (!ret)
 	{
 		MUGGLE_ERROR("Failed init mutex lock\n");
 		exit(EXIT_FAILURE);
 	}
 
-	ret = InitCondVar(&cond);
+	ret = MuggleInitCondVar(&cond);
 	if (!ret)
 	{
 		MUGGLE_ERROR("Failed init condition variable\n");
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 		producer_args[i].idx = i;
 		producer_args[i].task_cnt = tasks[i];
 		total += tasks[i];
-		ThreadCreate(&producer_args[i].tid, NULL, ProducerRoutine, &producer_args[i]);
+		MuggleThreadCreate(&producer_args[i].tid, NULL, ProducerRoutine, &producer_args[i]);
 	}
 
 	while (true)
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		if (!LockMutexLock(&mtx))
+		if (!MuggleLockMutexLock(&mtx))
 		{
 			MUGGLE_ERROR("Failed lock mutex lock\n");
 			exit(EXIT_FAILURE);
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
 		while (cur_prod == 0)
 		{
-			if (!WaitCondVar(&cond, &mtx, -1))
+			if (!MuggleWaitCondVar(&cond, &mtx, -1))
 			{
 				MUGGLE_ERROR("Failed wait condition variable\n");
 				exit(EXIT_FAILURE);
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 			++total_consume;
 		}
 
-		if (!UnlockMutexLock(&mtx))
+		if (!MuggleUnlockMutexLock(&mtx))
 		{
 			MUGGLE_ERROR("Failed unlock mutex lock\n");
 			exit(EXIT_FAILURE);
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
 
 	for (i = 0; i < cnt; ++i)
 	{
-		if (!ThreadWaitExit(&producer_args[i].tid))
+		if (!MuggleThreadWaitExit(&producer_args[i].tid))
 		{
 			MUGGLE_ERROR("Failed in thread exit: %s\n", i);
 			exit(EXIT_FAILURE);
@@ -123,14 +123,14 @@ int main(int argc, char *argv[])
 	}
 	MUGGLE_ASSERT_MSG(cur_prod == 0, "Something wrong\n");
 
-	ret = DestroyCondVar(&cond);
+	ret = MuggleDestroyCondVar(&cond);
 	if (!ret)
 	{
 		MUGGLE_ERROR("Failed destroy condition variable\n");
 		exit(EXIT_FAILURE);
 	}
 
-	ret = DestroyMutexLock(&mtx);
+	ret = MuggleDestroyMutexLock(&mtx);
 	if (!ret)
 	{
 		MUGGLE_ERROR("Failed destroy mutex lock\n");

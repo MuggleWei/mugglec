@@ -10,9 +10,9 @@
 #include <string.h>
 #include <assert.h>
 
-bool MemoryPoolInit(MemoryPool* pool, unsigned int init_capacity, unsigned int block_size)
+bool MuggleMemoryPoolInit(MuggleMemoryPool* pool, unsigned int init_capacity, unsigned int block_size)
 {
-	memset(pool, 0, sizeof(MemoryPool));
+	memset(pool, 0, sizeof(MuggleMemoryPool));
 	init_capacity = init_capacity == 0 ? 8 : init_capacity;
 
 	pool->memory_pool_data_bufs = (void**)malloc(sizeof(void*));
@@ -59,7 +59,7 @@ bool MemoryPoolInit(MemoryPool* pool, unsigned int init_capacity, unsigned int b
 
 	return true;
 }
-void MemoryPoolDestroy(MemoryPool* pool)
+void MuggleMemoryPoolDestroy(MuggleMemoryPool* pool)
 {
 	unsigned int i;
 	for (i = 0; i<pool->num_buf; ++i)
@@ -69,13 +69,13 @@ void MemoryPoolDestroy(MemoryPool* pool)
 	free((void*)pool->memory_pool_data_bufs);
 	free((void*)pool->memory_pool_ptr_buf);
 
-	memset(pool, 0, sizeof(MemoryPool));
+	memset(pool, 0, sizeof(MuggleMemoryPool));
 }
-void* MemoryPoolAlloc(MemoryPool* pool)
+void* MuggleMemoryPoolAlloc(MuggleMemoryPool* pool)
 {
 	if (pool->used == pool->capacity)
 	{
-		if (!MemoryPoolEnsureSpace(pool, pool->capacity * 2))
+		if (!MuggleMemoryPoolEnsureSpace(pool, pool->capacity * 2))
 		{
 			return NULL;
 		}
@@ -96,7 +96,7 @@ void* MemoryPoolAlloc(MemoryPool* pool)
 	}
 	return ret;
 }
-void MemoryPoolFree(MemoryPool* pool, void* p_data)
+void MuggleMemoryPoolFree(MuggleMemoryPool* pool, void* p_data)
 {
 	pool->memory_pool_ptr_buf[pool->free_index] = (void*)p_data;
 	++pool->free_index;
@@ -107,7 +107,7 @@ void MemoryPoolFree(MemoryPool* pool, void* p_data)
 	--pool->used;
 }
 
-bool MemoryPoolEnsureSpace(MemoryPool* pool, unsigned int capacity)
+bool MuggleMemoryPoolEnsureSpace(MuggleMemoryPool* pool, unsigned int capacity)
 {
 	// already have enough capacity
 	if (capacity <= pool->capacity)
@@ -246,12 +246,12 @@ bool MemoryPoolEnsureSpace(MemoryPool* pool, unsigned int capacity)
 	return true;
 }
 
-unsigned int MemoryPoolGetFlag(MemoryPool* pool)
+unsigned int MuggleMemoryPoolGetFlag(MuggleMemoryPool* pool)
 {
 	return pool->flag;
 }
 
-void MemoryPoolSetFlag(MemoryPool* pool, unsigned int flag)
+void MuggleMemoryPoolSetFlag(MuggleMemoryPool* pool, unsigned int flag)
 {
 	pool->flag = flag;
 }

@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 	MUGGLE_INFO("Muggle log Test\n");
 
 	// initialize log
-	FileGetAbsolutePath("muggleLog.txt", log_file);
+	MuggleGetAbsolutePath("muggleLog.txt", log_file);
 	LogDefaultInit(log_file, 1);
 
 	exampleLog();
@@ -24,26 +24,26 @@ void CustomLogFunc(struct LogHandle_tag *log_handle,struct LogAttribute_tag *att
 
 	if (log_handle->mtx != NULL)
 	{
-		LockMutexLock(log_handle->mtx);
+		MuggleLockMutexLock(log_handle->mtx);
 	}
 
-	FileHandle *fh = (FileHandle*)log_handle->io_target;
+	MuggleFile *fh = (MuggleFile*)log_handle->io_target;
 	if (fh != NULL)
 	{
-		FileHandleWrite(fh, buf, (long)write_num);
+		MuggleFileWrite(fh, buf, (long)write_num);
 	}
 
 	if (log_handle->mtx != NULL)
 	{
-		UnlockMutexLock(log_handle->mtx);
+		MuggleUnlockMutexLock(log_handle->mtx);
 	}
 }
 
 void exampleLog()
 {
 	LogHandle lh = { 0 };
-	FileHandle fh;
-	MutexLockHandle mtx;
+	MuggleFile fh;
+	MuggleMutexLock mtx;
 	char file_path[MUGGLE_MAX_PATH] = { 0 };
 	int flags, attr;
 
@@ -90,18 +90,18 @@ void exampleLog()
 	MUGGLE_WARNING("Create log handle for yourself\n");
 	MUGGLE_INFO("Don't use another log handle for console output, it may lead confusing output in multiple thread\n");
 
-	if (!FileGetAbsolutePath("customLog.txt", file_path))
+	if (!MuggleGetAbsolutePath("customLog.txt", file_path))
 	{
 		MUGGLE_ERROR("Failed in get absolute path\n");
 	}
 	flags = MUGGLE_FILE_WRITE | MUGGLE_FILE_READ | MUGGLE_FILE_APPEND | MUGGLE_FILE_CREAT;
 	attr = MUGGLE_FILE_ATTR_USER_READ | MUGGLE_FILE_ATTR_USER_WRITE | MUGGLE_FILE_ATTR_GRP_READ;
-	if (!FileHandleOpen(&fh, file_path, flags, attr))
+	if (!MuggleFileOpen(&fh, file_path, flags, attr))
 	{
 		MUGGLE_ERROR("Failed create file handle: %s\n", file_path);
 	}
 
-	if (!InitMutexLock(&mtx))
+	if (!MuggleInitMutexLock(&mtx))
 	{
 		MUGGLE_ERROR("Failed init a mutex\n");
 	}
@@ -120,6 +120,6 @@ void exampleLog()
 	LogDefaultSwitch(MUGGLE_LOG_DEFAULT_FILE, NULL, 1, 0);
 	MUGGLE_INFO("Restore default file log handle\n");
 
-	DestroyMutexLock(&mtx);
-	FileHandleClose(&fh);
+	MuggleDestroyMutexLock(&mtx);
+	MuggleFileClose(&fh);
 }
