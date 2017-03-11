@@ -402,15 +402,15 @@ bool MuggleFileOpen(MuggleFile *fh, const char* file_path, int flags, int attr)
 
 	// mode
 	mode =
-		((attr & MUGGLE_FILE_ATTR_USER_READ) ? S_IRUSR : 0) |
-		((attr & MUGGLE_FILE_ATTR_USER_WRITE) ? S_IWUSR : 0) |
-		((attr & MUGGLE_FILE_ATTR_USER_EXECUTE) ? S_IXUSR : 0) |
-		((attr & MUGGLE_FILE_ATTR_GRP_READ) ? S_IRGRP : 0) |
-		((attr & MUGGLE_FILE_ATTR_GRP_WRITE) ? S_IWGRP : 0) |
-		((attr & MUGGLE_FILE_ATTR_GRP_EXECUTE) ? S_IXGRP : 0) |
-		((attr & MUGGLE_FILE_ATTR_OTHER_READ) ? S_IROTH : 0) |
-		((attr & MUGGLE_FILE_ATTR_OTHER_WRITE) ? S_IWOTH : 0) |
-		((attr & MUGGLE_FILE_ATTR_OTHER_EXECUTE) ? S_IXOTH : 0);
+		((attr & MUGGLE_PERM_USER_READ) ? S_IRUSR : 0) |
+		((attr & MUGGLE_PERM_USER_WRITE) ? S_IWUSR : 0) |
+		((attr & MUGGLE_PERM_USER_EXECUTE) ? S_IXUSR : 0) |
+		((attr & MUGGLE_PERM_GRP_READ) ? S_IRGRP : 0) |
+		((attr & MUGGLE_PERM_GRP_WRITE) ? S_IWGRP : 0) |
+		((attr & MUGGLE_PERM_GRP_EXECUTE) ? S_IXGRP : 0) |
+		((attr & MUGGLE_PERM_OTHER_READ) ? S_IROTH : 0) |
+		((attr & MUGGLE_PERM_OTHER_WRITE) ? S_IWOTH : 0) |
+		((attr & MUGGLE_PERM_OTHER_EXECUTE) ? S_IXOTH : 0);
 	
 	fh->fd = open(file_path, access_mode | addition_flags, mode);
 	if (fh->fd == -1)

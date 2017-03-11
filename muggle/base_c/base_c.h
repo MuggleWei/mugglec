@@ -30,6 +30,7 @@
 #include "muggle/base_c/lock.h"
 #include "muggle/base_c/atomic.h"
 #include "muggle/base_c/cond.h"
+#include "muggle/base_c/semaphore.h"
 #include "muggle/base_c/memory_pool.h"
 
 #endif

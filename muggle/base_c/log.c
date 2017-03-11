@@ -135,7 +135,7 @@ void LogDefaultInit(const char *log_file_path, int enable_console_color)
 {
 	int i;
 	int flags = MUGGLE_FILE_WRITE | MUGGLE_FILE_READ | MUGGLE_FILE_APPEND | MUGGLE_FILE_CREAT | MUGGLE_FILE_TRUNC;
-	int attr = MUGGLE_FILE_ATTR_USER_READ | MUGGLE_FILE_ATTR_USER_WRITE | MUGGLE_FILE_ATTR_GRP_READ;
+	int attr = MUGGLE_PERM_USER_READ | MUGGLE_PERM_USER_WRITE | MUGGLE_PERM_GRP_READ;
 	if (log_file_path == NULL)
 	{
 		char log_file[MUGGLE_MAX_PATH];

@@ -34,19 +34,6 @@ enum eFileFlags
 	MUGGLE_FILE_TRUNC	= 0x20,		// Opens a file and truncates its size to zero bytes
 };
 
-enum eFileAttribute
-{
-	MUGGLE_FILE_ATTR_USER_READ		= 0x01,		// user can read
-	MUGGLE_FILE_ATTR_USER_WRITE		= 0x02,		// user can write
-	MUGGLE_FILE_ATTR_USER_EXECUTE	= 0x04,		// user can execute
-	MUGGLE_FILE_ATTR_GRP_READ		= 0x10,		// group can read
-	MUGGLE_FILE_ATTR_GRP_WRITE		= 0x20,		// group can write
-	MUGGLE_FILE_ATTR_GRP_EXECUTE	= 0x40,		// group can execute
-	MUGGLE_FILE_ATTR_OTHER_READ		= 0x100,	// other can read
-	MUGGLE_FILE_ATTR_OTHER_WRITE	= 0x200,	// other can write
-	MUGGLE_FILE_ATTR_OTHER_EXECUTE	= 0x400,	// other can execute
-};
-
 enum eFileSeekWhence
 {
 	MUGGLE_FILE_SEEK_BEGIN		= 0x01,

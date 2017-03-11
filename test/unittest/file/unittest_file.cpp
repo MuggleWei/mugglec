@@ -24,7 +24,7 @@ TEST(File, OpenCreateDelete)
 	}
 
 	flags = MUGGLE_FILE_READ;
-	attrs = MUGGLE_FILE_ATTR_USER_READ | MUGGLE_FILE_ATTR_USER_WRITE| MUGGLE_FILE_ATTR_GRP_READ;
+	attrs = MUGGLE_PERM_USER_READ | MUGGLE_PERM_USER_WRITE| MUGGLE_PERM_GRP_READ;
 	ASSERT_FALSE(MuggleFileOpen(&fh, file_path, flags, attrs));
 	ASSERT_FALSE(MuggleFileIsValid(&fh));
 
@@ -123,7 +123,7 @@ TEST(File, ReadWriteAppend)
 
 	// create file and write into a string
 	flags = MUGGLE_FILE_READ | MUGGLE_FILE_WRITE | MUGGLE_FILE_CREAT | MUGGLE_FILE_EXCL;
-	attrs = MUGGLE_FILE_ATTR_USER_READ | MUGGLE_FILE_ATTR_USER_WRITE | MUGGLE_FILE_ATTR_GRP_READ;
+	attrs = MUGGLE_PERM_USER_READ | MUGGLE_PERM_USER_WRITE | MUGGLE_PERM_GRP_READ;
 	ASSERT_TRUE(MuggleFileOpen(&fh, file_path, flags, attrs));
 	ASSERT_EQ(MuggleFileRead(&fh, buf, buf_size), 0);
 	ASSERT_EQ(MuggleFileWrite(&fh, (const void*)str1, len1), len1);
@@ -295,7 +295,7 @@ TEST(File, Seek)
 	}
 
 	flags = MUGGLE_FILE_WRITE | MUGGLE_FILE_CREAT | MUGGLE_FILE_EXCL;
-	attrs = MUGGLE_FILE_ATTR_USER_READ | MUGGLE_FILE_ATTR_USER_WRITE | MUGGLE_FILE_ATTR_GRP_READ;
+	attrs = MUGGLE_PERM_USER_READ | MUGGLE_PERM_USER_WRITE | MUGGLE_PERM_GRP_READ;
 	ASSERT_TRUE(MuggleFileOpen(&fh, file_path, flags, attrs));
 	ASSERT_EQ(MuggleFileWrite(&fh, str[0], len[0]), len[0]);
 	ASSERT_EQ(MuggleFileWrite(&fh, str[1], len[1]), len[1]);

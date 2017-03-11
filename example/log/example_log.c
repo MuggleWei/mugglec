@@ -95,7 +95,7 @@ void exampleLog()
 		MUGGLE_ERROR("Failed in get absolute path\n");
 	}
 	flags = MUGGLE_FILE_WRITE | MUGGLE_FILE_READ | MUGGLE_FILE_APPEND | MUGGLE_FILE_CREAT;
-	attr = MUGGLE_FILE_ATTR_USER_READ | MUGGLE_FILE_ATTR_USER_WRITE | MUGGLE_FILE_ATTR_GRP_READ;
+	attr = MUGGLE_PERM_USER_READ | MUGGLE_PERM_USER_WRITE | MUGGLE_PERM_GRP_READ;
 	if (!MuggleFileOpen(&fh, file_path, flags, attr))
 	{
 		MUGGLE_ERROR("Failed create file handle: %s\n", file_path);
