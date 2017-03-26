@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 #if MUGGLE_PLATFORM_WINDOWS
 	#include <windows.h>
 #else
