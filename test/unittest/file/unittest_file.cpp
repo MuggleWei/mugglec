@@ -9,12 +9,6 @@ TEST(File, OpenCreateDelete)
 	char tmp[64], file_path[MUGGLE_MAX_PATH] = { 0 };
 	int flags, attrs;
 
-	// close log output in file function
-	for (int i = 0; i < MUGGLE_LOG_DEFAULT_MAX; ++i)
-	{
-		LogDefaultSwitch(i, NULL, 0, 0);
-	}
-
 	snprintf(tmp, 64, "tmp_ocd.%ld", (long)time(NULL));
 	ASSERT_TRUE(MuggleGetAbsolutePath(tmp, file_path));
 
@@ -106,12 +100,6 @@ TEST(File, ReadWriteAppend)
 	const char *str2 = "append";
 	long len1 = (long)strlen(str1);
 	long len2 = (long)strlen(str2);
-
-	// close log output in file function
-	for (int i = 0; i < MUGGLE_LOG_DEFAULT_MAX; ++i)
-	{
-		LogDefaultSwitch(i, NULL, 0, 0);
-	}
 
 	snprintf(tmp, 64, "tmp_rwa.%ld", (long)time(NULL));
 	ASSERT_TRUE(MuggleGetAbsolutePath(tmp, file_path));
@@ -278,12 +266,6 @@ TEST(File, Seek)
 	for (int i = 0; i < 4; ++i)
 	{
 		len[i] = (long)strlen(str[i]);
-	}
-
-	// close log output in file function
-	for (int i = 0; i < MUGGLE_LOG_DEFAULT_MAX; ++i)
-	{
-		LogDefaultSwitch(i, NULL, 0, 0);
 	}
 
 	snprintf(tmp, 64, "tmp_ocd.%ld", (long)time(NULL));
