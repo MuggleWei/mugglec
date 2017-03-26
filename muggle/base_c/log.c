@@ -173,6 +173,7 @@ int MuggleLogClearCategory(MuggleLogCategory *category)
 		MuggleLogDestroyHandle(p);
 		p = next;
 	}
+	category->head = NULL;
 
 	return 0;
 }
