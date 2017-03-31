@@ -211,23 +211,17 @@ int MuggleLogCategoryRemoveHandle(MuggleLogCategory *category, MuggleLogHandle *
 		return MUGGLE_LOG_ERROR_CODE_NULL_HANDLE;
 	}
 
-	MuggleLogHandle *p = category->head, *prev = NULL;
-	if (p == log_handle)
+	MuggleLogHandle **indirect = &category->head;
+	while (*indirect)
 	{
-		category->head = p->next;
-		return MuggleLogDestroyHandle(p);
-	}
-	else
-	{
-		prev = p;
-		p = p->next;
-		while (p != NULL)
+		if (*indirect == log_handle)
 		{
-			if (p == log_handle)
-			{
-				prev->next = p->next;
-				return MuggleLogDestroyHandle(p);
-			}
+			*indirect = log_handle->next;
+			return MuggleLogDestroyHandle(log_handle);
+		}
+		else
+		{
+			indirect = &(*indirect)->next;
 		}
 	}
 	
