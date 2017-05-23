@@ -26,7 +26,7 @@
 NS_MUGGLE_BEGIN
 
 
-class ILock
+class MUGGLE_BASE_CPP_EXPORT ILock
 {
 public:
 	virtual ~ILock() {}
@@ -37,7 +37,7 @@ public:
 };
 
 
-class MutexLock : public ILock
+class MUGGLE_BASE_CPP_EXPORT MutexLock : public ILock
 {
 public:
 	MutexLock();
@@ -60,7 +60,7 @@ private:
 #endif
 };
 
-class SpinLock : public ILock
+class MUGGLE_BASE_CPP_EXPORT SpinLock : public ILock
 {
 public:
 	SpinLock();
@@ -85,7 +85,7 @@ private:
 	volatile int64_t status_;
 };
 
-class ScopeLock
+class MUGGLE_BASE_CPP_EXPORT ScopeLock
 {
 public:
 	ScopeLock(ILock &rhs);

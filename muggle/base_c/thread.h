@@ -47,7 +47,11 @@ typedef struct ThreadAttribute_tag
 #endif
 }MuggleThreadAttribute;
 
+#if MUGGLE_PLATFORM_WINDOWS
+typedef THREAD_ROUTINE_RETURN (__stdcall *MuggleThreadStartRoutine)(void *args);
+#else
 typedef THREAD_ROUTINE_RETURN (*MuggleThreadStartRoutine)(void *args);
+#endif
 
 MUGGLE_BASE_C_EXPORT bool MuggleThreadCreate(
 	MuggleThread *thread_handle, const MuggleThreadAttribute *attr,
