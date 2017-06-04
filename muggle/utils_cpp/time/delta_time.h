@@ -9,33 +9,22 @@
 #define MUGGLE_DELTA_TIMER_H_
 
 #include "muggle/base_c/macro.h"
-#include "muggle/base_cpp/base_cpp_macro.h"
-
-NS_MUGGLE_BEGIN
+#include "muggle/utils_cpp/utils_cpp_macro.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 
 #include <windows.h>
 
-class MUGGLE_BASE_CPP_EXPORT DeltaTime
-{
-public:
-	DeltaTime() : start_(), end_() {}
-
-	void Start();
-	void End();
-	double GetElapsedMilliseconds();
-
-private:
-	LARGE_INTEGER start_;
-	LARGE_INTEGER end_;
-};
-
 #else
 
 #include <sys/time.h>
 
-class MUGGLE_BASE_CPP_EXPORT DeltaTime
+#endif
+
+
+NS_MUGGLE_BEGIN
+
+class MUGGLE_UTILS_CPP_EXPORT DeltaTime
 {
 public:
 	DeltaTime() : start_(), end_() {}
@@ -45,11 +34,16 @@ public:
 	double GetElapsedMilliseconds();
 
 private:
+
+#if MUGGLE_PLATFORM_WINDOWS
+	LARGE_INTEGER start_;
+	LARGE_INTEGER end_;
+#else
 	struct timeval start_;
 	struct timeval end_;
-};
-
 #endif
+
+};
 
 NS_MUGGLE_END
 

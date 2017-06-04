@@ -257,6 +257,16 @@ void MuggleLogFunction(MuggleLogCategory *category, MuggleLogAttributeInfo *attr
 		log_handle->log_func(log_handle, attr, msg);
 		log_handle = log_handle->next;
 	}
+
+#if MUGGLE_DEBUG
+	if (attr->level >= MUGGLE_LOG_LEVEL_ERROR)
+	{
+#if MUGGLE_PLATFORM_WINDOWS
+		__debugbreak();
+#endif
+		abort();
+	}
+#endif
 }
 
 int MuggleLogGenFmtText(MuggleLogHandle *log_handle, MuggleLogAttributeInfo *attr, const char *msg, char *buf, int max_len)

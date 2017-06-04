@@ -9,7 +9,6 @@
 #define MUGGLE_BASE_CPP_H_
 
 #include "muggle/base_cpp/base_cpp_macro.h"
-#include "muggle/base_cpp/delta_time.h"
 #include "muggle/base_cpp/lock.h"
 
 #endif

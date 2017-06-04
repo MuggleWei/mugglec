@@ -11,5 +11,6 @@
 #include "muggle/base_c/base_c.h"
 #include "muggle/utils_c/utils_c.h"
 #include "muggle/base_cpp/base_cpp.h"
+#include "muggle/utils_cpp/utils_cpp.h"
 
 #endif

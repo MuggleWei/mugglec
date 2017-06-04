@@ -1,5 +1,5 @@
-#ifndef __RUN_TEST_BASE_LOG_H__
-#define __RUN_TEST_BASE_LOG_H__
+#ifndef RUN_TEST_BASE_CLOG_H__
+#define RUN_TEST_BASE_CLOG_H__
 
 #include "muggle/base_c/base_c.h"
 

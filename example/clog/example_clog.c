@@ -1,4 +1,4 @@
-#include "example_log.h"
+#include "example_clog.h"
 
 
 int main(int argc, char *argv[])

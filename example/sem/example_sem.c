@@ -1,5 +1,4 @@
 #include "muggle/base_c/base_c.h"
-#include "muggle/base_c/semaphore.h"
 
 #define THREAD_NUM 8
 
