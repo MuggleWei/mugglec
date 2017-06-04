@@ -98,6 +98,13 @@ if (${BUILD_MUGGLE_BASE_SEPARATE})
 			)
 		endif()
 
+		# instal binary files
+		install(TARGETS ${muggle_utils_cpp}
+			RUNTIME DESTINATION ${MUGGLE_INSTALL_RUNTIME_PATH}
+			LIBRARY DESTINATION ${MUGGLE_INSTALL_LIBRARY_PATH}
+			ARCHIVE DESTINATION ${MUGGLE_INSTALL_ARCHIVE_PATH}
+		)
+
 		# set folder in vs
 		set_target_properties(
 			${muggle_utils_cpp}
@@ -146,6 +153,13 @@ else()
 		PUBLIC ${public_exports_macros}
 	)
 
+	# instal binary files
+	install(TARGETS ${muggle_cc}
+		RUNTIME DESTINATION ${MUGGLE_INSTALL_RUNTIME_PATH}
+		LIBRARY DESTINATION ${MUGGLE_INSTALL_LIBRARY_PATH}
+		ARCHIVE DESTINATION ${MUGGLE_INSTALL_ARCHIVE_PATH}
+	)
+
 	# set folder in vs
 	set_target_properties(
 		${muggle_cc}
@@ -153,6 +167,9 @@ else()
 		FOLDER "muggle"
 	)
 endif()
+
+# install headers
+muggle_install_headers(${muggle_source_dir}/muggle ${MUGGLE_INSTALL_INCLUDE_PATH})
 
 if (${BUILD_MUGGLE_EXAMPLE} AND ${BUILD_MUGGLE_BASE_SEPARATE})
 	add_subdirectory(example)

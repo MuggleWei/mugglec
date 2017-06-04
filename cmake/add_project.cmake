@@ -35,35 +35,12 @@ function(addMuggleLib name is_pure_c export_macros folder_name link_targets depe
 		)
 	endif()
 
-	# install headers
-	file(GLOB_RECURSE h_files ${muggle_source_dir}/muggle/${folder_name}/*.h)
-	file(GLOB_RECURSE hpp_files ${muggle_source_dir}/muggle/${folder_name}/*.hpp)
-	set(headers ${h_files} ${hpp_files})
-	foreach(file ${headers})
-		file(RELATIVE_PATH rel_path ${muggle_source_dir}/muggle/${folder_name} ${file})
-		get_filename_component(file_dir ${rel_path} DIRECTORY)
-		if (NOT ${file_dir} EQUAL "")
-			list(FIND all_dirs ${file_dir} idx)
-			if (${idx} EQUAL -1)
-				list(APPEND all_dirs ${file_dir})
-			endif()
-			list(APPEND ${file_dir}_h ${file})
-		else()
-			list(APPEND empty_dir_h ${file})
-		endif()
-	endforeach()
-
-	foreach(file_dir ${all_dirs})
-		install(FILES ${${file_dir}_h} DESTINATION ${MUGGLE_INSTALL_INCLUDE_PATH}/${folder_name}/${file_dir})
-	endforeach()
-	install(FILES ${empty_dir_h} DESTINATION ${MUGGLE_INSTALL_INCLUDE_PATH}/${folder_name})
-
 	# instal binary files
 	install(TARGETS ${name}
 		RUNTIME DESTINATION ${MUGGLE_INSTALL_RUNTIME_PATH}
 		LIBRARY DESTINATION ${MUGGLE_INSTALL_LIBRARY_PATH}
 		ARCHIVE DESTINATION ${MUGGLE_INSTALL_ARCHIVE_PATH}
-	)	
+	)
 
 endfunction(addMuggleLib)
 

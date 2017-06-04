@@ -134,3 +134,34 @@ function(muggle_add_project_with_folders name root_folder type folders)
 	muggle_add_project_with_files(${muggle_add_project_with_folders} ${name} ${root_folder} ${type} "${src_files}" "${h_files}")
 	
 endfunction(muggle_add_project_with_folders)
+
+#########################################
+# muggle_install_headers
+# descript: install headers in source folder to target recursivly
+# @src_root_folder: source root folder
+# @target_folder: target folder
+function(muggle_install_headers src_root_folder target_folder)
+
+	file(GLOB_RECURSE h_files ${src_root_folder}/*.h)
+	file(GLOB_RECURSE hpp_files ${src_root_folder}/*.hpp)
+	set(headers ${h_files} ${hpp_files})
+	foreach(file ${headers})
+		file(RELATIVE_PATH rel_path ${src_root_folder} ${file})
+		get_filename_component(file_dir ${rel_path} DIRECTORY)
+		if (NOT ${file_dir} EQUAL "")
+			list(FIND all_dirs ${file_dir} idx)
+			if (${idx} EQUAL -1)
+				list(APPEND all_dirs ${file_dir})
+			endif()
+			list(APPEND ${file_dir}_h ${file})
+		else()
+			list(APPEND empty_dir_h ${file})
+		endif()
+	endforeach()
+
+	foreach(file_dir ${all_dirs})
+		install(FILES ${${file_dir}_h} DESTINATION ${target_folder}/${file_dir})
+	endforeach()
+	install(FILES ${empty_dir_h} DESTINATION ${target_folder})
+
+endfunction(muggle_install_headers)
