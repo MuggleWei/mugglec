@@ -141,7 +141,17 @@ else()
 		list(APPEND public_exports_macros USE_MUGGLE_MEMORY_DETECT)
 	endif()
 
+	# add project
 	muggle_add_project_with_folders(${muggle_cc} ${CMAKE_CURRENT_LIST_DIR}/muggle SHARED "${dirs}")
+
+	# link libs
+	if (WIN32)
+		set(targetLinks "")
+	else()
+		set(targetLinks pthread dl)
+	endif()
+	target_link_libraries(${muggle_cc} ${targetLinks})
+
 	if(MSVC AND ${MUGGLE_BUILD_SHARED_LIB})
 		target_compile_definitions(${muggle_cc}
 			PUBLIC MUGGLE_USE_DLLS 
