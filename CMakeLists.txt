@@ -98,7 +98,7 @@ if (${BUILD_MUGGLE_BASE_SEPARATE})
 			)
 		endif()
 
-		# instal binary files
+		# install binary files
 		install(TARGETS ${muggle_utils_cpp}
 			RUNTIME DESTINATION ${MUGGLE_INSTALL_RUNTIME_PATH}
 			LIBRARY DESTINATION ${MUGGLE_INSTALL_LIBRARY_PATH}

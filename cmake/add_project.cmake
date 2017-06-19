@@ -35,7 +35,7 @@ function(addMuggleLib name is_pure_c export_macros folder_name link_targets depe
 		)
 	endif()
 
-	# instal binary files
+	# install binary files
 	install(TARGETS ${name}
 		RUNTIME DESTINATION ${MUGGLE_INSTALL_RUNTIME_PATH}
 		LIBRARY DESTINATION ${MUGGLE_INSTALL_LIBRARY_PATH}
@@ -59,4 +59,4 @@ function(addProject name folder_name dependencies type)
 		)
 	endif()
 
-endfunction(addProject) 
+endfunction(addProject)
