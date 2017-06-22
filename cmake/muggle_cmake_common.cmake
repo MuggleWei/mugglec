@@ -33,7 +33,7 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # build share lib or static lib
-set(MUGGLE_BUILD_SHARED_LIB ON)
+option(MUGGLE_BUILD_SHARED_LIB ON)
 if (MUGGLE_BUILD_SHARED_LIB)
 	set(MUGGLE_LIB_TYPE SHARED)
 else()
