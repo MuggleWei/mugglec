@@ -68,7 +68,7 @@ if (${BUILD_MUGGLE_BASE_SEPARATE})
 
 	if (NOT "${muggle_utils_cpp_folders}")
 		list(APPEND muggle_utils_cpp_folders ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp)
-		muggle_add_project_with_folders(${muggle_utils_cpp} ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp SHARED "${muggle_utils_cpp_folders}")
+		muggle_add_project_with_folders(${muggle_utils_cpp} ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp ${MUGGLE_LIB_TYPE} "${muggle_utils_cpp_folders}")
 
 		# link
 		target_link_libraries(${muggle_utils_cpp}
@@ -142,7 +142,7 @@ else()
 	endif()
 
 	# add project
-	muggle_add_project_with_folders(${muggle_cc} ${CMAKE_CURRENT_LIST_DIR}/muggle SHARED "${dirs}")
+	muggle_add_project_with_folders(${muggle_cc} ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE} "${dirs}")
 
 	# link libs
 	if (WIN32)
