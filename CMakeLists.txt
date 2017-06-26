@@ -24,8 +24,6 @@ option(BUILD_MUGGLE_UTILS_CPP_MEMORY_DETECT "Build muggle utils memory detect" O
 
 if (${BUILD_MUGGLE_BASE_SEPARATE})
 
-	################## essential component ##################
-
 	# base c
 	if (WIN32)
 		set(targetLinks "")
@@ -45,73 +43,16 @@ if (${BUILD_MUGGLE_BASE_SEPARATE})
 	endif()
 	addMuggleLib(${muggle_base_cpp} OFF MUGGLE_BASE_CPP_EXPORTS base_cpp "${targetLinks}" ${muggle_base_c})
 
+	# utils cpp
+	set(targetLinks ${muggle_base_cpp})
+	addMuggleLib(${muggle_utils_cpp} OFF MUGGLE_UTILS_CPP_EXPORTS utils_cpp "${targetLinks}" ${muggle_base_cpp})
+
 	# set folder in vs
 	set_target_properties(
-		${muggle_base_c} ${muggle_base_cpp} ${muggle_utils_c}
+		${muggle_base_c} ${muggle_base_cpp} ${muggle_utils_c} ${muggle_utils_cpp}
 		PROPERTIES
 		FOLDER "muggle"
 	)
-
-	################## option component ##################
-
-	set(muggle_utils_cpp_folders "")
-
-	# time
-	if (BUILD_MUGGLE_UTILS_CPP_TIME)
-		list(APPEND muggle_utils_cpp_folders ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp/time)
-	endif()
-
-	# memory detect
-	if (BUILD_MUGGLE_UTILS_CPP_MEMORY_DETECT)
-		list(APPEND muggle_utils_cpp_folders ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp/mem_detect)
-	endif()
-
-	if (NOT "${muggle_utils_cpp_folders}")
-		list(APPEND muggle_utils_cpp_folders ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp)
-		muggle_add_project_with_folders(${muggle_utils_cpp} ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp ${MUGGLE_LIB_TYPE} "${muggle_utils_cpp_folders}")
-
-		# link
-		target_link_libraries(${muggle_utils_cpp}
-			${muggle_base_cpp}
-		)
-		add_dependencies(${muggle_utils_cpp}
-			${muggle_base_cpp}
-		)
-
-		# macro
-		if (BUILD_MUGGLE_UTILS_CPP_TIME)
-			target_compile_definitions(${muggle_utils_cpp}
-				PUBLIC USE_MUGGLE_TIME
-			)
-		endif()
-		if (BUILD_MUGGLE_UTILS_CPP_MEMORY_DETECT)
-			target_compile_definitions(${muggle_utils_cpp}
-				PUBLIC USE_MUGGLE_MEMORY_DETECT
-			)
-		endif()
-
-		# windows dll export and import
-		if(MSVC AND ${MUGGLE_BUILD_SHARED_LIB})
-			target_compile_definitions(${muggle_utils_cpp}
-				PUBLIC MUGGLE_USE_DLLS
-				PRIVATE MUGGLE_UTILS_CPP_EXPORTS
-			)
-		endif()
-
-		# install binary files
-		install(TARGETS ${muggle_utils_cpp}
-			RUNTIME DESTINATION ${MUGGLE_INSTALL_RUNTIME_PATH}
-			LIBRARY DESTINATION ${MUGGLE_INSTALL_LIBRARY_PATH}
-			ARCHIVE DESTINATION ${MUGGLE_INSTALL_ARCHIVE_PATH}
-		)
-
-		# set folder in vs
-		set_target_properties(
-			${muggle_utils_cpp}
-			PROPERTIES
-			FOLDER "muggle"
-		)
-	endif()	
 
 else()
 	if (WIN32)
@@ -131,15 +72,9 @@ else()
 	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/base_cpp)
 	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp)
 
-	if (BUILD_MUGGLE_UTILS_CPP_TIME)
-		list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp/time)
-		list(APPEND public_exports_macros USE_MUGGLE_TIME)
-	endif()
-
-	if (BUILD_MUGGLE_UTILS_CPP_MEMORY_DETECT)
-		list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp/mem_detect)
-		list(APPEND public_exports_macros USE_MUGGLE_MEMORY_DETECT)
-	endif()
+	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp/time)
+	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp/mem_detect)
+	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp/design_pattern)
 
 	# add project
 	muggle_add_project_with_folders(${muggle_cc} ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE} "${dirs}")
