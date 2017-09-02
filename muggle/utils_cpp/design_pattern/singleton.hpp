@@ -8,7 +8,7 @@
 NS_MUGGLE_BEGIN
 
 template<typename T>
-class MUGGLE_UTILS_CPP_EXPORT Singleton
+class Singleton
 {
 public:
 	template<typename... Args>
