@@ -1,4 +1,4 @@
-#include "muggle/base_c/base_c.h"
+#include "muggle/c/muggle_c.h"
 
 #define THREAD_NUM 8
 

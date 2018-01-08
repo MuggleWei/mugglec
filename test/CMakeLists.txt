@@ -9,10 +9,15 @@ config_compiler_and_linker()
 include_directories(${GTEST_INCLUDE_DIR})
 
 # unit test
-set(run_test_dependencies ${muggle_base_c} gtest_main)
-addProject("UnitTest_File" "${CMAKE_CURRENT_LIST_DIR}/unittest/file" "${run_test_dependencies}" "EXE")
-addProject("UnitTest_Str" "${CMAKE_CURRENT_LIST_DIR}/unittest/str" "${run_test_dependencies}" "EXE")
-addProject("UnitTest_Atomic" "${CMAKE_CURRENT_LIST_DIR}/unittest/atomic" "${run_test_dependencies}" "EXE")
+set(run_test_dependencies ${muggle_cc} gtest_main)
+muggle_add_project(UnitTest_File "${CMAKE_CURRENT_LIST_DIR}/unittest/file" EXE)
+target_link_libraries(UnitTest_File ${run_test_dependencies})
+
+muggle_add_project(UnitTest_Str "${CMAKE_CURRENT_LIST_DIR}/unittest/str" EXE)
+target_link_libraries(UnitTest_Str ${run_test_dependencies})
+
+muggle_add_project(UnitTest_Atomic "${CMAKE_CURRENT_LIST_DIR}/unittest/atomic" EXE)
+target_link_libraries(UnitTest_Atomic ${run_test_dependencies})
 
 # folder
 set_target_properties(

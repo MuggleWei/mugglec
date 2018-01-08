@@ -1,5 +1,5 @@
 #include <iostream>
-#include "muggle/utils_cpp/design_pattern/singleton.hpp"
+#include "muggle/cpp/design_pattern/singleton.hpp"
 
 class A
 {

@@ -1,7 +1,7 @@
 #ifndef RUN_TEST_BASE_CLOG_H__
 #define RUN_TEST_BASE_CLOG_H__
 
-#include "muggle/base_c/base_c.h"
+#include "muggle/c/muggle_c.h"
 
 typedef struct CustomLog1_tag
 {

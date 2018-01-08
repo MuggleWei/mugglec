@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "muggle/base_c/base_c.h"
+#include "muggle/c/muggle_c.h"
 
 TEST(Atomic, Size)
 {
