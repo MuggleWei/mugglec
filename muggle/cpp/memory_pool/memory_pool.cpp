@@ -7,6 +7,7 @@
 
 #include "muggle/cpp/memory_pool/memory_pool.h"
 #include <exception>
+#include <new>
 
 NS_MUGGLE_BEGIN
 

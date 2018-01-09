@@ -6,7 +6,9 @@
  */
 
 #include "muggle/cpp/memory_pool/thread_safe_memory_pool.h"
-#include <stdexcpt.h>
+#include <malloc.h>
+#include <exception>
+#include <new>
 
 NS_MUGGLE_BEGIN
 

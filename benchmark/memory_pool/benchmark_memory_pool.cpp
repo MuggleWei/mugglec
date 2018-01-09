@@ -6,6 +6,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <iostream>
 #include <fstream>
 #include <thread>
