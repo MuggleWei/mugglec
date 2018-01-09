@@ -14,6 +14,10 @@ bool MuggleMemoryPoolInit(MuggleMemoryPool* pool, unsigned int init_capacity, un
 {
 	memset(pool, 0, sizeof(MuggleMemoryPool));
 	init_capacity = init_capacity == 0 ? 8 : init_capacity;
+	if (block_size == 0)
+	{
+		return false;
+	}
 
 	pool->memory_pool_data_bufs = (void**)malloc(sizeof(void*));
 	if (pool->memory_pool_data_bufs == NULL)

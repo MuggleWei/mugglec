@@ -30,6 +30,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 option(MUGGLE_BUILD_ONLY_C "Only build muggle c lib" OFF)
 option(MUGGLE_BUILD_EXAMPLE "Build example" OFF)
 option(MUGGLE_BUILD_TEST "Build test" OFF)
+option(MUGGLE_BUILD_BENCHMARK "Build benchmark" OFF)
 option(MUGGLE_BUILD_SHARED_LIB ON)
 
 if (MUGGLE_BUILD_SHARED_LIB)
@@ -78,7 +79,7 @@ install(TARGETS ${muggle_cc}
 )
 
 if (${MUGGLE_BUILD_EXAMPLE} AND NOT ${MUGGLE_BUILD_ONLY_C})
-	add_subdirectory(example)
+	add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/example)
 endif()
 
 if (${MUGGLE_BUILD_TEST} AND NOT ${MUGGLE_BUILD_ONLY_C})
@@ -102,121 +103,6 @@ if (${MUGGLE_BUILD_TEST} AND NOT ${MUGGLE_BUILD_ONLY_C})
 	endif()
 endif()
 
-# if (${BUILD_MUGGLE_BASE_SEPARATE})
-# 
-# 	# base c
-# 	if (WIN32)
-# 		set(targetLinks "")
-# 	else()
-# 		set(targetLinks pthread dl)
-# 	endif()
-# 	addMuggleLib(${muggle_base_c} ON MUGGLE_BASE_C_EXPORTS base_c "${targetLinks}" "")
-# 
-# 	# utils c
-# 	addMuggleLib(${muggle_utils_c} ON MUGGLE_UTILS_C_EXPORTS utils_c ${muggle_base_c} ${muggle_base_c})
-# 
-# 	# base cpp
-# 	if (WIN32)
-# 		set(targetLinks ${muggle_base_c})
-# 	else()
-# 		set(targetLinks pthread dl ${muggle_base_c})
-# 	endif()
-# 	addMuggleLib(${muggle_base_cpp} OFF MUGGLE_BASE_CPP_EXPORTS base_cpp "${targetLinks}" ${muggle_base_c})
-# 
-# 	# utils cpp
-# 	set(targetLinks ${muggle_base_cpp})
-# 	addMuggleLib(${muggle_utils_cpp} OFF MUGGLE_UTILS_CPP_EXPORTS utils_cpp "${targetLinks}" ${muggle_base_cpp})
-# 
-# 	# set folder in vs
-# 	set_target_properties(
-# 		${muggle_base_c} ${muggle_base_cpp} ${muggle_utils_c} ${muggle_utils_cpp}
-# 		PROPERTIES
-# 		FOLDER "muggle"
-# 	)
-# 
-# else()
-# 	if (WIN32)
-# 		set(targetLinks "")
-# 	else()
-# 		set(targetLinks pthread dl)
-# 	endif()
-# 
-# 	list(APPEND private_exports_macros "MUGGLE_BASE_C_EXPORTS")
-# 	list(APPEND private_exports_macros "MUGGLE_UTILS_C_EXPORTS")
-# 	list(APPEND private_exports_macros "MUGGLE_BASE_CPP_EXPORTS")
-# 	list(APPEND private_exports_macros "MUGGLE_UTILS_CPP_EXPORTS")
-# 
-# 	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/c/base)
-# 	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_c)
-# 	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_c/time)
-# 	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/base_cpp)
-# 	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp)
-# 
-# 	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp/time)
-# 	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp/mem_detect)
-# 	list(APPEND dirs ${CMAKE_CURRENT_LIST_DIR}/muggle/utils_cpp/design_pattern)
-# 
-# 	# add project
-# 	muggle_add_project_with_folders(${muggle_cc} ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE} "${dirs}")
-# 
-# 	# link libs
-# 	if (WIN32)
-# 		set(targetLinks "")
-# 	else()
-# 		set(targetLinks pthread dl)
-# 	endif()
-# 	target_link_libraries(${muggle_cc} ${targetLinks})
-# 
-# 	if(MSVC AND ${MUGGLE_BUILD_SHARED_LIB})
-# 		target_compile_definitions(${muggle_cc}
-# 			PUBLIC MUGGLE_USE_DLLS 
-# 			PRIVATE ${private_exports_macros}
-# 		)
-# 	endif()
-# 
-# 	target_compile_definitions(${muggle_cc}
-# 		PUBLIC ${public_exports_macros}
-# 	)
-# 
-# 	# instal binary files
-# 	install(TARGETS ${muggle_cc}
-# 		RUNTIME DESTINATION ${MUGGLE_INSTALL_RUNTIME_PATH}
-# 		LIBRARY DESTINATION ${MUGGLE_INSTALL_LIBRARY_PATH}
-# 		ARCHIVE DESTINATION ${MUGGLE_INSTALL_ARCHIVE_PATH}
-# 	)
-# 
-# 	# set folder in vs
-# 	set_target_properties(
-# 		${muggle_cc}
-# 		PROPERTIES
-# 		FOLDER "muggle"
-# 	)
-# endif()
-# 
-# # install headers
-# muggle_install_headers(${muggle_source_dir}/muggle ${MUGGLE_INSTALL_INCLUDE_PATH})
-# 
-# if (${BUILD_MUGGLE_EXAMPLE} AND ${BUILD_MUGGLE_BASE_SEPARATE})
-# 	add_subdirectory(example)
-# endif()
-# 
-# if (${BUILD_MUGGLE_TEST} AND ${BUILD_MUGGLE_BASE_SEPARATE})
-# 	# find googletest source
-# 	include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindGTestSrc.cmake)
-# 	if(GTESTSRC_FOUND)
-# 	
-# 		if (WIN32)
-# 			# without this, will cause error: Debug Assertion Failed! Expression: __acrt_first_block == header
-# 			SET(BUILD_SHARED_LIBS ON CACHE BOOL "build google test as dynamic lib")
-# 		endif()
-# 		
-# 		add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/gtest)
-# 		add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test)
-# 
-# 		set_target_properties(
-# 			gtest gtest_main gmock gmock_main
-# 			PROPERTIES
-# 			FOLDER "thirdparty"
-# 		)
-# 	endif()
-# endif()
+if (${MUGGLE_BUILD_BENCHMARK} AND NOT ${MUGGLE_BUILD_ONLY_C})
+	add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/benchmark)
+endif()
