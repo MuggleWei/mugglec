@@ -349,6 +349,46 @@ void benchmarkMultipleThread()
 	memset(name_buf, 0, sizeof(name_buf));
 	snprintf(name_buf, 63, "mul_th_%d_threadsafe_pool_free", thread_nums);
 	writeToFile(name_buf, &free_records[0][0]);
+
+	// pool with thread local
+	records.clear();
+	memset(&alloc_records[0][0], 0, sizeof(double) * len_time * len_block_size);
+	memset(&free_records[0][0], 0, sizeof(double) * len_time * len_block_size);
+	for (int i = 0; i < len_time; ++i)
+	{
+		for (int j = 0; j < len_block_size; ++j)
+		{
+			std::cout << "multiple thread " << thread_nums << " - pool thread local - " << times[i] << ", " << block_size[j] << std::endl;
+
+			for (unsigned int th_num = 0; th_num < thread_nums; ++th_num)
+			{
+				futures.push_back(std::async(std::launch::async, [&i, &j]()->Records {
+					Records rec;
+					memset(&rec, 0, sizeof(rec));
+
+					muggle::ThreadSafeMemoryPool pool(times[i], block_size[j]);
+					shufflePool<muggle::ThreadSafeMemoryPool>(pool);
+
+					benchmarkThreadsafeMemoryPool(pool, times[i], block_size[j], rec.alloc_records[i][j], rec.free_records[i][j]);
+					return rec;
+				}));
+			}
+			for (unsigned int th_num = 0; th_num < thread_nums; ++th_num)
+			{
+				records.push_back(futures[th_num].get());
+			}
+			futures.clear();
+		}
+	}
+	accuRecords(records, &alloc_records[0][0], &free_records[0][0]);
+
+	memset(name_buf, 0, sizeof(name_buf));
+	snprintf(name_buf, 63, "mul_th_%d_pool_thread_local_alloc", thread_nums);
+	writeToFile(name_buf, &alloc_records[0][0]);
+
+	memset(name_buf, 0, sizeof(name_buf));
+	snprintf(name_buf, 63, "mul_th_%d_pool_thread_local_free", thread_nums);
+	writeToFile(name_buf, &free_records[0][0]);
 }
 
 
