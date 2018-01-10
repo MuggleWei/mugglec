@@ -16,6 +16,10 @@
 #include "muggle/cpp/memory_pool/memory_pool.h"
 #include "muggle/cpp/memory_pool/thread_safe_memory_pool.h"
 
+#if MUGGLE_PLATFORM_WINDOWS
+#include "muggle/cpp/mem_detect/mem_detect.h"
+#endif
+
 typedef std::chrono::duration<double, std::milli> double_dura;
 typedef std::function<void(intptr_t*, int, unsigned int)> allocFunc;
 typedef std::function<void(intptr_t*, int)> freeFunc;
@@ -102,11 +106,9 @@ void benchmarkOrigin(int times, unsigned int block_size, double &alloc_ms, doubl
 	free(buf);
 }
 
-void benchmarkMemoryPool(int times, unsigned int block_size, double &alloc_ms, double &free_ms)
+void benchmarkMemoryPool(muggle::MemoryPool &pool, int times, unsigned int block_size, double &alloc_ms, double &free_ms)
 {
 	intptr_t *buf = (intptr_t*)malloc(sizeof(void*) * times);
-
-	muggle::MemoryPool pool((unsigned int)times, block_size);
 
 	allocFunc alloc_func = std::bind(&memorypoolAlloc, std::ref(pool), 
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
@@ -119,11 +121,9 @@ void benchmarkMemoryPool(int times, unsigned int block_size, double &alloc_ms, d
 	free(buf);
 }
 
-void benchmarkThreadsafeMemoryPool(int times, unsigned int block_size, double &alloc_ms, double &free_ms)
+void benchmarkThreadsafeMemoryPool(muggle::ThreadSafeMemoryPool &pool, int times, unsigned int block_size, double &alloc_ms, double &free_ms)
 {
 	intptr_t *buf = (intptr_t*)malloc(sizeof(void*) * times);
-
-	muggle::ThreadSafeMemoryPool pool((unsigned int)times, block_size);
 
 	allocFunc alloc_func = std::bind(&threadsafeMemorypoolAlloc, std::ref(pool),
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
@@ -176,6 +176,32 @@ void writeToFile(const std::string& name, double *records)
 	out.close();
 }
 
+
+template<typename T>
+void shufflePool(T &pool)
+{
+	unsigned int capacity = pool.capacity();
+	intptr_t *buf = (intptr_t*)malloc(sizeof(void*) * capacity);
+
+	for (unsigned int j = 0; j < capacity; ++j)
+	{
+		buf[j] = (intptr_t)pool.alloc();
+	}
+
+	for (unsigned int j = 0; j < capacity; ++j)
+	{
+		int k = rand() % capacity;
+		std::swap(buf[j], buf[k]);
+	}
+
+	for (unsigned int j = 0; j < capacity; ++j)
+	{
+		pool.recycle((void*)buf[j]);
+	}
+
+	free(buf);
+}
+
 void benchmarkSingleThread()
 {
 	double alloc_records[len_time][len_block_size] = {};
@@ -186,6 +212,7 @@ void benchmarkSingleThread()
 	{
 		for (int j = 0; j < len_block_size; ++j)
 		{
+			std::cout << "single thread - malloc/free - " << times[i] << ", " << block_size[j] << std::endl;
 			benchmarkOrigin(times[i], block_size[j], alloc_records[i][j], free_records[i][j]);
 		}
 	}
@@ -197,7 +224,10 @@ void benchmarkSingleThread()
 	{
 		for (int j = 0; j < len_block_size; ++j)
 		{
-			benchmarkMemoryPool(times[i], block_size[j], alloc_records[i][j], free_records[i][j]);
+			std::cout << "single thread - pool - " << times[i] << ", " << block_size[j] << std::endl;
+			muggle::MemoryPool pool(times[i], block_size[j]);
+			shufflePool<muggle::MemoryPool>(pool);
+			benchmarkMemoryPool(pool, times[i], block_size[j], alloc_records[i][j], free_records[i][j]);
 		}
 	}
 	writeToFile("pool_alloc", &alloc_records[0][0]);
@@ -208,18 +238,20 @@ void benchmarkSingleThread()
 	{
 		for (int j = 0; j < len_block_size; ++j)
 		{
-			benchmarkThreadsafeMemoryPool(times[i], block_size[j], alloc_records[i][j], free_records[i][j]);
+			std::cout << "single thread - thread safe pool - " << times[i] << ", " << block_size[j] << std::endl;
+			muggle::ThreadSafeMemoryPool pool(times[i], block_size[j]);
+			shufflePool<muggle::ThreadSafeMemoryPool>(pool);
+			benchmarkThreadsafeMemoryPool(pool, times[i], block_size[j], alloc_records[i][j], free_records[i][j]);
 		}
 	}
 	writeToFile("threadsafe_pool_alloc", &alloc_records[0][0]);
 	writeToFile("threadsafe_pool_free", &free_records[0][0]);
 }
 
-void accuRecords(std::vector<std::future<Records>> &futures, double *alloc_records, double *free_records)
+void accuRecords(std::vector<Records> &records, double *alloc_records, double *free_records)
 {
-	for (auto &future : futures)
+	for (auto &rec : records)
 	{
-		Records rec = future.get();
 		for (int i = 0; i < len_time; ++i)
 		{
 			for (int j = 0; j < len_block_size; ++j)
@@ -239,57 +271,107 @@ void benchmarkMultipleThread()
 	unsigned int thread_nums = std::thread::hardware_concurrency();
 	thread_nums = thread_nums > 1 ? thread_nums : 2;
 
+	std::vector<Records> records;
 	std::vector<std::future<Records>> futures;
+	char name_buf[64];
 
 	// origin
-	futures.clear();
+	records.clear();
 	memset(&alloc_records[0][0], 0, sizeof(double) * len_time * len_block_size);
 	memset(&free_records[0][0], 0, sizeof(double) * len_time * len_block_size);
-	for (unsigned int i = 0; i < thread_nums; ++i)
+	for (int i = 0; i < len_time; ++i)
 	{
-		futures.push_back(std::async(std::launch::async, []()->Records {
-			Records rec;
-			for (int i = 0; i < len_time; ++i)
+		for (int j = 0; j < len_block_size; ++j)
+		{
+			std::cout << "multiple thread " << thread_nums << " - malloc/free - " << times[i] << ", " << block_size[j] << std::endl;
+
+			for (unsigned int th_num = 0; th_num < thread_nums; ++th_num)
 			{
-				for (int j = 0; j < len_block_size; ++j)
-				{
+				futures.push_back(std::async(std::launch::async, [&i, &j]()->Records {
+					Records rec;
+					memset(&rec, 0, sizeof(rec));
 					benchmarkOrigin(times[i], block_size[j], rec.alloc_records[i][j], rec.free_records[i][j]);
-				}
+					return rec;
+				}));
 			}
-			return rec;
-		}));
+			for (unsigned int th_num = 0; th_num < thread_nums; ++th_num)
+			{
+				records.push_back(futures[th_num].get());
+			}
+			futures.clear();
+		}
 	}
-	accuRecords(futures, &alloc_records[0][0], &free_records[0][0]);
-	writeToFile("mul_th_origin_alloc", &alloc_records[0][0]);
-	writeToFile("mul_th_origin_free", &free_records[0][0]);
+	accuRecords(records, &alloc_records[0][0], &free_records[0][0]);
+
+	memset(name_buf, 0, sizeof(name_buf));
+	snprintf(name_buf, 63, "mul_th_%d_origin_alloc", thread_nums);
+	writeToFile(name_buf, &alloc_records[0][0]);
+
+	memset(name_buf, 0, sizeof(name_buf));
+	snprintf(name_buf, 63, "mul_th_%d_origin_free", thread_nums);
+	writeToFile(name_buf, &free_records[0][0]);
 
 	// thread safe pool
-	futures.clear();
+	records.clear();
 	memset(&alloc_records[0][0], 0, sizeof(double) * len_time * len_block_size);
 	memset(&free_records[0][0], 0, sizeof(double) * len_time * len_block_size);
-	for (unsigned int i = 0; i < thread_nums; ++i)
+	for (int i = 0; i < len_time; ++i)
 	{
-		futures.push_back(std::async(std::launch::async, []()->Records {
-			Records rec;
-			for (int i = 0; i < len_time; ++i)
+		for (int j = 0; j < len_block_size; ++j)
+		{
+			std::cout << "multiple thread " << thread_nums << " - thread safe pool - " << times[i] << ", " << block_size[j] << std::endl;
+
+			muggle::ThreadSafeMemoryPool pool(times[i] * thread_nums, block_size[j]);
+			shufflePool<muggle::ThreadSafeMemoryPool>(pool);
+
+			for (unsigned int th_num = 0; th_num < thread_nums; ++th_num)
 			{
-				for (int j = 0; j < len_block_size; ++j)
-				{
-					benchmarkThreadsafeMemoryPool(times[i], block_size[j], rec.alloc_records[i][j], rec.free_records[i][j]);
-				}
+				futures.push_back(std::async(std::launch::async, [&i, &j, &pool]()->Records {
+					Records rec;
+					memset(&rec, 0, sizeof(rec));
+					benchmarkThreadsafeMemoryPool(pool, times[i], block_size[j], rec.alloc_records[i][j], rec.free_records[i][j]);
+					return rec;
+				}));
 			}
-			return rec;
-		}));
+			for (unsigned int th_num = 0; th_num < thread_nums; ++th_num)
+			{
+				records.push_back(futures[th_num].get());
+			}
+			futures.clear();
+		}
 	}
-	accuRecords(futures, &alloc_records[0][0], &free_records[0][0]);
-	writeToFile("mul_th_threadsafe_pool_alloc", &alloc_records[0][0]);
-	writeToFile("mul_th_threadsafe_pool_free", &free_records[0][0]);
+	accuRecords(records, &alloc_records[0][0], &free_records[0][0]);
+
+	memset(name_buf, 0, sizeof(name_buf));
+	snprintf(name_buf, 63, "mul_th_%d_threadsafe_pool_alloc", thread_nums);
+	writeToFile(name_buf, &alloc_records[0][0]);
+
+	memset(name_buf, 0, sizeof(name_buf));
+	snprintf(name_buf, 63, "mul_th_%d_threadsafe_pool_free", thread_nums);
+	writeToFile(name_buf, &free_records[0][0]);
+}
+
+
+void run()
+{
+	srand(time(nullptr));
+
+	benchmarkSingleThread();
+	benchmarkMultipleThread();
 }
 
 int main()
 {
-	benchmarkSingleThread();
-	benchmarkMultipleThread();
+#if MUGGLE_PLATFORM_WINDOWS
+	muggle::DebugMemoryLeakDetect detect;
+	detect.Start();
+#endif
+
+	run();
+
+#if MUGGLE_PLATFORM_WINDOWS
+	detect.End();
+#endif
 
 	return 0;
 }

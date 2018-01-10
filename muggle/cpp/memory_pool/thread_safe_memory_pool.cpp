@@ -66,23 +66,45 @@ void* ThreadSafeMemoryPool::alloc()
 	}
 #endif
 
-	unsigned int alloc_idx = alloc_index_.fetch_add(1);
-	while (alloc_idx >= capacity_)
+	unsigned int pos = alloc_index_.load();
+	unsigned int next_pos = pos + 1;
+	while (next_pos >= capacity_)
 	{
-		alloc_idx -= capacity_;
+		next_pos -= capacity_;
 	}
 
-	return ptr_buf_[alloc_idx];
+	while (!alloc_index_.compare_exchange_weak(pos, next_pos))
+	{
+		pos = alloc_index_.load();
+		unsigned int next_pos = pos + 1;
+		while (next_pos >= capacity_)
+		{
+			next_pos -= capacity_;
+		}
+	}
+
+	return ptr_buf_[pos];
 }
 void ThreadSafeMemoryPool::recycle(void *p)
 {
-	unsigned int free_idx = free_index_.fetch_add(1);
-	while (free_idx >= capacity_)
+	unsigned int pos = free_index_.load();
+	unsigned int next_pos = pos + 1;
+	while (next_pos >= capacity_)
 	{
-		free_idx -= capacity_;
+		next_pos -= capacity_;
 	}
 
-	ptr_buf_[free_idx] = p;
+	while (!free_index_.compare_exchange_weak(pos, next_pos))
+	{
+		unsigned int pos = free_index_.load();
+		unsigned int next_pos = pos + 1;
+		while (next_pos >= capacity_)
+		{
+			next_pos -= capacity_;
+		}
+	}
+
+	ptr_buf_[pos] = p;
 
 	used_.fetch_sub(1);
 }
