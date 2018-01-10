@@ -66,6 +66,7 @@ void* ThreadSafeMemoryPool::alloc()
 	}
 #endif
 
+	/*
 	unsigned int pos = alloc_index_.load();
 	unsigned int next_pos = pos + 1;
 	while (next_pos >= capacity_)
@@ -82,11 +83,31 @@ void* ThreadSafeMemoryPool::alloc()
 			next_pos -= capacity_;
 		}
 	}
+	*/
+
+	// if this step is first step cause alloc_index_ > capacity, then have 
+	// responsible for setting alloc_index_ to correct position, so I can 
+	// keep only one thread need to loop and fix position
+	unsigned int pos = alloc_index_.fetch_add(1);
+	if (pos == capacity_)
+	{
+		unsigned int tmp = alloc_index_.load();
+		unsigned int correct_pos = tmp % capacity_;
+		while (!alloc_index_.compare_exchange_weak(tmp, correct_pos))
+		{
+			correct_pos = tmp % capacity_;
+		}
+	}
+	if (pos >= capacity_)
+	{
+		pos %= capacity_;
+	}
 
 	return ptr_buf_[pos];
 }
 void ThreadSafeMemoryPool::recycle(void *p)
 {
+	/*
 	unsigned int pos = free_index_.load();
 	unsigned int next_pos = pos + 1;
 	while (next_pos >= capacity_)
@@ -102,6 +123,22 @@ void ThreadSafeMemoryPool::recycle(void *p)
 		{
 			next_pos -= capacity_;
 		}
+	}
+	*/
+
+	unsigned int pos = free_index_.fetch_add(1);
+	if (pos == capacity_)
+	{
+		unsigned int tmp = free_index_.load();
+		unsigned int correct_pos = tmp % capacity_;
+		while (!free_index_.compare_exchange_weak(tmp, correct_pos))
+		{
+			correct_pos = tmp % capacity_;
+		}
+	}
+	if (pos >= capacity_)
+	{
+		pos %= capacity_;
 	}
 
 	ptr_buf_[pos] = p;
