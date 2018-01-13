@@ -13,10 +13,8 @@
 NS_MUGGLE_BEGIN
 
 ThreadSafeMemoryPool::ThreadSafeMemoryPool(unsigned int init_capacity, unsigned int block_size)
-	: data_bufs_(nullptr)
-	, ptr_buf_(nullptr)
-	, alloc_index_(0)
-	, free_index_(0)
+	: head_(nullptr)
+	, data_buf_(nullptr)
 	, used_(0)
 	, capacity_(0)
 	, block_size_(0)
@@ -24,126 +22,68 @@ ThreadSafeMemoryPool::ThreadSafeMemoryPool(unsigned int init_capacity, unsigned 
 	, peak_(0)
 #endif
 {
-	data_bufs_ = (void*)malloc(block_size * init_capacity);
-	if (data_bufs_ == nullptr)
-	{
-		throw std::bad_alloc();
-	}
-
-	ptr_buf_ = (void**)malloc(sizeof(void*) * init_capacity);
-	if (ptr_buf_ == nullptr)
-	{
-		throw std::bad_alloc();
-	}
-
 	capacity_ = init_capacity == 0 ? 8 : init_capacity;
 	block_size_ = block_size;
-
-	for (unsigned int i = 0; i < init_capacity; ++i)
+	if (block_size_ == 0)
 	{
-		ptr_buf_[i] = ((char*)data_bufs_) + i * block_size_;
+		throw std::bad_alloc();
 	}
+
+	unsigned int real_block_size = block_size_ + sizeof(void*);
+
+	data_buf_ = (void*)malloc(real_block_size * capacity_);
+	if (data_buf_ == nullptr)
+	{
+		throw std::bad_alloc();
+	}
+
+	for (unsigned int i = 0; i < capacity_; ++i)
+	{
+		char *addr = (char*)(data_buf_) + i * real_block_size;
+		Node *node = (Node*)addr;
+		node->next = addr + real_block_size;
+	}
+	Node* last_node = (Node*)((char*)(data_buf_) + (capacity_ - 1) * real_block_size);
+	last_node->next = nullptr;
+
+	Node* first_node = (Node*)data_buf_;
+	head_.store(first_node);
 }
 ThreadSafeMemoryPool::~ThreadSafeMemoryPool()
 {
-	free(data_bufs_);
-	free(ptr_buf_);
+	if (data_buf_)
+	{
+		free(data_buf_);
+	}
 }
 
 void* ThreadSafeMemoryPool::alloc()
 {
-	unsigned int used = used_.fetch_add(1);
-	if (used >= capacity_)
+	Node *next_pos;
+	Node *pos = head_.load();
+	do
 	{
-		used_.fetch_sub(1);
-		return nullptr;
-	}
-
-#if MUGGLE_DEBUG
-	if (used_ > peak_)
-	{
-		peak_ = used_;
-	}
-#endif
-
-	/*
-	unsigned int pos = alloc_index_.load();
-	unsigned int next_pos = pos + 1;
-	while (next_pos >= capacity_)
-	{
-		next_pos -= capacity_;
-	}
-
-	while (!alloc_index_.compare_exchange_weak(pos, next_pos))
-	{
-		pos = alloc_index_.load();
-		unsigned int next_pos = pos + 1;
-		while (next_pos >= capacity_)
+		if (pos == nullptr)
 		{
-			next_pos -= capacity_;
+			return nullptr;
 		}
-	}
-	*/
+		next_pos = (Node*)pos->next;
+	} while (!head_.compare_exchange_weak(pos, next_pos));
 
-	// if this step is first step cause alloc_index_ > capacity, then have 
-	// responsible for setting alloc_index_ to correct position, so I can 
-	// keep only one thread need to loop and fix position
-	unsigned int pos = alloc_index_.fetch_add(1);
-	if (pos == capacity_)
-	{
-		unsigned int tmp = alloc_index_.load();
-		unsigned int correct_pos = tmp % capacity_;
-		while (!alloc_index_.compare_exchange_weak(tmp, correct_pos))
-		{
-			correct_pos = tmp % capacity_;
-		}
-	}
-	if (pos >= capacity_)
-	{
-		pos %= capacity_;
-	}
+	used_++;
 
-	return ptr_buf_[pos];
+	return pos->data();
 }
 void ThreadSafeMemoryPool::recycle(void *p)
 {
-	/*
-	unsigned int pos = free_index_.load();
-	unsigned int next_pos = pos + 1;
-	while (next_pos >= capacity_)
+	Node *pos = (Node*)((char*)p - sizeof(void*));
+	Node *head_pos = head_.load();
+	do
 	{
-		next_pos -= capacity_;
-	}
+		pos->next = head_pos;
+	} while (!head_.compare_exchange_weak(head_pos, pos));
 
-	while (!free_index_.compare_exchange_weak(pos, next_pos))
-	{
-		unsigned int pos = free_index_.load();
-		unsigned int next_pos = pos + 1;
-		while (next_pos >= capacity_)
-		{
-			next_pos -= capacity_;
-		}
-	}
-	*/
-
-	unsigned int pos = free_index_.fetch_add(1);
-	if (pos == capacity_)
-	{
-		unsigned int tmp = free_index_.load();
-		unsigned int correct_pos = tmp % capacity_;
-		while (!free_index_.compare_exchange_weak(tmp, correct_pos))
-		{
-			correct_pos = tmp % capacity_;
-		}
-	}
-	if (pos >= capacity_)
-	{
-		pos %= capacity_;
-	}
-
-	ptr_buf_[pos] = p;
-
-	used_.fetch_sub(1);
+	used_--;
 }
 
 unsigned int ThreadSafeMemoryPool::capacity()

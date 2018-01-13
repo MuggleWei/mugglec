@@ -137,8 +137,8 @@ void benchmarkThreadsafeMemoryPool(muggle::ThreadSafeMemoryPool &pool, int times
 }
 
 
-int times[] = { 128, 256, 512, 1024, 2048, 4096, 10000, 100000 };
-unsigned int block_size[] = { 8, 16, 32, 64, 128, 512, 1024, 2048, 4096 };
+int times[] = { 10, 100, 1000, 2000, 5000, 10000 };
+unsigned int block_size[] = { 8, 16, 32, 64, 128, 512, 1024, 2048, 4096, 10240, 20480 };
 
 const int len_time = sizeof(times) / sizeof(times[0]);
 const int len_block_size = sizeof(block_size) / sizeof(block_size[0]);

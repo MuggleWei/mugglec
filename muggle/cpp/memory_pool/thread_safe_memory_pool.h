@@ -27,13 +27,20 @@ public:
 	MUGGLE_CC_EXPORT unsigned int inUsedNum();
 
 private:
-	void* data_bufs_;				// data buffer array
-	void** ptr_buf_;				// pointer buffer
+	struct Node
+	{
+		void* next;
+		void* data()
+		{
+			return (void*)((char*)(&next) + sizeof(void*));
+		}
+	};
 
-	std::atomic_uint alloc_index_;	// next time, alloc pointer index in pointer buffer
-	std::atomic_uint free_index_;	// next time, free pointer index in pointer buffer
-	
-	std::atomic_uint used_;			// how many block in use (Inaccurate)
+private:
+	std::atomic<Node*> head_;		// node stack's head
+	void *data_buf_;				// the whole pool's memory space
+
+	std::atomic_uint used_;			// how many block in use
 
 	unsigned int capacity_;			// current memory pool capacity
 	unsigned int block_size_;		// size of single block

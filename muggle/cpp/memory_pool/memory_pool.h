@@ -27,17 +27,22 @@ public:
 	void* alloc();
 	void recycle(void *p);
 
-	bool EnsureSpace(unsigned int capacity);
-
-	void setConstantCapacity(bool flag);
-	bool isConstantCapacity();
-
 	unsigned int capacity();
 	unsigned int blockSize();
 	unsigned int inUsedNum();
 
 private:
-	MuggleMemoryPool pool_;
+	void* data_bufs_;				// data buffer array
+	void** ptr_buf_;				// pointer buffer
+
+	unsigned int top_;				// the index of the pointer buffer stack's top + 1
+
+	unsigned int capacity_;			// current memory pool capacity
+	unsigned int block_size_;		// size of single block
+
+#if MUGGLE_DEBUG
+	unsigned int peak_;				// record max number of block in use (Inaccurate)
+#endif
 };
 
 NS_MUGGLE_END
