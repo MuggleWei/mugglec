@@ -6,6 +6,7 @@
  */
 
 #include "muggle/cpp/memory_pool/memory_pool.h"
+#include <stdlib.h>
 #include <exception>
 #include <new>
 
