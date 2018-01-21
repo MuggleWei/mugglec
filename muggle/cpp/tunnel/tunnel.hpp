@@ -54,7 +54,7 @@ public:
 		{
 			return TUNNEL_RETURN_TYPE::TUNNEL_CLOSED;
 		}
-		if (max_size_ != 0 && queue_.size() >= max_size_)
+		if (max_size_ != 0 && (decltype(max_size_))queue_.size() >= max_size_)
 		{
 			return TUNNEL_RETURN_TYPE::TUNNEL_FULLED;
 		}

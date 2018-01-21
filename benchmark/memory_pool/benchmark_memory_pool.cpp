@@ -94,7 +94,7 @@ void originRand(intptr_t *buf, int times, unsigned int block_size, int *op_flag)
 	}
 }
 
-void memorypoolAlloc(muggle::MemoryPool &pool, intptr_t *buf, int times, unsigned int block_size)
+void memorypoolAlloc(muggle::MemoryPool &pool, intptr_t *buf, int times, unsigned int /*block_size*/)
 {
 	for (int i = 0; i < times; ++i)
 	{
@@ -108,7 +108,7 @@ void memorypoolFree(muggle::MemoryPool &pool, intptr_t* buf, int times)
 		pool.recycle((void*)buf[i]);
 	}
 }
-void memorypoolRand(muggle::MemoryPool &pool, intptr_t *buf, int times, unsigned int block_size, int *op_flag)
+void memorypoolRand(muggle::MemoryPool &pool, intptr_t *buf, int times, unsigned int /*block_size*/, int *op_flag)
 {
 	int idx = 0;
 	for (int i = 0; i < times; ++i)
@@ -129,7 +129,7 @@ void memorypoolRand(muggle::MemoryPool &pool, intptr_t *buf, int times, unsigned
 	}
 }
 
-void threadsafeMemorypoolAlloc(muggle::ThreadSafeMemoryPool &pool, intptr_t *buf, int times, unsigned int block_size)
+void threadsafeMemorypoolAlloc(muggle::ThreadSafeMemoryPool &pool, intptr_t *buf, int times, unsigned int /*block_size*/)
 {
 	for (int i = 0; i < times; ++i)
 	{
@@ -143,7 +143,7 @@ void threadsafeMemorypoolFree(muggle::ThreadSafeMemoryPool &pool, intptr_t* buf,
 		pool.recycle((void*)buf[i]);
 	}
 }
-void threadsafeMemorypoolRand(muggle::ThreadSafeMemoryPool &pool, intptr_t *buf, int times, unsigned int block_size, int *op_flag)
+void threadsafeMemorypoolRand(muggle::ThreadSafeMemoryPool &pool, intptr_t *buf, int times, unsigned int /*block_size*/, int *op_flag)
 {
 	int idx = 0;
 	for (int i = 0; i < times; ++i)

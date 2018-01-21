@@ -1,6 +1,7 @@
 #include "muggle/cpp/tunnel/tunnel.hpp"
 #include <iostream>
 #include <string>
+#include <thread>
 #include <chrono>
 #include <queue>
 
@@ -22,7 +23,7 @@ void productor(int id, int task_num, muggle::Tunnel<TunnelMessage> &tunnel)
 	}
 }
 
-int consumer(int id, muggle::Tunnel<TunnelMessage> &tunnel)
+int consumer(muggle::Tunnel<TunnelMessage> &tunnel)
 {
 	int cnt = 0;
 	while (true)
@@ -54,7 +55,7 @@ void run(int num_productor, int num_consumer, int task_num_per_productor)
 	for (int i = 0; i < num_consumer; ++i)
 	{
 		consumer_threads.emplace_back([&tunnel, &log_tunnel, i] {
-			int cnt = consumer(i, tunnel);
+			int cnt = consumer(tunnel);
 
 			char buf_log[128];
 			snprintf(buf_log, sizeof(buf_log), "consumer #%d consumed: %d", i, cnt);
@@ -76,8 +77,8 @@ void run(int num_productor, int num_consumer, int task_num_per_productor)
 
 			char buf_log[128];
 			snprintf(buf_log, sizeof(buf_log),
-				"productor #%d producted %d use %I64d ms",
-				i, task_num_per_productor, ms);
+				"productor #%d producted %d use %lld ms",
+				i, task_num_per_productor, (long long)ms);
 			log_tunnel.Write(std::string(buf_log));
 		});
 	}
