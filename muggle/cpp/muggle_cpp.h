@@ -14,4 +14,6 @@
 #include "muggle/cpp/memory_pool/memory_pool.h"
 #include "muggle/cpp/memory_pool/thread_safe_memory_pool.h"
 
+#include "muggle/cpp/tunnel/tunnel.hpp"
+
 #endif

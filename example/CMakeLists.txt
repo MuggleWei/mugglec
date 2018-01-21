@@ -12,9 +12,12 @@ target_link_libraries(ExampleSem ${muggle_cc})
 muggle_add_project(ExampleSingleton "${CMAKE_CURRENT_LIST_DIR}/singleton" EXE)
 target_link_libraries(ExampleSingleton ${muggle_cc})
 
+muggle_add_project(ExampleTunnel "${CMAKE_CURRENT_LIST_DIR}/tunnel" EXE)
+target_link_libraries(ExampleTunnel ${muggle_cc})
+
 # folder
 set_target_properties(
-	ExampleCLog ProConMtxCond ExampleSem ExampleSingleton
+	ExampleCLog ProConMtxCond ExampleSem ExampleSingleton ExampleTunnel
 	PROPERTIES
 	FOLDER "example"
 )
