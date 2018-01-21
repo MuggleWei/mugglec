@@ -13,6 +13,7 @@ enum TUNNEL_RETURN_TYPE
 	TUNNEL_SUCCESS = 0,
 	TUNNEL_CLOSED, // tunnel already closed
 	TUNNEL_FULLED, // tunnel fulled
+	TUNNEL_EMPTY,  // there have no message in tunnel
 };
 
 template<typename T>
@@ -64,11 +65,21 @@ public:
 		return TUNNEL_RETURN_TYPE::TUNNEL_SUCCESS;
 	}
 
-	int Read(std::queue<T> &ret_queue)
+	int Read(std::queue<T> &ret_queue, bool blocking = true)
 	{
+		if (ret_queue.size() != 0)
+		{
+			std::queue<T> empty_queue;
+			std::swap(ret_queue, empty_queue);
+		}
+
 		std::unique_lock<std::mutex> lock(mtx_);
 		while (queue_.size() == 0 && !is_closed_)
 		{
+			if (!blocking)
+			{
+				return TUNNEL_EMPTY;
+			}
 			cv_.wait(lock);
 		}
 

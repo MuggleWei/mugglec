@@ -128,12 +128,36 @@ void exampleMultipleConsumer(int task_num_per_productor)
 	run(n, n, task_num_per_productor);
 }
 
+void exampleNonBlocking()
+{
+	muggle::Tunnel<int> tunnel;
+	std::queue<int> queue;
+	int ret = 0;
+
+	for (int i = 0; i < 5; ++i)
+	{
+		tunnel.Write(i);
+	}
+
+	std::cout << "\n#############################" << std::endl;
+	std::cout << "Tunnel NonBlocking: " << std::endl;
+
+	ret = tunnel.Read(queue, false);
+	const char* s = (ret == muggle::TUNNEL_RETURN_TYPE::TUNNEL_SUCCESS ? "success" : "empty");
+	std::cout << "first time read: " << s << std::endl;
+
+	ret = tunnel.Read(queue, false);
+	s = (ret == muggle::TUNNEL_RETURN_TYPE::TUNNEL_SUCCESS ? "success" : "empty");
+	std::cout << "first time read: " << s << std::endl;
+}
+
 int main()
 {
 	int task_num_per_productor = 10000;
 
 	exampleSingleConsumer(task_num_per_productor);
 	exampleMultipleConsumer(task_num_per_productor);
+	exampleNonBlocking();
 
 	return 0;
 }
