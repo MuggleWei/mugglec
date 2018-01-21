@@ -93,6 +93,12 @@ public:
 		cv_.notify_all();
 	}
 
+	void Open()
+	{
+		std::unique_lock<std::mutex> lock(mtx_);
+		is_closed_ = false;
+	}
+
 private:
 	std::queue<T> queue_;
 	std::mutex mtx_;
