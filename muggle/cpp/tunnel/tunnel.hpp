@@ -43,6 +43,8 @@ public:
 			return TUNNEL_RETURN_TYPE::TUNNEL_FULLED;
 		}
 		queue_.push(val);
+
+		lock.unlock();
 		cv_.notify_one();
 
 		return TUNNEL_RETURN_TYPE::TUNNEL_SUCCESS;
@@ -60,6 +62,8 @@ public:
 			return TUNNEL_RETURN_TYPE::TUNNEL_FULLED;
 		}
 		queue_.push(std::move(val));
+
+		lock.unlock();
 		cv_.notify_one();
 
 		return TUNNEL_RETURN_TYPE::TUNNEL_SUCCESS;
