@@ -77,6 +77,7 @@ install(TARGETS ${muggle_cc}
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib/static
 )
+muggle_install_headers(${CMAKE_CURRENT_LIST_DIR}/muggle include/muggle)
 
 if (${MUGGLE_BUILD_EXAMPLE} AND NOT ${MUGGLE_BUILD_ONLY_C})
 	add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/example)
