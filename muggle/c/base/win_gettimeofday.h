@@ -8,8 +8,7 @@
 
 EXTERN_C_BEGIN
 
-int gettimeofday(struct timeval *tv, struct timezone *tz);
-
+int gettimeofday(struct timeval *tv, void* tz);
 
 EXTERN_C_END
 
