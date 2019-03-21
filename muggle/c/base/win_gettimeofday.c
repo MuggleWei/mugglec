@@ -1,8 +1,9 @@
 #include "win_gettimeofday.h"
-#include <windows.h>
-#include <stdint.h>
 
 #if MUGGLE_PLATFORM_WINDOWS
+
+#include <windows.h>
+#include <stdint.h>
 
 // Based on: http://www.google.com/codesearch/p?hl=en#dR3YEbitojA/os_win32.c&q=GetSystemTimeAsFileTime%20license:bsd
 // See COPYING for copyright information.
