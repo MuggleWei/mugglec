@@ -31,6 +31,9 @@
 #include "muggle/c/base/atomic.h"
 #include "muggle/c/base/cond.h"
 #include "muggle/c/base/semaphore.h"
+#if MUGGLE_PLATFORM_WINDOWS
+#include "muggle/c/base/win_gettimeofday.h"
+#endif
 
 // muggle c memory pool
 #include "muggle/c/memory_pool/memory_pool.h"
