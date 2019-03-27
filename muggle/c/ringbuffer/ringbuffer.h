@@ -40,6 +40,12 @@ MUGGLE_CC_EXPORT
 bool MuggleRingBufferWrite(MuggleRingBuffer *ring_buffer, void *data, size_t len);
 
 MUGGLE_CC_EXPORT
+int64_t MuggleRingBufferNext(MuggleRingBuffer *ring_buffer);
+
+MUGGLE_CC_EXPORT
+void MuggleRingBufferCommit(MuggleRingBuffer *ring_buffer, int64_t idx);
+
+MUGGLE_CC_EXPORT
 void* MuggleRingBufferGet(MuggleRingBuffer *ring_buffer, int64_t idx);
 
 MUGGLE_CC_EXPORT

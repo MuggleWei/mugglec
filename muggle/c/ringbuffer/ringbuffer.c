@@ -5,6 +5,7 @@
 *	found in the LICENSE file.
 */
 
+#include "muggle/c/base/log.h"
 #include "muggle/c/ringbuffer/ringbuffer.h"
 #include "muggle/c/base/utils.h"
 #include "muggle/c/base/atomic.h"
@@ -38,10 +39,7 @@ void MuggleRingBufferDestory(MuggleRingBuffer *ring_buffer)
 
 bool MuggleRingBufferWrite(MuggleRingBuffer *ring_buffer, void *data, size_t len)
 {
-	if (len > ring_buffer->block_size)
-	{
-		return false;
-	}
+	MUGGLE_ASSERT(len <= ring_buffer->block_size);
 
 	int64_t idx = MUGGLE_ATOMIC_Add_64(ring_buffer->next, 1);
 	uint64_t slot = MuggleRingBufferIndexSlot(idx, ring_buffer->capacity);
@@ -49,6 +47,16 @@ bool MuggleRingBufferWrite(MuggleRingBuffer *ring_buffer, void *data, size_t len
 	memcpy((void*)((intptr_t)ring_buffer->datas + slot * ring_buffer->block_size), data, len);
 	while (MUGGLE_ATOMIC_CAS_64(ring_buffer->cursor, idx, idx + 1) != idx);
 	return true;
+}
+
+int64_t MuggleRingBufferNext(MuggleRingBuffer *ring_buffer)
+{
+	return MUGGLE_ATOMIC_Add_64(ring_buffer->next, 1);
+}
+
+void MuggleRingBufferCommit(MuggleRingBuffer *ring_buffer, int64_t idx)
+{
+	while (MUGGLE_ATOMIC_CAS_64(ring_buffer->cursor, idx, idx + 1) != idx);
 }
 
 void* MuggleRingBufferGet(MuggleRingBuffer *ring_buffer, int64_t idx)
