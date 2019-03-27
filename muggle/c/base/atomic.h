@@ -66,12 +66,12 @@
 		#define MUGGLE_ATOMIC_Decrement_64(target) __sync_sub_and_fetch(&target, 1)
 
 		// meaning: target += val;
-		#define MUGGLE_ATOMIC_Add_32(target, val) __sync_add_and_fetch(&target, val)
-		#define MUGGLE_ATOMIC_Add_64(target, val) __sync_add_and_fetch(&target, val)
+		#define MUGGLE_ATOMIC_Add_32(target, val) __sync_fetch_and_add(&target, val)
+		#define MUGGLE_ATOMIC_Add_64(target, val) __sync_fetch_and_add(&target, val)
 
 		// meaning: target -= val;
-		#define MUGGLE_ATOMIC_Sub_32(target, val) __sync_sub_and_fetch(&target, val)
-		#define MUGGLE_ATOMIC_Sub_64(target, val) __sync_sub_and_fetch(&target, val)
+		#define MUGGLE_ATOMIC_Sub_32(target, val) __sync_fetch_and_sub(&target, val)
+		#define MUGGLE_ATOMIC_Sub_64(target, val) __sync_fetch_and_sub(&target, val)
 
 		// meaning: if (target == compare) { target = val; }
 		#define MUGGLE_ATOMIC_CAS_16(target, compare, val) __sync_val_compare_and_swap(&target, compare, val)
