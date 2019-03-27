@@ -15,9 +15,12 @@ target_link_libraries(ExampleSingleton ${muggle_cc})
 muggle_add_project(ExampleTunnel "${CMAKE_CURRENT_LIST_DIR}/tunnel" EXE)
 target_link_libraries(ExampleTunnel ${muggle_cc})
 
+muggle_add_project(ExampleRingBuffer "${CMAKE_CURRENT_LIST_DIR}/ringbuffer" EXE)
+target_link_libraries(ExampleRingBuffer ${muggle_cc})
+
 # folder
 set_target_properties(
-	ExampleCLog ProConMtxCond ExampleSem ExampleSingleton ExampleTunnel
+	ExampleCLog ProConMtxCond ExampleSem ExampleSingleton ExampleTunnel ExampleRingBuffer
 	PROPERTIES
 	FOLDER "example"
 )

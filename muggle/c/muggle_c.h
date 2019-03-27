@@ -31,6 +31,7 @@
 #include "muggle/c/base/atomic.h"
 #include "muggle/c/base/cond.h"
 #include "muggle/c/base/semaphore.h"
+#include "muggle/c/base/utils.h"
 #if MUGGLE_PLATFORM_WINDOWS
 #include "muggle/c/base/win_gettimeofday.h"
 #endif
@@ -40,5 +41,8 @@
 
 // muggle c time
 #include "muggle/c/time/delta_time.h"
+
+// muggle c ring buffer
+#include "muggle/c/ringbuffer/ringbuffer.h"
 
 #endif
