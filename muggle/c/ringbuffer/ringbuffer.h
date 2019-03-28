@@ -19,7 +19,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-NS_MUGGLE_BEGIN
+EXTERN_C_BEGIN
 
 typedef struct MuggleRingBuffer_tag
 {
@@ -63,6 +63,6 @@ void* MuggleRingBufferSpinRead(MuggleRingBuffer *ring_buffer, int64_t idx);
 MUGGLE_CC_EXPORT
 void* MuggleRingBufferYieldRead(MuggleRingBuffer *ring_buffer, int64_t idx);
 
-NS_MUGGLE_END
+EXTERN_C_END
 
 #endif
