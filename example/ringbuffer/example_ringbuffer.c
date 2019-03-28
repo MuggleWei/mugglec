@@ -1,11 +1,15 @@
 #include "muggle/c/muggle_c.h"
 
+#define WRITE_USE_SINGLE_THREAD 0x01
+#define WRITE_USE_NEXT_COMMIT   0x02
+
 typedef struct ThreadWithTask_tag
 {
 	MuggleThread tid;
 	MuggleRingBuffer *ring_buf;
 	uint64_t loop;
 	uint64_t cnt_per_loop;
+	int write_flag;
 }ThreadWithTask;
 
 typedef struct MissingPkg_tag
@@ -23,15 +27,33 @@ THREAD_ROUTINE_RETURN ProducerRoutine(void *args)
 	{
 		for (j = 0; j < task->cnt_per_loop; ++j)
 		{
-			// // memcpy immediately
-			// k = i * task->cnt_per_loop + j;
-			// MuggleRingBufferWrite(task->ring_buf, &k, sizeof(uint64_t));
-
-			// use next and commit
-			int64_t idx = MuggleRingBufferNext(task->ring_buf);
-			uint64_t *p = (uint64_t*)MuggleRingBufferGet(task->ring_buf, idx);
-			*p = i * task->cnt_per_loop + j;
-			MuggleRingBufferCommit(task->ring_buf, idx);
+			switch (task->write_flag)
+			{
+			case WRITE_USE_SINGLE_THREAD | WRITE_USE_NEXT_COMMIT:
+			{
+				int64_t idx = MuggleRingBufferNextSingleThread(task->ring_buf);
+				uint64_t *p = (uint64_t*)MuggleRingBufferGet(task->ring_buf, idx);
+				*p = i * task->cnt_per_loop + j;
+				MuggleRingBufferCommitSingleThread(task->ring_buf, idx);
+			}break;
+			case WRITE_USE_SINGLE_THREAD:
+			{
+				k = i * task->cnt_per_loop + j;
+				MuggleRingBufferWriteSingleThread(task->ring_buf, &k, sizeof(uint64_t));
+			}break;
+			case WRITE_USE_NEXT_COMMIT:
+			{
+				int64_t idx = MuggleRingBufferNext(task->ring_buf);
+				uint64_t *p = (uint64_t*)MuggleRingBufferGet(task->ring_buf, idx);
+				*p = i * task->cnt_per_loop + j;
+				MuggleRingBufferCommit(task->ring_buf, idx);
+			}break;
+			default:
+			{
+				k = i * task->cnt_per_loop + j;
+				MuggleRingBufferWrite(task->ring_buf, &k, sizeof(uint64_t));
+			}break;
+			}
 		}
 		MSleep(1);
 	}
@@ -85,6 +107,7 @@ int main(int argc, char *argv[])
 	args[0].ring_buf = args[1].ring_buf = ring_buf;
 	args[0].loop = args[1].loop = 200;
 	args[0].cnt_per_loop = args[1].cnt_per_loop = 50000;
+	args[0].write_flag = args[1].write_flag = WRITE_USE_SINGLE_THREAD | WRITE_USE_NEXT_COMMIT;
 
 	MuggleThreadCreate(&args[0].tid, NULL, ConsumerRoutine, &args[0]);
 	MuggleThreadCreate(&args[1].tid, NULL, ProducerRoutine, &args[1]);

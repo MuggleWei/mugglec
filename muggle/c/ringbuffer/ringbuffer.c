@@ -46,6 +46,7 @@ bool MuggleRingBufferWrite(MuggleRingBuffer *ring_buffer, void *data, size_t len
 
 	memcpy((void*)((intptr_t)ring_buffer->datas + slot * ring_buffer->block_size), data, len);
 	while (MUGGLE_ATOMIC_CAS_64(ring_buffer->cursor, idx, idx + 1) != idx);
+
 	return true;
 }
 
@@ -57,6 +58,28 @@ int64_t MuggleRingBufferNext(MuggleRingBuffer *ring_buffer)
 void MuggleRingBufferCommit(MuggleRingBuffer *ring_buffer, int64_t idx)
 {
 	while (MUGGLE_ATOMIC_CAS_64(ring_buffer->cursor, idx, idx + 1) != idx);
+}
+
+bool MuggleRingBufferWriteSingleThread(MuggleRingBuffer *ring_buffer, void *data, size_t len)
+{
+	MUGGLE_ASSERT(len <= ring_buffer->block_size);
+
+	int64_t idx = ring_buffer->next++;
+	uint64_t slot = MuggleRingBufferIndexSlot(idx, ring_buffer->capacity);
+	memcpy((void*)((intptr_t)ring_buffer->datas + slot * ring_buffer->block_size), data, len);
+	++ring_buffer->cursor;
+
+	return true;
+}
+
+int64_t MuggleRingBufferNextSingleThread(MuggleRingBuffer *ring_buffer)
+{
+	return ring_buffer->next++;
+}
+
+void MuggleRingBufferCommitSingleThread(MuggleRingBuffer *ring_buffer, int64_t idx)
+{
+	++ring_buffer->cursor;
 }
 
 void* MuggleRingBufferGet(MuggleRingBuffer *ring_buffer, int64_t idx)
