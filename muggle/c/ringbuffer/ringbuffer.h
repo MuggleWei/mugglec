@@ -17,21 +17,25 @@
 #endif
 
 #include <stdbool.h>
-#include <stdint.h>
 
 EXTERN_C_BEGIN
 
 typedef struct MuggleRingBuffer_tag
 {
-	uint64_t capacity;
-	uint64_t block_size;
-	volatile int64_t cursor;
-	volatile int64_t next;
+	int capacity;
+	size_t block_size;
+#if WIN32
+	volatile int cursor;
+	volatile int next;
+#else
+	int cursor;
+	int next;
+#endif
 	void *datas;
 } MuggleRingBuffer;
 
 MUGGLE_CC_EXPORT
-bool MuggleRingBufferInit(MuggleRingBuffer *ring_buffer, uint64_t capacity, uint64_t block_size);
+bool MuggleRingBufferInit(MuggleRingBuffer *ring_buffer, int capacity, size_t block_size);
 
 MUGGLE_CC_EXPORT
 void MuggleRingBufferDestory(MuggleRingBuffer *ring_buffer);
@@ -40,28 +44,25 @@ MUGGLE_CC_EXPORT
 bool MuggleRingBufferWrite(MuggleRingBuffer *ring_buffer, void *data, size_t len);
 
 MUGGLE_CC_EXPORT
-int64_t MuggleRingBufferNext(MuggleRingBuffer *ring_buffer);
+int MuggleRingBufferNext(MuggleRingBuffer *ring_buffer);
 
 MUGGLE_CC_EXPORT
-void MuggleRingBufferCommit(MuggleRingBuffer *ring_buffer, int64_t idx);
+void MuggleRingBufferCommit(MuggleRingBuffer *ring_buffer, int idx);
 
 MUGGLE_CC_EXPORT
 bool MuggleRingBufferWriteSingleThread(MuggleRingBuffer *ring_buffer, void *data, size_t len);
 
 MUGGLE_CC_EXPORT
-int64_t MuggleRingBufferNextSingleThread(MuggleRingBuffer *ring_buffer);
+int MuggleRingBufferNextSingleThread(MuggleRingBuffer *ring_buffer);
 
 MUGGLE_CC_EXPORT
-void MuggleRingBufferCommitSingleThread(MuggleRingBuffer *ring_buffer, int64_t idx);
+void MuggleRingBufferCommitSingleThread(MuggleRingBuffer *ring_buffer, int idx);
 
 MUGGLE_CC_EXPORT
-void* MuggleRingBufferGet(MuggleRingBuffer *ring_buffer, int64_t idx);
+void* MuggleRingBufferGet(MuggleRingBuffer *ring_buffer, int idx);
 
 MUGGLE_CC_EXPORT
-void* MuggleRingBufferSpinRead(MuggleRingBuffer *ring_buffer, int64_t idx);
-
-MUGGLE_CC_EXPORT
-void* MuggleRingBufferYieldRead(MuggleRingBuffer *ring_buffer, int64_t idx);
+void* MuggleRingBufferRead(MuggleRingBuffer *ring_buffer, int idx);
 
 EXTERN_C_END
 

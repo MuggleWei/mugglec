@@ -90,13 +90,13 @@ TEST(Atomic, InDecrement)
 #endif
 	i64 = 0;
 
-	MUGGLE_ATOMIC_Increment_16(i16);
+	MUGGLE_ATOMIC_Increment_And_Fetch_16(i16);
 #if MUGGLE_PLATFORM_WINDOWS
-	MUGGLE_ATOMIC_Increment_32(ilong);
+	MUGGLE_ATOMIC_Increment_And_Fetch_32(ilong);
 #else
-	MUGGLE_ATOMIC_Increment_32(i32);
+	MUGGLE_ATOMIC_Increment_And_Fetch_32(i32);
 #endif
-	MUGGLE_ATOMIC_Increment_64(i64);
+	MUGGLE_ATOMIC_Increment_And_Fetch_64(i64);
 
 	EXPECT_EQ(i16, 1);
 #if MUGGLE_PLATFORM_WINDOWS
@@ -106,13 +106,13 @@ TEST(Atomic, InDecrement)
 #endif
 	EXPECT_EQ(i64, 1);
 
-	MUGGLE_ATOMIC_Decrement_16(i16);
+	MUGGLE_ATOMIC_Decrement_And_Fetch_16(i16);
 #if MUGGLE_PLATFORM_WINDOWS
-	MUGGLE_ATOMIC_Decrement_32(ilong);
+	MUGGLE_ATOMIC_Decrement_And_Fetch_32(ilong);
 #else
-	MUGGLE_ATOMIC_Decrement_32(i32);
+	MUGGLE_ATOMIC_Decrement_And_Fetch_32(i32);
 #endif
-	MUGGLE_ATOMIC_Decrement_64(i64);
+	MUGGLE_ATOMIC_Decrement_And_Fetch_64(i64);
 
 	EXPECT_EQ(i16, 0);
 #if MUGGLE_PLATFORM_WINDOWS
@@ -140,11 +140,11 @@ TEST(Atomic, AddSub)
 	i64 = 0;
 
 #if MUGGLE_PLATFORM_WINDOWS
-	MUGGLE_ATOMIC_Add_32(ilong, 5);
+	MUGGLE_ATOMIC_Fetch_And_Add_32(ilong, 5);
 #else
-	MUGGLE_ATOMIC_Add_32(i32, 5);
+	MUGGLE_ATOMIC_Fetch_And_Add_32(i32, 5);
 #endif
-	MUGGLE_ATOMIC_Add_64(i64, 5);
+	MUGGLE_ATOMIC_Fetch_And_Add_64(i64, 5);
 
 #if MUGGLE_PLATFORM_WINDOWS
 	EXPECT_EQ(ilong, 5);
