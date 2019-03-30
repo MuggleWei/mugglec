@@ -69,6 +69,8 @@ bool MuggleRingBufferWrite(MuggleRingBuffer *ring_buffer, void *data, size_t len
 
 #if MUGGLE_PLATFORM_LINUX
 	futex(&ring_buffer->cursor, FUTEX_WAKE | FUTEX_PRIVATE_FLAG, INT_MAX, NULL, NULL, 0);
+#elif MUGGLE_PLATFORM_WINDOWS
+	WakeByAddressAll(&ring_buffer->cursor);
 #endif
 
 	return true;
@@ -84,6 +86,8 @@ void MuggleRingBufferCommit(MuggleRingBuffer *ring_buffer, int idx)
 	while (MUGGLE_ATOMIC_CAS(ring_buffer->cursor, idx, idx + 1) != idx);
 #if MUGGLE_PLATFORM_LINUX
 	futex(&ring_buffer->cursor, FUTEX_WAKE | FUTEX_PRIVATE_FLAG, INT_MAX, NULL, NULL, 0);
+#elif MUGGLE_PLATFORM_WINDOWS
+	WakeByAddressAll(&ring_buffer->cursor);
 #endif
 }
 
@@ -98,6 +102,8 @@ bool MuggleRingBufferWriteSingleThread(MuggleRingBuffer *ring_buffer, void *data
 
 #if MUGGLE_PLATFORM_LINUX
 	futex(&ring_buffer->cursor, FUTEX_WAKE | FUTEX_PRIVATE_FLAG, INT_MAX, NULL, NULL, 0);
+#elif MUGGLE_PLATFORM_WINDOWS
+	WakeByAddressAll(&ring_buffer->cursor);
 #endif
 
 	return true;
@@ -114,6 +120,8 @@ void MuggleRingBufferCommitSingleThread(MuggleRingBuffer *ring_buffer, int idx)
 
 #if MUGGLE_PLATFORM_LINUX
 	futex(&ring_buffer->cursor, FUTEX_WAKE | FUTEX_PRIVATE_FLAG, INT_MAX, NULL, NULL, 0);
+#elif MUGGLE_PLATFORM_WINDOWS
+	WakeByAddressAll(&ring_buffer->cursor);
 #endif
 }
 
@@ -129,11 +137,11 @@ void* MuggleRingBufferRead(MuggleRingBuffer *ring_buffer, int idx)
 	while (idx == ring_buffer->cursor)
 	{
 #if MUGGLE_PLATFORM_LINUX
-	futex(&ring_buffer->cursor, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, idx, NULL, NULL, 0);
+		futex(&ring_buffer->cursor, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, idx, NULL, NULL, 0);
 #elif MUGGLE_PLATFORM_WINDOWS
-	SwitchToThread();
+		WaitOnAddress(&ring_buffer->cursor, &idx, sizeof(ring_buffer->cursor), INFINITE);
 #else
-	sched_yield();
+		sched_yield();
 #endif
 	}
 	int slot = MuggleRingBufferIndexSlot(idx, ring_buffer->capacity);

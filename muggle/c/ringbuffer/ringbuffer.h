@@ -24,13 +24,8 @@ typedef struct MuggleRingBuffer_tag
 {
 	int capacity;
 	size_t block_size;
-#if WIN32
-	volatile int cursor;
-	volatile int next;
-#else
 	int cursor;
 	int next;
-#endif
 	void *datas;
 } MuggleRingBuffer;
 

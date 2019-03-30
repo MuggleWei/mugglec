@@ -58,10 +58,18 @@ endif()
 
 # link thread and dll lib
 find_package(Threads)
+if (WIN32)
+target_link_libraries(${muggle_cc}
+	${CMAKE_THREAD_LIBS_INIT}
+	${CMAKE_DL_LIBS}
+	synchronization
+)
+else()
 target_link_libraries(${muggle_cc}
 	${CMAKE_THREAD_LIBS_INIT}
 	${CMAKE_DL_LIBS}
 )
+endif()
 
 # export macro for windows
 if (MUGGLE_BUILD_SHARED_LIB)
