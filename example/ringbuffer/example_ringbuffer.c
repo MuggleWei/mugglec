@@ -102,11 +102,11 @@ int main(int argc, char *argv[])
 {
 	ThreadWithTask *args = (ThreadWithTask*)malloc(sizeof(ThreadWithTask) * 2);
 	MuggleRingBuffer *ring_buf = (MuggleRingBuffer*)malloc(sizeof(MuggleRingBuffer));
-	MuggleRingBufferInit(ring_buf, 50000 * 5, sizeof(int));
+	MuggleRingBufferInit(ring_buf, 500000, sizeof(int));
 
 	args[0].ring_buf = args[1].ring_buf = ring_buf;
-	args[0].loop = args[1].loop = 200;
-	args[0].cnt_per_loop = args[1].cnt_per_loop = 50000;
+	args[0].loop = args[1].loop = 20;
+	args[0].cnt_per_loop = args[1].cnt_per_loop = 500000;
 	args[0].write_flag = args[1].write_flag = WRITE_USE_SINGLE_THREAD;
 
 	MuggleThreadCreate(&args[0].tid, NULL, ConsumerRoutine, &args[0]);

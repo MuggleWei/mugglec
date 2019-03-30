@@ -125,28 +125,18 @@ void* MuggleRingBufferGet(MuggleRingBuffer *ring_buffer, int idx)
 
 void* MuggleRingBufferRead(MuggleRingBuffer *ring_buffer, int idx)
 {
-	int slot, cursor_slot;
-#if MUGGLE_PLATFORM_LINUX
-	do {
-		futex(&ring_buffer->cursor, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, idx, NULL, NULL, 0);
-		slot = MuggleRingBufferIndexSlot(idx, ring_buffer->capacity);
-		cursor_slot = MuggleRingBufferIndexSlot(ring_buffer->cursor, ring_buffer->capacity);
-	} while (slot == cursor_slot);
-#else
-	__sync_synchronize();
-	slot = MuggleRingBufferIndexSlot(idx, ring_buffer->capacity);
-	cursor_slot = MuggleRingBufferIndexSlot(ring_buffer->cursor, ring_buffer->capacity);
-	while (slot == cursor_slot)
+	// do not check the ferrule
+	while (idx == ring_buffer->cursor)
 	{
-#if MUGGLE_PLATFORM_WINDOWS
-		SwitchToThread();
+#if MUGGLE_PLATFORM_LINUX
+	futex(&ring_buffer->cursor, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, idx, NULL, NULL, 0);
+#elif MUGGLE_PLATFORM_WINDOWS
+	SwitchToThread();
 #else
-		sched_yield();
-		__sync_synchronize();
+	sched_yield();
 #endif
-		cursor_slot = MuggleRingBufferIndexSlot(ring_buffer->cursor, ring_buffer->capacity);
 	}
-#endif
+	int slot = MuggleRingBufferIndexSlot(idx, ring_buffer->capacity);
 
 	return (void*)((intptr_t)ring_buffer->datas + slot * ring_buffer->block_size);
 }
