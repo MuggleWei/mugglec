@@ -28,10 +28,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # options
 option(MUGGLE_BUILD_ONLY_C "Only build muggle c lib" OFF)
-option(MUGGLE_BUILD_EXAMPLE "Build example" OFF)
-option(MUGGLE_BUILD_TEST "Build test" OFF)
-option(MUGGLE_BUILD_BENCHMARK "Build benchmark" OFF)
 option(MUGGLE_BUILD_SHARED_LIB ON)
+option(MUGGLE_BUILD_EXAMPLE "Build example" OFF)
+option(BUILD_TESTING "Build test" OFF)
+option(BUILD_BENCHMARK "Build benchmark" OFF)
+
 
 if (MUGGLE_BUILD_SHARED_LIB)
 	set(MUGGLE_LIB_TYPE SHARED)
@@ -87,31 +88,108 @@ install(TARGETS ${muggle_cc}
 )
 muggle_install_headers(${CMAKE_CURRENT_LIST_DIR}/muggle include/muggle)
 
+# functions
+function(add_example name folder)
+	message("add example ${name} ${folder}")
+
+	file(GLOB tmp_h ${folder}/*.h)
+	file(GLOB tmp_c ${folder}/*.c)
+	file(GLOB tmp_cpp ${folder}/*.cpp)
+	file(GLOB tmp_cc ${folder}/*.cc)
+
+	if (WIN32)
+		add_executable(${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+	else()
+		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+	endif(WIN32)
+	add_dependencies(${name} muggle_cc)
+	target_link_libraries(${name}
+		${muggle_cc}
+	)
+endfunction()
+
+function(add_gtest name folder)
+	message("add project ${name} ${folder}")
+
+	file(GLOB tmp_h ${folder}/*.h)
+	file(GLOB tmp_c ${folder}/*.c)
+	file(GLOB tmp_cpp ${folder}/*.cpp)
+	file(GLOB tmp_cc ${folder}/*.cc)
+
+	if (WIN32)
+		add_executable(${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+	else()
+		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+	endif(WIN32)
+	add_dependencies(${name} muggle_cc gtest_main)
+	target_link_libraries(${name}
+		${muggle_cc}
+		gtest_main
+	)
+	add_test(NAME ${name}_test COMMAND ${name})
+endfunction()
+
+# example
 if (${MUGGLE_BUILD_EXAMPLE} AND NOT ${MUGGLE_BUILD_ONLY_C})
-	add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/example)
+	SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/example)
+	FOREACH(subdir ${example_dirs})
+		add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/example/${subdir})
+	ENDFOREACH()
 endif()
 
-if (${MUGGLE_BUILD_TEST} AND NOT ${MUGGLE_BUILD_ONLY_C})
-	# find googletest source
-	include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindGTestSrc.cmake)
-	if(GTESTSRC_FOUND)
-	
-		if (WIN32)
-			# without this, will cause error: Debug Assertion Failed! Expression: __acrt_first_block == header
-			SET(BUILD_SHARED_LIBS ON CACHE BOOL "build google test as dynamic lib")
-		endif()
-		
-		add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/gtest)
-		add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test)
 
-		set_target_properties(
-			gtest gtest_main gmock gmock_main
-			PROPERTIES
-			FOLDER "thirdparty"
-		)
+# test
+if (BUILD_TESTING AND NOT ${MUGGLE_BUILD_ONLY_C})
+	enable_testing()
+
+	# Download and unpack googletest at configure time
+	configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/CMakeLists.txt.in googletest-download/CMakeLists.txt)
+	execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+	  RESULT_VARIABLE result
+	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+	if(result)
+	  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
 	endif()
+	execute_process(COMMAND ${CMAKE_COMMAND} --build .
+	  RESULT_VARIABLE result
+	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+	if(result)
+	  message(FATAL_ERROR "Build step for googletest failed: ${result}")
+	endif()
+	
+	# Prevent overriding the parent project's compiler/linker
+	# settings on Windows
+	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+	
+	# Add googletest directly to our build. This defines
+	# the gtest and gtest_main targets.
+	add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
+	                 ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+	                 EXCLUDE_FROM_ALL)
+	
+	# The gtest/gtest_main targets carry header search path
+	# dependencies automatically when using CMake 2.8.11 or
+	# later. Otherwise we have to add them here ourselves.
+	if (CMAKE_VERSION VERSION_LESS 2.8.11)
+	  include_directories("${gtest_SOURCE_DIR}/include")
+	endif()
+	
+	# # Now simply link against gtest or gtest_main as needed. Eg
+	# add_executable(example src/test/example/example.cpp)
+	# target_link_libraries(example gtest_main)
+	# add_test(NAME example_test COMMAND example)
+
+
+	SUBDIRLIST(test_root_dir ${CMAKE_CURRENT_LIST_DIR}/test)
+	FOREACH(subdir ${test_root_dir})
+		add_gtest(${subdir} ${CMAKE_CURRENT_LIST_DIR}/test/${subdir})
+	ENDFOREACH()
 endif()
 
-if (${MUGGLE_BUILD_BENCHMARK} AND NOT ${MUGGLE_BUILD_ONLY_C})
-	add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/benchmark)
+# benchmark
+if (BUILD_BENCHMARK AND NOT ${MUGGLE_BUILD_ONLY_C})
+	SUBDIRLIST(benchmark_root_dir ${CMAKE_CURRENT_LIST_DIR}/benchmark)
+	FOREACH(subdir ${benchmark_root_dir})
+		add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/benchmark/${subdir})
+	ENDFOREACH()
 endif()
