@@ -102,7 +102,7 @@ function(add_example name folder)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
-	add_dependencies(${name} muggle_cc)
+	add_dependencies(${name} ${muggle_cc})
 	target_link_libraries(${name}
 		${muggle_cc}
 	)
@@ -121,7 +121,7 @@ function(add_gtest name folder)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
-	add_dependencies(${name} muggle_cc gtest_main)
+	add_dependencies(${name} ${muggle_cc} gtest_main)
 	target_link_libraries(${name}
 		${muggle_cc}
 		gtest_main
