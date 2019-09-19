@@ -13,6 +13,7 @@
 #include <chrono>
 #include <future>
 #include <vector>
+#include <functional>
 #include "muggle/cpp/memory_pool/memory_pool.h"
 #include "muggle/cpp/memory_pool/thread_safe_memory_pool.h"
 
