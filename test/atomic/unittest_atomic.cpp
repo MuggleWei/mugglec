@@ -104,10 +104,10 @@ TEST(atomic, cmp_exch_single_thread)
 	EXPECT_FALSE(muggle_atomic_cmp_exch_weak(&i, &expected, 2, muggle_memory_order_relaxed));
 	EXPECT_EQ(expected, 0);
 
-	EXPECT_FALSE(muggle_atomic_cmp_exch_weak(&i32, &expected32, 2, muggle_memory_order_relaxed));
+	EXPECT_FALSE(muggle_atomic_cmp_exch_weak32(&i32, &expected32, 2, muggle_memory_order_relaxed));
 	EXPECT_EQ(expected32, 0);
 
-	EXPECT_FALSE(muggle_atomic_cmp_exch_weak(&i64, &expected64, 2, muggle_memory_order_relaxed));
+	EXPECT_FALSE(muggle_atomic_cmp_exch_weak64(&i64, &expected64, 2, muggle_memory_order_relaxed));
 	EXPECT_EQ(expected64, 0);
 
 	i = 0;
@@ -158,14 +158,14 @@ TEST(atomic, fetch_add_sub_single_thread)
 	EXPECT_EQ(muggle_atomic_fetch_sub(&i, 1, muggle_memory_order_relaxed), 1);
 	EXPECT_EQ(i, 0);
 
-	EXPECT_EQ(muggle_atomic_fetch_add(&i32, 1, muggle_memory_order_relaxed), 0);
+	EXPECT_EQ(muggle_atomic_fetch_add32(&i32, 1, muggle_memory_order_relaxed), 0);
 	EXPECT_EQ(i32, 1);
-	EXPECT_EQ(muggle_atomic_fetch_sub(&i32, 1, muggle_memory_order_relaxed), 1);
+	EXPECT_EQ(muggle_atomic_fetch_sub32(&i32, 1, muggle_memory_order_relaxed), 1);
 	EXPECT_EQ(i32, 0);
 
-	EXPECT_EQ(muggle_atomic_fetch_add(&i64, 1, muggle_memory_order_relaxed), 0);
+	EXPECT_EQ(muggle_atomic_fetch_add64(&i64, 1, muggle_memory_order_relaxed), 0);
 	EXPECT_EQ(i64, 1);
-	EXPECT_EQ(muggle_atomic_fetch_sub(&i64, 1, muggle_memory_order_relaxed), 1);
+	EXPECT_EQ(muggle_atomic_fetch_sub64(&i64, 1, muggle_memory_order_relaxed), 1);
 	EXPECT_EQ(i64, 0);
 }
 

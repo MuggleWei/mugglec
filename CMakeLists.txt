@@ -109,7 +109,7 @@ function(add_example name folder)
 endfunction()
 
 function(add_gtest name folder)
-	message("add project ${name} ${folder}")
+	message("add test ${name} ${folder}")
 
 	file(GLOB tmp_h ${folder}/*.h)
 	file(GLOB tmp_c ${folder}/*.c)

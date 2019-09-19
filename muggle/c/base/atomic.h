@@ -52,9 +52,9 @@
 #define muggle_atomic_fetch_add64(ptr, val, memmodel) InterlockedExchangeAdd64(ptr, val)
 
 // fetch sub
-#define muggle_atomic_fetch_sub(ptr, val, memmodel) InterlockedExchangeSubtract(ptr, val)
-#define muggle_atomic_fetch_sub32(ptr, val, memmodel) InterlockedExchangeSubtract(ptr, val)
-#define muggle_atomic_fetch_sub64(ptr, val, memmodel) InterlockedExchangeSubtract(ptr, val)
+#define muggle_atomic_fetch_sub(ptr, val, memmodel) InterlockedExchangeAdd(ptr, -val)
+#define muggle_atomic_fetch_sub32(ptr, val, memmodel) InterlockedExchangeAdd(ptr, -val)
+#define muggle_atomic_fetch_sub64(ptr, val, memmodel) InterlockedExchangeAdd64(ptr, -val)
 
 // test_and_set
 #define muggle_atomic_test_and_set(ptr, memmodel) !_interlockedbittestandset(ptr, 0)
@@ -66,11 +66,15 @@
 #define muggle_atomic_thread_fence(memmodel) MemoryBarrier()
 #define muggle_atomic_signal_fence(memmodel) MemoryBarrier()
 
+EXTERN_C_BEGIN
+
 MUGGLE_CC_EXPORT
 int muggle_win_atomic_cmp_exch32(muggle_atomic_int32 *dst, muggle_atomic_int32 *expected, muggle_atomic_int32 desired);
 
 MUGGLE_CC_EXPORT
 int muggle_win_atomic_cmp_exch64(muggle_atomic_int64 *dst, muggle_atomic_int64 *expected, muggle_atomic_int64 desired);
+
+EXTERN_C_END
 
 #else
 
