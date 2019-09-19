@@ -117,16 +117,16 @@ function(add_gtest name folder)
 	file(GLOB tmp_cc ${folder}/*.cc)
 
 	if (WIN32)
-		add_executable(${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+		add_executable(test_${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	else()
-		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+		add_executable(test_${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
-	add_dependencies(${name} ${muggle_cc} gtest_main)
-	target_link_libraries(${name}
+	add_dependencies(test_${name} ${muggle_cc} gtest_main)
+	target_link_libraries(test_${name}
 		${muggle_cc}
 		gtest_main
 	)
-	add_test(NAME ${name}_test COMMAND ${name})
+	add_test(NAME test_${name} COMMAND test_${name})
 endfunction()
 
 # example

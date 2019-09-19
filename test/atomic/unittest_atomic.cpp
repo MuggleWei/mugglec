@@ -1,198 +1,222 @@
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
-TEST(Atomic, Size)
+TEST(atomic, load_store_single_thread)
 {
-	volatile int16_t i16;
-#if MUGGLE_PLATFORM_WINDOWS
-	volatile long ilong;
-#else
-	volatile int32_t i32;
-#endif
-	volatile int64_t i64;
-
-	i16 = 0;
-#if MUGGLE_PLATFORM_WINDOWS
-	ilong = 0;
-#else
-	i32 = 0;
-#endif
-	i64 = 0;
-
-	ASSERT_EQ((int)sizeof(i16), 2);
-#if MUGGLE_PLATFORM_WINDOWS
-	ASSERT_EQ((int)sizeof(ilong), 4);
-#else
-	ASSERT_EQ((int)sizeof(i32), 4);
-#endif
-	ASSERT_EQ((int)sizeof(i64), 8);
+	muggle_atomic_int v;
+	muggle_atomic_store(&v, 0, muggle_memory_order_relaxed);
+	EXPECT_EQ(muggle_atomic_load(&v, muggle_memory_order_relaxed), 0);
 }
 
-TEST(Atomic, Set)
+TEST(atomic, load_store_inter_thread_visible_busy_loop)
 {
-	char ch;
-	volatile int16_t i16;
-#if MUGGLE_PLATFORM_WINDOWS
-	volatile long ilong;
-#else
-	volatile int32_t i32;
-#endif
-	volatile int64_t i64;
-	void *volatile p, *volatile q;
+	muggle_atomic_int v = 0;
 
-	ch = '\0';
-	i16 = 0;
-#if MUGGLE_PLATFORM_WINDOWS
-	ilong = 0;
-#else
-	i32 = 0;
-#endif
-	i64 = 0;
-	p = NULL;
-	q = (void*)&ch;
-
-	MUGGLE_ATOMIC_Set_16(i16, 1);
-#if MUGGLE_PLATFORM_WINDOWS
-	MUGGLE_ATOMIC_Set_32(ilong, 1);
-#else
-	MUGGLE_ATOMIC_Set_32(i32, 1);
-#endif
-	MUGGLE_ATOMIC_Set_64(i64, 1);
-	MUGGLE_ATOMIC_Set_Pointer(p, q);
-
-	
-	EXPECT_EQ(i16, 1);
-#if MUGGLE_PLATFORM_WINDOWS
-	EXPECT_EQ(ilong, 1);
-#else
-	EXPECT_EQ(i32, 1);
-#endif
-	EXPECT_EQ(i64, 1);
-	EXPECT_EQ((void*)p, (void*)q);
-	EXPECT_EQ(*(char*)p, ch);
+	std::thread t([&]{
+		muggle_atomic_store(&v, 1, muggle_memory_order_relaxed);
+	});
+	while (muggle_atomic_load(&v, muggle_memory_order_relaxed) != 1);
+	t.join();
+	EXPECT_EQ(muggle_atomic_load(&v, muggle_memory_order_relaxed), 1);
 }
 
-TEST(Atomic, InDecrement)
+TEST(atomic, load_store_inter_thread_visible_mutex)
 {
-	volatile int16_t i16;
-#if MUGGLE_PLATFORM_WINDOWS
-	volatile long ilong;
-#else
-	volatile int32_t i32;
-#endif
-	volatile int64_t i64;
+	muggle_atomic_int v = 0;
 
-	i16 = 0;
-#if MUGGLE_PLATFORM_WINDOWS
-	ilong = 0;
-#else
-	i32 = 0;
-#endif
-	i64 = 0;
+	std::mutex mtx;
+	std::unique_lock<std::mutex> lock_main(mtx);
 
-	MUGGLE_ATOMIC_Increment_And_Fetch_16(i16);
-#if MUGGLE_PLATFORM_WINDOWS
-	MUGGLE_ATOMIC_Increment_And_Fetch_32(ilong);
-#else
-	MUGGLE_ATOMIC_Increment_And_Fetch_32(i32);
-#endif
-	MUGGLE_ATOMIC_Increment_And_Fetch_64(i64);
+	std::thread t([&v, &mtx]{
+		std::unique_lock<std::mutex> lock(mtx);
+		EXPECT_EQ(muggle_atomic_load(&v, muggle_memory_order_relaxed), 1);
+	});
 
-	EXPECT_EQ(i16, 1);
-#if MUGGLE_PLATFORM_WINDOWS
-	EXPECT_EQ(ilong, 1);
-#else
+	muggle_atomic_store(&v, 1, muggle_memory_order_relaxed);
+	lock_main.unlock();
+
+	t.join();
+}
+
+TEST(atomic, load_store_inter_thread_visible_condition_variable)
+{
+	muggle_atomic_int v = 0;
+
+	std::mutex mtx;
+	std::condition_variable cv;
+
+	std::unique_lock<std::mutex> lock_main(mtx);
+
+	std::thread t([&v, &mtx, &cv]{
+		std::unique_lock<std::mutex> lock(mtx);
+		muggle_atomic_store(&v, 1, muggle_memory_order_relaxed);
+		cv.notify_one();
+	});
+	t.detach();
+
+	cv.wait(lock_main);
+	EXPECT_EQ(muggle_atomic_load(&v, muggle_memory_order_relaxed), 1);
+}
+
+TEST(atomic, load_store_release_acquire)
+{
+	muggle_atomic_int x, y;
+	x = 0;
+	y = 0;
+
+	std::thread write_x_then_y([&]{
+		muggle_atomic_store(&x, 1, muggle_memory_order_relaxed);
+		muggle_atomic_store(&y, 1, muggle_memory_order_release);
+	});
+	std::thread read_y_then_x([&]{
+		while (muggle_atomic_load(&y, muggle_memory_order_acquire) != 1);
+		EXPECT_EQ(muggle_atomic_load(&x, muggle_memory_order_relaxed), 1);
+	});
+	write_x_then_y.join();
+	read_y_then_x.join();
+}
+
+TEST(atomic, exchange_single_thread)
+{
+	muggle_atomic_int i = 0;
+	muggle_atomic_int32 i32 = 0;
+	muggle_atomic_int64 i64 = 0;
+
+	EXPECT_EQ(muggle_atomic_exchange(&i, 1, muggle_memory_order_relaxed), 0);
+	EXPECT_EQ(muggle_atomic_exchange32(&i32, 1, muggle_memory_order_relaxed), 0);
+	EXPECT_EQ(muggle_atomic_exchange64(&i64, 1, muggle_memory_order_relaxed), 0);
+
+	EXPECT_EQ(i, 1);
 	EXPECT_EQ(i32, 1);
-#endif
+	EXPECT_EQ(i64, 1);
+}
+
+TEST(atomic, cmp_exch_single_thread)
+{
+	muggle_atomic_int i = 0, expected = 1;
+	muggle_atomic_int32 i32 = 0, expected32 = 1;
+	muggle_atomic_int64 i64 = 0, expected64 = 1;
+
+	EXPECT_FALSE(muggle_atomic_cmp_exch_weak(&i, &expected, 2, muggle_memory_order_relaxed));
+	EXPECT_EQ(expected, 0);
+
+	EXPECT_FALSE(muggle_atomic_cmp_exch_weak(&i32, &expected32, 2, muggle_memory_order_relaxed));
+	EXPECT_EQ(expected32, 0);
+
+	EXPECT_FALSE(muggle_atomic_cmp_exch_weak(&i64, &expected64, 2, muggle_memory_order_relaxed));
+	EXPECT_EQ(expected64, 0);
+
+	i = 0;
+	expected = 0;
+	while (!muggle_atomic_cmp_exch_weak(&i, &expected, 1, muggle_memory_order_relaxed) && expected == 0);
+	EXPECT_EQ(expected, 0);
+	EXPECT_EQ(i, 1);
+
+	i32 = 0;
+	expected32 = 0;
+	while (!muggle_atomic_cmp_exch_weak32(&i32, &expected32, 1, muggle_memory_order_relaxed) && expected32 == 0);
+	EXPECT_EQ(expected32, 0);
+	EXPECT_EQ(i32, 1);
+
+	i64 = 0;
+	expected64 = 0;
+	while (!muggle_atomic_cmp_exch_weak64(&i64, &expected64, 1, muggle_memory_order_relaxed) && expected64 == 0);
+	EXPECT_EQ(expected64, 0);
 	EXPECT_EQ(i64, 1);
 
-	MUGGLE_ATOMIC_Decrement_And_Fetch_16(i16);
-#if MUGGLE_PLATFORM_WINDOWS
-	MUGGLE_ATOMIC_Decrement_And_Fetch_32(ilong);
-#else
-	MUGGLE_ATOMIC_Decrement_And_Fetch_32(i32);
-#endif
-	MUGGLE_ATOMIC_Decrement_And_Fetch_64(i64);
+	i = 0;
+	expected = 0;
+	EXPECT_TRUE(muggle_atomic_cmp_exch_strong(&i, &expected, 1, muggle_memory_order_relaxed));
+	EXPECT_EQ(expected, 0);
+	EXPECT_EQ(i, 1);
 
-	EXPECT_EQ(i16, 0);
-#if MUGGLE_PLATFORM_WINDOWS
-	EXPECT_EQ(ilong, 0);
-#else
+	i32 = 0;
+	expected32 = 0;
+	EXPECT_TRUE(muggle_atomic_cmp_exch_strong32(&i32, &expected32, 1, muggle_memory_order_relaxed));
+	EXPECT_EQ(expected32, 0);
+	EXPECT_EQ(i32, 1);
+
+	i64 = 0;
+	expected64 = 0;
+	EXPECT_TRUE(muggle_atomic_cmp_exch_strong64(&i64, &expected64, 1, muggle_memory_order_relaxed));
+	EXPECT_EQ(expected64, 0);
+	EXPECT_EQ(i64, 1);
+}
+
+TEST(atomic, fetch_add_sub_single_thread)
+{
+	muggle_atomic_int i = 0;
+	muggle_atomic_int32 i32 = 0;
+	muggle_atomic_int64 i64 = 0;
+
+	EXPECT_EQ(muggle_atomic_fetch_add(&i, 1, muggle_memory_order_relaxed), 0);
+	EXPECT_EQ(i, 1);
+	EXPECT_EQ(muggle_atomic_fetch_sub(&i, 1, muggle_memory_order_relaxed), 1);
+	EXPECT_EQ(i, 0);
+
+	EXPECT_EQ(muggle_atomic_fetch_add(&i32, 1, muggle_memory_order_relaxed), 0);
+	EXPECT_EQ(i32, 1);
+	EXPECT_EQ(muggle_atomic_fetch_sub(&i32, 1, muggle_memory_order_relaxed), 1);
 	EXPECT_EQ(i32, 0);
-#endif
+
+	EXPECT_EQ(muggle_atomic_fetch_add(&i64, 1, muggle_memory_order_relaxed), 0);
+	EXPECT_EQ(i64, 1);
+	EXPECT_EQ(muggle_atomic_fetch_sub(&i64, 1, muggle_memory_order_relaxed), 1);
 	EXPECT_EQ(i64, 0);
 }
 
-TEST(Atomic, AddSub)
+TEST(atomic, fetch_add_release_acquire)
 {
-#if MUGGLE_PLATFORM_WINDOWS
-	volatile long ilong;
-#else
-	volatile int32_t i32;
-#endif
-	volatile int64_t i64;
+	muggle_atomic_int x, y, z;
+	x = 0;
+	y = 1;
+	z = 0;
 
-#if MUGGLE_PLATFORM_WINDOWS
-	ilong = 0;
-#else
-	i32 = 0;
-#endif
-	i64 = 0;
-
-#if MUGGLE_PLATFORM_WINDOWS
-	MUGGLE_ATOMIC_Fetch_And_Add_32(ilong, 5);
-#else
-	MUGGLE_ATOMIC_Fetch_And_Add_32(i32, 5);
-#endif
-	MUGGLE_ATOMIC_Fetch_And_Add_64(i64, 5);
-
-#if MUGGLE_PLATFORM_WINDOWS
-	EXPECT_EQ(ilong, 5);
-#else
-	EXPECT_EQ(i32, 5);
-#endif
-	EXPECT_EQ(i64, 5);
+	std::thread t1([&]{
+		muggle_atomic_fetch_add(&x, 1, muggle_memory_order_relaxed);
+		muggle_atomic_fetch_sub(&y, 1, muggle_memory_order_relaxed);
+		muggle_atomic_store(&z, 1, muggle_memory_order_release);
+	});
+	std::thread t2([&]{
+		while (muggle_atomic_load(&z, muggle_memory_order_acquire) != 1);
+		EXPECT_EQ(muggle_atomic_load(&x, muggle_memory_order_relaxed), 1);
+		EXPECT_EQ(muggle_atomic_load(&y, muggle_memory_order_relaxed), 0);
+	});
+	t1.join();
+	t2.join();
 }
 
-TEST(Atomic, CAS)
+TEST(atomic, test_set_clear)
 {
-	char ch = '\0';
-	volatile int16_t i16;
-#if MUGGLE_PLATFORM_WINDOWS
-	volatile long ilong;
-#else
-	volatile int32_t i32;
-#endif
-	volatile int64_t i64;
-	void *volatile p, *volatile q;
+	muggle_atomic_byte b;
 
-	ch = '\0';
-	i16 = 0;
-#if MUGGLE_PLATFORM_WINDOWS
-	ilong = 0;
-#else
-	i32 = 0;
-#endif
-	i64 = 0;
-	p = NULL;
-	q = (void*)&ch;
+	muggle_atomic_clear(&b, muggle_memory_order_relaxed);
+	EXPECT_TRUE(muggle_atomic_test_and_set(&b, muggle_memory_order_relaxed));
+	EXPECT_FALSE(muggle_atomic_test_and_set(&b, muggle_memory_order_relaxed));
+	muggle_atomic_clear(&b, muggle_memory_order_relaxed);
+	EXPECT_TRUE(muggle_atomic_test_and_set(&b, muggle_memory_order_relaxed));
+}
 
-	MUGGLE_ATOMIC_CAS_16(i16, 0, 5);
-#if MUGGLE_PLATFORM_WINDOWS
-	MUGGLE_ATOMIC_CAS_32(ilong, 0, 5);
-#else
-	MUGGLE_ATOMIC_CAS_32(i32, 0, 5);
-#endif
-	MUGGLE_ATOMIC_CAS_64(i64, 0, 5);
-	MUGGLE_ATOMIC_CAS_Pointer(p, NULL, q);
+TEST(atomic, fence)
+{
+	muggle_atomic_int x, y;
+	x = 0;
+	y = 0;
 
-	EXPECT_EQ(i16, 5);
-#if MUGGLE_PLATFORM_WINDOWS
-	EXPECT_EQ(ilong, 5);
-#else
-	EXPECT_EQ(i32, 5);
-#endif
-	EXPECT_EQ(i64, 5);
-	EXPECT_EQ((void*)p, (void*)q);
-	EXPECT_EQ(*(char*)p, ch);
+	std::thread write_x_then_y([&]{
+		muggle_atomic_store(&x, 1, muggle_memory_order_relaxed);
+		muggle_atomic_store(&y, 1, muggle_memory_order_relaxed);
+		muggle_atomic_thread_fence(muggle_memory_order_release);
+	});
+	std::thread read_y_then_x([&]{
+		muggle_atomic_thread_fence(muggle_memory_order_acquire);
+		while (muggle_atomic_load(&y, muggle_memory_order_relaxed) != 1);
+		EXPECT_EQ(muggle_atomic_load(&x, muggle_memory_order_relaxed), 1);
+	});
+	write_x_then_y.join();
+	read_y_then_x.join();
 }
