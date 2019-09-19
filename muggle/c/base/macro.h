@@ -105,6 +105,10 @@
 #define MUGGLE_WAIT_INFINITE ULONG_MAX
 #endif
 
+// cache line padding in structure
+#define MUGGLE_CACHE_LINE_SIZE 64
+#define MUGGLE_STRUCT_CACHE_LINE_PADDING(idx) char cache_line_padding_##idx[MUGGLE_CACHE_LINE_SIZE];
+
 // generally permission
 enum ePermission
 {

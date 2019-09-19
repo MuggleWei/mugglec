@@ -21,6 +21,7 @@
 
 // muggle c base header
 #include "muggle/c/base/macro.h"
+#include "muggle/c/base/err.h"
 #include "muggle/c/base/log.h"
 #include "muggle/c/base/file.h"
 #include "muggle/c/base/str.h"
@@ -42,7 +43,8 @@
 // muggle c time
 #include "muggle/c/time/delta_time.h"
 
-// muggle c ring buffer
-#include "muggle/c/ringbuffer/ringbuffer.h"
+// sync
+#include "muggle/c/sync/futex.h"
+#include "muggle/c/sync/ringbuffer.h"
 
 #endif
