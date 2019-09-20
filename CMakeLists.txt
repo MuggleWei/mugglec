@@ -91,6 +91,8 @@ muggle_install_headers(${CMAKE_CURRENT_LIST_DIR}/muggle include/muggle)
 # functions
 function(add_example name folder)
 	message("add example ${name} ${folder}")
+	
+	set(name example_${name})
 
 	file(GLOB tmp_h ${folder}/*.h)
 	file(GLOB tmp_c ${folder}/*.c)
@@ -99,6 +101,37 @@ function(add_example name folder)
 
 	if (WIN32)
 		add_executable(${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+		set_target_properties(${name}
+			PROPERTIES
+			FOLDER "example"
+			VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
+		)
+	else()
+		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+	endif(WIN32)
+	add_dependencies(${name} ${muggle_cc})
+	target_link_libraries(${name}
+		${muggle_cc}
+	)
+endfunction()
+
+function(add_benchmark name folder)
+	message("add benchmark ${name} ${folder}")
+	
+	set(name benchmark_${name})
+
+	file(GLOB tmp_h ${folder}/*.h)
+	file(GLOB tmp_c ${folder}/*.c)
+	file(GLOB tmp_cpp ${folder}/*.cpp)
+	file(GLOB tmp_cc ${folder}/*.cc)
+
+	if (WIN32)
+		add_executable(${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+		set_target_properties(${name}
+			PROPERTIES
+			FOLDER "benchmark"
+			VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
+		)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
@@ -110,6 +143,8 @@ endfunction()
 
 function(add_gtest name folder)
 	message("add test ${name} ${folder}")
+	
+	set(name test_${name})
 
 	file(GLOB tmp_h ${folder}/*.h)
 	file(GLOB tmp_c ${folder}/*.c)
@@ -117,16 +152,21 @@ function(add_gtest name folder)
 	file(GLOB tmp_cc ${folder}/*.cc)
 
 	if (WIN32)
-		add_executable(test_${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+		add_executable(${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+		set_target_properties(${name}
+			PROPERTIES
+			FOLDER "test"
+			VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
+		)
 	else()
-		add_executable(test_${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
-	add_dependencies(test_${name} ${muggle_cc} gtest_main)
-	target_link_libraries(test_${name}
+	add_dependencies(${name} ${muggle_cc} gtest_main)
+	target_link_libraries(${name}
 		${muggle_cc}
 		gtest_main
 	)
-	add_test(NAME test_${name} COMMAND test_${name})
+	add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
 # example
@@ -190,6 +230,6 @@ endif()
 if (BUILD_BENCHMARK AND NOT ${MUGGLE_BUILD_ONLY_C})
 	SUBDIRLIST(benchmark_root_dir ${CMAKE_CURRENT_LIST_DIR}/benchmark)
 	FOREACH(subdir ${benchmark_root_dir})
-		add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/benchmark/${subdir})
+		add_benchmark(${subdir} ${CMAKE_CURRENT_LIST_DIR}/benchmark/${subdir})
 	ENDFOREACH()
 endif()

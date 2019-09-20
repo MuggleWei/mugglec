@@ -6,13 +6,45 @@
  */
 
 #include "futex.h"
+
+
+#if MUGGLE_PLATFORM_WINDOWS
+
+void muggle_futex_wait(muggle_atomic_int* futex_addr, muggle_atomic_int val, const struct timespec *timeout)
+{
+	if (timeout == NULL)
+	{
+		WaitOnAddress(futex_addr, &val, sizeof(val), INFINITE);
+	}
+	else
+	{
+		DWORD ms = timeout->tv_nsec / 1000000;
+		if (ms == 0 && timeout->tv_nsec != 0)
+		{
+			ms = 1;
+		}
+		DWORD dwMilliseconds = timeout->tv_sec * 1000 + ms;
+		WaitOnAddress(futex_addr, &val, sizeof(val), dwMilliseconds);
+	}
+}
+
+void muggle_futex_wake_one(muggle_atomic_int* futex_addr)
+{
+	WakeByAddressSingle(futex_addr);
+}
+
+void muggle_futex_wake_all(muggle_atomic_int *futex_addr)
+{
+	WakeByAddressAll(futex_addr);
+}
+
+
+#else
+
 #include <sys/syscall.h>
 #include <linux/futex.h>
 #include <time.h>
 #include <limits.h>
-
-#if MUGGLE_PLATFORM_WINDOWS
-#else
 
 static int futex(int *uaddr, int futex_op, int val, const struct timespec *timeout, int *uaddr2, int val3)
 {
