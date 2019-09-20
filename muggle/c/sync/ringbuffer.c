@@ -49,12 +49,10 @@ int muggle_ringbuffer_push(muggle_ringbuffer_t *r, void *data, int only_one_cons
 	// move cursor
 	muggle_atomic_int expected = idx;
 	muggle_atomic_int desired = idx + 1;
-	int loop = 0;
 	while (!muggle_atomic_cmp_exch_weak(&r->cursor, &expected, desired, muggle_memory_order_acq_rel))
 	{
 		if (producer_need_yield)
 		{
-			++loop;
 			if (expected == idx)
 			{
 				// fail spuriously

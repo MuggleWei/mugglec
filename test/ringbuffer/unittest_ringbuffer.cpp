@@ -457,5 +457,5 @@ TEST(ringbuffer, mul_producer_mul_consumer)
 
 TEST(ringbuffer, mul_need_yield_producer_mul_consumer)
 {
-	mul_producer_mul_consumer(8, 0);
+	mul_producer_mul_consumer(8, 1);
 }
