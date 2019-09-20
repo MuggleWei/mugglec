@@ -4,6 +4,49 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
+TEST(ringbuffer, usage_utils)
+{
+	muggle_atomic_int capacity = 1 << 10;
+	muggle_atomic_int pos = 1 << ((sizeof(muggle_atomic_int) * 8) - 1);
+	pos = ~pos;
+
+	ASSERT_GT(pos, 0);
+	ASSERT_LT(pos + 1, 0);
+
+	muggle_atomic_int idx_in_ring = IDX_IN_POW_OF_2_RING(pos, capacity);
+	ASSERT_GE(idx_in_ring, 0);
+	ASSERT_LT(idx_in_ring, capacity);
+	if (idx_in_ring == capacity - 1)
+	{
+		ASSERT_EQ(IDX_IN_POW_OF_2_RING(pos+1, capacity), 0);
+	}
+	else
+	{
+		ASSERT_EQ(IDX_IN_POW_OF_2_RING(pos+1, capacity), idx_in_ring + 1);
+	}
+
+	int k = 8;
+	pos = pos - capacity * k - 1;
+	muggle_atomic_int last_idx_in_ring = IDX_IN_POW_OF_2_RING(pos, capacity);
+	++pos;
+	for (muggle_atomic_int i = 0; i < capacity * k * 2; ++i)
+	{
+		idx_in_ring = IDX_IN_POW_OF_2_RING(pos, capacity);
+		ASSERT_GE(idx_in_ring, 0);
+		ASSERT_LT(idx_in_ring, capacity);
+		if (last_idx_in_ring == capacity - 1)
+		{
+			ASSERT_EQ(idx_in_ring, 0);
+		}
+		else
+		{
+			ASSERT_EQ(idx_in_ring, last_idx_in_ring + 1);
+		}
+		last_idx_in_ring = idx_in_ring;
+		++pos;
+	}
+}
+
 TEST(ringbuffer, init_destroy)
 {
 	muggle_ringbuffer_t r;
@@ -447,7 +490,7 @@ TEST(ringbuffer, mul_producer_one_consumer)
 
 TEST(ringbuffer, mul_need_yield_producer_one_consumer)
 {
-	mul_producer_one_consumer(8, 1);
+	mul_producer_one_consumer(32, 1);
 }
 
 TEST(ringbuffer, mul_producer_mul_consumer)
@@ -457,5 +500,5 @@ TEST(ringbuffer, mul_producer_mul_consumer)
 
 TEST(ringbuffer, mul_need_yield_producer_mul_consumer)
 {
-	mul_producer_mul_consumer(8, 1);
+	mul_producer_mul_consumer(32, 1);
 }
