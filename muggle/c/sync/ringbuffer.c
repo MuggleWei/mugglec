@@ -12,8 +12,6 @@
 #include "muggle/c/base/utils.h"
 #include "muggle/c/sync/futex.h"
 
-#define IDX_IN_POW_OF_2_RING(idx, capacity) ((idx) & ((capacity) - 1))
-
 int muggle_ringbuffer_init(muggle_ringbuffer_t *r, muggle_atomic_int capacity)
 {
 	memset(r, 0, sizeof(muggle_ringbuffer_t));
@@ -40,7 +38,7 @@ int muggle_ringbuffer_destroy(muggle_ringbuffer_t *r)
 	return eMuggleOk;
 }
 
-int muggle_ringbuffer_push(muggle_ringbuffer_t *r, void *data)
+int muggle_ringbuffer_push(muggle_ringbuffer_t *r, void *data, int only_one_consumer, int producer_need_yield)
 {
 	// move next
 	muggle_atomic_int idx = muggle_atomic_fetch_add(&r->next, 1, muggle_memory_order_relaxed);
@@ -51,19 +49,37 @@ int muggle_ringbuffer_push(muggle_ringbuffer_t *r, void *data)
 	// move cursor
 	muggle_atomic_int expected = idx;
 	muggle_atomic_int desired = idx + 1;
+	int loop = 0;
 	while (!muggle_atomic_cmp_exch_weak(&r->cursor, &expected, desired, muggle_memory_order_acq_rel))
 	{
+		if (producer_need_yield)
+		{
+			++loop;
+			if (expected == idx)
+			{
+				// fail spuriously
+				continue;
+			}
+			muggle_futex_wait(&r->cursor, expected, NULL);
+		}
 		expected = idx;
 		desired = idx + 1;
 	}
 
 	// weakup
-	muggle_futex_wake(&r->cursor);
+	if (only_one_consumer == 1 && producer_need_yield == 0)
+	{
+		muggle_futex_wake_one(&r->cursor);
+	}
+	else
+	{
+		muggle_futex_wake_all(&r->cursor);
+	}
 
 	return eMuggleOk;
 }
 
-int muggle_ringbuffer_st_push(muggle_ringbuffer_t *r, void *data)
+int muggle_ringbuffer_st_push(muggle_ringbuffer_t *r, void *data, int only_one_consumer)
 {
 	// assignment
 	r->datas[IDX_IN_POW_OF_2_RING(r->cursor, r->capacity)] = data;
@@ -72,7 +88,14 @@ int muggle_ringbuffer_st_push(muggle_ringbuffer_t *r, void *data)
 	muggle_atomic_store(&r->cursor, r->cursor+1, muggle_memory_order_release);
 
 	// wakeup
-	muggle_futex_wake(&r->cursor);
+	if (only_one_consumer)
+	{
+		muggle_futex_wake_one(&r->cursor);
+	}
+	else
+	{
+		muggle_futex_wake_all(&r->cursor);
+	}
 
 	return eMuggleOk;
 }
@@ -87,7 +110,7 @@ void* muggle_ringbuffer_get(muggle_ringbuffer_t *r, muggle_atomic_int pos)
 		{
 			return r->datas[pos];
 		}
-		muggle_futex_wait(&r->cursor, pos);
+		muggle_futex_wait(&r->cursor, pos, NULL);
 	} while (1);
 
 	return NULL;
@@ -112,7 +135,7 @@ void* muggle_ringbuffer_get_with_cache(
 		{
 			return r->datas[pos];
 		}
-		muggle_futex_wait(&r->cursor, pos);
+		muggle_futex_wait(&r->cursor, pos, NULL);
 	} while (1);
 
 	return NULL;

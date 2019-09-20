@@ -32,8 +32,14 @@ int muggle_ringbuffer_init(muggle_ringbuffer_t *r, muggle_atomic_int capacity);
 MUGGLE_CC_EXPORT
 int muggle_ringbuffer_destroy(muggle_ringbuffer_t *r);
 
+/*
+ * NOTE:
+ * @ only_one_consumer: when have more than one consumer wait for wakeup, need set to 0, otherwise 1
+ * @ producer_need_yield: when number of producer greater than number of CPUs, need set to 1, if set 0 at
+ *   that situation, busy loop may seize CPU resources meaningless
+ * */
 MUGGLE_CC_EXPORT
-int muggle_ringbuffer_push(muggle_ringbuffer_t *r, void *data);
+int muggle_ringbuffer_push(muggle_ringbuffer_t *r, void *data, int only_one_consumer, int producer_need_yield);
 
 /*
  * single thread push
@@ -41,7 +47,7 @@ int muggle_ringbuffer_push(muggle_ringbuffer_t *r, void *data);
  * and if you used _st_push in a ringbuffer, don't use _push in it again
  * */
 MUGGLE_CC_EXPORT
-int muggle_ringbuffer_st_push(muggle_ringbuffer_t *r, void *data);
+int muggle_ringbuffer_st_push(muggle_ringbuffer_t *r, void *data, int only_one_consumer);
 
 MUGGLE_CC_EXPORT
 void* muggle_ringbuffer_get(muggle_ringbuffer_t *r, muggle_atomic_int pos);
