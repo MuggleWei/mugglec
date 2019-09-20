@@ -103,7 +103,7 @@ void* muggle_ringbuffer_get(muggle_ringbuffer_t *r, muggle_atomic_int pos)
 	pos = IDX_IN_POW_OF_2_RING(pos, r->capacity);
 	muggle_atomic_int curr_pos;
 	do {
-		curr_pos = muggle_atomic_load(&r->cursor, muggle_memory_order_consume);
+		curr_pos = muggle_atomic_load(&r->cursor, muggle_memory_order_acquire);
 		if (IDX_IN_POW_OF_2_RING(curr_pos, r->capacity) != pos)
 		{
 			return r->datas[pos];
@@ -127,7 +127,7 @@ void* muggle_ringbuffer_get_with_cache(
 	}
 
 	do {
-		*cursor_cache = muggle_atomic_load(&r->cursor, muggle_memory_order_consume);
+		*cursor_cache = muggle_atomic_load(&r->cursor, muggle_memory_order_acquire);
 		*cursor_cache = IDX_IN_POW_OF_2_RING(*cursor_cache, r->capacity);
 		if (pos != *cursor_cache)
 		{
