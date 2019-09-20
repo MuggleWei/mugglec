@@ -28,9 +28,7 @@
 #include "muggle/c/base/dll.h"
 #include "muggle/c/base/sleep.h"
 #include "muggle/c/base/thread.h"
-#include "muggle/c/base/lock.h"
 #include "muggle/c/base/atomic.h"
-#include "muggle/c/base/cond.h"
 #include "muggle/c/base/semaphore.h"
 #include "muggle/c/base/utils.h"
 #if MUGGLE_PLATFORM_WINDOWS
@@ -44,6 +42,8 @@
 #include "muggle/c/time/delta_time.h"
 
 // sync
+#include "muggle/c/sync/mutex.h"
+#include "muggle/c/sync/condition_variable.h"
 #include "muggle/c/sync/futex.h"
 #include "muggle/c/sync/ringbuffer.h"
 

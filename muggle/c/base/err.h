@@ -17,6 +17,8 @@ enum
 	eMuggleOk = 0,
 	eMuggleErrMemAlloc,
 	eMuggleErrInvalidParam,
+	eMuggleErrAcqLock,
+	eMuggleErrSysCall,
 	eMuggleErrMax,
 };
 
