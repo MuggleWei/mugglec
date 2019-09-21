@@ -243,7 +243,7 @@ TEST(ringbuffer, one_producer_one_consumer)
 		for (int i = 0; i < cnt; ++i)
 		{
 			int ret = muggle_ringbuffer_push(&r, &arr[i], 1, 0);
-			EXPECT_EQ(ret, (int)eMuggleOk);
+			EXPECT_EQ(ret, (int)MUGGLE_OK);
 		}
 		muggle_ringbuffer_push(&r, &end_flag, 1, 0);
 	});
@@ -304,7 +304,7 @@ TEST(ringbuffer, one_producer_mul_consumer)
 		for (int i = 0; i < cnt; ++i)
 		{
 			int ret = muggle_ringbuffer_push(&r, &arr[i], 0, 0);
-			EXPECT_EQ(ret, (int)eMuggleOk);
+			EXPECT_EQ(ret, (int)MUGGLE_OK);
 		}
 		muggle_ringbuffer_push(&r, &end_flag, 0, 0);
 	});

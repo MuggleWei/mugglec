@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
+/*
 const char *str1 = "\
 	  First line(1).\n\
 \tSecond Line(2).\r\n\
@@ -381,3 +382,4 @@ TEST(Str, Tod)
 	snprintf(buf, buf_size, "1%.10e", DBL_MAX);
 	EXPECT_FALSE(MuggleStrTod(buf, &val));
 }
+*/

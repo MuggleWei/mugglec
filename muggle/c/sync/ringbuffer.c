@@ -17,25 +17,25 @@ int muggle_ringbuffer_init(muggle_ringbuffer_t *r, muggle_atomic_int capacity)
 	memset(r, 0, sizeof(muggle_ringbuffer_t));
 	if (capacity <= 0)
 	{
-		return eMuggleErrInvalidParam;
+		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
 	r->capacity = (muggle_atomic_int)next_pow_of_2((uint64_t)capacity);
 	if (r->capacity <= 0)
 	{
-		return eMuggleErrInvalidParam;
+		return MUGGLE_ERR_INVALID_PARAM;
 	}
 	r->next = 0;
 	r->cursor = 0;
 	r->datas = (void**)malloc(sizeof(void*) * r->capacity);
 
-	return eMuggleOk;
+	return MUGGLE_OK;
 }
 
 int muggle_ringbuffer_destroy(muggle_ringbuffer_t *r)
 {
 	free(r->datas);
-	return eMuggleOk;
+	return MUGGLE_OK;
 }
 
 int muggle_ringbuffer_push(muggle_ringbuffer_t *r, void *data, int only_one_consumer, int producer_need_yield)
@@ -74,7 +74,7 @@ int muggle_ringbuffer_push(muggle_ringbuffer_t *r, void *data, int only_one_cons
 		muggle_futex_wake_all(&r->cursor);
 	}
 
-	return eMuggleOk;
+	return MUGGLE_OK;
 }
 
 int muggle_ringbuffer_st_push(muggle_ringbuffer_t *r, void *data, int only_one_consumer)
@@ -95,7 +95,7 @@ int muggle_ringbuffer_st_push(muggle_ringbuffer_t *r, void *data, int only_one_c
 		muggle_futex_wake_all(&r->cursor);
 	}
 
-	return eMuggleOk;
+	return MUGGLE_OK;
 }
 
 void* muggle_ringbuffer_get(muggle_ringbuffer_t *r, muggle_atomic_int pos)

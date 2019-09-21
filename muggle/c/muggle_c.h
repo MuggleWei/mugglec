@@ -25,7 +25,6 @@
 #include "muggle/c/base/log.h"
 #include "muggle/c/base/file.h"
 #include "muggle/c/base/str.h"
-#include "muggle/c/base/dll.h"
 #include "muggle/c/base/sleep.h"
 #include "muggle/c/base/thread.h"
 #include "muggle/c/base/atomic.h"
@@ -40,6 +39,9 @@
 
 // muggle c time
 #include "muggle/c/time/delta_time.h"
+
+// os
+#include "muggle/c/os/dl.h"
 
 // sync
 #include "muggle/c/sync/mutex.h"

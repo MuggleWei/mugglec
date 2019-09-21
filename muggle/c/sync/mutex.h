@@ -18,12 +18,6 @@
 
 EXTERN_C_BEGIN
 
-enum
-{
-	eMuggleUnlocked = 0,
-	eMuggleLocked = 1,
-};
-
 typedef struct muggle_mutex_tag
 {
 #if MUGGLE_PLATFORM_WINDOWS

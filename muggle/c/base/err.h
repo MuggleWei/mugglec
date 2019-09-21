@@ -14,12 +14,12 @@ EXTERN_C_BEGIN
 
 enum
 {
-	eMuggleOk = 0,
-	eMuggleErrMemAlloc,
-	eMuggleErrInvalidParam,
-	eMuggleErrAcqLock,
-	eMuggleErrSysCall,
-	eMuggleErrMax,
+	MUGGLE_OK = 0,
+	MUGGLE_ERR_MEM_ALLOC,
+	MUGGLE_ERR_INVALID_PARAM,
+	MUGGLE_ERR_ACQ_LOCK,
+	MUGGLE_ERR_SYS_CALL,
+	MUGGLE_ERR_MAX,
 };
 
 EXTERN_C_END

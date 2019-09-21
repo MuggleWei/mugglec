@@ -41,6 +41,7 @@ void muggle_futex_wake_all(muggle_atomic_int *futex_addr)
 
 #else
 
+#include <unistd.h>
 #include <sys/syscall.h>
 #include <linux/futex.h>
 #include <time.h>
