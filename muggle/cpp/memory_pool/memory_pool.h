@@ -9,7 +9,7 @@
 #define MUGGLE_CPP_MEMORY_POOL_H_
 
 #include "muggle/c/base/macro.h"
-#include "muggle/c/memory_pool/memory_pool.h"
+#include "muggle/c/memory/memory_pool.h"
 
 NS_MUGGLE_BEGIN
 

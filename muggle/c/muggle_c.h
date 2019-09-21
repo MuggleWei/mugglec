@@ -34,8 +34,9 @@
 #include "muggle/c/base/win_gettimeofday.h"
 #endif
 
-// muggle c memory pool
-#include "muggle/c/memory_pool/memory_pool.h"
+// memory
+#include "muggle/c/memory/memory_pool.h"
+#include "muggle/c/memory/sowr_memory_pool.h"
 
 // muggle c time
 #include "muggle/c/time/delta_time.h"
