@@ -1,12 +1,12 @@
 /*
-*	author: muggle wei <mugglewei@gmail.com>
-*
-*	Use of this source code is governed by the MIT license that can be
-*	found in the LICENSE file.
-*/
+ *	author: muggle wei <mugglewei@gmail.com>
+ *
+ *	Use of this source code is governed by the MIT license that can be
+ *	found in the LICENSE file.
+ */
 
-#ifndef MUGGLE_RINGBUFFER_H_
-#define MUGGLE_RINGBUFFER_H_
+#ifndef MUGGLE_C_RINGBUFFER_H_
+#define MUGGLE_C_RINGBUFFER_H_
 
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/atomic.h"

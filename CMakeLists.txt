@@ -53,8 +53,11 @@ if (${MUGGLE_BUILD_ONLY_C})
 	set(muggle_cc muggleC) 	
 else()
 	muggle_add_project(muggleCC ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
-	
 	set(muggle_cc muggleCC)
+
+	muggle_add_project(muggle_benchmark ${CMAKE_CURRENT_LIST_DIR}/muggle_benchmark STATIC)
+	target_link_libraries(muggle_benchmark ${muggle_cc})
+	add_dependencies(muggle_benchmark ${muggle_cc})
 endif()
 
 # link thread and dll lib
@@ -135,9 +138,9 @@ function(add_benchmark name folder)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
-	add_dependencies(${name} ${muggle_cc})
+	add_dependencies(${name} muggle_benchmark)
 	target_link_libraries(${name}
-		${muggle_cc}
+		muggle_benchmark
 	)
 endfunction()
 
