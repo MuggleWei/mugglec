@@ -6,12 +6,12 @@
  */
 
 #include "muggle_benchmark/muggle_benchmark.h"
-#include <stdio.h>
+#include <queue>
+#include <vector>
 #include <thread>
-#include <chrono>
 
 void fn_producer(
-	muggle_ringbuffer_t *ring,
+	muggle::Tunnel<muggle::LatencyBlock*> *tunnel,
 	muggle::BenchmarkConfig *config,
 	muggle::LatencyBlock *blocks,
 	muggle_atomic_int *consumer_ready,
@@ -31,7 +31,7 @@ void fn_producer(
 			blocks[idx].idx = idx;
 
 			timespec_get(&blocks[idx].ts[0], TIME_UTC);
-			muggle_ringbuffer_push(ring, &blocks[idx], 1, 1);
+			tunnel->Write(&blocks[idx]);
 			timespec_get(&blocks[idx].ts[1], TIME_UTC);
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(config->loop_interval_ms));
@@ -39,28 +39,25 @@ void fn_producer(
 }
 
 void fn_consumer(
-	muggle_ringbuffer_t *ring,
-	muggle_atomic_int *consumer_ready,
-	int print_msg_loss
+	muggle::Tunnel<muggle::LatencyBlock*> *tunnel,
+	muggle_atomic_int *consumer_ready
 )
 {
 	muggle_atomic_fetch_add(consumer_ready, 1, muggle_memory_order_relaxed);
-	muggle_atomic_int pos = 0;
-	uint64_t idx = 0;
+	std::queue<muggle::LatencyBlock*> queue;
 	while (1)
 	{
-		muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_ringbuffer_get(ring, pos++);
-		if (!block)
+		tunnel->Read(queue);
+		while (!queue.empty())
 		{
-			break;
+			muggle::LatencyBlock *block = queue.front();
+			if (!block)
+			{
+				return;
+			}
+			timespec_get(&block->ts[2], TIME_UTC);
+			queue.pop();
 		}
-		timespec_get(&block->ts[2], TIME_UTC);
-		if (print_msg_loss && idx != block->idx)
-		{
-			printf("expect: %llu, actual: %llu\n", (unsigned long long)idx, (unsigned long long)block->idx);
-			idx = block->idx;
-		}
-		++idx;
 	}
 }
 
@@ -70,9 +67,7 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 	muggle::LatencyBlock *blocks = (muggle::LatencyBlock*)malloc(cnt * sizeof(muggle::LatencyBlock));
 	muggle_atomic_int consumer_ready = 0;
 
-	muggle_ringbuffer_t ring;
-	muggle_ringbuffer_init(&ring, 1024 * 16);
-
+	muggle::Tunnel<muggle::LatencyBlock*> tunnel;
 	std::vector<std::thread> producers;
 	std::vector<std::thread> consumers;
 
@@ -86,13 +81,13 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 		}
 
 		producers.push_back(std::thread(fn_producer,
-			&ring, &config, blocks, &consumer_ready, cnt_consumer, start_idx, end_idx
+			&tunnel, &config, blocks, &consumer_ready, cnt_consumer, start_idx, end_idx
 		));
 	}
 	for (int i = 0; i < cnt_consumer; ++i)
 	{
 		consumers.push_back(std::thread(fn_consumer,
-			&ring, &consumer_ready, 0
+			&tunnel, &consumer_ready
 		));
 	}
 
@@ -101,14 +96,12 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 		producer.join();
 	}
 
-	muggle_ringbuffer_push(&ring, nullptr, 1, 0);
+	tunnel.Write(nullptr);
 
 	for (auto &consumer : consumers)
 	{
 		consumer.join();
 	}
-
-	muggle_ringbuffer_destroy(&ring);
 
 	char buf[128];
 
@@ -130,7 +123,7 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 int main()
 {
 	muggle::BenchmarkConfig config;
-	strncpy(config.name, "ringbuffer", sizeof(config.name)-1);
+	strncpy(config.name, "tunnel", sizeof(config.name)-1);
 	config.loop = 50;
 	config.cnt_per_loop = 10000;
 	config.loop_interval_ms = 1;
