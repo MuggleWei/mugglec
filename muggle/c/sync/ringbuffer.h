@@ -13,51 +13,39 @@
 
 EXTERN_C_BEGIN
 
+enum
+{
+	MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER = 0x01, // user guarantee only one writer use this ringbuffer
+	MUGGLE_RINGBUFFER_FLAG_SINGLE_READER = 0x02, // user guarantee only one reader use this ringbuffer
+	MUGGLE_RINGBUFFER_FLAG_WNUM_GT_CPU = 0x04, // number of writer greater than number of cpu
+};
+
 typedef struct muggle_ringbuffer_tag
 {
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
 	muggle_atomic_int capacity;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
-	muggle_atomic_int next;
+	int flag;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
-	muggle_atomic_int cursor;
+	muggle_atomic_int next;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
-	void **datas;
+	muggle_atomic_int cursor;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(4);
+	void **datas;
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(5);
 }muggle_ringbuffer_t;
 
 MUGGLE_CC_EXPORT
-int muggle_ringbuffer_init(muggle_ringbuffer_t *r, muggle_atomic_int capacity);
+int muggle_ringbuffer_init(muggle_ringbuffer_t *r, muggle_atomic_int capacity, int flag);
 
 MUGGLE_CC_EXPORT
 int muggle_ringbuffer_destroy(muggle_ringbuffer_t *r);
 
-/*
- * NOTE:
- * @ only_one_consumer: when have more than one consumer wait for wakeup, need set to 0, otherwise 1
- * @ producer_need_yield: when number of producer greater than number of CPUs, need set to 1, if set 0 at
- *   that situation, busy loop may seize CPU resources meaningless
- * */
 MUGGLE_CC_EXPORT
-int muggle_ringbuffer_push(muggle_ringbuffer_t *r, void *data, int only_one_consumer, int producer_need_yield);
-
-/*
- * single thread push
- * user need ensure only one thread allowed push data into this ringbuffer, 
- * and if you used _st_push in a ringbuffer, don't use _push in it again
- * */
-MUGGLE_CC_EXPORT
-int muggle_ringbuffer_st_push(muggle_ringbuffer_t *r, void *data, int only_one_consumer);
+int muggle_ringbuffer_write(muggle_ringbuffer_t *r, void *data);
 
 MUGGLE_CC_EXPORT
-void* muggle_ringbuffer_get(muggle_ringbuffer_t *r, muggle_atomic_int pos);
-
-MUGGLE_CC_EXPORT
-void* muggle_ringbuffer_get_with_cache(
-	muggle_ringbuffer_t *r,
-	muggle_atomic_int pos,
-	muggle_atomic_int *cursor_cache
-);
+void* muggle_ringbuffer_read(muggle_ringbuffer_t *r, muggle_atomic_int pos);
 
 EXTERN_C_END
 

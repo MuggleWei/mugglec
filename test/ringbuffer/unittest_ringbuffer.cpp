@@ -53,7 +53,7 @@ TEST(ringbuffer, init_destroy)
 	muggle_atomic_int capacity = 16;
 	int ret;
 
-	ret = muggle_ringbuffer_init(&r, capacity);
+	ret = muggle_ringbuffer_init(&r, capacity, 0);
 	EXPECT_EQ(ret, 0);
 	EXPECT_EQ(r.capacity, capacity);
 
@@ -67,18 +67,21 @@ TEST(ringbuffer, push_get_in_single_thread)
 	muggle_atomic_int capacity = 16;
 	muggle_atomic_int pos = 0;
 	int arr[160];
+	int flag = 
+		MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER |
+		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER;
 
-	muggle_ringbuffer_init(&r, capacity);
+	muggle_ringbuffer_init(&r, capacity, flag);
 
 	// push capacity / 2, and get all
 	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
 	{
 		arr[i] = (int)i;
-		muggle_ringbuffer_push(&r, &arr[i], 1, 0);
+		muggle_ringbuffer_write(&r, &arr[i]);
 	}
 	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
 	{
-		int data = *(int*)muggle_ringbuffer_get(&r, pos++);
+		int data = *(int*)muggle_ringbuffer_read(&r, pos++);
 		EXPECT_EQ(data, (int)i);
 	}
 
@@ -86,9 +89,9 @@ TEST(ringbuffer, push_get_in_single_thread)
 	for (muggle_atomic_int i = 0; i < capacity * 5; ++i)
 	{
 		arr[i] = (int)i;
-		muggle_ringbuffer_push(&r, &arr[i], 1, 0);
+		muggle_ringbuffer_write(&r, &arr[i]);
 
-		int data = *(int*)muggle_ringbuffer_get(&r, pos++);
+		int data = *(int*)muggle_ringbuffer_read(&r, pos++);
 		EXPECT_EQ(data, (int)i);
 	}
 
@@ -101,18 +104,21 @@ TEST(ringbuffer, st_push_get_in_single_thread)
 	muggle_atomic_int capacity = 16;
 	muggle_atomic_int pos = 0;
 	int arr[160];
+	int flag = 
+		MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER |
+		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER;
 
-	muggle_ringbuffer_init(&r, capacity);
+	muggle_ringbuffer_init(&r, capacity, flag);
 
 	// push capacity / 2, and get all
 	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
 	{
 		arr[i] = (int)i;
-		muggle_ringbuffer_st_push(&r, &arr[i], 1);
+		muggle_ringbuffer_write(&r, &arr[i]);
 	}
 	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
 	{
-		int data = *(int*)muggle_ringbuffer_get(&r, pos++);
+		int data = *(int*)muggle_ringbuffer_read(&r, pos++);
 		EXPECT_EQ(data, (int)i);
 	}
 
@@ -120,84 +126,15 @@ TEST(ringbuffer, st_push_get_in_single_thread)
 	for (muggle_atomic_int i = 0; i < capacity * 5; ++i)
 	{
 		arr[i] = (int)i;
-		muggle_ringbuffer_st_push(&r, &arr[i], 1);
+		muggle_ringbuffer_write(&r, &arr[i]);
 
-		int data = *(int*)muggle_ringbuffer_get(&r, pos++);
+		int data = *(int*)muggle_ringbuffer_read(&r, pos++);
 		EXPECT_EQ(data, (int)i);
 	}
 
 	muggle_ringbuffer_destroy(&r);
 }
 
-TEST(ringbuffer, push_get_with_cache_in_single_thread)
-{
-	muggle_ringbuffer_t r;
-	muggle_atomic_int capacity = 16;
-	muggle_atomic_int pos = 0;
-	muggle_atomic_int cursor_cache = 0;
-	int arr[160];
-
-	muggle_ringbuffer_init(&r, capacity);
-
-	// push capacity / 2, and get all
-	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
-	{
-		arr[i] = (int)i;
-		muggle_ringbuffer_push(&r, &arr[i], 1, 0);
-	}
-	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
-	{
-		int data = *(int*)muggle_ringbuffer_get_with_cache(&r, pos++, &cursor_cache);
-		EXPECT_EQ(data, (int)i);
-	}
-
-	// push one and get one
-	for (muggle_atomic_int i = 0; i < capacity * 5; ++i)
-	{
-		arr[i] = (int)i;
-		muggle_ringbuffer_push(&r, &arr[i], 1, 0);
-
-		int data = *(int*)muggle_ringbuffer_get_with_cache(&r, pos++, &cursor_cache);
-		EXPECT_EQ(data, (int)i);
-	}
-
-	muggle_ringbuffer_destroy(&r);
-}
-
-TEST(ringbuffer, st_push_get_with_cache_in_single_thread)
-{
-	muggle_ringbuffer_t r;
-	muggle_atomic_int capacity = 16;
-	muggle_atomic_int pos = 0;
-	muggle_atomic_int cursor_cache = 0;
-	int arr[160];
-
-	muggle_ringbuffer_init(&r, capacity);
-
-	// push capacity / 2, and get all
-	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
-	{
-		arr[i] = (int)i;
-		muggle_ringbuffer_st_push(&r, &arr[i], 1);
-	}
-	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
-	{
-		int data = *(int*)muggle_ringbuffer_get_with_cache(&r, pos++, &cursor_cache);
-		EXPECT_EQ(data, (int)i);
-	}
-
-	// push one and get one
-	for (muggle_atomic_int i = 0; i < capacity * 5; ++i)
-	{
-		arr[i] = (int)i;
-		muggle_ringbuffer_st_push(&r, &arr[i], 1);
-
-		int data = *(int*)muggle_ringbuffer_get_with_cache(&r, pos++, &cursor_cache);
-		EXPECT_EQ(data, (int)i);
-	}
-
-	muggle_ringbuffer_destroy(&r);
-}
 
 TEST(ringbuffer, one_producer_one_consumer)
 {
@@ -212,7 +149,10 @@ TEST(ringbuffer, one_producer_one_consumer)
 	}
 	muggle_atomic_int consumer_ready = 0;
 
-	muggle_ringbuffer_init(&r, capacity);
+	int flag = 
+		MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER |
+		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER;
+	muggle_ringbuffer_init(&r, capacity, flag);
 
 	std::thread consumer([&]{
 		muggle_atomic_store(&consumer_ready, 1, muggle_memory_order_relaxed);
@@ -222,7 +162,7 @@ TEST(ringbuffer, one_producer_one_consumer)
 
 		while (1)
 		{
-			void *data = muggle_ringbuffer_get(&r, pos++);
+			void *data = muggle_ringbuffer_read(&r, pos++);
 			if (data == &end_flag)
 			{
 				break;
@@ -242,10 +182,10 @@ TEST(ringbuffer, one_producer_one_consumer)
 
 		for (int i = 0; i < cnt; ++i)
 		{
-			int ret = muggle_ringbuffer_push(&r, &arr[i], 1, 0);
+			int ret = muggle_ringbuffer_write(&r, &arr[i]);
 			EXPECT_EQ(ret, (int)MUGGLE_OK);
 		}
-		muggle_ringbuffer_push(&r, &end_flag, 1, 0);
+		muggle_ringbuffer_write(&r, &end_flag);
 	});
 
 	producer.join();
@@ -269,7 +209,8 @@ TEST(ringbuffer, one_producer_mul_consumer)
 	}
 	muggle_atomic_int consumer_ready = 0;
 
-	muggle_ringbuffer_init(&r, capacity);
+	int flag = MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER;
+	muggle_ringbuffer_init(&r, capacity, flag);
 
 	std::vector<std::thread> consumers;
 	for (int i = 0; i < consumer_num; ++i)
@@ -282,7 +223,7 @@ TEST(ringbuffer, one_producer_mul_consumer)
 
 			while (1)
 			{
-				void *data = muggle_ringbuffer_get(&r, pos++);
+				void *data = muggle_ringbuffer_read(&r, pos++);
 				if (data == &end_flag)
 				{
 					break;
@@ -303,10 +244,10 @@ TEST(ringbuffer, one_producer_mul_consumer)
 
 		for (int i = 0; i < cnt; ++i)
 		{
-			int ret = muggle_ringbuffer_push(&r, &arr[i], 0, 0);
+			int ret = muggle_ringbuffer_write(&r, &arr[i]);
 			EXPECT_EQ(ret, (int)MUGGLE_OK);
 		}
-		muggle_ringbuffer_push(&r, &end_flag, 0, 0);
+		muggle_ringbuffer_write(&r, &end_flag);
 	});
 
 	producer.join();
@@ -332,7 +273,12 @@ void mul_producer_one_consumer(int producer_num, int producer_need_yield)
 	}
 	muggle_atomic_int consumer_ready = 0;
 
-	muggle_ringbuffer_init(&r, capacity);
+	int flag = MUGGLE_RINGBUFFER_FLAG_SINGLE_READER;
+	if (producer_need_yield)
+	{
+		flag |= MUGGLE_RINGBUFFER_FLAG_WNUM_GT_CPU;
+	}
+	muggle_ringbuffer_init(&r, capacity, flag);
 
 	std::thread consumer([&]{
 		muggle_atomic_store(&consumer_ready, 1, muggle_memory_order_relaxed);
@@ -342,7 +288,7 @@ void mul_producer_one_consumer(int producer_num, int producer_need_yield)
 
 		while (1)
 		{
-			void *data = muggle_ringbuffer_get(&r, pos++);
+			void *data = muggle_ringbuffer_read(&r, pos++);
 			if (data == &end_flag)
 			{
 				break;
@@ -371,13 +317,13 @@ void mul_producer_one_consumer(int producer_num, int producer_need_yield)
 				idx = muggle_atomic_fetch_add(&fetch_id, 1, muggle_memory_order_relaxed);
 				if (idx == cnt - 1)
 				{
-					muggle_ringbuffer_push(&r, &end_flag, 1, producer_need_yield);
+					muggle_ringbuffer_write(&r, &end_flag);
 					break;
 				}
 
 				if (idx < cnt)
 				{
-					muggle_ringbuffer_push(&r, &arr[idx], 1, producer_need_yield);
+					muggle_ringbuffer_write(&r, &arr[idx]);
 				}
 				else
 				{
@@ -411,7 +357,12 @@ void mul_producer_mul_consumer(int producer_num, int producer_need_yield)
 	}
 	muggle_atomic_int consumer_ready = 0;
 
-	muggle_ringbuffer_init(&r, capacity);
+	int flag = 0;
+	if (producer_need_yield)
+	{
+		flag |= MUGGLE_RINGBUFFER_FLAG_WNUM_GT_CPU;
+	}
+	muggle_ringbuffer_init(&r, capacity, flag);
 
 	std::vector<std::thread> consumers;
 	for (int i = 0; i < consumer_num; ++i)
@@ -424,7 +375,7 @@ void mul_producer_mul_consumer(int producer_num, int producer_need_yield)
 
 			while (1)
 			{
-				void *data = muggle_ringbuffer_get(&r, pos++);
+				void *data = muggle_ringbuffer_read(&r, pos++);
 				if (data == &end_flag)
 				{
 					break;
@@ -454,13 +405,13 @@ void mul_producer_mul_consumer(int producer_num, int producer_need_yield)
 				idx = muggle_atomic_fetch_add(&fetch_id, 1, muggle_memory_order_relaxed);
 				if (idx == cnt - 1)
 				{
-					muggle_ringbuffer_push(&r, &end_flag, 1, producer_need_yield);
+					muggle_ringbuffer_write(&r, &end_flag);
 					break;
 				}
 
 				if (idx < cnt)
 				{
-					muggle_ringbuffer_push(&r, &arr[idx], 1, producer_need_yield);
+					muggle_ringbuffer_write(&r, &arr[idx]);
 				}
 				else
 				{
@@ -485,20 +436,40 @@ void mul_producer_mul_consumer(int producer_num, int producer_need_yield)
 
 TEST(ringbuffer, mul_producer_one_consumer)
 {
-	mul_producer_one_consumer(2, 0);
+	auto writer_num = std::thread::hardware_concurrency();
+	if (writer_num == 0)
+	{
+		writer_num = 2;
+	}
+	mul_producer_one_consumer(writer_num, 0);
 }
 
 TEST(ringbuffer, mul_need_yield_producer_one_consumer)
 {
-	mul_producer_one_consumer(32, 1);
+	auto writer_num = std::thread::hardware_concurrency();
+	if (writer_num == 0)
+	{
+		writer_num = 16;
+	}
+	mul_producer_one_consumer(writer_num * 2, 1);
 }
 
 TEST(ringbuffer, mul_producer_mul_consumer)
 {
-	mul_producer_mul_consumer(2, 0);
+	auto writer_num = std::thread::hardware_concurrency();
+	if (writer_num == 0)
+	{
+		writer_num = 2;
+	}
+	mul_producer_mul_consumer(writer_num, 0);
 }
 
 TEST(ringbuffer, mul_need_yield_producer_mul_consumer)
 {
-	mul_producer_mul_consumer(32, 1);
+	auto writer_num = std::thread::hardware_concurrency();
+	if (writer_num == 0)
+	{
+		writer_num = 16;
+	}
+	mul_producer_mul_consumer(writer_num * 2, 1);
 }

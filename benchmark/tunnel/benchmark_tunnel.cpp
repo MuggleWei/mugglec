@@ -10,6 +10,8 @@
 #include <vector>
 #include <thread>
 
+uint64_t *consumer_read_num = nullptr;
+
 void fn_producer(
 	muggle::Tunnel<muggle::LatencyBlock*> *tunnel,
 	muggle::BenchmarkConfig *config,
@@ -43,8 +45,10 @@ void fn_consumer(
 	muggle_atomic_int *consumer_ready
 )
 {
-	muggle_atomic_fetch_add(consumer_ready, 1, muggle_memory_order_relaxed);
+	muggle_atomic_int consumer_idx = muggle_atomic_fetch_add(consumer_ready, 1, muggle_memory_order_relaxed);
 	std::queue<muggle::LatencyBlock*> queue;
+	uint64_t idx = 0;
+	int end = 0;
 	while (1)
 	{
 		tunnel->Read(queue);
@@ -53,12 +57,19 @@ void fn_consumer(
 			muggle::LatencyBlock *block = queue.front();
 			if (!block)
 			{
-				return;
+				end = 1;
+				break;
 			}
 			timespec_get(&block->ts[2], TIME_UTC);
 			queue.pop();
+			++idx;
+		}
+		if (end)
+		{
+			break;
 		}
 	}
+	consumer_read_num[consumer_idx] = idx;
 }
 
 void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, int cnt_consumer)
@@ -66,6 +77,8 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 	uint64_t cnt = config.loop * config.cnt_per_loop;
 	muggle::LatencyBlock *blocks = (muggle::LatencyBlock*)malloc(cnt * sizeof(muggle::LatencyBlock));
 	muggle_atomic_int consumer_ready = 0;
+
+	consumer_read_num = (uint64_t*)malloc(sizeof(uint64_t) * cnt_consumer);
 
 	muggle::Tunnel<muggle::LatencyBlock*> tunnel;
 	std::vector<std::thread> producers;
@@ -96,7 +109,13 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 		producer.join();
 	}
 
-	tunnel.Write(nullptr);
+	for (int i = 0; i < cnt_consumer; ++i)
+	{
+		tunnel.Write(nullptr);
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		// ensure all consumer exit
+		tunnel.Write(nullptr);
+	}
 
 	for (auto &consumer : consumers)
 	{
@@ -104,6 +123,14 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 	}
 
 	char buf[128];
+
+	for (int i = 0; i < cnt_consumer; ++i)
+	{
+		printf("%dw%dr consumer[%d] read %llu\n",
+			cnt_producer, cnt_consumer, i, (unsigned long long)consumer_read_num[i]);
+	}
+	free(consumer_read_num);
+
 
 	snprintf(buf, sizeof(buf) - 1, "%dw%dr-w", cnt_producer, cnt_consumer);
 	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 0, 1, 0);
@@ -140,6 +167,8 @@ int main()
 
 	muggle::GenLatencyReportsHead(fp, &config);
 
+	printf("hardware_concurrency: %u\n", std::thread::hardware_concurrency());
+
 	// 1 writer, 1 reader
 	Benchmark_wr(fp, config, 1, 1);
 
@@ -149,8 +178,14 @@ int main()
 	// 8 writer, 1 reader
 	Benchmark_wr(fp, config, 8, 1);
 
-	// 32 writer, 1 reader
-	Benchmark_wr(fp, config, 32, 1);
+	// 1 writer, 1 reader
+	Benchmark_wr(fp, config, 1, 1);
+
+	// 1 writer, 2 reader
+	Benchmark_wr(fp, config, 1, 2);
+
+	// 1 writer, 8 reader
+	Benchmark_wr(fp, config, 1, 8);
 
 	fclose(fp);
 }
