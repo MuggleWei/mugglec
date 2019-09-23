@@ -12,7 +12,7 @@ int muggle_condition_variable_init(muggle_condition_variable_t *cv)
 int muggle_condition_variable_destroy(muggle_condition_variable_t *cv)
 {
 	// windows has not destroy condition varaible
-	return true;
+	return MUGGLE_OK;
 }
 
 int muggle_condition_variable_wait(muggle_condition_variable_t *cv, muggle_mutex_t *mutex, const struct timespec *timeout)
@@ -29,7 +29,7 @@ int muggle_condition_variable_wait(muggle_condition_variable_t *cv, muggle_mutex
 		{
 			ms = 1;
 		}
-		DWORD dwMilliseconds = timeout->tv_sec * 1000 + ms;
+		DWORD dwMilliseconds = (DWORD)(timeout->tv_sec * 1000 + ms);
 		ret = SleepConditionVariableCS(&cv->cond_var, &mutex->cs, dwMilliseconds);
 	}
 	return ret ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;

@@ -23,7 +23,7 @@ void muggle_futex_wait(muggle_atomic_int* futex_addr, muggle_atomic_int val, con
 		{
 			ms = 1;
 		}
-		DWORD dwMilliseconds = timeout->tv_sec * 1000 + ms;
+		DWORD dwMilliseconds = (DWORD)(timeout->tv_sec * 1000 + ms);
 		WaitOnAddress(futex_addr, &val, sizeof(val), dwMilliseconds);
 	}
 }

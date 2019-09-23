@@ -27,10 +27,10 @@
 #define muggle_memory_order_seq_cst 0
 
 // load
-#define muggle_atomic_load(ptr, memmodel) *(ptr)
+#define muggle_atomic_load(ptr, memmodel) InterlockedOr(ptr, 0)
 
 // store
-#define muggle_atomic_store(ptr, val, memmodel) *(ptr) = val
+#define muggle_atomic_store(ptr, val, memmodel) InterlockedExchange(ptr, val)
 
 // exchange
 #define muggle_atomic_exchange(ptr, val, memmodel) InterlockedExchange(ptr, val)

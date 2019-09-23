@@ -82,12 +82,12 @@ int muggle_str_count(const char *str, const char *sub, int start, int end)
 
 	if (end == 0 || end == -1)
 	{
-		end = str_len;
+		end = (int)str_len;
 	}
 
-	if (end > str_len)
+	if (end > (int)str_len)
 	{
-		end = str_len;
+		end = (int)str_len;
 	}
 
 	if (end <= start)
@@ -145,12 +145,12 @@ int muggle_str_find(const char *str, const char *sub, int start, int end)
 
 	if (end == 0 || end == -1)
 	{
-		end = str_len;
+		end = (int)str_len;
 	}
 
-	if (end > str_len)
+	if (end > (int)str_len)
 	{
-		end = str_len;
+		end = (int)str_len;
 	}
 
 	if (end <= start)
@@ -164,7 +164,7 @@ int muggle_str_find(const char *str, const char *sub, int start, int end)
 		return -1;
 	}
 
-	return pos - str;
+	return (int)(pos - str);
 }
 
 int muggle_str_lstrip_idx(const char *str)
