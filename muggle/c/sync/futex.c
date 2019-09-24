@@ -10,11 +10,12 @@
 
 #if MUGGLE_PLATFORM_WINDOWS
 
-void muggle_futex_wait(muggle_atomic_int* futex_addr, muggle_atomic_int val, const struct timespec *timeout)
+int muggle_futex_wait(muggle_atomic_int* futex_addr, muggle_atomic_int val, const struct timespec *timeout)
 {
+	BOOL ret;
 	if (timeout == NULL)
 	{
-		WaitOnAddress(futex_addr, &val, sizeof(val), INFINITE);
+		ret = WaitOnAddress(futex_addr, &val, sizeof(val), INFINITE);
 	}
 	else
 	{
@@ -24,8 +25,10 @@ void muggle_futex_wait(muggle_atomic_int* futex_addr, muggle_atomic_int val, con
 			ms = 1;
 		}
 		DWORD dwMilliseconds = (DWORD)(timeout->tv_sec * 1000 + ms);
-		WaitOnAddress(futex_addr, &val, sizeof(val), dwMilliseconds);
+		ret = WaitOnAddress(futex_addr, &val, sizeof(val), dwMilliseconds);
 	}
+
+	return ret ? 0 : 1;
 }
 
 void muggle_futex_wake_one(muggle_atomic_int* futex_addr)
@@ -52,9 +55,9 @@ static int futex(int *uaddr, int futex_op, int val, const struct timespec *timeo
 	return syscall(SYS_futex, uaddr, futex_op, val, timeout, uaddr, val3);
 }
 
-void muggle_futex_wait(muggle_atomic_int* futex_addr, muggle_atomic_int val, const struct timespec *timeout)
+int muggle_futex_wait(muggle_atomic_int* futex_addr, muggle_atomic_int val, const struct timespec *timeout)
 {
-	futex(futex_addr, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, val, timeout, NULL, 0);
+	return futex(futex_addr, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, val, timeout, NULL, 0);
 }
 
 void muggle_futex_wake_one(muggle_atomic_int* futex_addr)
