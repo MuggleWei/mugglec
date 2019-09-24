@@ -44,8 +44,8 @@ public:
 		}
 		queue_.push(val);
 
-		lock.unlock();
 		cv_.notify_one();
+		lock.unlock();
 
 		return TUNNEL_RETURN_TYPE::TUNNEL_SUCCESS;
 	}
@@ -63,8 +63,8 @@ public:
 		}
 		queue_.push(std::move(val));
 
-		lock.unlock();
 		cv_.notify_one();
+		lock.unlock();
 
 		return TUNNEL_RETURN_TYPE::TUNNEL_SUCCESS;
 	}

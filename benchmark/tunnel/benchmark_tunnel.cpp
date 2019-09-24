@@ -152,8 +152,8 @@ int main()
 	muggle::BenchmarkConfig config;
 	strncpy(config.name, "tunnel", sizeof(config.name)-1);
 	config.loop = 50;
-	config.cnt_per_loop = 10000;
-	config.loop_interval_ms = 1;
+	config.cnt_per_loop = 20000;
+	config.loop_interval_ms = 10;
 	config.report_step = 10;
 
 	char file_name[128];
@@ -167,25 +167,23 @@ int main()
 
 	muggle::GenLatencyReportsHead(fp, &config);
 
-	printf("hardware_concurrency: %u\n", std::thread::hardware_concurrency());
+	int hc = (int)std::thread::hardware_concurrency();
+	printf("hardware_concurrency: %d\n", hc);
 
 	// 1 writer, 1 reader
 	Benchmark_wr(fp, config, 1, 1);
 
-	// 2 writer, 1 reader
-	Benchmark_wr(fp, config, 2, 1);
+	// hc write, 1 reader
+	Benchmark_wr(fp, config, hc, 1);
 
-	// 8 writer, 1 reader
-	Benchmark_wr(fp, config, 8, 1);
+	// 2 * hc write, 1 reader
+	Benchmark_wr(fp, config, 2 * hc, 1);
 
-	// 1 writer, 1 reader
-	Benchmark_wr(fp, config, 1, 1);
+	// 1 writer, hc reader
+	Benchmark_wr(fp, config, 1, hc);
 
-	// 1 writer, 2 reader
-	Benchmark_wr(fp, config, 1, 2);
-
-	// 1 writer, 8 reader
-	Benchmark_wr(fp, config, 1, 8);
+	// 1 writer, 2 * hc reader
+	Benchmark_wr(fp, config, 1, 2 * hc);
 
 	fclose(fp);
 }

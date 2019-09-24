@@ -10,6 +10,7 @@
 
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/atomic.h"
+#include "muggle/c/sync/mutex.h"
 
 EXTERN_C_BEGIN
 
@@ -26,13 +27,16 @@ typedef struct muggle_ringbuffer_tag
 	muggle_atomic_int capacity;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
 	int flag;
+	int write_mode;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
 	muggle_atomic_int next;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
 	muggle_atomic_int cursor;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(4);
-	void **datas;
+	muggle_mutex_t write_mutex;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(5);
+	void **datas;
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(6);
 }muggle_ringbuffer_t;
 
 MUGGLE_CC_EXPORT

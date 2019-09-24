@@ -444,7 +444,7 @@ TEST(ringbuffer, mul_producer_one_consumer)
 	mul_producer_one_consumer(writer_num, 0);
 }
 
-TEST(ringbuffer, mul_need_yield_producer_one_consumer)
+TEST(ringbuffer, mul_producer_gt_cpu_one_consumer)
 {
 	auto writer_num = std::thread::hardware_concurrency();
 	if (writer_num == 0)
@@ -464,7 +464,7 @@ TEST(ringbuffer, mul_producer_mul_consumer)
 	mul_producer_mul_consumer(writer_num, 0);
 }
 
-TEST(ringbuffer, mul_need_yield_producer_mul_consumer)
+TEST(ringbuffer, mul_producer_gt_cpu_mul_consumer)
 {
 	auto writer_num = std::thread::hardware_concurrency();
 	if (writer_num == 0)
