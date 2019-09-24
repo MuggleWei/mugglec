@@ -55,12 +55,15 @@ int muggle_ringbuffer_init(muggle_ringbuffer_t *r, muggle_atomic_int capacity, i
 	r->cursor = 0;
 	r->datas = (void**)malloc(sizeof(void*) * r->capacity);
 
+	muggle_mutex_init(&r->write_mutex);
+
 	return MUGGLE_OK;
 }
 
 int muggle_ringbuffer_destroy(muggle_ringbuffer_t *r)
 {
 	free(r->datas);
+	muggle_mutex_destroy(&r->write_mutex);
 	return MUGGLE_OK;
 }
 
