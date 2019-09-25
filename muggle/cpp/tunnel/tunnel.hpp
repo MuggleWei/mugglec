@@ -38,14 +38,14 @@ public:
 		{
 			return TUNNEL_RETURN_TYPE::TUNNEL_CLOSED;
 		}
-		if (max_size_ != 0 && queue_.size() >= max_size_)
+		if (max_size_ != 0 && (unsigned int)queue_.size() >= max_size_)
 		{
 			return TUNNEL_RETURN_TYPE::TUNNEL_FULLED;
 		}
 		queue_.push(val);
 
-		cv_.notify_one();
 		lock.unlock();
+		cv_.notify_one();
 
 		return TUNNEL_RETURN_TYPE::TUNNEL_SUCCESS;
 	}
@@ -63,8 +63,8 @@ public:
 		}
 		queue_.push(std::move(val));
 
-		cv_.notify_one();
 		lock.unlock();
+		cv_.notify_one();
 
 		return TUNNEL_RETURN_TYPE::TUNNEL_SUCCESS;
 	}
@@ -119,7 +119,7 @@ private:
 	std::mutex mtx_;
 	std::condition_variable cv_;
 
-	int max_size_;
+	unsigned int max_size_;
 	bool is_closed_;
 };
 

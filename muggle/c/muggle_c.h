@@ -22,24 +22,15 @@
 // muggle c base header
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/err.h"
-#include "muggle/c/base/log.h"
-#include "muggle/c/base/file.h"
 #include "muggle/c/base/str.h"
-#include "muggle/c/base/sleep.h"
-#include "muggle/c/base/thread.h"
 #include "muggle/c/base/atomic.h"
-#include "muggle/c/base/semaphore.h"
 #include "muggle/c/base/utils.h"
-#if MUGGLE_PLATFORM_WINDOWS
-#include "muggle/c/base/win_gettimeofday.h"
-#endif
 
 // memory
 #include "muggle/c/memory/memory_pool.h"
 #include "muggle/c/memory/sowr_memory_pool.h"
 
 // muggle c time
-#include "muggle/c/time/delta_time.h"
 
 // os
 #include "muggle/c/os/dl.h"
