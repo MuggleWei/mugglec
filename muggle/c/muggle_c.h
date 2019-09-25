@@ -22,9 +22,10 @@
 // muggle c base header
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/err.h"
-#include "muggle/c/base/str.h"
-#include "muggle/c/base/atomic.h"
 #include "muggle/c/base/utils.h"
+#include "muggle/c/base/str.h"
+#include "muggle/c/base/thread.h"
+#include "muggle/c/base/atomic.h"
 
 // memory
 #include "muggle/c/memory/memory_pool.h"
