@@ -75,7 +75,7 @@ void fn_consumer(
 	consumer_read_num[consumer_idx] = cnt;
 }
 
-void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, int cnt_consumer)
+void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, int cnt_consumer, int flag)
 {
 	uint64_t cnt = config.loop * config.cnt_per_loop;
 	muggle::LatencyBlock *blocks = (muggle::LatencyBlock*)malloc(cnt * sizeof(muggle::LatencyBlock));
@@ -83,19 +83,6 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 
 	consumer_read_num = (uint64_t*)malloc(sizeof(uint64_t) * cnt_consumer);
 
-	int flag = 0;
-	if (cnt_producer == 1)
-	{
-		flag |= MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER;
-	}
-	if (cnt_consumer == 1)
-	{
-		flag |= MUGGLE_RINGBUFFER_FLAG_SINGLE_READER;
-	}
-	if (cnt_producer > (int)std::thread::hardware_concurrency())
-	{
-		flag |= MUGGLE_RINGBUFFER_FLAG_WNUM_GT_CPU;
-	}
 	muggle_ringbuffer_t ring;
 	muggle_ringbuffer_init(&ring, 1024 * 16, flag);
 
@@ -184,14 +171,16 @@ int main()
 	int hc = (int)std::thread::hardware_concurrency();
 	printf("hardware_concurrency: %d\n", hc);
 
+	int flag = 0;
+
 	// 1 writer, 1 reader
-	Benchmark_wr(fp, config, 1, 1);
+	Benchmark_wr(fp, config, 1, 1, flag);
 
 	// hc write, 1 reader
-	Benchmark_wr(fp, config, hc, 1);
+	Benchmark_wr(fp, config, hc, 1, flag);
 
 	// 2 * hc write, 1 reader
-	Benchmark_wr(fp, config, 2 * hc, 1);
+	Benchmark_wr(fp, config, 2 * hc, 1, flag);
 
 	fclose(fp);
 }
