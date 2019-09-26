@@ -1,63 +1,12 @@
+#include <time.h>
 #include <thread>
 #include <chrono>
 #include <vector>
 #include "muggle/c/muggle_c.h"
+#include "muggle_benchmark/muggle_benchmark.h"
 
 #define ASSERT_GE(x, y) if ((x) < (y)) printf("expect %d >= %d\n", (x), (y))
 #define EXPECT_EQ(x, y) if ((x) != (y)) printf("expect %d == %d\n", (x), (y))
-
-int w_flags[] = {
-	MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK,
-	MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER,
-	MUGGLE_RINGBUFFER_FLAG_WRITE_BUSY_LOOP
-};
-int r_flags[] = {
-	MUGGLE_RINGBUFFER_FLAG_READ_ALL | MUGGLE_RINGBUFFER_FLAG_READ_WAIT,
-	MUGGLE_RINGBUFFER_FLAG_READ_ALL | MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP,
-	MUGGLE_RINGBUFFER_FLAG_SINGLE_READER | MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP,
-	MUGGLE_RINGBUFFER_FLAG_SINGLE_READER | MUGGLE_RINGBUFFER_FLAG_READ_WAIT,
-	MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE 
-};
-int invalid_r_flags[] = {
-	MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE | MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP
-};
-
-void test_write_read_in_single_thread(int flag)
-{
-	muggle_ringbuffer_t r;
-	muggle_atomic_int capacity = 16;
-	muggle_atomic_int pos = 0;
-	int arr[160];
-
-	muggle_ringbuffer_init(&r, capacity, flag);
-
-	printf("write mode: %d, read mode: %d\n", r.write_mode, r.read_mode);
-
-	// push capacity / 2, and get all
-	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
-	{
-		arr[i] = (int)i;
-		muggle_ringbuffer_write(&r, &arr[i]);
-	}
-	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
-	{
-		int data = *(int*)muggle_ringbuffer_read(&r, pos++);
-		EXPECT_EQ(data, (int)i);
-	}
-
-	// push one and get one
-	for (muggle_atomic_int i = 0; i < capacity * 5; ++i)
-	{
-		arr[i] = (int)i;
-		muggle_ringbuffer_write(&r, &arr[i]);
-
-		int data = *(int*)muggle_ringbuffer_read(&r, pos++);
-		EXPECT_EQ(data, (int)i);
-	}
-
-	muggle_ringbuffer_destroy(&r);
-	printf("complete\n");
-}
 
 void get_case_name(char *buf, size_t max_len, int cnt_producer, int cnt_consumer, int w_mode, int r_mode)
 {
@@ -78,63 +27,67 @@ void get_case_name(char *buf, size_t max_len, int cnt_producer, int cnt_consumer
 		cnt_consumer, str_r_mode[r_mode]);
 }
 
-
-void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_interval, int interval_ms)
+void producer_consumer(int capacity, int flag, int total, int cnt_producer, int cnt_consumer, int cnt_interval, int interval_ms)
 {
 	muggle_ringbuffer_t r;
-	muggle_atomic_int capacity = 1024 * 16;
-	muggle_atomic_int total = 1024 * 100;
-	int *arr = (int*)malloc(sizeof(int) * total);
+	muggle::LatencyBlock *blocks = (muggle::LatencyBlock*)malloc(sizeof(muggle::LatencyBlock) * total);
 	for (int i = 0; i < total; ++i)
 	{
-		arr[i] = i;
+		memset(&blocks[i], 0, sizeof(muggle::LatencyBlock));
+		blocks[i].idx = (uint64_t)i;
 	}
+
+	muggle_atomic_int total_read = 0;
 	muggle_atomic_int consumer_ready = 0;
 	muggle_ringbuffer_init(&r, capacity, flag);
 	char case_name[1024];
 	get_case_name(case_name, sizeof(case_name)-1, cnt_producer, cnt_consumer, r.write_mode, r.read_mode);
 
+	printf("================================\n");
 	printf("launch %s\n", case_name);
 
 	std::vector<std::thread> consumers;
 	for (int i = 0; i < cnt_consumer; ++i)
 	{
-		consumers.push_back(std::thread([&, i]{
-			muggle_atomic_fetch_add(&consumer_ready, 1, muggle_memory_order_relaxed);
+		consumers.push_back(std::thread([&]{
+			muggle_atomic_int consumer_idx = muggle_atomic_fetch_add(&consumer_ready, 1, muggle_memory_order_relaxed);
 
 			muggle_atomic_int pos = 0;
-			int recv_idx = 0;
+			uint64_t recv_idx = 0;
 			int cnt = 0;
 			while (1)
 			{
-				void *data = muggle_ringbuffer_read(&r, pos++);
-				if (data == nullptr)
+				muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_ringbuffer_read(&r, pos++);
+				if (block == nullptr)
 				{
 					break;
+				}
+				if (consumer_idx == 0 || (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE))
+				{
+					timespec_get(&block->ts[2], TIME_UTC);
 				}
 
 				if (cnt_producer == 1)
 				{
 					if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
 					{
-						ASSERT_GE(*(int*)data, recv_idx);
+						ASSERT_GE((int)block->idx, (int)recv_idx);
 					}
 					else
 					{
-						EXPECT_EQ(*(int*)data, recv_idx);
+						EXPECT_EQ((int)block->idx, (int)recv_idx);
 					}
 				}
 
-				if (*(int*)data != recv_idx)
+				if (block->idx != recv_idx)
 				{
-					// message loss
-					recv_idx = *(int*)data;
+					recv_idx = block->idx;
 				}
 				++recv_idx;
 				++cnt;
 			}
-
-			printf("consumer[%d] %d\n", i, cnt);
+			printf("consumer [%d] %d\n", consumer_idx, cnt);
+			muggle_atomic_fetch_add(&total_read, cnt, muggle_memory_order_relaxed);
 		}));
 	}
 
@@ -150,25 +103,12 @@ void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_int
 			while (1)
 			{
 				idx = muggle_atomic_fetch_add(&fetch_id, 1, muggle_memory_order_relaxed);
-				if (idx == total - 1)
-				{
-					if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
-					{
-						for (int i = 0; i < cnt_consumer; ++i)
-						{
-							muggle_ringbuffer_write(&r, nullptr);
-						}
-					}
-					else
-					{
-						muggle_ringbuffer_write(&r, nullptr);
-					}
-					break;
-				}
 
 				if (idx < total)
 				{
-					muggle_ringbuffer_write(&r, &arr[idx]);
+					timespec_get(&blocks[idx].ts[0], TIME_UTC);
+					muggle_ringbuffer_write(&r, &blocks[idx]);
+					timespec_get(&blocks[idx].ts[1], TIME_UTC);
 				}
 				else
 				{
@@ -190,15 +130,47 @@ void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_int
 	{
 		producer.join();
 	}
+
+	if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
+	{
+		for (int i = 0; i < cnt_consumer; ++i)
+		{
+			muggle_ringbuffer_write(&r, nullptr);
+		}
+	}
+	else
+	{
+		muggle_ringbuffer_write(&r, nullptr);
+	}
+
 	for (auto &consumer : consumers)
 	{
 		consumer.join();
 	}
 
 	muggle_ringbuffer_destroy(&r);
-	free(arr);
 
-	printf("complete\n");
+	// print elapsed
+	uint64_t write_total_ns = 0;
+	uint64_t trans_total_ns = 0;
+	for (int i = 0; i < total; i++)
+	{
+		write_total_ns += 
+			(blocks[i].ts[1].tv_sec - blocks[i].ts[0].tv_sec) * 1000000000+ 
+			blocks[i].ts[1].tv_nsec - blocks[i].ts[0].tv_nsec;
+		if (blocks[i].ts[2].tv_sec != 0)
+		{
+			trans_total_ns +=
+				(blocks[i].ts[2].tv_sec - blocks[i].ts[0].tv_sec) * 1000000000+ 
+				blocks[i].ts[2].tv_nsec - blocks[i].ts[0].tv_nsec;
+		}
+	}
+
+	printf("total read %d messages\n", total_read);
+	printf("write %d messages total use %lluns\n", total, (unsigned long long)write_total_ns);
+	printf("trans %d messages total use %lluns\n", total_read, (unsigned long long)write_total_ns);
+
+	free(blocks);
 }
 
 int main()
@@ -210,28 +182,24 @@ int main()
 		hc = 2;
 	}
 
-	int cnt_interval = 1024;
+	int cnt_interval = 1000;
 	int interval_ms = 1;
+	int flag = 0;
+	int capacity = 1024 * 64;
+	int total = 10000 * 100;
 
-	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
-	{
-		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
-		{
-			test_write_read_in_single_thread(w_flags[w_flag] | r_flags[r_flag]);
+	// mul producer 1 consumer
+	flag = 
+		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK |
+		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER |
+		MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP;
+	producer_consumer(capacity, flag, total, hc, 1, cnt_interval, interval_ms);
 
-			printf("flag: %x | %x, p(%d), c(%d)\n", w_flags[w_flag], r_flags[r_flag], 1, 1);
-			producer_consumer(w_flags[w_flag] | r_flags[r_flag], 1, 1, cnt_interval, interval_ms);
-
-			printf("flag: %x | %x, p(%d), c(%d)\n", w_flags[w_flag], r_flags[r_flag], 1, hc);
-			producer_consumer(w_flags[w_flag] | r_flags[r_flag], 1, hc, cnt_interval, interval_ms);
-
-			printf("flag: %x | %x, p(%d), c(%d)\n", w_flags[w_flag], r_flags[r_flag], hc, 1);
-			producer_consumer(w_flags[w_flag] | r_flags[r_flag], hc, 1, cnt_interval, interval_ms);
-
-			printf("flag: %x | %x, p(%d), c(%d)\n", w_flags[w_flag], r_flags[r_flag], hc, hc);
-			producer_consumer(w_flags[w_flag] | r_flags[r_flag], hc, hc, cnt_interval, interval_ms);
-		}
-	}
+	// 1 producer, mul consumer
+	flag = 
+		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK |
+		MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP;
+	producer_consumer(capacity, flag, total, 1, hc, cnt_interval, interval_ms);
 
 	return 0;
 }

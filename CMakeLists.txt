@@ -112,9 +112,10 @@ function(add_example name folder)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
-	add_dependencies(${name} ${muggle_cc})
+	add_dependencies(${name} ${muggle_cc} muggle_benchmark)
 	target_link_libraries(${name}
 		${muggle_cc}
+		muggle_benchmark
 	)
 endfunction()
 
