@@ -5,7 +5,7 @@
  *	found in the LICENSE file.
  */
 
-#include "muggle/cpp/memory_pool/thread_safe_memory_pool.h"
+#include "thread_safe_memory_pool.h"
 #include <malloc.h>
 #include <exception>
 #include <new>

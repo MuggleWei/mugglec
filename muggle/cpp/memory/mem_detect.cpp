@@ -5,8 +5,8 @@
  *	found in the LICENSE file.
  */
 
-#include "muggle/cpp/mem_detect/mem_detect.h"
-#include "muggle/c/base/log.h"
+#include "mem_detect.h"
+#include <assert.h>
 
 NS_MUGGLE_BEGIN
 
@@ -26,7 +26,8 @@ void DebugMemoryLeakDetect::End()
 	if (_CrtMemDifference(&diff, &start_, &end_))
 	{
 		_CrtMemDumpStatistics(&diff);
-		MUGGLE_ASSERT_MSG(0, "memory leak\n");
+		// MUGGLE_ASSERT_MSG(0, "memory leak\n");
+		assert(0);
 	}
 	_CrtDumpMemoryLeaks();
 #endif

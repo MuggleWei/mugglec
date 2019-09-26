@@ -14,11 +14,11 @@
 #include <future>
 #include <vector>
 #include <functional>
-#include "muggle/cpp/memory_pool/memory_pool.h"
-#include "muggle/cpp/memory_pool/thread_safe_memory_pool.h"
+#include "muggle/cpp/memory/memory_pool.h"
+#include "muggle/cpp/memory/thread_safe_memory_pool.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
-#include "muggle/cpp/mem_detect/mem_detect.h"
+#include "muggle/cpp/memory/mem_detect.h"
 #endif
 
 typedef std::chrono::duration<double, std::milli> double_dura;
