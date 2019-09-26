@@ -6,12 +6,12 @@
 #define ASSERT_GE(x, y) if ((x) < (y)) printf("expect %d >= %d\n", (x), (y))
 #define EXPECT_EQ(x, y) if ((x) != (y)) printf("expect %d == %d\n", (x), (y))
 
-int suggest_w_flags[] = {
+int w_flags[] = {
 	MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK,
 	MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER,
 	MUGGLE_RINGBUFFER_FLAG_WRITE_BUSY_LOOP
 };
-int suggest_r_flags[] = {
+int r_flags[] = {
 	MUGGLE_RINGBUFFER_FLAG_READ_ALL | MUGGLE_RINGBUFFER_FLAG_READ_WAIT,
 	MUGGLE_RINGBUFFER_FLAG_READ_ALL | MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP,
 	MUGGLE_RINGBUFFER_FLAG_SINGLE_READER | MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP,
@@ -213,23 +213,23 @@ int main()
 	int cnt_interval = 1024;
 	int interval_ms = 1;
 
-	for (int w_flag = 0; w_flag < (int)(sizeof(suggest_w_flags) / sizeof(suggest_w_flags[0])); ++w_flag)
+	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
 	{
-		for (int r_flag = 0; r_flag < (int)(sizeof(suggest_r_flags) / sizeof(suggest_r_flags[0])); ++r_flag)
+		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			test_write_read_in_single_thread(suggest_w_flags[w_flag] | suggest_r_flags[r_flag]);
+			test_write_read_in_single_thread(w_flags[w_flag] | r_flags[r_flag]);
 
-			printf("flag: %x | %x, p(%d), c(%d)\n", suggest_w_flags[w_flag], suggest_r_flags[r_flag], 1, 1);
-			producer_consumer(suggest_w_flags[w_flag] | suggest_r_flags[r_flag], 1, 1, cnt_interval, interval_ms);
+			printf("flag: %x | %x, p(%d), c(%d)\n", w_flags[w_flag], r_flags[r_flag], 1, 1);
+			producer_consumer(w_flags[w_flag] | r_flags[r_flag], 1, 1, cnt_interval, interval_ms);
 
-			printf("flag: %x | %x, p(%d), c(%d)\n", suggest_w_flags[w_flag], suggest_r_flags[r_flag], 1, hc);
-			producer_consumer(suggest_w_flags[w_flag] | suggest_r_flags[r_flag], 1, hc, cnt_interval, interval_ms);
+			printf("flag: %x | %x, p(%d), c(%d)\n", w_flags[w_flag], r_flags[r_flag], 1, hc);
+			producer_consumer(w_flags[w_flag] | r_flags[r_flag], 1, hc, cnt_interval, interval_ms);
 
-			printf("flag: %x | %x, p(%d), c(%d)\n", suggest_w_flags[w_flag], suggest_r_flags[r_flag], hc, 1);
-			producer_consumer(suggest_w_flags[w_flag] | suggest_r_flags[r_flag], hc, 1, cnt_interval, interval_ms);
+			printf("flag: %x | %x, p(%d), c(%d)\n", w_flags[w_flag], r_flags[r_flag], hc, 1);
+			producer_consumer(w_flags[w_flag] | r_flags[r_flag], hc, 1, cnt_interval, interval_ms);
 
-			printf("flag: %x | %x, p(%d), c(%d)\n", suggest_w_flags[w_flag], suggest_r_flags[r_flag], hc, hc);
-			producer_consumer(suggest_w_flags[w_flag] | suggest_r_flags[r_flag], hc, hc, cnt_interval, interval_ms);
+			printf("flag: %x | %x, p(%d), c(%d)\n", w_flags[w_flag], r_flags[r_flag], hc, hc);
+			producer_consumer(w_flags[w_flag] | r_flags[r_flag], hc, hc, cnt_interval, interval_ms);
 		}
 	}
 

@@ -7,12 +7,12 @@
 int g_cnt_interval = 1024 * 2;
 int g_interval_ms = 1;
 
-int suggest_w_flags[] = {
+int w_flags[] = {
 	MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK,
 	MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER,
 	MUGGLE_RINGBUFFER_FLAG_WRITE_BUSY_LOOP
 };
-int suggest_r_flags[] = {
+int r_flags[] = {
 	MUGGLE_RINGBUFFER_FLAG_READ_ALL | MUGGLE_RINGBUFFER_FLAG_READ_WAIT,
 	MUGGLE_RINGBUFFER_FLAG_READ_ALL | MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP,
 	MUGGLE_RINGBUFFER_FLAG_SINGLE_READER | MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP,
@@ -87,19 +87,19 @@ void test_ringbuffer_init_destroy(int expect_ret, int flag)
 
 TEST(ringbuffer, init_destroy)
 {
-	for (int w_flag = 0; w_flag < (int)(sizeof(suggest_w_flags) / sizeof(suggest_w_flags[0])); ++w_flag)
+	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
 	{
-		for (int r_flag = 0; r_flag < (int)(sizeof(suggest_r_flags) / sizeof(suggest_r_flags[0])); ++r_flag)
+		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			test_ringbuffer_init_destroy(MUGGLE_OK, suggest_w_flags[w_flag] | suggest_r_flags[r_flag]);
+			test_ringbuffer_init_destroy(MUGGLE_OK, w_flags[w_flag] | r_flags[r_flag]);
 		}
 	}
 
-	for (int w_flag = 0; w_flag < (int)(sizeof(suggest_w_flags) / sizeof(suggest_w_flags[0])); ++w_flag)
+	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(invalid_r_flags) / sizeof(invalid_r_flags[0])); ++r_flag)
 		{
-			test_ringbuffer_init_destroy(MUGGLE_ERR_INVALID_PARAM, suggest_w_flags[w_flag] | invalid_r_flags[r_flag]);
+			test_ringbuffer_init_destroy(MUGGLE_ERR_INVALID_PARAM, w_flags[w_flag] | invalid_r_flags[r_flag]);
 		}
 	}
 }
@@ -139,11 +139,11 @@ void test_write_read_in_single_thread(int flag)
 }
 TEST(ringbuffer, write_read_in_single_thread)
 {
-	for (int w_flag = 0; w_flag < (int)(sizeof(suggest_w_flags) / sizeof(suggest_w_flags[0])); ++w_flag)
+	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
 	{
-		for (int r_flag = 0; r_flag < (int)(sizeof(suggest_r_flags) / sizeof(suggest_r_flags[0])); ++r_flag)
+		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			test_write_read_in_single_thread(suggest_w_flags[w_flag] | suggest_r_flags[r_flag]);
+			test_write_read_in_single_thread(w_flags[w_flag] | r_flags[r_flag]);
 		}
 	}
 }
@@ -258,11 +258,11 @@ void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_int
 
 TEST(ringbuffer, one_producer_one_consumer)
 {
-	for (int w_flag = 0; w_flag < (int)(sizeof(suggest_w_flags) / sizeof(suggest_w_flags[0])); ++w_flag)
+	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
 	{
-		for (int r_flag = 0; r_flag < (int)(sizeof(suggest_r_flags) / sizeof(suggest_r_flags[0])); ++r_flag)
+		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			producer_consumer(suggest_w_flags[w_flag] | suggest_r_flags[r_flag], 1, 1, g_cnt_interval, g_interval_ms);
+			producer_consumer(w_flags[w_flag] | r_flags[r_flag], 1, 1, g_cnt_interval, g_interval_ms);
 		}
 	}
 }
@@ -275,11 +275,11 @@ TEST(ringbuffer, one_producer_mul_consumer)
 		hc = 2;
 	}
 
-	for (int w_flag = 0; w_flag < (int)(sizeof(suggest_w_flags) / sizeof(suggest_w_flags[0])); ++w_flag)
+	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
 	{
-		for (int r_flag = 0; r_flag < (int)(sizeof(suggest_r_flags) / sizeof(suggest_r_flags[0])); ++r_flag)
+		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			producer_consumer(suggest_w_flags[w_flag] | suggest_r_flags[r_flag], 1, hc, g_cnt_interval, g_interval_ms);
+			producer_consumer(w_flags[w_flag] | r_flags[r_flag], 1, hc, g_cnt_interval, g_interval_ms);
 		}
 	}
 }
@@ -293,11 +293,11 @@ TEST(ringbuffer, mul_producer_one_consumer)
 		hc = 2;
 	}
 
-	for (int w_flag = 0; w_flag < (int)(sizeof(suggest_w_flags) / sizeof(suggest_w_flags[0])); ++w_flag)
+	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
 	{
-		for (int r_flag = 0; r_flag < (int)(sizeof(suggest_r_flags) / sizeof(suggest_r_flags[0])); ++r_flag)
+		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			producer_consumer(suggest_w_flags[w_flag] | suggest_r_flags[r_flag], hc, 1, g_cnt_interval, g_interval_ms);
+			producer_consumer(w_flags[w_flag] | r_flags[r_flag], hc, 1, g_cnt_interval, g_interval_ms);
 		}
 	}
 }
@@ -311,11 +311,11 @@ TEST(ringbuffer, mul_producer_mul_consumer)
 		hc = 2;
 	}
 
-	for (int w_flag = 0; w_flag < (int)(sizeof(suggest_w_flags) / sizeof(suggest_w_flags[0])); ++w_flag)
+	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
 	{
-		for (int r_flag = 0; r_flag < (int)(sizeof(suggest_r_flags) / sizeof(suggest_r_flags[0])); ++r_flag)
+		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			producer_consumer(suggest_w_flags[w_flag] | suggest_r_flags[r_flag], hc, hc, g_cnt_interval, g_interval_ms);
+			producer_consumer(w_flags[w_flag] | r_flags[r_flag], hc, hc, g_cnt_interval, g_interval_ms);
 		}
 	}
 }
