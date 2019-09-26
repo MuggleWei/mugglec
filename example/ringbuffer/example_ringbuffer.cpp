@@ -167,8 +167,8 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 	}
 
 	printf("total read %d messages\n", total_read);
-	printf("write %d messages total use %lluns\n", total, (unsigned long long)write_total_ns);
-	printf("trans %d messages total use %lluns\n", total_read, (unsigned long long)write_total_ns);
+	printf("write %d messages total use %lluns(%.2fs)\n", total, (unsigned long long)write_total_ns, write_total_ns / 1000000000.0);
+	printf("trans %d messages total use %lluns(%.2fs)\n", total, (unsigned long long)trans_total_ns, trans_total_ns / 1000000000.0);
 
 	free(blocks);
 }
@@ -195,10 +195,24 @@ int main()
 		MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP;
 	producer_consumer(capacity, flag, total, hc, 1, cnt_interval, interval_ms);
 
+	flag = 
+		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK |
+		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER;
+	producer_consumer(capacity, flag, total, hc, 1, cnt_interval, interval_ms);
+
 	// 1 producer, mul consumer
 	flag = 
 		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK |
 		MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP;
+	producer_consumer(capacity, flag, total, 1, hc, cnt_interval, interval_ms);
+
+	flag = 
+		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK;
+	producer_consumer(capacity, flag, total, 1, hc, cnt_interval, interval_ms);
+
+	flag = 
+		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK |
+		MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE;
 	producer_consumer(capacity, flag, total, 1, hc, cnt_interval, interval_ms);
 
 	return 0;

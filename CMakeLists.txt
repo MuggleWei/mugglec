@@ -29,7 +29,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # options
 option(MUGGLE_BUILD_ONLY_C "Only build muggle c lib" OFF)
 option(MUGGLE_BUILD_SHARED_LIB ON)
-option(MUGGLE_BUILD_EXAMPLE "Build example" OFF)
+option(MUGGLE_BUILD_EXAMPLE "Build example" ON)
 option(BUILD_TESTING "Build test" OFF)
 option(BUILD_BENCHMARK "Build benchmark" OFF)
 
