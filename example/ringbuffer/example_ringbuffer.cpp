@@ -55,6 +55,8 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 			muggle_atomic_int pos = 0;
 			uint64_t recv_idx = 0;
 			int cnt = 0;
+			struct timespec start_ts, end_ts;
+			timespec_get(&start_ts, TIME_UTC);
 			while (1)
 			{
 				muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_ringbuffer_read(&r, pos++);
@@ -86,7 +88,13 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 				++recv_idx;
 				++cnt;
 			}
-			printf("consumer [%d] %d\n", consumer_idx, cnt);
+			timespec_get(&end_ts, TIME_UTC);
+
+			uint64_t elapsed_ns = 
+				(end_ts.tv_sec - start_ts.tv_sec) * 1000000000 + 
+				end_ts.tv_nsec - start_ts.tv_nsec;
+			printf("consumer[%d] read %d messages, total use: %lldns(%.3fs)\n",
+				i, cnt, (unsigned long long)elapsed_ns, elapsed_ns / 1000000000.0);
 			muggle_atomic_fetch_add(&total_read, cnt, muggle_memory_order_relaxed);
 		}));
 	}
@@ -100,6 +108,8 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 
 			muggle_atomic_int idx;
 			int cnt = 0;
+			struct timespec start_ts, end_ts;
+			timespec_get(&start_ts, TIME_UTC);
 			while (1)
 			{
 				idx = muggle_atomic_fetch_add(&fetch_id, 1, muggle_memory_order_relaxed);
@@ -122,7 +132,12 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 
 				++cnt;
 			}
-			printf("producer [%d] %d\n", i, cnt);
+			timespec_get(&end_ts, TIME_UTC);
+			uint64_t elapsed_ns = 
+				(end_ts.tv_sec - start_ts.tv_sec) * 1000000000 + 
+				end_ts.tv_nsec - start_ts.tv_nsec;
+			printf("producer[%d] write %d messages, total use: %lldns(%.3fs)\n",
+				i, cnt, (unsigned long long)elapsed_ns, elapsed_ns / 1000000000.0);
 		}));
 	}
 
@@ -153,22 +168,26 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 	// print elapsed
 	uint64_t write_total_ns = 0;
 	uint64_t trans_total_ns = 0;
+	uint64_t cnt = 0;
 	for (int i = 0; i < total; i++)
 	{
 		write_total_ns += 
-			(blocks[i].ts[1].tv_sec - blocks[i].ts[0].tv_sec) * 1000000000+ 
+			(blocks[i].ts[1].tv_sec - blocks[i].ts[0].tv_sec) * 1000000000 + 
 			blocks[i].ts[1].tv_nsec - blocks[i].ts[0].tv_nsec;
 		if (blocks[i].ts[2].tv_sec != 0)
 		{
 			trans_total_ns +=
-				(blocks[i].ts[2].tv_sec - blocks[i].ts[0].tv_sec) * 1000000000+ 
+				(blocks[i].ts[2].tv_sec - blocks[i].ts[0].tv_sec) * 1000000000 + 
 				blocks[i].ts[2].tv_nsec - blocks[i].ts[0].tv_nsec;
+			cnt++;
 		}
 	}
 
 	printf("total read %d messages\n", total_read);
-	printf("write %d messages total use %lluns(%.2fs)\n", total, (unsigned long long)write_total_ns, write_total_ns / 1000000000.0);
-	printf("trans %d messages total use %lluns(%.2fs)\n", total, (unsigned long long)trans_total_ns, trans_total_ns / 1000000000.0);
+	printf("write total use %lluns(%.3fs), avg: %lluns\n",
+		(unsigned long long)write_total_ns, write_total_ns / 1000000000.0, (unsigned long long)write_total_ns / total);
+	printf("trans total use %lluns(%.3fs), avg: %lluns\n",
+		(unsigned long long)trans_total_ns, trans_total_ns / 1000000000.0, (unsigned long long)trans_total_ns / cnt);
 
 	free(blocks);
 }
