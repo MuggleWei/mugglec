@@ -30,7 +30,7 @@ enum
 {
 	MUGGLE_RINGBUFFER_READ_MODE_WAIT = 0,
 	MUGGLE_RINGBUFFER_READ_MODE_SINGLE_WAIT = 1,
-	MUGGLE_RINGBUFFER_READ_MODE_SINGLE_BUSY_LOOP = 2,
+	MUGGLE_RINGBUFFER_READ_MODE_BUSY_LOOP = 2,
 	MUGGLE_RINGBUFFER_READ_MODE_LOCK = 3,
 	MUGGLE_RINGBUFFER_READ_MODE_MAX,
 };
@@ -61,7 +61,7 @@ static int muggle_ringbuffer_get_mode(int flag, int *w_mode, int *r_mode)
 	{
 		if (flag & MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP)
 		{
-			*r_mode = MUGGLE_RINGBUFFER_READ_MODE_SINGLE_BUSY_LOOP;
+			*r_mode = MUGGLE_RINGBUFFER_READ_MODE_BUSY_LOOP;
 		}
 		else
 		{
@@ -78,7 +78,14 @@ static int muggle_ringbuffer_get_mode(int flag, int *w_mode, int *r_mode)
 	}
 	else
 	{
-		*r_mode = MUGGLE_RINGBUFFER_READ_MODE_WAIT;
+		if (flag & MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP)
+		{
+			*r_mode = MUGGLE_RINGBUFFER_READ_MODE_BUSY_LOOP;
+		}
+		else
+		{
+			*r_mode = MUGGLE_RINGBUFFER_READ_MODE_WAIT;
+		}
 	}
 
 	return MUGGLE_OK;
@@ -219,14 +226,14 @@ static fn_muggle_ringbuffer_write muggle_ringbuffer_write_functions[MUGGLE_RINGB
 static fn_muggle_ringbuffer_wake muggle_ringbuffer_wake_functions[MUGGLE_RINGBUFFER_READ_MODE_MAX] = {
 	muggle_ringbuffer_wake_wait, // MUGGLE_RINGBUFFER_READ_MODE_WAIT 
 	muggle_ringbuffer_wake_single_wait, // MUGGLE_RINGBUFFER_READ_MODE_SINGLE_WAIT 
-	muggle_ringbuffer_wake_busy_loop, // MUGGLE_RINGBUFFER_READ_MODE_SINGLE_BUSY_LOOP 
+	muggle_ringbuffer_wake_busy_loop, // MUGGLE_RINGBUFFER_READ_MODE_BUSY_LOOP 
 	muggle_ringbuffer_wake_lock, // MUGGLE_RINGBUFFER_READ_MODE_LOCK 
 };
 
 static fn_muggle_ringbuffer_read muggle_ringbuffer_read_functions[MUGGLE_RINGBUFFER_READ_MODE_MAX] = {
 	muggle_ringbuffer_read_wait, // MUGGLE_RINGBUFFER_READ_MODE_WAIT 
 	muggle_ringbuffer_read_wait, // MUGGLE_RINGBUFFER_READ_MODE_SINGLE_WAIT 
-	muggle_ringbuffer_read_busy_loop, // MUGGLE_RINGBUFFER_READ_MODE_SINGLE_BUSY_LOOP 
+	muggle_ringbuffer_read_busy_loop, // MUGGLE_RINGBUFFER_READ_MODE_BUSY_LOOP 
 	muggle_ringbuffer_read_lock, // MUGGLE_RINGBUFFER_READ_MODE_LOCK 
 };
 

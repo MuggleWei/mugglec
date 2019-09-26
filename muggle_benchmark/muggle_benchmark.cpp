@@ -66,7 +66,7 @@ void GenLatencyReportsBody(
 		qsort(elapseds, cnt, sizeof(uint64_t), compare_uint64);
 	}
 
-	char buf[1024] = {0};
+	char buf[4096] = {0};
 	snprintf(buf, sizeof(buf) - 1, "%s,%llu,%llu,%llu,",
 		case_name,
 		(unsigned long long)config->loop,

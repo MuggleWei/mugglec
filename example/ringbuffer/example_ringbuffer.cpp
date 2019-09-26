@@ -1,11 +1,10 @@
-#include <assert.h>
 #include <thread>
 #include <chrono>
 #include <vector>
 #include "muggle/c/muggle_c.h"
 
 #define ASSERT_GE(x, y) if ((x) < (y)) printf("expect %d >= %d\n", (x), (y))
-#define EXPECT_EQ(x, y) if ((x) != (y)) printf("expect %d >= %d\n", (x), (y))
+#define EXPECT_EQ(x, y) if ((x) != (y)) printf("expect %d == %d\n", (x), (y))
 
 int suggest_w_flags[] = {
 	MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK,
@@ -43,7 +42,7 @@ void test_write_read_in_single_thread(int flag)
 	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
 	{
 		int data = *(int*)muggle_ringbuffer_read(&r, pos++);
-		assert(data == (int)i);
+		EXPECT_EQ(data, (int)i);
 	}
 
 	// push one and get one
@@ -53,12 +52,32 @@ void test_write_read_in_single_thread(int flag)
 		muggle_ringbuffer_write(&r, &arr[i]);
 
 		int data = *(int*)muggle_ringbuffer_read(&r, pos++);
-		assert(data == (int)i);
+		EXPECT_EQ(data, (int)i);
 	}
 
 	muggle_ringbuffer_destroy(&r);
 	printf("complete\n");
 }
+
+void get_case_name(char *buf, size_t max_len, int cnt_producer, int cnt_consumer, int w_mode, int r_mode)
+{
+	const char *str_w_mode[] = {
+		"lock",
+		"single",
+		"busy_loop"
+	};
+	const char *str_r_mode[] = {
+		"wait",
+		"single_wait",
+		"busy_loop",
+		"lock"
+	};
+
+	snprintf(buf, max_len, "%dw%s-%dr%s",
+		cnt_producer, str_w_mode[w_mode], 
+		cnt_consumer, str_r_mode[r_mode]);
+}
+
 
 void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_interval, int interval_ms)
 {
@@ -72,8 +91,10 @@ void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_int
 	}
 	muggle_atomic_int consumer_ready = 0;
 	muggle_ringbuffer_init(&r, capacity, flag);
+	char case_name[1024];
+	get_case_name(case_name, sizeof(case_name)-1, cnt_producer, cnt_consumer, r.write_mode, r.read_mode);
 
-	printf("write mode: %d, read mode: %d\n", r.write_mode, r.read_mode);
+	printf("launch %s\n", case_name);
 
 	std::vector<std::thread> consumers;
 	for (int i = 0; i < cnt_consumer; ++i)

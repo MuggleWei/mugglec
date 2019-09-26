@@ -64,6 +64,25 @@ void fn_consumer(
 	consumer_read_num[consumer_idx] = idx;
 }
 
+void get_case_name(char *buf, size_t max_len, int cnt_producer, int cnt_consumer, int w_mode, int r_mode)
+{
+	const char *str_w_mode[] = {
+		"lock",
+		"single",
+		"busy_loop"
+	};
+	const char *str_r_mode[] = {
+		"wait",
+		"single_wait",
+		"busy_loop",
+		"lock"
+	};
+
+	snprintf(buf, max_len, "%dw%s-%dr%s",
+		cnt_producer, str_w_mode[w_mode], 
+		cnt_consumer, str_r_mode[r_mode]);
+}
+
 void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, int cnt_consumer, int flag)
 {
 	uint64_t cnt = config.loop * config.cnt_per_loop;
@@ -74,8 +93,10 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 
 	muggle_ringbuffer_t ring;
 	muggle_ringbuffer_init(&ring, 1024 * 16, flag);
-	printf("launch %dw%dr-f%x: write_mode[%d] read_mode[%d]\n",
-		cnt_producer, cnt_consumer, flag, ring.write_mode, ring.read_mode);
+	char case_name[1024];
+	get_case_name(case_name, sizeof(case_name)-1, cnt_producer, cnt_consumer, ring.write_mode, ring.read_mode);
+
+	printf("launch %s\n", case_name);
 
 	std::vector<std::thread> producers;
 	std::vector<std::thread> consumers;
@@ -105,7 +126,17 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 		producer.join();
 	}
 
-	muggle_ringbuffer_write(&ring, nullptr);
+	if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
+	{
+		for (int i = 0; i < cnt_consumer; ++i)
+		{
+			muggle_ringbuffer_write(&ring, nullptr);
+		}
+	}
+	else
+	{
+		muggle_ringbuffer_write(&ring, nullptr);
+	}
 
 	for (auto &consumer : consumers)
 	{
@@ -116,24 +147,41 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 
 	char buf[128];
 
-	for (int i = 0; i < cnt_consumer; ++i)
+	if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
 	{
-		printf("%dw%dr-f%x consumer[%d] read %llu %s\n",
-			cnt_producer, cnt_consumer, flag, i, (unsigned long long)consumer_read_num[i],
-			consumer_read_num[i] == config.cnt_per_loop * config.loop ? "" : "(message loss)");
+		uint64_t cnt_consumer_reads = 0;
+		for (int i = 0; i < cnt_consumer; ++i)
+		{
+			cnt_consumer_reads += consumer_read_num[i];
+			printf("%s consumer[%d] read %llu\n",
+				case_name, i, (unsigned long long)consumer_read_num[i]);
+		}
+		if (cnt_consumer_reads != config.cnt_per_loop * config.loop)
+		{
+			printf("%s\n", "message loss");
+		}
+	}
+	else
+	{
+		for (int i = 0; i < cnt_consumer; ++i)
+		{
+			printf("%s consumer[%d] read %llu %s\n",
+				case_name, i, (unsigned long long)consumer_read_num[i],
+				consumer_read_num[i] == config.cnt_per_loop * config.loop ? "" : "(message loss)");
+		}
 	}
 	free(consumer_read_num);
 
-	snprintf(buf, sizeof(buf) - 1, "%dw%dr-f%x-w", cnt_producer, cnt_consumer, flag);
+	snprintf(buf, sizeof(buf) - 1, "%s-w", case_name);
 	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 0, 1, 0);
 
-	snprintf(buf, sizeof(buf) - 1, "%dw%dr-f%x-w-sorted", cnt_producer, cnt_consumer, flag);
+	snprintf(buf, sizeof(buf) - 1, "%s-w-sorted", case_name);
 	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 0, 1, 1);
 
-	snprintf(buf, sizeof(buf) - 1, "%dw%dr-f%x-wr", cnt_producer, cnt_consumer, flag);
+	snprintf(buf, sizeof(buf) - 1, "%s-wr", case_name);
 	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 0, 2, 0);
 
-	snprintf(buf, sizeof(buf) - 1, "%dw%dr-f%x-wr-sorted", cnt_producer, cnt_consumer, flag);
+	snprintf(buf, sizeof(buf) - 1, "%s-wr-sorted", case_name);
 	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 0, 2, 1);
 
 	free(blocks);
