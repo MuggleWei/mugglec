@@ -25,7 +25,7 @@ int muggle_str_endswith(const char *str, const char *suffix);
 
 /*
  * NOTE: start and end represent: [start, end)
- * if end == 0 or end == -1, then end = strlen(str)
+ * if end == 0, then end = strlen(str)
  * */
 MUGGLE_CC_EXPORT
 int muggle_str_count(const char *str, const char *sub, int start, int end);

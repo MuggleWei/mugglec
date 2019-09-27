@@ -22,7 +22,14 @@ int muggle_str_startswith(const char *str, const char *prefix)
 		return 0;
 	}
 
+	size_t str_len = strlen(str);
 	size_t prefix_len = strlen(prefix);
+
+	if (str_len < prefix_len)
+	{
+		return 0;
+	}
+
 	for (size_t i = 0; i < prefix_len; ++i)
 	{
 		if (str[i] != prefix[i])
@@ -30,6 +37,12 @@ int muggle_str_startswith(const char *str, const char *prefix)
 			return 0;
 		}
 	}
+
+	if (str_len != 0 && prefix_len == 0)
+	{
+		return 0;
+	}
+
 
 	return 1;
 }
@@ -49,12 +62,17 @@ int muggle_str_endswith(const char *str, const char *suffix)
 		return 0;
 	}
 
-	for (size_t i = str_len - suffix_len; i < suffix_len; ++i)
+	for (size_t i = 0; i < suffix_len; ++i)
 	{
-		if (str[i] != suffix[i])
+		if (str[str_len - 1 - i] != suffix[suffix_len - 1 - i])
 		{
 			return 0;
 		}
+	}
+
+	if (str_len != 0 && suffix_len == 0)
+	{
+		return 0;
 	}
 
 	return 1;
@@ -70,9 +88,9 @@ int muggle_str_count(const char *str, const char *sub, int start, int end)
 	size_t str_len = strlen(str);
 	size_t sub_len = strlen(sub);
 
-	if (start < 0)
+	if (start < 0 || end < 0)
 	{
-		start = 0;
+		return 0;
 	}
 
 	if (start >= str_len)
@@ -80,7 +98,7 @@ int muggle_str_count(const char *str, const char *sub, int start, int end)
 		return 0;
 	}
 
-	if (end == 0 || end == -1)
+	if (end == 0)
 	{
 		end = (int)str_len;
 	}
@@ -127,23 +145,23 @@ int muggle_str_find(const char *str, const char *sub, int start, int end)
 {
 	if (str == NULL || sub == NULL)
 	{
-		return 0;
+		return -1;
 	}
 
 	size_t str_len = strlen(str);
 	size_t sub_len = strlen(sub);
 
-	if (start < 0)
+	if (start < 0 || end < 0)
 	{
-		start = 0;
+		return -1;
 	}
 
 	if (start >= str_len)
 	{
-		return 0;
+		return -1;
 	}
 
-	if (end == 0 || end == -1)
+	if (end == 0)
 	{
 		end = (int)str_len;
 	}
@@ -155,7 +173,7 @@ int muggle_str_find(const char *str, const char *sub, int start, int end)
 
 	if (end <= start)
 	{
-		return 0;
+		return -1;
 	}
 
 	const char *pos = strstr(str + start, sub);
@@ -290,14 +308,10 @@ int muggle_str_tou(const char *str, unsigned int *pval, int base)
 			return 0;
 		}
 	}
-	else if (ret == ULONG_MAX && errno == ERANGE)
+
+	if (ret == ULONG_MAX || ret == ULLONG_MAX)
 	{
 		// out of range or negative integer
-		return 0;
-	}
-	else if (ret > UINT_MAX)
-	{
-		// out of unsigned integer range
 		return 0;
 	}
 
@@ -329,7 +343,8 @@ int muggle_str_tol(const char *str, long *pval, int base)
 			return 0;
 		}
 	}
-	else if ((*pval == LONG_MAX || *pval == LONG_MIN) && errno == ERANGE)
+
+	if (*pval == LONG_MAX || *pval == LONG_MIN || *pval == LLONG_MAX || *pval == LLONG_MIN)
 	{
 		// out of range
 		return 0;
@@ -361,7 +376,8 @@ int muggle_str_toul(const char *str, unsigned long *pval, int base)
 			return 0;
 		}
 	}
-	else if (*pval == ULONG_MAX && errno == ERANGE)
+
+	if (*pval == ULONG_MAX || *pval == ULLONG_MAX)
 	{
 		// out of range
 		return 0;
@@ -393,7 +409,8 @@ int muggle_str_toll(const char *str, long long *pval, int base)
 			return 0;
 		}
 	}
-	else if ((*pval == LLONG_MAX || *pval == LLONG_MIN) && errno == ERANGE)
+
+	if (*pval == LLONG_MAX || *pval == LLONG_MIN)
 	{
 		// out of range
 		return 0;
@@ -425,7 +442,8 @@ int muggle_str_toull(const char *str, unsigned long long *pval, int base)
 			return 0;
 		}
 	}
-	else if (*pval == ULLONG_MAX && errno == ERANGE)
+
+	if (*pval == ULLONG_MAX)
 	{
 		// out of range
 		return 0;
@@ -457,7 +475,8 @@ int muggle_str_tof(const char *str, float *pval)
 			return 0;
 		}
 	}
-	else if ((*pval == HUGE_VAL || *pval == HUGE_VALF || *pval == HUGE_VALL) && errno == ERANGE)
+
+	if (*pval == HUGE_VAL || *pval == HUGE_VALF || *pval == HUGE_VALL)
 	{
 		// out of range
 		return 0;
