@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <limits.h>
 #include <float.h>
-#include <math.h>
+#include <cmath>
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
@@ -448,7 +448,7 @@ TEST(str, stof)
 	EXPECT_FALSE(muggle_str_tof("11.0 5", &ret));
 
 	EXPECT_TRUE(muggle_str_tof("nan", &ret));
-	EXPECT_TRUE(isnan(ret));
+	EXPECT_TRUE(std::isnan(ret));
 	EXPECT_FALSE(muggle_str_tof("10e300", &ret));
 	EXPECT_FALSE(muggle_str_tof("hello", &ret));
 }
@@ -469,7 +469,7 @@ TEST(str, stod)
 	EXPECT_FALSE(muggle_str_tod("11.0 5", &ret));
 
 	EXPECT_TRUE(muggle_str_tod("nan", &ret));
-	EXPECT_TRUE(isnan(ret));
+	EXPECT_TRUE(std::isnan(ret));
 	EXPECT_FALSE(muggle_str_tod("10e10000", &ret));
 	EXPECT_FALSE(muggle_str_tod("hello", &ret));
 }
@@ -490,7 +490,7 @@ TEST(str, stold)
 	EXPECT_FALSE(muggle_str_told("11.0 5", &ret));
 
 	EXPECT_TRUE(muggle_str_told("nan", &ret));
-	EXPECT_TRUE(isnan(ret));
+	EXPECT_TRUE(std::isnan(ret));
 	EXPECT_FALSE(muggle_str_told("10e10000", &ret));
 	EXPECT_FALSE(muggle_str_told("hello", &ret));
 }
