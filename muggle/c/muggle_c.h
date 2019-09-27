@@ -36,6 +36,8 @@
 #include "muggle/c/time/win_gettimeofday.h"
 
 // os
+#include "muggle/c/os/os.h"
+#include "muggle/c/os/path.h"
 #include "muggle/c/os/dl.h"
 
 // sync
