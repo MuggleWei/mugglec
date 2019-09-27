@@ -184,9 +184,9 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 	}
 
 	printf("total read %d messages\n", total_read);
-	printf("write total use %lluns(%.3fs), avg: %lluns\n",
+	printf("sum of write use %lluns(%.3fs), avg: %lluns\n",
 		(unsigned long long)write_total_ns, write_total_ns / 1000000000.0, (unsigned long long)write_total_ns / total);
-	printf("trans total use %lluns(%.3fs), avg: %lluns\n",
+	printf("sum of trans use %lluns(%.3fs), avg: %lluns\n",
 		(unsigned long long)trans_total_ns, trans_total_ns / 1000000000.0, (unsigned long long)trans_total_ns / cnt);
 
 	free(blocks);
