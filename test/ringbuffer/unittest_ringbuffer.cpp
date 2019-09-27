@@ -14,8 +14,7 @@ int w_flags[] = {
 };
 int r_flags[] = {
 	MUGGLE_RINGBUFFER_FLAG_READ_ALL | MUGGLE_RINGBUFFER_FLAG_READ_WAIT,
-	MUGGLE_RINGBUFFER_FLAG_READ_ALL | MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP,
-	MUGGLE_RINGBUFFER_FLAG_SINGLE_READER | MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP,
+	MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP,
 	MUGGLE_RINGBUFFER_FLAG_SINGLE_READER | MUGGLE_RINGBUFFER_FLAG_READ_WAIT,
 	MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE 
 };
@@ -261,7 +260,7 @@ void consume_all_messages(int flag, int cnt_producer, int cnt_consumer,
 	muggle_ringbuffer_t r;
 	muggle_ringbuffer_init(&r, capacity, flag);
 
-	for (int i = 0; i < loop; i++)
+	for (int loop_idx = 0; loop_idx < loop; loop_idx++)
 	{
 		int *arr = (int*)malloc(sizeof(int) * total);
 		for (int i = 0; i < total; ++i)
@@ -274,7 +273,7 @@ void consume_all_messages(int flag, int cnt_producer, int cnt_consumer,
 		for (int i = 0; i < cnt_consumer; ++i)
 		{
 			consumers.push_back(std::thread([&]{
-				muggle_atomic_int pos = 0;
+				muggle_atomic_int pos = loop_idx * (total + 1);
 				while (1)
 				{
 					void *data = muggle_ringbuffer_read(&r, pos++);
@@ -360,6 +359,10 @@ TEST(ringbuffer, one_producer_mul_consumer)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
+			if (hc != 1 && (r_flags[r_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_READER))
+			{
+				continue;
+			}
 			producer_consumer(w_flags[w_flag] | r_flags[r_flag], 1, hc, g_cnt_interval, g_interval_ms);
 		}
 	}
@@ -378,6 +381,10 @@ TEST(ringbuffer, mul_producer_one_consumer)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
+			if (hc != 1 && (w_flags[w_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER))
+			{
+				continue;
+			}
 			producer_consumer(w_flags[w_flag] | r_flags[r_flag], hc, 1, g_cnt_interval, g_interval_ms);
 		}
 	}
@@ -396,6 +403,14 @@ TEST(ringbuffer, mul_producer_mul_consumer)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
+			if (hc != 1 && (w_flags[w_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER))
+			{
+				continue;
+			}
+			if (hc != 1 && (r_flags[r_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_READER))
+			{
+				continue;
+			}
 			producer_consumer(w_flags[w_flag] | r_flags[r_flag], hc, hc, g_cnt_interval, g_interval_ms);
 		}
 	}
@@ -425,6 +440,10 @@ TEST(ringbuffer, consume_all_msg_one_producer_mul_consumer)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
+			if (hc != 1 && (r_flags[r_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_READER))
+			{
+				continue;
+			}
 			consume_all_messages(w_flags[w_flag] | r_flags[r_flag], 1, hc);
 		}
 	}
@@ -443,6 +462,10 @@ TEST(ringbuffer, consume_all_msg_mul_producer_one_consumer)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
+			if (hc != 1 && (w_flags[w_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER))
+			{
+				continue;
+			}
 			consume_all_messages(w_flags[w_flag] | r_flags[r_flag], hc, 1);
 		}
 	}
@@ -461,6 +484,14 @@ TEST(ringbuffer, consume_all_msg_mul_producer_mul_consumer)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
+			if (hc != 1 && (w_flags[w_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER))
+			{
+				continue;
+			}
+			if (hc != 1 && (r_flags[r_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_READER))
+			{
+				continue;
+			}
 			consume_all_messages(w_flags[w_flag] | r_flags[r_flag], hc, hc);
 		}
 	}
