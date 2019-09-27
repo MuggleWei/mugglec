@@ -65,7 +65,7 @@ static int muggle_ringbuffer_get_mode(int flag, int *w_mode, int *r_mode)
 		}
 		else
 		{
-			*r_mode = MUGGLE_RINGBUFFER_READ_MODE_WAIT;
+			*r_mode = MUGGLE_RINGBUFFER_READ_MODE_SINGLE_WAIT;
 		}
 	}
 	else if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
