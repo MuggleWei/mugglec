@@ -14,26 +14,47 @@
 
 int muggle_os_process_path(char *path, unsigned int size)
 {
-	// convert to unicode characters
+	// get module file name in unicode characters
 	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
-	GetModuleFileNameW(NULL, unicode_buf, MUGGLE_MAX_PATH);
+	DWORD ret = GetModuleFileNameW(NULL, unicode_buf, MUGGLE_MAX_PATH);
+	if (ret == 0)
+	{
+		return MUGGLE_ERR_SYS_CALL;
+	}
 
 	// convert to utf8
-	WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, path, size - 1, NULL, FALSE);
+	ret = WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, path, size - 1, NULL, FALSE);
+	if (ret == 0)
+	{
+		return MUGGLE_ERR_SYS_CALL;
+	}
 
 	return MUGGLE_OK;
 }
 
 int muggle_os_curdir(char *path, unsigned int size)
 {
-	// TODO:
-	return MUGGLE_ERR_TODO;
+	// get current dir in unicode characters
+	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
+	DWORD ret = GetCurrentDirectoryW(MUGGLE_MAX_PATH, unicode_buf);
+	if (ret == 0)
+	{
+		return MUGGLE_ERR_SYS_CALL;
+	}
+
+	// convert to utf8
+	ret = WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, path, size - 1, NULL, FALSE);
+	if (ret == 0)
+	{
+		return MUGGLE_ERR_SYS_CALL;
+	}
+
+	return MUGGLE_OK;
 }
 
 int muggle_os_chdir(const char *path)
 {
-	// TODO:
-	return MUGGLE_ERR_TODO;
+	return SetCurrentDirectoryA(path) ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
 }
 
 #else

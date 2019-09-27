@@ -10,14 +10,14 @@
 #include <string.h>
 #include "muggle/c/base/err.h"
 
-void muggle_path_abspath(const char *path, char *ret, unsigned int max_size)
+void muggle_path_abspath(const char *path, char *ret, unsigned int size)
 {
 	// TODO:
 }
 
-int muggle_path_dirname(const char *path, char *ret, unsigned int max_size)
+int muggle_path_dirname(const char *path, char *ret, unsigned int size)
 {
-	if (max_size <= 1)
+	if (size <= 1)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
@@ -37,9 +37,9 @@ int muggle_path_dirname(const char *path, char *ret, unsigned int max_size)
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	if (pos > max_size - 1)
+	if (pos > (int)(size - 1))
 	{
-		pos = max_size - 1;
+		pos = size - 1;
 	}
 
 	memcpy(ret, path, pos);
@@ -52,11 +52,11 @@ int muggle_path_dirname(const char *path, char *ret, unsigned int max_size)
 
 int muggle_path_isabs(const char *path)
 {
-	size_t len = strlen(file_path);
+	size_t len = strlen(path);
 	if (len > 2 &&
-		((file_path[0] >= 'a' && file_path[0] <= 'z') || (file_path[0] >= 'A' && file_path[0] <= 'Z')) &&
-		file_path[1] == ':' &&
-		(file_path[2] == '/' || file_path[2] == '\\'))
+		((path[0] >= 'a' && path[0] <= 'z') || (path[0] >= 'A' && path[0] <= 'Z')) &&
+		path[1] == ':' &&
+		(path[2] == '/' || path[2] == '\\'))
 	{
 		return 1;
 	}

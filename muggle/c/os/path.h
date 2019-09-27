@@ -13,10 +13,10 @@
 EXTERN_C_BEGIN
 
 MUGGLE_CC_EXPORT 
-void muggle_path_abspath(const char *path, char *ret, unsigned int max_size);
+void muggle_path_abspath(const char *path, char *ret, unsigned int size);
 
 MUGGLE_CC_EXPORT 
-int muggle_path_dirname(const char *path, char *ret, unsigned int max_size);
+int muggle_path_dirname(const char *path, char *ret, unsigned int size);
 
 MUGGLE_CC_EXPORT 
 int muggle_path_isabs(const char *path);
