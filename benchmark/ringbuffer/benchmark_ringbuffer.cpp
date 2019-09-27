@@ -222,88 +222,43 @@ int main()
 
 	int flag = 0;
 
-	// 1 writer, 1 reader
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK |
-		MUGGLE_RINGBUFFER_FLAG_READ_ALL |
-		MUGGLE_RINGBUFFER_FLAG_READ_WAIT;
-	Benchmark_wr(fp, config, 1, 1, flag);
+	int w_flags[] = {
+		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK,
+		MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER,
+		MUGGLE_RINGBUFFER_FLAG_WRITE_BUSY_LOOP
+	};
+	int r_flags[] = {
+		MUGGLE_RINGBUFFER_FLAG_READ_ALL | MUGGLE_RINGBUFFER_FLAG_READ_WAIT,
+		MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP,
+		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER | MUGGLE_RINGBUFFER_FLAG_READ_WAIT,
+		MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE 
+	};
 
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER |
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER |
-		MUGGLE_RINGBUFFER_FLAG_WRITE_BUSY_LOOP |
-		MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP;
-	Benchmark_wr(fp, config, 1, 1, flag);
+	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
+	{
+		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
+		{
+			flag = w_flags[w_flag] | r_flags[r_flag];
 
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER |
-		MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE;
-	Benchmark_wr(fp, config, 1, 1, flag);
+			Benchmark_wr(fp, config, 1, 1, flag);
 
-	// hc_half write, 1 reader
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER;
-	Benchmark_wr(fp, config, hc_half, 1, flag);
+			if (!(flag & MUGGLE_RINGBUFFER_FLAG_SINGLE_READER))
+			{
+				Benchmark_wr(fp, config, 1, hc_half, flag);
+			}
 
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_WRITE_BUSY_LOOP |
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER;
-	Benchmark_wr(fp, config, hc_half, 1, flag);
+			if (!(flag & MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER))
+			{
+				Benchmark_wr(fp, config, hc_half, 1, flag);
+			}
 
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER |
-		MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP;
-	Benchmark_wr(fp, config, hc_half, 1, flag);
-
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_WRITE_BUSY_LOOP |
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER |
-		MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP;
-	Benchmark_wr(fp, config, hc_half, 1, flag);
-
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_WRITE_BUSY_LOOP |
-		MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE;
-	Benchmark_wr(fp, config, hc_half, 1, flag);
-
-	// 2 * hc write, 1 reader
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK |
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER;
-	Benchmark_wr(fp, config, 2 * hc, 1, flag);
-
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK |
-		MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE;
-	Benchmark_wr(fp, config, 2 * hc, 1, flag);
-
-	// 1 writer, hc_half reader
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER |
-		MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP;
-	Benchmark_wr(fp, config, 1, hc_half, flag);
-
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER |
-		MUGGLE_RINGBUFFER_FLAG_READ_WAIT;
-	Benchmark_wr(fp, config, 1, hc_half, flag);
-
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER |
-		MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE;
-	Benchmark_wr(fp, config, 1, hc_half, flag);
-
-	// 1 writer, 2 * hc reader
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER |
-		MUGGLE_RINGBUFFER_FLAG_READ_WAIT;
-	Benchmark_wr(fp, config, 1, 2 * hc, flag);
-
-	flag = 
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER |
-		MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE;
-	Benchmark_wr(fp, config, 1, 2 * hc, flag);
+			if (!(flag & MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER) &&
+				!(flag & MUGGLE_RINGBUFFER_FLAG_SINGLE_READER))
+			{
+				Benchmark_wr(fp, config, hc_half, hc_half, flag);
+			}
+		}
+	}
 
 	fclose(fp);
 }
