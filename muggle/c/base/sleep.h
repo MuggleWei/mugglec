@@ -12,10 +12,8 @@
 
 EXTERN_C_BEGIN
 
-// sleep
-#define MSleep(ms) MuggleSleepFunction(ms)
-
-MUGGLE_CC_EXPORT void MuggleSleepFunction(unsigned long ms);
+MUGGLE_CC_EXPORT
+int muggle_msleep(unsigned long ms);
 
 EXTERN_C_END
 

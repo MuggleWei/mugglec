@@ -26,6 +26,7 @@
 #include "muggle/c/base/str.h"
 #include "muggle/c/base/thread.h"
 #include "muggle/c/base/atomic.h"
+#include "muggle/c/base/sleep.h"
 
 // memory
 #include "muggle/c/memory/memory_pool.h"
