@@ -25,7 +25,7 @@ void fn_producer(
 	while (muggle_atomic_load(consumer_ready, muggle_memory_order_relaxed) != consumer_cnt);
 
 	muggle_sowr_memory_pool_t pool;
-	muggle_sowr_memory_pool_init(&pool, config->loop * (end_idx - start_idx) / 10, sizeof(muggle::LatencyBlock));
+	muggle_sowr_memory_pool_init(&pool, (muggle_atomic_int)(config->loop * (end_idx - start_idx) / 10), sizeof(muggle::LatencyBlock));
 
 	for (uint64_t i = 0; i < config->loop; ++i)
 	{

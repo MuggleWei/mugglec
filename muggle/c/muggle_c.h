@@ -32,6 +32,7 @@
 #include "muggle/c/memory/sowr_memory_pool.h"
 
 // muggle c time
+#include "muggle/c/time/win_gettimeofday.h"
 
 // os
 #include "muggle/c/os/dl.h"
