@@ -1,6 +1,73 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
+TEST(os, path_abspath)
+{
+	// TODO:
+}
+
+TEST(os, path_basename)
+{
+	int ret;
+	char buf[MUGGLE_MAX_PATH];
+
+	const char *path[] = {
+		"/tmp/hello world.txt",
+		"/hello world.txt",
+		"f:\\hello world.txt",
+		"f:\\tmp\\hello world.txt",
+		"f:/hello world.txt",
+		"f:/tmp/hello world.txt"
+	};
+
+	const char *basename[] = {
+		"hello world.txt",
+		"hello world.txt",
+		"hello world.txt",
+		"hello world.txt",
+		"hello world.txt",
+		"hello world.txt"
+	};
+
+	for (int i = 0; i < (int)(sizeof(path) / sizeof(path[0])); i++)
+	{
+		ret = muggle_path_basename(path[i], buf, sizeof(buf));
+		EXPECT_EQ(ret, 0);
+		EXPECT_STREQ(buf, basename[i]);
+	}
+}
+
+TEST(os, path_dirname)
+{
+	int ret;
+	char buf[MUGGLE_MAX_PATH];
+
+	const char *path[] = {
+		"/tmp/hello world.txt",
+		"/hello world.txt",
+		"f:\\hello world.txt",
+		"f:\\tmp\\hello world.txt",
+		"f:/hello world.txt",
+		"f:/tmp/hello world.txt"
+	};
+
+	const char *dirname[] = {
+		"/tmp",
+		"/",
+		"f:\\",
+		"f:\\tmp",
+		"f:/",
+		"f:/tmp",
+	};
+
+	for (int i = 0; i < (int)(sizeof(path) / sizeof(path[0])); i++)
+	{
+		ret = muggle_path_dirname(path[i], buf, sizeof(buf));
+		EXPECT_EQ(ret, 0);
+		EXPECT_STREQ(buf, dirname[i]);
+	}
+}
+
 TEST(os, process_path)
 {
 	char path[MUGGLE_MAX_PATH] = {0};
@@ -43,11 +110,12 @@ TEST(os, chdir)
 	ASSERT_EQ(ret, 0);
 
 	muggle_os_curdir(working_path, sizeof(working_path));
-	EXPECT_EQ(strncmp(working_path, target_dir, strlen(target_dir)), 0);
+	EXPECT_STREQ(working_path, target_dir);
 
 	ret = muggle_os_chdir(process_dir);
 	ASSERT_EQ(ret, 0);
 	ret = muggle_os_curdir(working_path, sizeof(working_path));
 	ASSERT_EQ(ret, 0);
-	EXPECT_EQ(strncmp(working_path, process_dir, strlen(process_dir)), 0);
+	EXPECT_STREQ(working_path, process_dir);
 }
+

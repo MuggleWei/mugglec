@@ -16,6 +16,9 @@ MUGGLE_CC_EXPORT
 void muggle_path_abspath(const char *path, char *ret, unsigned int size);
 
 MUGGLE_CC_EXPORT 
+int muggle_path_basename(const char *path, char *ret, unsigned int size);
+
+MUGGLE_CC_EXPORT 
 int muggle_path_dirname(const char *path, char *ret, unsigned int size);
 
 MUGGLE_CC_EXPORT 

@@ -15,14 +15,20 @@ void muggle_path_abspath(const char *path, char *ret, unsigned int size)
 	// TODO:
 }
 
-int muggle_path_dirname(const char *path, char *ret, unsigned int size)
+int muggle_path_basename(const char *path, char *ret, unsigned int size)
 {
 	if (size <= 1)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	int pos = (int)strlen(path) - 1;
+	int total_len = (int)strlen(path);
+	if (total_len <= 0)
+	{
+		return MUGGLE_ERR_INVALID_PARAM;
+	}
+
+	int pos = total_len - 1;
 	while (pos >= 0)
 	{
 		if (path[pos] == '/' || path[pos] == '\\')
@@ -37,9 +43,65 @@ int muggle_path_dirname(const char *path, char *ret, unsigned int size)
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	if (pos > (int)(size - 1))
+	int len = total_len - 1 - pos;
+	if (len <= 0)
 	{
-		pos = size - 1;
+		return MUGGLE_ERR_INVALID_PARAM;
+	}
+
+	if (len >= size)
+	{
+		len = size - 1;
+	}
+	memcpy(ret, path + pos + 1, len);
+	ret[len] = '\0';
+
+	return MUGGLE_OK;
+}
+
+int muggle_path_dirname(const char *path, char *ret, unsigned int size)
+{
+	if (size <= 1)
+	{
+		return MUGGLE_ERR_INVALID_PARAM;
+	}
+
+	int total_len = (int)strlen(path);
+	if (total_len <= 0)
+	{
+		return MUGGLE_ERR_INVALID_PARAM;
+	}
+
+	int pos = total_len - 1;
+	while (pos >= 0)
+	{
+		if (path[pos] == '/' || path[pos] == '\\')
+		{
+			break;
+		}
+		--pos;
+	}
+
+	if (pos < 0)
+	{
+		return MUGGLE_ERR_INVALID_PARAM;
+	}
+
+	// handle path = "/"
+	if (pos == 0)
+	{
+		pos = 1;
+	}
+
+	// handle path = "c:/"
+	if (pos - 1 > 0 && path[pos - 1] == ':')
+	{
+		pos = pos + 1;
+	}
+
+	if (pos >= (int)size)
+	{
+		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
 	memcpy(ret, path, pos);
