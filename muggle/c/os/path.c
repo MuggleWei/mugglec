@@ -151,7 +151,7 @@ int muggle_path_exists(const char *path)
 		return 0;
 	}
 
-	return true;
+	return 1;
 #else
 	if (access(path, F_OK) != -1)
 		return 1;
