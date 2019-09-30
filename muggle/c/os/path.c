@@ -6,6 +6,13 @@
  */
 
 #include "path.h"
+
+#if MUGGLE_PLATFORM_WINDOWS
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include "muggle/c/base/err.h"
@@ -110,11 +117,15 @@ int muggle_path_dirname(const char *path, char *ret, unsigned int size)
 	return MUGGLE_OK;
 }
 
-#if MUGGLE_PLATFORM_WINDOWS
-
 int muggle_path_isabs(const char *path)
 {
 	size_t len = strlen(path);
+
+	if (len > 1 && path[0] == '/')
+	{
+		return 1;
+	}
+
 	if (len > 2 &&
 		((path[0] >= 'a' && path[0] <= 'z') || (path[0] >= 'A' && path[0] <= 'Z')) &&
 		path[1] == ':' &&
@@ -126,17 +137,25 @@ int muggle_path_isabs(const char *path)
 	return 0;
 }
 
-#else
-
-int muggle_path_isabs(const char *path)
+int muggle_path_exists(const char *path)
 {
-	size_t len = strlen(path);
-	if (len > 1 && path[0] == '/')
+#if MUGGLE_PLATFORM_WINDOWS
+	// convert to utf16 characters
+	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, unicode_buf, MUGGLE_MAX_PATH);
+
+	// get file attributes
+	DWORD attr = GetFileAttributesW(unicode_buf);
+	if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY))
 	{
-		return 1;
+		return 0;
 	}
 
-	return 0;
-}
+	return true;
+#else
+	if (access(path, F_OK) != -1)
+		return 1;
 
+	return 0;
 #endif
+}

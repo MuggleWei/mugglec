@@ -24,7 +24,8 @@ int muggle_path_dirname(const char *path, char *ret, unsigned int size);
 MUGGLE_CC_EXPORT 
 int muggle_path_isabs(const char *path);
 
-// TODO:
+MUGGLE_CC_EXPORT
+int muggle_path_exists(const char *path);
 
 EXTERN_C_END
 
