@@ -36,12 +36,24 @@ typedef muggle_thread_ret_t __stdcall muggle_thread_routine(void *args);
 typedef muggle_thread_ret_t muggle_thread_routine(void *args);
 #endif
 
+/*
+ * starts a new thread in the calling process
+ * RETURN: on success returns 0, otherwise return errno in err.h
+ * */
 MUGGLE_CC_EXPORT
 int muggle_thread_create(muggle_thread_t *thread, muggle_thread_routine routine, void *args);
 
+/*
+ * waits for the thread specified by thread to terminate
+ * RETURN: on success returns 0, otherwise return errno in err.h
+ * */
 MUGGLE_CC_EXPORT
 int muggle_thread_join(muggle_thread_t *thread);
 
+/*
+ * marks the thread identified by thread as detached
+ * RETURN: on success returns 0, otherwise return errno in err.h
+ * */
 MUGGLE_CC_EXPORT
 int muggle_thread_detach(muggle_thread_t *thread);
 

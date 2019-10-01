@@ -13,11 +13,11 @@
 #include <string.h>
 #include "muggle/c/base/err.h"
 
-void* muggle_dl_load(const char* name)
+void* muggle_dl_load(const char* path)
 {
 	char buf[MUGGLE_MAX_PATH];
 	buf[MUGGLE_MAX_PATH - 1] = '\0';
-	strncpy(buf, name, MUGGLE_MAX_PATH - 1);
+	strncpy(buf, path, MUGGLE_MAX_PATH - 1);
 
 	// convert to utf16 characters
 	WCHAR unicode_buf[MUGGLE_MAX_PATH] = { 0 };
@@ -42,9 +42,9 @@ int muggle_dl_close(void *handle)
 #include <string.h>
 #include "muggle/c/base/err.h"
 
-void* muggle_dl_load(const char* name)
+void* muggle_dl_load(const char* path)
 {
-	return dlopen(name, RTLD_NOW);
+	return dlopen(path, RTLD_NOW);
 }
 
 void* muggle_dl_sym(void *handle, const char *symbol)
