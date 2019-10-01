@@ -1,12 +1,33 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
-TEST(os, path_abspath)
+TEST(path, abspath)
 {
-	// TODO:
+	int ret;
+	char buf[MUGGLE_MAX_PATH], buf2[MUGGLE_MAX_PATH];
+	char curdir[MUGGLE_MAX_PATH];
+
+	ret = muggle_os_curdir(curdir, sizeof(curdir));
+	ASSERT_EQ(ret, 0);
+
+	muggle_path_join(curdir, "hello", buf2, sizeof(buf2));
+	ASSERT_EQ(ret, 0);
+
+
+	ret = muggle_path_abspath("hello", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, buf2);
+
+	ret = muggle_path_abspath("hello/../hello", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, buf2);
+
+	ret = muggle_path_abspath("world/../hello", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, buf2);
 }
 
-TEST(os, path_basename)
+TEST(path, basename)
 {
 	int ret;
 	char buf[MUGGLE_MAX_PATH];
@@ -37,7 +58,7 @@ TEST(os, path_basename)
 	}
 }
 
-TEST(os, path_dirname)
+TEST(path, dirname)
 {
 	int ret;
 	char buf[MUGGLE_MAX_PATH];
@@ -68,14 +89,14 @@ TEST(os, path_dirname)
 	}
 }
 
-TEST(os, path_isabs)
+TEST(path, isabs)
 {
 	EXPECT_FALSE(muggle_path_isabs("hello.txt"));
 	EXPECT_TRUE(muggle_path_isabs("/hello.txt"));
 	EXPECT_TRUE(muggle_path_isabs("f:/hello.txt"));
 }
 
-TEST(os, path_exists)
+TEST(path, exists)
 {
 	int ret;
 	char process_path[MUGGLE_MAX_PATH] = {0};
@@ -102,4 +123,69 @@ TEST(os, path_exists)
 	char not_exists[MUGGLE_MAX_PATH];
 	snprintf(not_exists, MUGGLE_MAX_PATH, "%s_not_exist", buf);
 	ASSERT_FALSE(muggle_path_exists(not_exists));
+}
+
+TEST(path, join)
+{
+	int ret;
+	char buf[MUGGLE_MAX_PATH];
+
+	ret = muggle_path_join("./hello/", "xxx.txt", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "./hello/xxx.txt");
+
+	ret = muggle_path_join("./hello", "xxx.txt", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "./hello/xxx.txt");
+
+	ret = muggle_path_join("hello", "xxx.txt", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "hello/xxx.txt");
+
+
+	ret = muggle_path_join("./", "../xxx.txt", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "./../xxx.txt");
+
+	ret = muggle_path_join(".", "../xxx.txt", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "./../xxx.txt");
+
+	ret = muggle_path_join(".", "../xxx.txt", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "./../xxx.txt");
+}
+
+TEST(path, normpath)
+{
+	int ret;
+	char buf[MUGGLE_MAX_PATH];
+
+	ret = muggle_path_normpath("../../hello", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "../../hello");
+
+	ret = muggle_path_normpath("./", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "./");
+
+	ret = muggle_path_normpath(".\\", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "./");
+
+	ret = muggle_path_normpath("./hello/xxx/../", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "hello/");
+
+	ret = muggle_path_normpath("./hello/xxx/..", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "hello/");
+
+	ret = muggle_path_normpath("hello/xxx/../../", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "./");
+
+	ret = muggle_path_normpath("hello/xxx/../../world", buf, sizeof(buf));
+	ASSERT_EQ(ret, 0);
+	EXPECT_STREQ(buf, "world");
 }

@@ -13,7 +13,7 @@
 EXTERN_C_BEGIN
 
 MUGGLE_CC_EXPORT 
-void muggle_path_abspath(const char *path, char *ret, unsigned int size);
+int muggle_path_abspath(const char *path, char *ret, unsigned int size);
 
 MUGGLE_CC_EXPORT 
 int muggle_path_basename(const char *path, char *ret, unsigned int size);
@@ -26,6 +26,12 @@ int muggle_path_isabs(const char *path);
 
 MUGGLE_CC_EXPORT
 int muggle_path_exists(const char *path);
+
+MUGGLE_CC_EXPORT
+int muggle_path_join(const char *path1, const char *path2, char *ret, unsigned int size);
+
+MUGGLE_CC_EXPORT
+int muggle_path_normpath(const char *path, char *ret, unsigned int size);
 
 EXTERN_C_END
 

@@ -21,8 +21,6 @@ int muggle_os_curdir(char *path, unsigned int size);
 MUGGLE_CC_EXPORT
 int muggle_os_chdir(const char *path);
 
-// TODO:
-
 EXTERN_C_END
 
 #endif
