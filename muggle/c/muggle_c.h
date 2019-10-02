@@ -46,4 +46,7 @@
 #include "muggle/c/sync/futex.h"
 #include "muggle/c/sync/ringbuffer.h"
 
+// log
+#include "muggle/c/log/log_fmt.h"
+
 #endif
