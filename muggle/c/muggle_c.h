@@ -48,5 +48,7 @@
 
 // log
 #include "muggle/c/log/log_fmt.h"
+#include "muggle/c/log/log_handle.h"
+#include "muggle/c/log/log_handle_console.h"
 
 #endif

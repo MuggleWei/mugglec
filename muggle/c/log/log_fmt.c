@@ -16,6 +16,7 @@
 #else
 	#include <unistd.h>
 #endif
+#include "muggle/c/os/path.h"
 
  // default log priority string
 const char* g_muggle_log_level_str[MUGGLE_LOG_LEVEL_MAX] = {
@@ -63,22 +64,10 @@ int muggle_log_fmt_gen(
 	}
 	if (fmt_flag & MUGGLE_LOG_FMT_FILE)
 	{
-		num_write = snprintf(p, remaining, "<F>%s|", arg->file);
-		if (num_write == -1)
-		{
-			return -1;
-		}
-		remaining -= num_write;
-		p += num_write;
+		char filename[MUGGLE_MAX_PATH];
+		muggle_path_basename(arg->file, filename, sizeof(filename));
 
-		if (remaining <= 0)
-		{
-			return size - 1;
-		}
-	}
-	if (fmt_flag & MUGGLE_LOG_FMT_LINE)
-	{
-		num_write = snprintf(p, remaining, "<l>%d|", arg->line);
+		num_write = snprintf(p, remaining, "<F>%s:%d|", filename, arg->line);
 		if (num_write == -1)
 		{
 			return -1;
@@ -126,7 +115,7 @@ int muggle_log_fmt_gen(
 	}
 	if (msg != NULL)
 	{
-		num_write = snprintf(p, remaining, " - %s", msg);
+		num_write = snprintf(p, remaining, " - %s\n", msg);
 		if (num_write == -1)
 		{
 			return -1;

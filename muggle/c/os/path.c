@@ -86,7 +86,13 @@ int muggle_path_basename(const char *path, char *ret, unsigned int size)
 
 	if (pos < 0)
 	{
-		return MUGGLE_ERR_INVALID_PARAM;
+		if (total_len > size - 1)
+		{
+			return MUGGLE_ERR_INVALID_PARAM;
+		}
+
+		strncpy(ret, path, size-1);
+		return MUGGLE_OK;
 	}
 
 	int len = total_len - 1 - pos;

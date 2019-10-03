@@ -25,9 +25,8 @@ enum
 {
 	MUGGLE_LOG_FMT_LEVEL = 0x01,
 	MUGGLE_LOG_FMT_FILE = 0x02,
-	MUGGLE_LOG_FMT_LINE = 0x04,
-	MUGGLE_LOG_FMT_FUNC = 0x08,
-	MUGGLE_LOG_FMT_TIME = 0x10,
+	MUGGLE_LOG_FMT_FUNC = 0x04,
+	MUGGLE_LOG_FMT_TIME = 0x08,
 };
 
 typedef struct muggle_log_fmt_arg_tag
@@ -38,6 +37,15 @@ typedef struct muggle_log_fmt_arg_tag
 	const char *func;
 }muggle_log_fmt_arg_t;
 
+/*
+ * generate formated message
+ * @fmt_flag: format flag
+ * @arg: format arguments
+ * @msg: original message
+ * @buf: the formated message output buffer
+ * @size: the size of buf
+ * RETURN: the len of formated message, negative represent failed
+ * */
 int muggle_log_fmt_gen(
 	int fmt_flag, muggle_log_fmt_arg_t *arg,
 	const char *msg, char *buf, int size);
