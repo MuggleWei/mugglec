@@ -83,6 +83,7 @@ int muggle_log_handle_rotating_file_init(
 	strncpy(handle->rotating_file.path, file_path, sizeof(handle->rotating_file.path)-1);
 	handle->rotating_file.max_bytes = max_bytes;
 	handle->rotating_file.backup_count = backup_count;
+	fseek(handle->rotating_file.fp, 0, SEEK_END);
 	handle->rotating_file.offset = ftell(handle->rotating_file.fp);
 
 	if (muggle_log_handle_rotating_file_detect(handle))

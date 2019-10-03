@@ -65,7 +65,7 @@ void example_log_handle_rotating_file(int write_type, int fmt_flag, const char *
 		write_type,
 		fmt_flag,
 		0, path,
-		1024, 5
+		1024 * 10, 5
 	);
 	if (ret != MUGGLE_OK)
 	{
