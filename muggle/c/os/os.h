@@ -38,6 +38,14 @@ int muggle_os_curdir(char *path, unsigned int size);
 MUGGLE_CC_EXPORT
 int muggle_os_chdir(const char *path);
 
+/*
+ * recursive create directory named path
+ * @path: path need to create
+ * RETURN: on success returns 0, otherwise return errno in err.h
+ * */
+MUGGLE_CC_EXPORT
+int muggle_os_mkdir(const char *path);
+
 EXTERN_C_END
 
 #endif

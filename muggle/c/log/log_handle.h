@@ -8,6 +8,7 @@
 #ifndef MUGGLE_C_LOG_HANDLE_H_
 #define MUGGLE_C_LOG_HANDLE_H_
 
+#include <stdio.h>
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/thread.h"
 #include "muggle/c/sync/mutex.h"
@@ -57,6 +58,7 @@ typedef struct muggle_log_handle_tag
 	muggle_mutex_t mutex;
 	muggle_ringbuffer_t ring;
 	muggle_thread_t thread;
+	FILE *fp;
 }muggle_log_handle_t;
 
 MUGGLE_CC_EXPORT

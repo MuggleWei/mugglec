@@ -57,13 +57,61 @@ int muggle_os_chdir(const char *path)
 	return SetCurrentDirectoryA(path) ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
 }
 
+int muggle_os_mkdir(const char *path)
+{
+	// adapted from: https://gist.github.com/JonathonReinhart/8c0d90191c38af2dcadb102c4e202950
+	const size_t len = strlen(path);
+	char _path[MUGGLE_MAX_PATH];
+	char *p;
+
+	if (len > sizeof(_path)-1)
+	{
+		return MUGGLE_ERR_INVALID_PARAM;
+	}
+	strcpy(_path, path);
+
+	/* Iterate the string */
+	for (p = _path + 1; *p; p++)
+	{
+		if (*p == '/')
+		{
+			/* Temporarily truncate */
+			*p = '\0';
+
+			if (!CreateDirectory(_path, NULL))
+			{
+				DWORD err = GetLastError();
+				if(err != ERROR_ALREADY_EXISTS)
+				{
+					return MUGGLE_ERR_SYS_CALL;
+				}
+			}
+
+			*p = '/';
+		}
+	}
+
+	if (!CreateDirectory(_path, NULL))
+	{
+		DWORD err = GetLastError();
+		if(err != ERROR_ALREADY_EXISTS)
+		{
+			return MUGGLE_ERR_SYS_CALL;
+		}
+	}
+
+	return MUGGLE_OK;
+}
+
 #else
 
-#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
 
 int muggle_os_process_path(char *path, unsigned int size)
 {
@@ -89,6 +137,50 @@ int muggle_os_curdir(char *path, unsigned int size)
 int muggle_os_chdir(const char *path)
 {
 	return chdir(path) == 0 ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
+}
+
+int muggle_os_mkdir(const char *path)
+{
+	// adapted from: https://gist.github.com/JonathonReinhart/8c0d90191c38af2dcadb102c4e202950
+	const size_t len = strlen(path);
+	char _path[MUGGLE_MAX_PATH];
+	char *p;
+
+	if (len > sizeof(_path)-1)
+	{
+		return MUGGLE_ERR_INVALID_PARAM;
+	}
+	strcpy(_path, path);
+
+	/* Iterate the string */
+	for (p = _path + 1; *p; p++)
+	{
+		if (*p == '/')
+		{
+			/* Temporarily truncate */
+			*p = '\0';
+
+			if (mkdir(_path, S_IRWXU) != 0)
+			{
+				if (errno != EEXIST)
+				{
+					return MUGGLE_ERR_SYS_CALL;
+				}
+			}
+
+			*p = '/';
+		}
+	}
+
+	if (mkdir(_path, S_IRWXU) != 0)
+	{
+		if (errno != EEXIST)
+		{
+			return MUGGLE_ERR_SYS_CALL;
+		}
+	}
+
+	return MUGGLE_OK;
 }
 
 #endif

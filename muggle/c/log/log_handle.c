@@ -10,6 +10,7 @@
 #include <string.h>
 #include "muggle/c/base/err.h"
 #include "muggle/c/log/log_handle_console.h"
+#include "muggle/c/log/log_handle_file.h"
 
 typedef int (*muggle_log_output_fn)(
 	muggle_log_handle_t *handle,
@@ -20,11 +21,13 @@ typedef int (*muggle_log_handle_destroy_fn)(muggle_log_handle_t *handle);
 
 static muggle_log_output_fn s_output_fn[MUGGLE_LOG_TYPE_MAX] = {
 	muggle_log_handle_console_output,
+	muggle_log_handle_file_output,
 	// TODO:
 };
 
 static muggle_log_handle_destroy_fn s_log_handle_destroy_fn[MUGGLE_LOG_TYPE_MAX] = {
 	muggle_log_handle_console_destroy,
+	muggle_log_handle_file_destroy,
 	// TODO:
 };
 
