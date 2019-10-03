@@ -45,7 +45,7 @@ int muggle_log_handle_console_destroy(muggle_log_handle_t *handle);
  * @handle: console log handle pointer
  * @arg: log format arguments
  * @msg: log messages
- * RETURN: success returns 0, otherwise return err code in err.h
+ * RETURN: success return number of bytes be writed to output, otherwise return negative
  * NOTE: don't invoke this function immediatly, use muggle_log_handle_write
  * */
 MUGGLE_CC_EXPORT

@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include "muggle/c/base/macro.h"
+#include "muggle/c/base/atomic.h"
 #include "muggle/c/base/thread.h"
 #include "muggle/c/sync/mutex.h"
 #include "muggle/c/sync/ringbuffer.h"
@@ -49,20 +50,65 @@ typedef struct muggle_log_async_msg_tag
 	char msg[MUGGLE_LOG_MAX_LEN];
 }muggle_log_asnyc_msg_t;
 
+typedef struct muggle_log_handle_property_sync_tag
+{
+	muggle_mutex_t mutex;
+}muggle_log_handle_property_sync_t;
+
+typedef struct muggle_log_handle_property_async_tag
+{
+	muggle_ringbuffer_t ring;
+	muggle_thread_t thread;
+}muggle_log_handle_property_async_t;
+
+typedef struct muggle_log_handle_property_console_tag
+{
+	int enable_color;
+}muggle_log_handle_property_console_t;
+
+typedef struct muggle_log_handle_property_file_tag
+{
+	FILE *fp;
+}muggle_log_handle_property_file_t;
+
+typedef struct muggle_log_handle_property_rotating_file_tag
+{
+	FILE *fp;
+	char path[MUGGLE_MAX_PATH];
+	unsigned int max_bytes;
+	unsigned int backup_count;
+	long offset;
+}muggle_log_handle_property_rotating_file_t;
+
 typedef struct muggle_log_handle_tag
 {
 	int type;
 	int write_type;
 	int fmt_flag;
-	int enable_color;
-	muggle_mutex_t mutex;
-	muggle_ringbuffer_t ring;
-	muggle_thread_t thread;
-	FILE *fp;
+	union
+	{
+		muggle_log_handle_property_sync_t sync;
+		muggle_log_handle_property_async_t async;
+	};
+	union
+	{
+		muggle_log_handle_property_console_t console;
+		muggle_log_handle_property_file_t file;
+		muggle_log_handle_property_rotating_file_t rotating_file;
+	};
 }muggle_log_handle_t;
 
+/*
+ * common initialize for log handle
+ * NOTE: don't invoke this function immediatly
+ * */
 MUGGLE_CC_EXPORT
-muggle_thread_ret_t muggle_log_handle_run_async(void *arg);
+int muggle_log_handle_base_init(
+	muggle_log_handle_t *handle,
+	int write_type,
+	int fmt_flag,
+	muggle_atomic_int async_capacity
+);
 
 /*
  * destroy a log handle

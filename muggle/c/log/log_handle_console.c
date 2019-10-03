@@ -7,6 +7,7 @@
 
 #include "log_handle_console.h"
 #include <stdio.h>
+#include <string.h>
 #include "muggle/c/base/err.h"
 
  // terminal color for *nix
@@ -27,30 +28,12 @@ int muggle_log_handle_console_init(
 	int enable_color)
 {
 	handle->type = MUGGLE_LOG_TYPE_CONSOLE;
-	if (write_type >= MUGGLE_LOG_WRITE_TYPE_MAX || write_type < 0)
+	int ret = muggle_log_handle_base_init(handle, write_type, fmt_flag, async_capacity);
+	if (ret != MUGGLE_OK)
 	{
-		return MUGGLE_ERR_INVALID_PARAM;
+		return ret;
 	}
-	handle->write_type = write_type;
-	handle->fmt_flag = fmt_flag;
-	handle->enable_color = enable_color;
-	async_capacity = async_capacity <= 8 ? 1024 * 8 : async_capacity;
-
-	switch (write_type)
-	{
-		case MUGGLE_LOG_WRITE_TYPE_SYNC:
-		{
-			muggle_mutex_init(&handle->mutex);
-		}break;
-		case MUGGLE_LOG_WRITE_TYPE_ASYNC:
-		{
-			muggle_ringbuffer_init(
-				&handle->ring,
-				async_capacity,
-				MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK | MUGGLE_RINGBUFFER_FLAG_SINGLE_READER); 
-			muggle_thread_create(&handle->thread, muggle_log_handle_run_async, handle);
-		}break;
-	}
+	handle->console.enable_color = enable_color;
 
 	return MUGGLE_OK;
 }
@@ -61,12 +44,12 @@ int muggle_log_handle_console_destroy(muggle_log_handle_t *handle)
 	{
 		case MUGGLE_LOG_WRITE_TYPE_SYNC:
 		{
-			muggle_mutex_destroy(&handle->mutex);
+			muggle_mutex_destroy(&handle->sync.mutex);
 		}break;
 		case MUGGLE_LOG_WRITE_TYPE_ASYNC:
 		{
-			muggle_ringbuffer_write(&handle->ring, NULL);
-			muggle_thread_join(&handle->thread);
+			muggle_ringbuffer_write(&handle->async.ring, NULL);
+			muggle_thread_join(&handle->async.thread);
 		}break;
 	}
 
@@ -85,7 +68,7 @@ int muggle_log_handle_console_output(
 	ret = muggle_log_fmt_gen(handle->fmt_flag, arg, msg, buf, sizeof(buf));
 	if (ret < 0)
 	{
-		return MUGGLE_ERR_INVALID_PARAM;
+		return ret;
 	}
 
 	FILE *fp = stdout;
@@ -96,10 +79,10 @@ int muggle_log_handle_console_output(
 
 	if (handle->write_type == MUGGLE_LOG_WRITE_TYPE_SYNC)
 	{
-		muggle_mutex_lock(&handle->mutex);
+		muggle_mutex_lock(&handle->sync.mutex);
 	}
 
-	if (handle->enable_color && arg->level >= MUGGLE_LOG_LEVEL_WARNING)
+	if (handle->console.enable_color && arg->level >= MUGGLE_LOG_LEVEL_WARNING)
 	{
 #if MUGGLE_PLATFORM_WINDOWS
 		const HANDLE stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -120,7 +103,7 @@ int muggle_log_handle_console_output(
 			SetConsoleTextAttribute(stdout_handle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 		}
 		
-		fprintf(fp, buf);
+		fwrite(buf, 1, ret, fp);
 
 		fflush(stdout);
 
@@ -130,20 +113,24 @@ int muggle_log_handle_console_output(
 		const char *color_str = UNIX_TERMINAL_COLOR_YEL;
 		if (arg->level >= MUGGLE_LOG_LEVEL_ERROR)
 		{
-			color_str = UNIX_TERMINAL_COLOR_RED;
+			fwrite(UNIX_TERMINAL_COLOR_RED, 1, strlen(UNIX_TERMINAL_COLOR_RED), fp);
 		}
-		fprintf(fp, "%s%s", color_str, buf);
-		fprintf(fp, "\033[m");
+		else
+		{
+			fwrite(UNIX_TERMINAL_COLOR_YEL, 1, strlen(UNIX_TERMINAL_COLOR_YEL), fp);
+		}
+		fwrite(buf, 1, ret, fp);
+		fwrite("\033[m", 1, strlen("\033[m"), fp);
 #endif
 	}
 	else
 	{
-		fprintf(fp, "%s", buf);
+		fwrite(buf, 1, ret, fp);
 	}
 
 	if (handle->write_type == MUGGLE_LOG_WRITE_TYPE_SYNC)
 	{
-		muggle_mutex_unlock(&handle->mutex);
+		muggle_mutex_unlock(&handle->sync.mutex);
 	}
 
 	return MUGGLE_OK;

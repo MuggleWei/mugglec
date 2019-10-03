@@ -103,6 +103,21 @@ int muggle_os_mkdir(const char *path)
 	return MUGGLE_OK;
 }
 
+int muggle_os_remove(const char *path)
+{
+	return DeleteFileA(path) ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
+}
+
+int muggle_os_rmdir(const char *path)
+{
+	return RemoveDirectoryA(path) ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
+}
+
+int muggle_os_rename(const char *src, const char *dst)
+{
+	return rename(src, dst) == 0 ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
+}
+
 #else
 
 #include <sys/types.h>
@@ -181,6 +196,21 @@ int muggle_os_mkdir(const char *path)
 	}
 
 	return MUGGLE_OK;
+}
+
+int muggle_os_remove(const char *path)
+{
+	return remove(path) == 0 ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
+}
+
+int muggle_os_rmdir(const char *path)
+{
+	return rmdir(path) == 0 ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
+}
+
+int muggle_os_rename(const char *src, const char *dst)
+{
+	return rename(src, dst) == 0 ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
 }
 
 #endif
