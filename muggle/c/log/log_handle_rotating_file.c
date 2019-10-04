@@ -97,19 +97,6 @@ int muggle_log_handle_rotating_file_init(
 
 int muggle_log_handle_rotating_file_destroy(muggle_log_handle_t *handle)
 {
-	switch (handle->write_type)
-	{
-		case MUGGLE_LOG_WRITE_TYPE_SYNC:
-		{
-			muggle_mutex_destroy(&handle->sync.mutex);
-		}break;
-		case MUGGLE_LOG_WRITE_TYPE_ASYNC:
-		{
-			muggle_ringbuffer_write(&handle->async.ring, NULL);
-			muggle_thread_join(&handle->async.thread);
-		}break;
-	}
-
 	if (handle->rotating_file.fp)
 	{
 		fclose(handle->rotating_file.fp);

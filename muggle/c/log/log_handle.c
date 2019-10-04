@@ -12,6 +12,7 @@
 #include "muggle/c/log/log_handle_console.h"
 #include "muggle/c/log/log_handle_file.h"
 #include "muggle/c/log/log_handle_rotating_file.h"
+#include "muggle/c/log/log_handle_win_debug.h"
 
 typedef int (*muggle_log_output_fn)(
 	muggle_log_handle_t *handle,
@@ -24,14 +25,14 @@ static muggle_log_output_fn s_output_fn[MUGGLE_LOG_TYPE_MAX] = {
 	muggle_log_handle_console_output,
 	muggle_log_handle_file_output,
 	muggle_log_handle_rotating_file_output,
-	// TODO:
+	muggle_log_handle_win_debug_output,
 };
 
 static muggle_log_handle_destroy_fn s_log_handle_destroy_fn[MUGGLE_LOG_TYPE_MAX] = {
 	muggle_log_handle_console_destroy,
 	muggle_log_handle_file_destroy,
 	muggle_log_handle_rotating_file_destroy,
-	// TODO:
+	muggle_log_handle_win_debug_destroy,
 };
 
 static int muggle_log_handle_async_write(
@@ -75,6 +76,8 @@ muggle_thread_ret_t muggle_log_handle_run_async(void *arg)
 			async_msg->func
 		};
 		s_output_fn[handle->type](handle, &arg, async_msg->msg);
+
+		free(async_msg);
 	}
 
 	return 0;
@@ -119,6 +122,19 @@ int muggle_log_handle_base_init(
 
 int muggle_log_handle_destroy(muggle_log_handle_t *handle)
 {
+	switch (handle->write_type)
+	{
+		case MUGGLE_LOG_WRITE_TYPE_SYNC:
+		{
+			muggle_mutex_destroy(&handle->sync.mutex);
+		}break;
+		case MUGGLE_LOG_WRITE_TYPE_ASYNC:
+		{
+			muggle_ringbuffer_write(&handle->async.ring, NULL);
+			muggle_thread_join(&handle->async.thread);
+		}break;
+	}
+
 	return s_log_handle_destroy_fn[handle->type](handle);
 }
 

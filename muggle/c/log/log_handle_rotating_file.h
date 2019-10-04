@@ -19,6 +19,7 @@ EXTERN_C_BEGIN
  * @handle: rotating file log handle pointer
  * @write_type: use one of MUGGLE_LOG_WRITE_TYPE_*
  * @fmt_flag: use MUGGLE_LOG_FMT_*
+ * @level: log level that the log handle will output
  * @async_capacity: if write_type == MUGGLE_LOG_WRITE_TYPE_ASYNC, use this specify async buffer capacity
  * @file_path: log file path
  * @max_bytes: max size when to rotate log

@@ -96,6 +96,29 @@ void example_log_handle_rotating_file(int write_type, int fmt_flag, int level, c
 	muggle_log_handle_destroy(&handle);
 }
 
+void example_log_handle_win_debug(int write_type, int fmt_flag, int level)
+{
+	muggle_log_handle_t handle;
+	muggle_log_handle_win_debug_init(
+		&handle,
+		write_type,
+		fmt_flag,
+		level,
+		0);
+
+	muggle_log_fmt_arg_t arg = {
+		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__
+	};
+	muggle_log_handle_write(&handle, &arg, "win debug logging");
+	muggle_log_handle_write(&handle, &arg, "message info");
+	arg.level = MUGGLE_LOG_LEVEL_WARNING;
+	muggle_log_handle_write(&handle, &arg, "message warning");
+	arg.level = MUGGLE_LOG_LEVEL_ERROR;
+	muggle_log_handle_write(&handle, &arg, "message error");
+
+	muggle_log_handle_destroy(&handle);
+}
+
 int main()
 {
 	int fmt = MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_TIME;
@@ -132,6 +155,12 @@ int main()
 	for (int i = 0; i < MUGGLE_LOG_WRITE_TYPE_MAX; ++i)
 	{
 		example_log_handle_rotating_file(i, fmt, level, log_rotating_file_path);
+	}
+
+	// win debug
+	for (int i = 0; i < MUGGLE_LOG_WRITE_TYPE_MAX; ++i)
+	{
+		example_log_handle_win_debug(i, fmt, level);
 	}
 
 	return 0;

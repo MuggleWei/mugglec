@@ -101,6 +101,11 @@ typedef struct muggle_log_handle_tag
 
 /*
  * common initialize for log handle
+ * @handle: log handle
+ * @write_type: use one of MUGGLE_LOG_WRITE_TYPE_*
+ * @fmt_flag: use MUGGLE_LOG_FMT_*
+ * @level: log level that the log handle will output
+ * @async_capacity: if write_type == MUGGLE_LOG_WRITE_TYPE_ASYNC, use this specify async buffer capacity
  * NOTE: don't invoke this function immediatly
  * */
 MUGGLE_CC_EXPORT

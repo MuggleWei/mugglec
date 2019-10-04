@@ -41,19 +41,6 @@ int muggle_log_handle_console_init(
 
 int muggle_log_handle_console_destroy(muggle_log_handle_t *handle)
 {
-	switch (handle->write_type)
-	{
-		case MUGGLE_LOG_WRITE_TYPE_SYNC:
-		{
-			muggle_mutex_destroy(&handle->sync.mutex);
-		}break;
-		case MUGGLE_LOG_WRITE_TYPE_ASYNC:
-		{
-			muggle_ringbuffer_write(&handle->async.ring, NULL);
-			muggle_thread_join(&handle->async.thread);
-		}break;
-	}
-
 	return MUGGLE_OK;
 }
 
