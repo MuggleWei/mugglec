@@ -119,6 +119,54 @@ void example_log_handle_win_debug(int write_type, int fmt_flag, int level)
 	muggle_log_handle_destroy(&handle);
 }
 
+void example_log_category(int write_type, int fmt_flag, int level)
+{
+	muggle_log_handle_t handle_console;
+	muggle_log_handle_console_init(
+		&handle_console,
+		write_type,
+		fmt_flag,
+		level,
+		0, 1);
+
+
+	char buf[MUGGLE_MAX_PATH];
+	const char *file_path = "log/category/example.log";
+	muggle_path_dirname(file_path, buf, sizeof(buf));
+	if (!muggle_path_exists(buf))
+	{
+		muggle_os_mkdir(buf);
+	}
+
+	muggle_log_handle_t handle_file;
+	muggle_log_handle_file_init(
+		&handle_file,
+		write_type,
+		fmt_flag,
+		level,
+		0, file_path
+	);
+
+	muggle_log_category_t category;
+	memset(&category, 0, sizeof(category));
+
+	muggle_log_category_add(&category, &handle_console);
+	muggle_log_category_add(&category, &handle_file);
+
+	muggle_log_fmt_arg_t arg = {
+		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__
+	};
+	muggle_log_category_write(&category, &arg, "category");
+	arg.level = MUGGLE_LOG_LEVEL_INFO;
+	muggle_log_category_write(&category, &arg, "category message info");
+	arg.level = MUGGLE_LOG_LEVEL_WARNING;
+	muggle_log_category_write(&category, &arg, "category message warning");
+	arg.level = MUGGLE_LOG_LEVEL_ERROR;
+	muggle_log_category_write(&category, &arg, "category message error");
+
+	muggle_log_category_destroy(&category, 1);
+}
+
 int main()
 {
 	int fmt = MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_TIME;
@@ -161,6 +209,12 @@ int main()
 	for (int i = 0; i < MUGGLE_LOG_WRITE_TYPE_MAX; ++i)
 	{
 		example_log_handle_win_debug(i, fmt, level);
+	}
+
+	// category
+	for (int i = 0; i < MUGGLE_LOG_WRITE_TYPE_MAX; ++i)
+	{
+		example_log_category(i, fmt, level);
 	}
 
 	return 0;

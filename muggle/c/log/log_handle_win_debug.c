@@ -1,3 +1,10 @@
+/*
+ *	author: muggle wei <mugglewei@gmail.com>
+ *
+ *	Use of this source code is governed by the MIT license that can be
+ *	found in the LICENSE file.
+ */
+
 #include "log_handle_win_debug.h"
 #include <stdio.h>
 #include <string.h>

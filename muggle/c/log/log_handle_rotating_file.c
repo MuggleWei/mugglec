@@ -128,7 +128,7 @@ int muggle_log_handle_rotating_file_output(
 
 	if (handle->rotating_file.fp)
 	{
-		fwrite(buf, 1, ret, handle->rotating_file.fp);
+		ret = (int)fwrite(buf, 1, ret, handle->rotating_file.fp);
 	}
 
 	handle->rotating_file.offset += ret;

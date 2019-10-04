@@ -91,7 +91,7 @@ int muggle_log_handle_console_output(
 			SetConsoleTextAttribute(stdout_handle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 		}
 		
-		fwrite(buf, 1, ret, fp);
+		ret = (int)fwrite(buf, 1, ret, fp);
 
 		fflush(stdout);
 
@@ -107,13 +107,13 @@ int muggle_log_handle_console_output(
 		{
 			fwrite(UNIX_TERMINAL_COLOR_YEL, 1, strlen(UNIX_TERMINAL_COLOR_YEL), fp);
 		}
-		fwrite(buf, 1, ret, fp);
+		ret = (int)fwrite(buf, 1, ret, fp);
 		fwrite("\033[m", 1, strlen("\033[m"), fp);
 #endif
 	}
 	else
 	{
-		fwrite(buf, 1, ret, fp);
+		ret = (int)fwrite(buf, 1, ret, fp);
 	}
 
 	if (handle->write_type == MUGGLE_LOG_WRITE_TYPE_SYNC)
@@ -121,5 +121,5 @@ int muggle_log_handle_console_output(
 		muggle_mutex_unlock(&handle->sync.mutex);
 	}
 
-	return MUGGLE_OK;
+	return ret;
 }

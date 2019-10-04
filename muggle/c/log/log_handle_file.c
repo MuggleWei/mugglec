@@ -63,7 +63,7 @@ int muggle_log_handle_file_output(
 		muggle_mutex_lock(&handle->sync.mutex);
 	}
 
-	fwrite(buf, 1, ret, handle->file.fp);
+	ret = (int)fwrite(buf, 1, ret, handle->file.fp);
 
 	if (handle->write_type == MUGGLE_LOG_WRITE_TYPE_SYNC)
 	{

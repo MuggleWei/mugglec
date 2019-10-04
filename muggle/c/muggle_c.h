@@ -53,5 +53,6 @@
 #include "muggle/c/log/log_handle_file.h"
 #include "muggle/c/log/log_handle_rotating_file.h"
 #include "muggle/c/log/log_handle_win_debug.h"
+#include "muggle/c/log/log_category.h"
 
 #endif
