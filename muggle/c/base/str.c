@@ -5,136 +5,252 @@
  *	found in the LICENSE file.
  */
 
-#include "muggle/c/base/str.h"
+#include "str.h"
+#include "muggle/c/base/err.h"
+#include <errno.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
-#include <errno.h>
+#include <ctype.h>
 #include <limits.h>
-#include <float.h>
 #include <math.h>
-#include "muggle/c/base/log.h"
 
-char* MuggleStrAllocByDiff(const char* p_start, const char* p_end)
+int muggle_str_startswith(const char *str, const char *prefix)
 {
-	char* buf = NULL;
-	ptrdiff_t diff = p_end - p_start + 1;
-	buf = (char*)malloc((size_t)diff + 1);
-	memcpy(buf, p_start, (size_t)diff);
-	buf[(size_t)diff] = '\0';
-
-	return buf;
-}
-bool MuggleStrStartsWith(const char* str, const char* sub_str)
-{
-	if (str == NULL || sub_str == NULL)
+	if (str == NULL || prefix == NULL)
 	{
-		MUGGLE_DEBUG_WARNING(0, "maybe input error string");
-		return false;
+		return 0;
 	}
 
-	char* p = strstr(str, sub_str);
-	if (p == str)
+	size_t str_len = strlen(str);
+	size_t prefix_len = strlen(prefix);
+
+	if (str_len < prefix_len)
 	{
-		return true;
+		return 0;
 	}
 
-	return false;
-}
-bool MuggleStrEndsWith(const char* str, const char* sub_str)
-{
-	size_t str_len, sub_str_len, i;
-	const char *p, *q;
-
-	if (str == NULL || sub_str == NULL)
+	for (size_t i = 0; i < prefix_len; ++i)
 	{
-		MUGGLE_DEBUG_WARNING(0, "maybe input error string");
-		return false;
-	}
-
-	str_len = strlen(str);
-	sub_str_len = strlen(sub_str);
-	
-	if (sub_str_len > str_len)
-	{
-		return false;
-	}
-
-	p = str + str_len - 1;
-	q = sub_str + sub_str_len - 1;
-	for (i = 0; i < sub_str_len; ++i)
-	{
-		if (*p != *q)
+		if (str[i] != prefix[i])
 		{
-			return false;
+			return 0;
 		}
-		--p;
-		--q;
 	}
 
-	return true;
+	if (str_len != 0 && prefix_len == 0)
+	{
+		return 0;
+	}
+
+
+	return 1;
 }
 
-char* MuggleStrSplitLineToWords(char* line, char** words, int* cnt, int max_word_num)
+int muggle_str_endswith(const char *str, const char *suffix)
 {
-	char *q = NULL, *r = NULL;
-
-	// initialize words
-	memset(words, 0, sizeof(char*) * max_word_num);
-	*cnt = 0;
-
-	q = line;
-	MUGGLE_SKIP_BLANK(q);
-	r = q;
-	while (*q != '\n' && *q != '\r' && *q != '\0')
+	if (str == NULL || suffix == NULL)
 	{
-		if (*cnt == max_word_num)
-		{
-			MUGGLE_DEBUG_WARNING(0, "It's has no enough space to split line to words");
-			return q;
-		}
+		return 0;
+	}
 
-		if (*q == ' ' || *q == '\t')
+	size_t str_len = strlen(str);
+	size_t suffix_len = strlen(suffix);
+
+	if (str_len < suffix_len)
+	{
+		return 0;
+	}
+
+	for (size_t i = 0; i < suffix_len; ++i)
+	{
+		if (str[str_len - 1 - i] != suffix[suffix_len - 1 - i])
 		{
-			*q = '\0';
-			++q;
-			words[(*cnt)++] = r;
-			MUGGLE_SKIP_BLANK(q);
-			r = q;
+			return 0;
+		}
+	}
+
+	if (str_len != 0 && suffix_len == 0)
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
+int muggle_str_count(const char *str, const char *sub, int start, int end)
+{
+	if (str == NULL || sub == NULL)
+	{
+		return 0;
+	}
+
+	size_t str_len = strlen(str);
+	size_t sub_len = strlen(sub);
+
+	if (start < 0 || end < 0)
+	{
+		return 0;
+	}
+
+	if (start >= str_len)
+	{
+		return 0;
+	}
+
+	if (end == 0)
+	{
+		end = (int)str_len;
+	}
+
+	if (end > (int)str_len)
+	{
+		end = (int)str_len;
+	}
+
+	if (end <= start)
+	{
+		return 0;
+	}
+
+	int cnt = 0;
+	const char *pos = str + start;
+	const char *end_pos = str + end;
+	while (1)
+	{
+		pos = strstr(pos, sub);
+		if (pos)
+		{
+			if (pos + sub_len > end_pos)
+			{
+				break;
+			}
+			++cnt;
+			pos = pos + sub_len;
+			if (pos >= end_pos)
+			{
+				break;
+			}
 		}
 		else
 		{
-			++q;
+			break;
 		}
 	}
 
-	if (*cnt == max_word_num)
-	{
-		MUGGLE_DEBUG_WARNING(0, "It's has no enough space to split line to words");
-		return q;
-	}
-	if (*r != '\r' && *r != '\n' && *r != '\0')
-	{
-		words[(*cnt)++] = r;
-	}
-	while (*q == '\n' || *q == '\r')
-	{
-		*q = '\0';
-		++q;
-		r = q;
-	}
-
-	return q;
+	return cnt;
 }
 
-bool MuggleStrToi(const char *str, int *pval, int base)
+int muggle_str_find(const char *str, const char *sub, int start, int end)
+{
+	if (str == NULL || sub == NULL)
+	{
+		return -1;
+	}
+
+	size_t str_len = strlen(str);
+	size_t sub_len = strlen(sub);
+
+	if (start < 0 || end < 0)
+	{
+		return -1;
+	}
+
+	if (start >= str_len)
+	{
+		return -1;
+	}
+
+	if (end == 0)
+	{
+		end = (int)str_len;
+	}
+
+	if (end > (int)str_len)
+	{
+		end = (int)str_len;
+	}
+
+	if (end <= start)
+	{
+		return -1;
+	}
+
+	const char *pos = strstr(str + start, sub);
+	if (pos == NULL || pos + sub_len > str + end)
+	{
+		return -1;
+	}
+
+	return (int)(pos - str);
+}
+
+int muggle_str_lstrip_idx(const char *str)
+{
+	if (str == NULL)
+	{
+		return -1;
+	}
+
+	int str_len = (int)strlen(str);
+	int idx = 0;
+	while (isspace(str[idx]))
+	{
+		if (++idx >= str_len)
+		{
+			return -1;
+		}
+	}
+
+	return idx;
+}
+
+int muggle_str_rstrip_idx(const char *str)
+{
+	if (str == NULL)
+	{
+		return -1;
+	}
+
+	int str_len = (int)strlen(str);
+	int idx = str_len - 1;
+	while (isspace(str[idx]))
+	{
+		if (--idx < 0)
+		{
+			return -1;
+		}
+	}
+
+	return idx;
+}
+
+static int in_split_sep(int ch, const char *sep, int sep_len)
+{
+	if (sep == NULL)
+	{
+		return isspace(ch);
+	}
+
+	for (int i = 0; i < sep_len; ++i)
+	{
+		if (ch == (int)sep[i])
+		{
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+int muggle_str_toi(const char *str, int *pval, int base)
 {
 	long ret;
 	char *endptr;
 
 	if (str == NULL || pval == NULL)
 	{
-		return false;
+		return 0;
 	}
 
 	errno = 0;
@@ -142,80 +258,74 @@ bool MuggleStrToi(const char *str, int *pval, int base)
 	if (endptr == str)
 	{
 		// failed parse
-		return false;
+		return 0;
 	}
 	else if (*endptr != '\0')
 	{
-		MUGGLE_SKIP_BLANK(endptr);
-		if (*endptr != '\0')
+		// this function only parse one word
+		if (muggle_str_lstrip_idx(endptr) != -1)
 		{
-			// this function only parse one word
-			return false;
+			return 0;
 		}
 	}
 	else if ((ret == LONG_MAX || ret == LONG_MIN) && errno == ERANGE)
 	{
 		// out of range
-		return false;
+		return 0;
 	}
 	else if (ret > INT_MAX || ret < INT_MIN)
 	{
 		// out of integer range
-		return false;
+		return 0;
 	}
 
 	*pval = (int)ret;
 
-	return true;
+	return 1;
 }
-bool MuggleStrToui(const char *str, unsigned int *pval, int base)
+int muggle_str_tou(const char *str, unsigned int *pval, int base)
 {
-	unsigned long ret;
+	long ret;
 	char *endptr;
 
 	if (str == NULL || pval == NULL)
 	{
-		return false;
+		return 0;
 	}
 
 	errno = 0;
-	ret = strtoul(str, &endptr, base);
+    ret = strtoul(str, &endptr, base);
 	if (endptr == str)
 	{
 		// failed parse
-		return false;
+		return 0;
 	}
 	else if (*endptr != '\0')
 	{
-		MUGGLE_SKIP_BLANK(endptr);
-		if (*endptr != '\0')
+		// this function only parse one word
+		if (muggle_str_lstrip_idx(endptr) != -1)
 		{
-			// this function only parse one word
-			return false;
+			return 0;
 		}
 	}
-	else if (ret == ULONG_MAX && errno == ERANGE)
+
+	if (ret == ULONG_MAX || ret == ULLONG_MAX)
 	{
 		// out of range or negative integer
-		return false;
-	}
-	else if (ret > UINT_MAX)
-	{
-		// out of unsigned integer range
-		return false;
+		return 0;
 	}
 
 	*pval = (unsigned int)ret;
 
-	return true;
+	return 1;
 }
-bool MuggleStrTol(const char *str, long *pval, int base)
+int muggle_str_tol(const char *str, long *pval, int base)
 {
 	char *endptr;
 
 	if (str == NULL || pval == NULL)
 	{
-		return false;
+		return 0;
 	}
 
 	errno = 0;
@@ -223,32 +333,32 @@ bool MuggleStrTol(const char *str, long *pval, int base)
 	if (endptr == str)
 	{
 		// failed parse
-		return false;
+		return 0;
 	}
 	else if (*endptr != '\0')
 	{
-		MUGGLE_SKIP_BLANK(endptr);
-		if (*endptr != '\0')
+		// this function only parse one word
+		if (muggle_str_lstrip_idx(endptr) != -1)
 		{
-			// this function only parse one word
-			return false;
+			return 0;
 		}
 	}
-	else if ((*pval == LONG_MAX || *pval == LONG_MIN) && errno == ERANGE)
+
+	if (*pval == LONG_MAX || *pval == LONG_MIN || *pval == LLONG_MAX || *pval == LLONG_MIN)
 	{
 		// out of range
-		return false;
+		return 0;
 	}
 
-	return true;
+	return 1;
 }
-bool MuggleStrToul(const char *str, unsigned long *pval, int base)
+int muggle_str_toul(const char *str, unsigned long *pval, int base)
 {
 	char *endptr;
 
 	if (str == NULL || pval == NULL)
 	{
-		return false;
+		return 0;
 	}
 
 	errno = 0;
@@ -256,32 +366,32 @@ bool MuggleStrToul(const char *str, unsigned long *pval, int base)
 	if (endptr == str)
 	{
 		// failed parse
-		return false;
+		return 0;
 	}
 	else if (*endptr != '\0')
 	{
-		MUGGLE_SKIP_BLANK(endptr);
-		if (*endptr != '\0')
+		// this function only parse one word
+		if (muggle_str_lstrip_idx(endptr) != -1)
 		{
-			// this function only parse one word
-			return false;
+			return 0;
 		}
 	}
-	else if (*pval == ULONG_MAX && errno == ERANGE)
+
+	if (*pval == ULONG_MAX || *pval == ULLONG_MAX)
 	{
 		// out of range
-		return false;
+		return 0;
 	}
 
-	return true;
+	return 1;
 }
-bool MuggleStrToll(const char *str, long long *pval, int base)
+int muggle_str_toll(const char *str, long long *pval, int base)
 {
 	char *endptr;
 
 	if (str == NULL || pval == NULL)
 	{
-		return false;
+		return 0;
 	}
 
 	errno = 0;
@@ -289,32 +399,32 @@ bool MuggleStrToll(const char *str, long long *pval, int base)
 	if (endptr == str)
 	{
 		// failed parse
-		return false;
+		return 0;
 	}
 	else if (*endptr != '\0')
 	{
-		MUGGLE_SKIP_BLANK(endptr);
-		if (*endptr != '\0')
+		// this function only parse one word
+		if (muggle_str_lstrip_idx(endptr) != -1)
 		{
-			// this function only parse one word
-			return false;
+			return 0;
 		}
 	}
-	else if ((*pval == LLONG_MAX || *pval == LLONG_MIN) && errno == ERANGE)
+
+	if (*pval == LLONG_MAX || *pval == LLONG_MIN)
 	{
 		// out of range
-		return false;
+		return 0;
 	}
 
-	return true;
+	return 1;
 }
-bool MuggleStrToull(const char *str, unsigned long long *pval, int base)
+int muggle_str_toull(const char *str, unsigned long long *pval, int base)
 {
 	char *endptr;
 
 	if (str == NULL || pval == NULL)
 	{
-		return false;
+		return 0;
 	}
 
 	errno = 0;
@@ -322,32 +432,32 @@ bool MuggleStrToull(const char *str, unsigned long long *pval, int base)
 	if (endptr == str)
 	{
 		// failed parse
-		return false;
+		return 0;
 	}
 	else if (*endptr != '\0')
 	{
-		MUGGLE_SKIP_BLANK(endptr);
-		if (*endptr != '\0')
+		// this function only parse one word
+		if (muggle_str_lstrip_idx(endptr) != -1)
 		{
-			// this function only parse one word
-			return false;
+			return 0;
 		}
 	}
-	else if (*pval == ULLONG_MAX && errno == ERANGE)
+
+	if (*pval == ULLONG_MAX)
 	{
 		// out of range
-		return false;
+		return 0;
 	}
 
-	return true;
+	return 1;
 }
-bool MuggleStrTof(const char *str, float *pval)
+int muggle_str_tof(const char *str, float *pval)
 {
 	char *endptr;
 
 	if (str == NULL || pval == NULL)
 	{
-		return false;
+		return 0;
 	}
 
 	errno = 0;
@@ -355,32 +465,32 @@ bool MuggleStrTof(const char *str, float *pval)
 	if (endptr == str)
 	{
 		// failed parse
-		return false;
+		return 0;
 	}
 	else if (*endptr != '\0')
 	{
-		MUGGLE_SKIP_BLANK(endptr);
-		if (*endptr != '\0')
+		// this function only parse one word
+		if (muggle_str_lstrip_idx(endptr) != -1)
 		{
-			// this function only parse one word
-			return false;
+			return 0;
 		}
 	}
-	else if ((*pval == HUGE_VAL || *pval == HUGE_VALF || *pval == HUGE_VALL) && errno == ERANGE)
+
+	if (*pval == HUGE_VAL || *pval == HUGE_VALF || *pval == HUGE_VALL)
 	{
 		// out of range
-		return false;
+		return 0;
 	}
 
-	return true;
+	return 1;
 }
-bool MuggleStrTod(const char *str, double *pval)
+int muggle_str_tod(const char *str, double *pval)
 {
 	char *endptr;
 
 	if (str == NULL || pval == NULL)
 	{
-		return false;
+		return 0;
 	}
 
 	errno = 0;
@@ -388,32 +498,32 @@ bool MuggleStrTod(const char *str, double *pval)
 	if (endptr == str)
 	{
 		// failed parse
-		return false;
+		return 0;
 	}
 	else if (*endptr != '\0')
 	{
-		MUGGLE_SKIP_BLANK(endptr);
-		if (*endptr != '\0')
+		// this function only parse one word
+		if (muggle_str_lstrip_idx(endptr) != -1)
 		{
-			// this function only parse one word
-			return false;
+			return 0;
 		}
 	}
 	else if ((*pval == HUGE_VAL || *pval == HUGE_VALF || *pval == HUGE_VALL) && errno == ERANGE)
 	{
 		// out of range
-		return false;
+		return 0;
 	}
 
-	return true;
+	return 1;
+
 }
-bool MuggleStrTold(const char *str, long double *pval)
+int muggle_str_told(const char *str, long double *pval)
 {
 	char *endptr;
 
 	if (str == NULL || pval == NULL)
 	{
-		return false;
+		return 0;
 	}
 
 	errno = 0;
@@ -421,22 +531,22 @@ bool MuggleStrTold(const char *str, long double *pval)
 	if (endptr == str)
 	{
 		// failed parse
-		return false;
+		return 0;
 	}
 	else if (*endptr != '\0')
 	{
-		MUGGLE_SKIP_BLANK(endptr);
-		if (*endptr != '\0')
+		// this function only parse one word
+		if (muggle_str_lstrip_idx(endptr) != -1)
 		{
-			// this function only parse one word
-			return false;
+			return 0;
 		}
 	}
 	else if ((*pval == HUGE_VAL || *pval == HUGE_VALF || *pval == HUGE_VALL) && errno == ERANGE)
 	{
 		// out of range
-		return false;
+		return 0;
 	}
 
-	return true;
+	return 1;
 }
+

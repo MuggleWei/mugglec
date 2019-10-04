@@ -5,115 +5,59 @@
  *	found in the LICENSE file.
  */
 
+
 #include "thread.h"
-#include "muggle/c/base/log.h"
+#include "muggle/c/base/err.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 
-#include <process.h>
-
-bool MuggleThreadCreate(
-	MuggleThread *thread_handle, const MuggleThreadAttribute *attr,
-	MuggleThreadStartRoutine routine, void *args)
+int muggle_thread_create(muggle_thread_t *thread, muggle_thread_routine routine, void *args)
 {
-	DWORD create_flags;
-	LPSECURITY_ATTRIBUTES security_attr;
-
-	MUGGLE_ASSERT_MSG(thread_handle != NULL, "Thread handle is NULL\n");
-	if (thread_handle == NULL)
+	thread->handle = (HANDLE)_beginthreadex(
+		NULL, 0, routine, args, 0, &thread->id);
+	if (thread->handle == NULL)
 	{
-		return false;
+		return MUGGLE_ERR_SYS_CALL;
 	}
 
-	security_attr = (attr == NULL) ? (LPSECURITY_ATTRIBUTES)NULL : &attr->security;
-	create_flags = (attr == NULL) ? 0 : attr->flags;
-
-	thread_handle->handle = (HANDLE)_beginthreadex(
-		(void*)security_attr, 0, routine, args, create_flags, &thread_handle->id);
-	if (thread_handle->handle == NULL)
-	{
-		MUGGLE_DEBUG_WARNING("Failed create thread - error code %ld\n", (long)GetLastError());
-		return false;
-	}
-
-	return true;
+	return MUGGLE_OK;
 }
 
-bool MuggleThreadWaitExit(MuggleThread *thread_handle)
+int muggle_thread_join(muggle_thread_t *thread)
 {
-	MUGGLE_ASSERT_MSG(thread_handle != NULL, "Thread handle is NULL\n");
-	if (thread_handle == NULL)
+	if (WaitForSingleObject(thread->handle, INFINITE) == WAIT_FAILED)
 	{
-		return false;
+		return MUGGLE_ERR_SYS_CALL;
 	}
 
-	if (WaitForSingleObject(thread_handle->handle, INFINITE) == WAIT_FAILED)
+	if (!CloseHandle(thread->handle))
 	{
-		MUGGLE_DEBUG_WARNING("Failed wait thread exit - error code %ld\n", (long)GetLastError());
-		return false;
+		return MUGGLE_ERR_SYS_CALL;
 	}
 
-	if (!CloseHandle(thread_handle->handle))
-	{
-		MUGGLE_DEBUG_WARNING("Failed close thread handle - error code %ld\n", (long)GetLastError());
-		return false;
-	}
-
-	return true;
+	return MUGGLE_OK;
 }
 
-void MuggleThreadAttributeSet(int flags)
+int muggle_thread_detach(muggle_thread_t *thread)
 {
-	// TODO: 
+	return MUGGLE_OK;
 }
 
 #else
 
-#include <string.h>
-#include <errno.h>
-
-bool MuggleThreadCreate(
-	MuggleThread *thread_handle, const MuggleThreadAttribute *attr,
-	MuggleThreadStartRoutine routine, void *args)
+int muggle_thread_create(muggle_thread_t *thread, muggle_thread_routine routine, void *args)
 {
-	const pthread_attr_t *thread_attr;
-
-	MUGGLE_ASSERT_MSG(thread_handle != NULL, "Thread handle is NULL\n");
-	if (thread_handle == NULL)
-	{
-		return false;
-	}
-
-	thread_attr = (attr == NULL) ? NULL : &attr->attr;
-	if (pthread_create(&thread_handle->th, thread_attr, routine, args) != 0)
-	{
-		MUGGLE_DEBUG_WARNING("Failed create thread: %s\n", strerror(errno));
-		return false;
-	}
-
-	return true;
+	return pthread_create(&thread->th, NULL, routine, args) == 0 ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
 }
 
-bool MuggleThreadWaitExit(MuggleThread *thread_handle)
+int muggle_thread_join(muggle_thread_t *thread)
 {
-	MUGGLE_ASSERT_MSG(thread_handle != NULL, "Thread handle is NULL\n");
-	if (thread_handle == NULL)
-	{
-		return false;
-	}
-
-	if (pthread_join(thread_handle->th, NULL) != 0)
-	{
-		MUGGLE_DEBUG_WARNING("Failed pthread_join: %s\n", strerror(errno));
-		return false;
-	}
-
-	return true;
+	return pthread_join(thread->th, NULL) == 0 ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
 }
 
-void MuggleThreadAttributeSet(int flags)
+int muggle_thread_detach(muggle_thread_t *thread)
 {
-	// TODO: 
+	return pthread_detach(thread->th) == 0 ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
 }
 
 #endif

@@ -1,4 +1,4 @@
-#include "muggle/cpp/tunnel/tunnel.hpp"
+#include "muggle/cpp/sync/tunnel.hpp"
 #include <iostream>
 #include <string>
 #include <thread>

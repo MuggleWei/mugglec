@@ -9,25 +9,18 @@
 #define MUGGLE_C_THREAD_H_
 
 #include "muggle/c/base/macro.h"
-#include <stdbool.h>
 
 #if MUGGLE_PLATFORM_WINDOWS
-
 #include <windows.h>
-
-#define THREAD_ROUTINE_RETURN unsigned int
-
+typedef unsigned int muggle_thread_ret_t;
 #else
-
 #include <pthread.h>
-
-#define THREAD_ROUTINE_RETURN void*
-
+typedef void* muggle_thread_ret_t;
 #endif
 
 EXTERN_C_BEGIN
 
-typedef struct MuggleThread_tag
+typedef struct muggle_thread_tag
 {
 #if MUGGLE_PLATFORM_WINDOWS
 	HANDLE handle;
@@ -35,30 +28,34 @@ typedef struct MuggleThread_tag
 #else
 	pthread_t th;
 #endif
-}MuggleThread;
-
-typedef struct ThreadAttribute_tag
-{
-#if MUGGLE_PLATFORM_WINDOWS
-	SECURITY_ATTRIBUTES security;
-	DWORD flags;
-#else
-	pthread_attr_t attr;
-#endif
-}MuggleThreadAttribute;
+}muggle_thread_t;
 
 #if MUGGLE_PLATFORM_WINDOWS
-typedef THREAD_ROUTINE_RETURN (__stdcall *MuggleThreadStartRoutine)(void *args);
+typedef muggle_thread_ret_t __stdcall muggle_thread_routine(void *args);
 #else
-typedef THREAD_ROUTINE_RETURN (*MuggleThreadStartRoutine)(void *args);
+typedef muggle_thread_ret_t muggle_thread_routine(void *args);
 #endif
 
-MUGGLE_CC_EXPORT bool MuggleThreadCreate(
-	MuggleThread *thread_handle, const MuggleThreadAttribute *attr,
-	MuggleThreadStartRoutine routine, void *args);
-MUGGLE_CC_EXPORT bool MuggleThreadWaitExit(MuggleThread *thread_handle);
+/*
+ * starts a new thread in the calling process
+ * RETURN: on success returns 0, otherwise return errno in err.h
+ * */
+MUGGLE_CC_EXPORT
+int muggle_thread_create(muggle_thread_t *thread, muggle_thread_routine routine, void *args);
 
-MUGGLE_CC_EXPORT void MuggleThreadAttributeSet(int flags);
+/*
+ * waits for the thread specified by thread to terminate
+ * RETURN: on success returns 0, otherwise return errno in err.h
+ * */
+MUGGLE_CC_EXPORT
+int muggle_thread_join(muggle_thread_t *thread);
+
+/*
+ * marks the thread identified by thread as detached
+ * RETURN: on success returns 0, otherwise return errno in err.h
+ * */
+MUGGLE_CC_EXPORT
+int muggle_thread_detach(muggle_thread_t *thread);
 
 EXTERN_C_END
 

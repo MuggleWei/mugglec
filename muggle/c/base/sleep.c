@@ -1,11 +1,5 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
-#include "muggle/c/base/sleep.h"
+#include "sleep.h"
+#include "muggle/c/base/err.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 	#include <windows.h>
@@ -13,11 +7,12 @@
 	#include <unistd.h>
 #endif
 
-void MuggleSleepFunction(unsigned long ms)
+int muggle_msleep(unsigned long ms)
 {
 #if MUGGLE_PLATFORM_WINDOWS
 	Sleep(ms);
+	return MUGGLE_OK;
 #else
-	usleep((double)(ms) * 1000.0);
+	return usleep(ms * 1000) == 0 ? MUGGLE_OK : MUGGLE_ERR_INTERRUPT;
 #endif
 }

@@ -165,3 +165,16 @@ function(muggle_install_headers src_root_folder target_folder)
 	install(FILES ${empty_dir_h} DESTINATION ${target_folder})
 
 endfunction(muggle_install_headers)
+
+#########################################
+# get all sub dir
+MACRO(SUBDIRLIST result curdir)
+    FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
+    SET(dirlist "")
+    FOREACH(child ${children})
+        IF(IS_DIRECTORY ${curdir}/${child})
+            LIST(APPEND dirlist ${child})
+        ENDIF()
+    ENDFOREACH()
+    SET(${result} ${dirlist})
+ENDMACRO()
