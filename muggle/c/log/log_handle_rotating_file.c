@@ -116,7 +116,7 @@ int muggle_log_handle_rotating_file_output(
 	char buf[MUGGLE_LOG_MAX_LEN] = { 0 };
 
 	ret = muggle_log_fmt_gen(handle->fmt_flag, arg, msg, buf, sizeof(buf));
-	if (ret < 0)
+	if (ret <= 0)
 	{
 		return ret;
 	}

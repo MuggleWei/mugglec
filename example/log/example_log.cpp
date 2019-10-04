@@ -167,8 +167,67 @@ void example_log_category(int write_type, int fmt_flag, int level)
 	muggle_log_category_destroy(&category, 1);
 }
 
+muggle_log_handle_t handle_console;
+muggle_log_handle_t handle_rotating_file;
+void init_log()
+{
+	muggle_log_handle_console_init(
+		&handle_console,
+		MUGGLE_LOG_WRITE_TYPE_SYNC,
+		MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE,
+		MUGGLE_LOG_LEVEL_WARNING,
+		0, 1);
+	muggle_log_add_handle(&handle_console);
+
+	char buf[MUGGLE_MAX_PATH];
+	const char *file_path = "log/default/example.log";
+	muggle_path_dirname(file_path, buf, sizeof(buf));
+	if (!muggle_path_exists(buf))
+	{
+		muggle_os_mkdir(buf);
+	}
+	int ret = muggle_log_handle_rotating_file_init(
+		&handle_rotating_file,
+		MUGGLE_LOG_WRITE_TYPE_SYNC,
+		MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_TIME,
+		MUGGLE_LOG_LEVEL_INFO,
+		0, file_path,
+		1024 * 10, 5
+	);
+	if (ret != MUGGLE_OK)
+	{
+		MUGGLE_ERROR("failed init log rotating file handle with path: %s", file_path);
+		return;
+	}
+	muggle_log_add_handle(&handle_rotating_file);
+}
+
+void destroy_log()
+{
+	muggle_log_destroy();
+}
+
+void example_default()
+{
+	init_log();
+
+	MUGGLE_DEBUG_INFO("debug info");
+	MUGGLE_DEBUG_WARNING("debug warning");
+	MUGGLE_ASSERT_MSG(1 == 1, "assert message");
+
+	MUGGLE_INFO("info");
+	MUGGLE_WARNING("warning");
+	MUGGLE_ERROR("error");
+	MUGGLE_FATAL("fatal, core dump when debug");
+
+	destroy_log();
+}
+
 int main()
 {
+	// default (recommend)
+	example_default();
+
 	int fmt = MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_TIME;
 	int level = MUGGLE_LOG_LEVEL_INFO;
 	char buf[MUGGLE_MAX_PATH];
