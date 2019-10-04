@@ -85,6 +85,7 @@ typedef struct muggle_log_handle_tag
 	int type;
 	int write_type;
 	int fmt_flag;
+	int level;
 	union
 	{
 		muggle_log_handle_property_sync_t sync;
@@ -107,6 +108,7 @@ int muggle_log_handle_base_init(
 	muggle_log_handle_t *handle,
 	int write_type,
 	int fmt_flag,
+	int level,
 	muggle_atomic_int async_capacity
 );
 

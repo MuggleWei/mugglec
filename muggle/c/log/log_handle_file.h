@@ -28,6 +28,7 @@ int muggle_log_handle_file_init(
 	muggle_log_handle_t *handle,
 	int write_type,
 	int fmt_flag,
+	int level,
 	muggle_atomic_int async_capacity,
 	const char *file_path);
 

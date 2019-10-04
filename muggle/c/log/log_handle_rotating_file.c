@@ -62,13 +62,14 @@ int muggle_log_handle_rotating_file_init(
 	muggle_log_handle_t *handle,
 	int write_type,
 	int fmt_flag,
+	int level,
 	muggle_atomic_int async_capacity,
 	const char *file_path,
 	unsigned int max_bytes,
 	unsigned int backup_count)
 {
 	handle->type = MUGGLE_LOG_TYPE_ROTATING_FILE;
-	int ret = muggle_log_handle_base_init(handle, write_type, fmt_flag, async_capacity);
+	int ret = muggle_log_handle_base_init(handle, write_type, fmt_flag, level, async_capacity);
 	if (ret != MUGGLE_OK)
 	{
 		return ret;
