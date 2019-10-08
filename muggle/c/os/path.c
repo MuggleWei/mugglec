@@ -86,7 +86,7 @@ int muggle_path_basename(const char *path, char *ret, unsigned int size)
 
 	if (pos < 0)
 	{
-		if (total_len > size - 1)
+		if ((unsigned int)total_len > size - 1)
 		{
 			return MUGGLE_ERR_INVALID_PARAM;
 		}
@@ -101,7 +101,7 @@ int muggle_path_basename(const char *path, char *ret, unsigned int size)
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	if (len >= size)
+	if ((unsigned int)len >= size)
 	{
 		len = size - 1;
 	}
@@ -191,7 +191,8 @@ int muggle_path_exists(const char *path)
 
 	// get file attributes
 	DWORD attr = GetFileAttributesW(unicode_buf);
-	if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY))
+	// if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY))
+	if (attr == INVALID_FILE_ATTRIBUTES)
 	{
 		return 0;
 	}
@@ -214,7 +215,7 @@ int muggle_path_join(const char *path1, const char *path2, char *ret, unsigned i
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	if (len_path1 >= size)
+	if ((unsigned int)len_path1 >= size)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
@@ -228,7 +229,7 @@ int muggle_path_join(const char *path1, const char *path2, char *ret, unsigned i
 	int pos = len_path1;
 	if (!muggle_str_endswith(ret, "/") && !muggle_str_endswith(ret, "\\"))
 	{
-		if (pos >= size)
+		if ((unsigned int)pos >= size)
 		{
 			return MUGGLE_ERR_INVALID_PARAM;
 		}
@@ -252,7 +253,7 @@ int muggle_path_join(const char *path1, const char *path2, char *ret, unsigned i
 		len_path2 -= 1;
 	}
 
-	if (len_path1 + len_path2 >= size)
+	if ((unsigned int)(len_path1 + len_path2) >= size)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
@@ -264,13 +265,12 @@ int muggle_path_join(const char *path1, const char *path2, char *ret, unsigned i
 
 int muggle_path_normpath(const char *path, char *ret, unsigned int size)
 {
-	int r;
 	int pos = 0;
 	const char *cursor = path;
 	int len = (int)strlen(path);
 
 	// cal max len
-	if (len >= size)
+	if ((unsigned int)len >= size)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
 	}

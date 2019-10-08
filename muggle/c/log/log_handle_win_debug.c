@@ -43,7 +43,7 @@ int muggle_log_handle_win_debug_output(
 )
 {
 #if MUGGLE_PLATFORM_WINDOWS
-	if (!IsDebuggerPresent)
+	if (!IsDebuggerPresent())
 	{
 		return 0;
 	}

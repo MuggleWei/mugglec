@@ -11,6 +11,7 @@
 #if MUGGLE_PLATFORM_WINDOWS
 
 #include <windows.h>
+#include <stdio.h>
 
 int muggle_os_process_path(char *path, unsigned int size)
 {
@@ -78,7 +79,7 @@ int muggle_os_mkdir(const char *path)
 			/* Temporarily truncate */
 			*p = '\0';
 
-			if (!CreateDirectory(_path, NULL))
+			if (!CreateDirectoryA(_path, NULL))
 			{
 				DWORD err = GetLastError();
 				if(err != ERROR_ALREADY_EXISTS)
@@ -91,7 +92,7 @@ int muggle_os_mkdir(const char *path)
 		}
 	}
 
-	if (!CreateDirectory(_path, NULL))
+	if (!CreateDirectoryA(_path, NULL))
 	{
 		DWORD err = GetLastError();
 		if(err != ERROR_ALREADY_EXISTS)

@@ -27,7 +27,7 @@ TEST(os, chdir)
 	char process_path[MUGGLE_MAX_PATH] = {0};
 	char working_path[MUGGLE_MAX_PATH] = {0};
 #if MUGGLE_PLATFORM_WINDOWS
-	const char *target_dir = "c:/";
+	const char *target_dir = "c:\\";
 #else
 	const char *target_dir = "/";
 #endif

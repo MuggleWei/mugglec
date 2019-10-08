@@ -13,7 +13,7 @@
 
 static int muggle_log_handle_rotating_file_detect(muggle_log_handle_t *handle)
 {
-	if (handle->rotating_file.offset >= handle->rotating_file.max_bytes)
+	if ((unsigned int)handle->rotating_file.offset >= handle->rotating_file.max_bytes)
 	{
 		return 1;
 	}
