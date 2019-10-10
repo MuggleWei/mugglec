@@ -36,6 +36,12 @@ typedef muggle_thread_ret_t __stdcall muggle_thread_routine(void *args);
 typedef muggle_thread_ret_t muggle_thread_routine(void *args);
 #endif
 
+#if MUGGLE_PLATFORM_WINDOWS
+typedef DWORD muggle_thread_id;
+#else
+typedef pthread_t muggle_thread_id;
+#endif
+
 /*
  * starts a new thread in the calling process
  * RETURN: on success returns 0, otherwise return errno in err.h
@@ -56,6 +62,12 @@ int muggle_thread_join(muggle_thread_t *thread);
  * */
 MUGGLE_CC_EXPORT
 int muggle_thread_detach(muggle_thread_t *thread);
+
+/*
+ * get current thread id
+ * */
+MUGGLE_CC_EXPORT
+muggle_thread_id muggle_thread_current_id();
 
 EXTERN_C_END
 

@@ -1,3 +1,5 @@
+#include <thread>
+#include <vector>
 #include "muggle/c/muggle_c.h"
 
 void example_log_handle_console(int write_type, int fmt_flag, int level)
@@ -7,7 +9,7 @@ void example_log_handle_console(int write_type, int fmt_flag, int level)
 		&handle, write_type, fmt_flag, level, 0, NULL, NULL, 1);
 
 	muggle_log_fmt_arg_t arg = {
-		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__
+		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id()
 	};
 	muggle_log_handle_write(&handle, &arg, "console logging");
 	muggle_log_handle_write(&handle, &arg, "message info");
@@ -31,7 +33,7 @@ void example_log_handle_file(int write_type, int fmt_flag, int level, const char
 	}
 
 	muggle_log_fmt_arg_t arg = {
-		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__
+		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id()
 	};
 	muggle_log_handle_write(&handle, &arg, "message info");
 	arg.level = MUGGLE_LOG_LEVEL_WARNING;
@@ -64,7 +66,7 @@ void example_log_handle_rotating_file(int write_type, int fmt_flag, int level, c
 	}
 
 	muggle_log_fmt_arg_t arg = {
-		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__
+		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id()
 	};
 	muggle_log_handle_write(&handle, &arg, "message info");
 	arg.level = MUGGLE_LOG_LEVEL_WARNING;
@@ -90,7 +92,7 @@ void example_log_handle_win_debug(int write_type, int fmt_flag, int level)
 		&handle, write_type, fmt_flag, level, 0, NULL, NULL);
 
 	muggle_log_fmt_arg_t arg = {
-		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__
+		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id()
 	};
 	muggle_log_handle_write(&handle, &arg, "win debug logging");
 	muggle_log_handle_write(&handle, &arg, "message info");
@@ -128,7 +130,7 @@ void example_log_category(int write_type, int fmt_flag, int level)
 	muggle_log_category_add(&category, &handle_file);
 
 	muggle_log_fmt_arg_t arg = {
-		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__
+		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id()
 	};
 	muggle_log_category_write(&category, &arg, "category");
 	arg.level = MUGGLE_LOG_LEVEL_INFO;
@@ -148,7 +150,7 @@ void init_log()
 	muggle_log_handle_console_init(
 		&handle_console,
 		MUGGLE_LOG_WRITE_TYPE_SYNC,
-		MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE,
+		MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_THREAD,
 		MUGGLE_LOG_LEVEL_WARNING,
 		0, NULL, NULL, 1);
 	muggle_log_add_handle(&handle_console);
@@ -163,7 +165,7 @@ void init_log()
 	int ret = muggle_log_handle_rotating_file_init(
 		&handle_rotating_file,
 		MUGGLE_LOG_WRITE_TYPE_SYNC,
-		MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_TIME,
+		MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_TIME | MUGGLE_LOG_FMT_THREAD,
 		MUGGLE_LOG_LEVEL_INFO,
 		0, NULL, NULL, file_path,
 		1024 * 10, 5
@@ -185,6 +187,14 @@ void example_default()
 {
 	init_log();
 
+	std::vector<std::thread> threads;
+	for (int i = 0; i < 8; ++i)
+	{
+		threads.push_back(std::thread([i]{
+			MUGGLE_INFO("info: %d", i);
+		}));
+	}
+
 	MUGGLE_DEBUG_INFO("debug info");
 	MUGGLE_DEBUG_WARNING("debug warning");
 	MUGGLE_ASSERT_MSG(1 == 1, "assert message");
@@ -194,6 +204,11 @@ void example_default()
 	MUGGLE_ERROR("error");
 	MUGGLE_FATAL("fatal, core dump when debug");
 
+	for (auto &t : threads)
+	{
+		t.join();
+	}
+
 	destroy_log();
 }
 
@@ -202,7 +217,7 @@ int main()
 	// default (recommend)
 	example_default();
 
-	int fmt = MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_TIME;
+	int fmt = MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_TIME | MUGGLE_LOG_FMT_THREAD;
 	int level = MUGGLE_LOG_LEVEL_INFO;
 	char buf[MUGGLE_MAX_PATH];
 

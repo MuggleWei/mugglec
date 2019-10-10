@@ -43,6 +43,11 @@ int muggle_thread_detach(muggle_thread_t *thread)
 	return MUGGLE_OK;
 }
 
+muggle_thread_id muggle_thread_current_id()
+{
+	return GetCurrentThreadId();
+}
+
 #else
 
 int muggle_thread_create(muggle_thread_t *thread, muggle_thread_routine routine, void *args)
@@ -58,6 +63,11 @@ int muggle_thread_join(muggle_thread_t *thread)
 int muggle_thread_detach(muggle_thread_t *thread)
 {
 	return pthread_detach(thread->th) == 0 ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
+}
+
+muggle_thread_id muggle_thread_current_id()
+{
+	return pthread_self();
 }
 
 #endif

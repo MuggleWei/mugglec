@@ -13,6 +13,7 @@ TEST(log, fmt)
 	arg.line = 666;
 	arg.file = "log_fmt_test_file";
 	arg.func = "log_fmt_test_func";
+	arg.tid = muggle_thread_current_id();
 
 	fmt_flag = 0;
 	num_write = muggle_log_fmt_gen(fmt_flag, &arg, "hello", buf, sizeof(buf));
@@ -44,6 +45,12 @@ TEST(log, fmt)
 	num_write = muggle_log_fmt_gen(fmt_flag, &arg, "hello", buf, sizeof(buf));
 	EXPECT_GT(num_write, 0);
 	EXPECT_TRUE(muggle_str_startswith(buf, "<T>"));
+	EXPECT_TRUE(muggle_str_endswith(buf, "| - hello\n"));
+
+	fmt_flag = MUGGLE_LOG_FMT_THREAD;
+	num_write = muggle_log_fmt_gen(fmt_flag, &arg, "hello", buf, sizeof(buf));
+	EXPECT_GT(num_write, 0);
+	EXPECT_TRUE(muggle_str_startswith(buf, "<t>"));
 	EXPECT_TRUE(muggle_str_endswith(buf, "| - hello\n"));
 
 	fmt_flag = 

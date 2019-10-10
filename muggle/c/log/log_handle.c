@@ -51,6 +51,7 @@ static int muggle_log_handle_async_write(
 	async_msg->line = arg->line;
 	strncpy(async_msg->file, arg->file, sizeof(async_msg->file) - 1);
 	strncpy(async_msg->func, arg->file, sizeof(async_msg->func) - 1);
+	async_msg->tid = arg->tid;
 	strncpy(async_msg->msg, msg, sizeof(async_msg->msg) - 1);
 
 	return muggle_ringbuffer_write(&handle->async.ring, async_msg);
@@ -73,7 +74,8 @@ muggle_thread_ret_t muggle_log_handle_run_async(void *arg)
 			async_msg->level,
 			async_msg->line,
 			async_msg->file,
-			async_msg->func
+			async_msg->func,
+			async_msg->tid
 		};
 		s_output_fn[handle->type](handle, &arg, async_msg->msg);
 

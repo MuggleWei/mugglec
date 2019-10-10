@@ -47,6 +47,7 @@ typedef struct muggle_log_async_msg_tag
 	unsigned int line;
 	char file[512];
 	char func[512];
+	muggle_thread_id tid;
 	char msg[MUGGLE_LOG_MAX_LEN];
 }muggle_log_asnyc_msg_t;
 

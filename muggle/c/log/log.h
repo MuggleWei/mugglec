@@ -9,6 +9,7 @@
 #define MUGGLE_C_LOG_H_
 
 #include "muggle/c/base/macro.h"
+#include "muggle/c/base/thread.h"
 #include "muggle/c/log/log_fmt.h"
 #include "muggle/c/log/log_handle.h"
 #include "muggle/c/log/log_category.h"
@@ -19,7 +20,7 @@ EXTERN_C_BEGIN
 do \
 { \
 	muggle_log_fmt_arg_t arg = { \
-		level, __LINE__, __FILE__, __FUNCTION__ \
+		level, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id() \
 	}; \
 	muggle_log_function(&g_log_default_category, &arg, format, ##__VA_ARGS__); \
 } while (0)
@@ -28,7 +29,7 @@ do \
 do \
 { \
 	muggle_log_fmt_arg_t arg = { \
-		level, __LINE__, __FILE__, __FUNCTION__ \
+		level, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id() \
 	}; \
 	muggle_log_function(p_log_category, &arg, format, ##__VA_ARGS__); \
 } while (0)
@@ -57,7 +58,7 @@ do \
 	if (!(x)) \
 	{ \
 		muggle_log_fmt_arg_t arg = { \
-			MUGGLE_LOG_LEVEL_FATAL, __LINE__, __FILE__, __FUNCTION__ \
+			MUGGLE_LOG_LEVEL_FATAL, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id() \
 		}; \
 		muggle_log_function(&g_log_default_category, &arg, "Assertion: "#x); \
 	} \
@@ -69,7 +70,7 @@ do \
 	if (!(x)) \
 	{ \
 		muggle_log_fmt_arg_t arg = { \
-			MUGGLE_LOG_LEVEL_FATAL, __LINE__, __FILE__, __FUNCTION__ \
+			MUGGLE_LOG_LEVEL_FATAL, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id() \
 		}; \
 		muggle_log_function(&g_log_default_category, &arg, "Assertion: "#x format, ##__VA_ARGS__); \
 	} \

@@ -9,6 +9,7 @@
 #define MUGGLE_C_LOG_FMT_H_
 
 #include "muggle/c/base/macro.h"
+#include "muggle/c/base/thread.h"
 
 EXTERN_C_BEGIN
 
@@ -28,6 +29,7 @@ enum
 	MUGGLE_LOG_FMT_FILE = 0x02,
 	MUGGLE_LOG_FMT_FUNC = 0x04,
 	MUGGLE_LOG_FMT_TIME = 0x08,
+	MUGGLE_LOG_FMT_THREAD = 0x10,
 };
 
 typedef struct muggle_log_fmt_arg_tag
@@ -36,6 +38,7 @@ typedef struct muggle_log_fmt_arg_tag
 	unsigned int line;
 	const char *file;
 	const char *func;
+	muggle_thread_id tid;
 }muggle_log_fmt_arg_t;
 
 /*

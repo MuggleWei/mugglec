@@ -23,7 +23,8 @@ const char* g_muggle_log_level_str[MUGGLE_LOG_LEVEL_MAX] = {
 	"",
 	"INFO",
 	"WARNING",
-	"ERROR"
+	"ERROR",
+	"FATAL"
 };
 
 int muggle_log_fmt_gen(
@@ -101,6 +102,21 @@ int muggle_log_fmt_gen(
 		timespec_get(&ts, TIME_UTC);
 		num_write = snprintf(p, remaining, "<T>%lld.%d|",
 			(long long)ts.tv_sec, (int)ts.tv_nsec);
+		if (num_write == -1)
+		{
+			return -1;
+		}
+		remaining -= num_write;
+		p += num_write;
+
+		if (remaining <= 0)
+		{
+			return size - 1;
+		}
+	}
+	if (fmt_flag & MUGGLE_LOG_FMT_THREAD)
+	{
+		num_write = snprintf(p, remaining, "<t>%llu|", (unsigned long long)arg->tid);
 		if (num_write == -1)
 		{
 			return -1;
