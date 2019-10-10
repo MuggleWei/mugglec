@@ -21,6 +21,8 @@ EXTERN_C_BEGIN
  * @fmt_flag: use MUGGLE_LOG_FMT_*
  * @level: log level that the log handle will output
  * @async_capacity: if write_type == MUGGLE_LOG_WRITE_TYPE_ASYNC, use this specify async buffer capacity
+ * @p_alloc: function for async allocate memory, if NULL, use malloc
+ * @p_free: function for async free memory, if NULL, use free
  * @file_path: log file path
  * @max_bytes: max size when to rotate log
  * @backup_count: max backup file count
@@ -33,6 +35,8 @@ int muggle_log_handle_rotating_file_init(
 	int fmt_flag,
 	int level,
 	muggle_atomic_int async_capacity,
+	muggle_log_handle_async_alloc p_alloc,
+	muggle_log_handle_async_free p_free,
 	const char *file_path,
 	unsigned int max_bytes,
 	unsigned int backup_count);

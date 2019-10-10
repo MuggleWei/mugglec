@@ -4,11 +4,7 @@ void example_log_handle_console(int write_type, int fmt_flag, int level)
 {
 	muggle_log_handle_t handle;
 	muggle_log_handle_console_init(
-		&handle,
-		write_type,
-		fmt_flag,
-		level,
-		0, 1);
+		&handle, write_type, fmt_flag, level, 0, NULL, NULL, 1);
 
 	muggle_log_fmt_arg_t arg = {
 		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__
@@ -27,12 +23,7 @@ void example_log_handle_file(int write_type, int fmt_flag, int level, const char
 {
 	muggle_log_handle_t handle;
 	int ret = muggle_log_handle_file_init(
-		&handle,
-		write_type,
-		fmt_flag,
-		level,
-		0, path
-	);
+		&handle, write_type, fmt_flag, level,	0, NULL, NULL, path);
 	if (ret != MUGGLE_OK)
 	{
 		fprintf(stderr, "failed init file log handle\n");
@@ -63,12 +54,8 @@ void example_log_handle_rotating_file(int write_type, int fmt_flag, int level, c
 {
 	muggle_log_handle_t handle;
 	int ret = muggle_log_handle_rotating_file_init(
-		&handle,
-		write_type,
-		fmt_flag,
-		level,
-		0, path,
-		1024 * 10, 5
+		&handle, write_type, fmt_flag, level, 0, NULL, NULL,
+		path, 1024 * 10, 5
 	);
 	if (ret != MUGGLE_OK)
 	{
@@ -100,11 +87,7 @@ void example_log_handle_win_debug(int write_type, int fmt_flag, int level)
 {
 	muggle_log_handle_t handle;
 	muggle_log_handle_win_debug_init(
-		&handle,
-		write_type,
-		fmt_flag,
-		level,
-		0);
+		&handle, write_type, fmt_flag, level, 0, NULL, NULL);
 
 	muggle_log_fmt_arg_t arg = {
 		MUGGLE_LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__
@@ -123,11 +106,7 @@ void example_log_category(int write_type, int fmt_flag, int level)
 {
 	muggle_log_handle_t handle_console;
 	muggle_log_handle_console_init(
-		&handle_console,
-		write_type,
-		fmt_flag,
-		level,
-		0, 1);
+		&handle_console, write_type, fmt_flag, level, 0, NULL, NULL, 1);
 
 
 	char buf[MUGGLE_MAX_PATH];
@@ -140,12 +119,7 @@ void example_log_category(int write_type, int fmt_flag, int level)
 
 	muggle_log_handle_t handle_file;
 	muggle_log_handle_file_init(
-		&handle_file,
-		write_type,
-		fmt_flag,
-		level,
-		0, file_path
-	);
+		&handle_file, write_type, fmt_flag, level, 0, NULL, NULL, file_path);
 
 	muggle_log_category_t category;
 	memset(&category, 0, sizeof(category));
@@ -176,7 +150,7 @@ void init_log()
 		MUGGLE_LOG_WRITE_TYPE_SYNC,
 		MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE,
 		MUGGLE_LOG_LEVEL_WARNING,
-		0, 1);
+		0, NULL, NULL, 1);
 	muggle_log_add_handle(&handle_console);
 
 	char buf[MUGGLE_MAX_PATH];
@@ -191,7 +165,7 @@ void init_log()
 		MUGGLE_LOG_WRITE_TYPE_SYNC,
 		MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_TIME,
 		MUGGLE_LOG_LEVEL_INFO,
-		0, file_path,
+		0, NULL, NULL, file_path,
 		1024 * 10, 5
 	);
 	if (ret != MUGGLE_OK)

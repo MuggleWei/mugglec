@@ -80,12 +80,17 @@ typedef struct muggle_log_handle_property_rotating_file_tag
 	long offset;
 }muggle_log_handle_property_rotating_file_t;
 
+typedef void* (*muggle_log_handle_async_alloc)(size_t size);
+typedef void (*muggle_log_handle_async_free)(void *ptr);
+
 typedef struct muggle_log_handle_tag
 {
 	int type;
 	int write_type;
 	int fmt_flag;
 	int level;
+	muggle_log_handle_async_alloc p_alloc;
+	muggle_log_handle_async_free p_free;
 	union
 	{
 		muggle_log_handle_property_sync_t sync;
@@ -106,6 +111,8 @@ typedef struct muggle_log_handle_tag
  * @fmt_flag: use MUGGLE_LOG_FMT_*
  * @level: log level that the log handle will output
  * @async_capacity: if write_type == MUGGLE_LOG_WRITE_TYPE_ASYNC, use this specify async buffer capacity
+ * @p_alloc: function for async allocate memory, if NULL, use malloc
+ * @p_free: function for async free memory, if NULL, use free
  * NOTE: don't invoke this function immediatly
  * */
 MUGGLE_CC_EXPORT
@@ -114,7 +121,9 @@ int muggle_log_handle_base_init(
 	int write_type,
 	int fmt_flag,
 	int level,
-	muggle_atomic_int async_capacity
+	muggle_atomic_int async_capacity,
+	muggle_log_handle_async_alloc p_alloc,
+	muggle_log_handle_async_free p_free
 );
 
 /*

@@ -41,7 +41,7 @@ static int muggle_log_handle_async_write(
 	const char *msg
 )
 {
-	muggle_log_asnyc_msg_t *async_msg = (muggle_log_asnyc_msg_t*)malloc(sizeof(muggle_log_asnyc_msg_t));
+	muggle_log_asnyc_msg_t *async_msg = (muggle_log_asnyc_msg_t*)handle->p_alloc(sizeof(muggle_log_asnyc_msg_t));
 	if (async_msg == NULL)
 	{
 		return MUGGLE_ERR_MEM_ALLOC;
@@ -77,7 +77,7 @@ muggle_thread_ret_t muggle_log_handle_run_async(void *arg)
 		};
 		s_output_fn[handle->type](handle, &arg, async_msg->msg);
 
-		free(async_msg);
+		handle->p_free(async_msg);
 	}
 
 	return 0;
@@ -88,7 +88,9 @@ int muggle_log_handle_base_init(
 	int write_type,
 	int fmt_flag,
 	int level,
-	muggle_atomic_int async_capacity
+	muggle_atomic_int async_capacity,
+	muggle_log_handle_async_alloc p_alloc,
+	muggle_log_handle_async_free p_free
 )
 {
 	if (write_type >= MUGGLE_LOG_WRITE_TYPE_MAX || write_type < 0)
@@ -99,6 +101,16 @@ int muggle_log_handle_base_init(
 	handle->write_type = write_type;
 	handle->fmt_flag = fmt_flag;
 	handle->level = level;
+	handle->p_alloc = p_alloc;
+	if (handle->p_alloc == NULL)
+	{
+		handle->p_alloc = malloc;
+	}
+	handle->p_free = p_free;
+	if (handle->p_free == NULL)
+	{
+		handle->p_free = free;
+	}
 	async_capacity = async_capacity <= 8 ? 1024 * 8 : async_capacity;
 
 	switch (write_type)
