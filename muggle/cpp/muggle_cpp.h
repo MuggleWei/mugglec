@@ -8,8 +8,6 @@
 #ifndef MUGGLE_CPP_H_
 #define MUGGLE_CPP_H_
 
-#include "muggle/cpp/design_pattern/singleton.hpp"
-
 #include "muggle/cpp/memory/memory_pool.h"
 #include "muggle/cpp/memory/thread_safe_memory_pool.h"
 #include "muggle/cpp/memory/mem_detect.h"
