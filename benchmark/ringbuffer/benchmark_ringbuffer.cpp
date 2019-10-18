@@ -36,7 +36,10 @@ void fn_producer(
 			muggle_ringbuffer_write(ring, &blocks[idx]);
 			timespec_get(&blocks[idx].ts[1], TIME_UTC);
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(config->loop_interval_ms));
+		if (config->loop_interval_ms > 0)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(config->loop_interval_ms));
+		}
 	}
 }
 

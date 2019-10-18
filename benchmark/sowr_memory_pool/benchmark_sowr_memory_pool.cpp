@@ -47,7 +47,10 @@ void fn_producer(
 			block->idx = idx;
 			muggle_ringbuffer_write(ring, block);
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(config->loop_interval_ms));
+		if (config->loop_interval_ms > 0)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(config->loop_interval_ms));
+		}
 	}
 
 	while (!muggle_sowr_memory_pool_is_all_free(&pool))
