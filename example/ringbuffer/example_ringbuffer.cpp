@@ -125,7 +125,7 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 					break;
 				}
 
-				if (idx == cnt_interval)
+				if (idx == cnt_interval && interval_ms > 0)
 				{
 					std::this_thread::sleep_for(std::chrono::milliseconds(interval_ms));
 				}
@@ -166,28 +166,40 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 	muggle_ringbuffer_destroy(&r);
 
 	// print elapsed
-	uint64_t write_total_ns = 0;
-	uint64_t trans_total_ns = 0;
+	uint64_t sum_write_ns = 0;
+	uint64_t sum_trans_ns = 0;
+	uint64_t total_write_ns = 0;
+	uint64_t total_trans_ns = 0;
 	uint64_t cnt = 0;
 	for (int i = 0; i < total; i++)
 	{
-		write_total_ns += 
+		sum_write_ns += 
 			(blocks[i].ts[1].tv_sec - blocks[i].ts[0].tv_sec) * 1000000000 + 
 			blocks[i].ts[1].tv_nsec - blocks[i].ts[0].tv_nsec;
 		if (blocks[i].ts[2].tv_sec != 0)
 		{
-			trans_total_ns +=
+			sum_trans_ns +=
 				(blocks[i].ts[2].tv_sec - blocks[i].ts[0].tv_sec) * 1000000000 + 
 				blocks[i].ts[2].tv_nsec - blocks[i].ts[0].tv_nsec;
 			cnt++;
 		}
 	}
+	total_write_ns = 
+		(blocks[total-1].ts[1].tv_sec - blocks[0].ts[0].tv_sec) * 1000000000 + 
+		blocks[total-1].ts[1].tv_nsec - blocks[0].ts[0].tv_nsec;
+	total_trans_ns = 
+		(blocks[total-1].ts[2].tv_sec - blocks[0].ts[0].tv_sec) * 1000000000 + 
+		blocks[total-1].ts[2].tv_nsec - blocks[0].ts[0].tv_nsec;
 
 	printf("total read %d messages\n", total_read);
 	printf("sum of write use %lluns(%.3fs), avg: %lluns\n",
-		(unsigned long long)write_total_ns, write_total_ns / 1000000000.0, (unsigned long long)write_total_ns / total);
+		(unsigned long long)sum_write_ns, sum_write_ns / 1000000000.0, (unsigned long long)sum_write_ns / total);
 	printf("sum of trans use %lluns(%.3fs), avg: %lluns\n",
-		(unsigned long long)trans_total_ns, trans_total_ns / 1000000000.0, (unsigned long long)trans_total_ns / cnt);
+		(unsigned long long)sum_trans_ns, sum_trans_ns / 1000000000.0, (unsigned long long)sum_trans_ns / cnt);
+	printf("total of write use %lluns(%.3fs), avg: %lluns\n",
+		(unsigned long long)total_write_ns, total_write_ns / 1000000000.0, (unsigned long long)total_write_ns / total);
+	printf("total of trans use %lluns(%.3fs), avg: %lluns\n",
+		(unsigned long long)total_trans_ns, total_trans_ns / 1000000000.0, (unsigned long long)total_trans_ns / cnt);
 
 	free(blocks);
 }
@@ -202,7 +214,7 @@ int main()
 	}
 
 	int cnt_interval = 1000;
-	int interval_ms = 1;
+	int interval_ms = 0;
 	int flag = 0;
 	int capacity = 1024 * 64;
 	int total = 10000 * 100;
