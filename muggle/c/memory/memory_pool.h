@@ -16,7 +16,7 @@ EXTERN_C_BEGIN
 // memory pool flag
 #define MUGGLE_MEMORY_POOL_CONSTANT_SIZE	0x01
 
-typedef struct MuggleMemoryPool_tag
+typedef struct muggle_memory_pool_tag
 {
 	void**			memory_pool_data_bufs;  // data buffer array
 	void**			memory_pool_ptr_buf;    // pointer buffer
@@ -35,28 +35,28 @@ typedef struct MuggleMemoryPool_tag
 #if MUGGLE_DEBUG
 	unsigned int	peak;                   // record max number of block in use
 #endif
-}MuggleMemoryPool;
+}muggle_memory_pool_t;
 
 MUGGLE_CC_EXPORT
-bool MuggleMemoryPoolInit(MuggleMemoryPool* pool, unsigned int init_capacity, unsigned int block_size);
+bool muggle_memory_pool_init(muggle_memory_pool_t* pool, unsigned int init_capacity, unsigned int block_size);
 
 MUGGLE_CC_EXPORT
-void MuggleMemoryPoolDestroy(MuggleMemoryPool* pool);
+void muggle_memory_pool_destroy(muggle_memory_pool_t* pool);
 
 MUGGLE_CC_EXPORT 
-void* MuggleMemoryPoolAlloc(MuggleMemoryPool* pool);
+void* muggle_memory_pool_alloc(muggle_memory_pool_t* pool);
 
 MUGGLE_CC_EXPORT 
-void MuggleMemoryPoolFree(MuggleMemoryPool* pool, void* p_data);
+void muggle_memory_pool_free(muggle_memory_pool_t* pool, void* p_data);
 
 MUGGLE_CC_EXPORT 
-bool MuggleMemoryPoolEnsureSpace(MuggleMemoryPool* pool, unsigned int capacity);
+bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, unsigned int capacity);
 
 MUGGLE_CC_EXPORT
-unsigned int MuggleMemoryPoolGetFlag(MuggleMemoryPool* pool);
+unsigned int muggle_memory_pool_get_flag(muggle_memory_pool_t* pool);
 
 MUGGLE_CC_EXPORT
-void MuggleMemoryPoolSetFlag(MuggleMemoryPool* pool, unsigned int flag);
+void muggle_memory_pool_set_flag(muggle_memory_pool_t* pool, unsigned int flag);
 
 EXTERN_C_END
 

@@ -10,9 +10,9 @@
 #include <string.h>
 #include <assert.h>
 
-bool MuggleMemoryPoolInit(MuggleMemoryPool* pool, unsigned int init_capacity, unsigned int block_size)
+bool muggle_memory_pool_init(muggle_memory_pool_t* pool, unsigned int init_capacity, unsigned int block_size)
 {
-	memset(pool, 0, sizeof(MuggleMemoryPool));
+	memset(pool, 0, sizeof(muggle_memory_pool_t));
 	init_capacity = init_capacity == 0 ? 8 : init_capacity;
 	if (block_size == 0)
 	{
@@ -63,7 +63,7 @@ bool MuggleMemoryPoolInit(MuggleMemoryPool* pool, unsigned int init_capacity, un
 
 	return true;
 }
-void MuggleMemoryPoolDestroy(MuggleMemoryPool* pool)
+void muggle_memory_pool_destroy(muggle_memory_pool_t* pool)
 {
 	unsigned int i;
 	for (i = 0; i<pool->num_buf; ++i)
@@ -73,13 +73,13 @@ void MuggleMemoryPoolDestroy(MuggleMemoryPool* pool)
 	free((void*)pool->memory_pool_data_bufs);
 	free((void*)pool->memory_pool_ptr_buf);
 
-	memset(pool, 0, sizeof(MuggleMemoryPool));
+	memset(pool, 0, sizeof(muggle_memory_pool_t));
 }
-void* MuggleMemoryPoolAlloc(MuggleMemoryPool* pool)
+void* muggle_memory_pool_alloc(muggle_memory_pool_t* pool)
 {
 	if (pool->used == pool->capacity)
 	{
-		if (!MuggleMemoryPoolEnsureSpace(pool, pool->capacity * 2))
+		if (!muggle_memory_pool_ensure_space(pool, pool->capacity * 2))
 		{
 			return NULL;
 		}
@@ -100,7 +100,7 @@ void* MuggleMemoryPoolAlloc(MuggleMemoryPool* pool)
 	}
 	return ret;
 }
-void MuggleMemoryPoolFree(MuggleMemoryPool* pool, void* p_data)
+void muggle_memory_pool_free(muggle_memory_pool_t* pool, void* p_data)
 {
 	pool->memory_pool_ptr_buf[pool->free_index] = (void*)p_data;
 	++pool->free_index;
@@ -111,7 +111,7 @@ void MuggleMemoryPoolFree(MuggleMemoryPool* pool, void* p_data)
 	--pool->used;
 }
 
-bool MuggleMemoryPoolEnsureSpace(MuggleMemoryPool* pool, unsigned int capacity)
+bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, unsigned int capacity)
 {
 	// already have enough capacity
 	if (capacity <= pool->capacity)
@@ -250,12 +250,12 @@ bool MuggleMemoryPoolEnsureSpace(MuggleMemoryPool* pool, unsigned int capacity)
 	return true;
 }
 
-unsigned int MuggleMemoryPoolGetFlag(MuggleMemoryPool* pool)
+unsigned int muggle_memory_pool_get_flag(muggle_memory_pool_t* pool)
 {
 	return pool->flag;
 }
 
-void MuggleMemoryPoolSetFlag(MuggleMemoryPool* pool, unsigned int flag)
+void muggle_memory_pool_set_flag(muggle_memory_pool_t* pool, unsigned int flag)
 {
 	pool->flag = flag;
 }
