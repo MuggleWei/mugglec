@@ -283,7 +283,7 @@ int muggle_ringbuffer_init(muggle_ringbuffer_t *r, muggle_atomic_int capacity, i
 	r->datas = (void**)malloc(sizeof(void*) * r->capacity);
 	if (r->datas == NULL)
 	{
-		return MUGGLE_ERR_SYS_CALL;
+		return MUGGLE_ERR_MEM_ALLOC;
 	}
 
 	return MUGGLE_OK;

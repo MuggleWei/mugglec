@@ -45,6 +45,7 @@
 #include "muggle/c/sync/condition_variable.h"
 #include "muggle/c/sync/futex.h"
 #include "muggle/c/sync/ringbuffer.h"
+#include "muggle/c/sync/array_blocking_queue.h"
 
 // log
 #include "muggle/c/log/log_fmt.h"
