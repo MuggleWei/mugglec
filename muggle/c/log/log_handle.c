@@ -54,7 +54,7 @@ static int muggle_log_handle_async_write(
 	async_msg->tid = arg->tid;
 	strncpy(async_msg->msg, msg, sizeof(async_msg->msg) - 1);
 
-	return muggle_ringbuffer_write(&handle->async.ring, async_msg);
+	return muggle_ring_buffer_write(&handle->async.ring, async_msg);
 }
 
 muggle_thread_ret_t muggle_log_handle_run_async(void *arg)
@@ -64,7 +64,7 @@ muggle_thread_ret_t muggle_log_handle_run_async(void *arg)
 	while (1)
 	{
 		muggle_log_asnyc_msg_t *async_msg = 
-			(muggle_log_asnyc_msg_t*)muggle_ringbuffer_read(&handle->async.ring, idx++);
+			(muggle_log_asnyc_msg_t*)muggle_ring_buffer_read(&handle->async.ring, idx++);
 		if (async_msg == NULL)
 		{
 			break;
@@ -123,10 +123,10 @@ int muggle_log_handle_base_init(
 		}break;
 		case MUGGLE_LOG_WRITE_TYPE_ASYNC:
 		{
-			muggle_ringbuffer_init(
+			muggle_ring_buffer_init(
 				&handle->async.ring,
 				async_capacity,
-				MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK | MUGGLE_RINGBUFFER_FLAG_SINGLE_READER); 
+				MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK | MUGGLE_RING_BUFFER_FLAG_SINGLE_READER); 
 			muggle_thread_create(&handle->async.thread, muggle_log_handle_run_async, handle);
 		}break;
 	}
@@ -144,7 +144,7 @@ int muggle_log_handle_destroy(muggle_log_handle_t *handle)
 		}break;
 		case MUGGLE_LOG_WRITE_TYPE_ASYNC:
 		{
-			muggle_ringbuffer_write(&handle->async.ring, NULL);
+			muggle_ring_buffer_write(&handle->async.ring, NULL);
 			muggle_thread_join(&handle->async.thread);
 		}break;
 	}

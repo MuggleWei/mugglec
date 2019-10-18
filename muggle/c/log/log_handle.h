@@ -13,7 +13,7 @@
 #include "muggle/c/base/atomic.h"
 #include "muggle/c/base/thread.h"
 #include "muggle/c/sync/mutex.h"
-#include "muggle/c/sync/ringbuffer.h"
+#include "muggle/c/sync/ring_buffer.h"
 #include "muggle/c/log/log_fmt.h"
 
 EXTERN_C_BEGIN
@@ -58,7 +58,7 @@ typedef struct muggle_log_handle_property_sync_tag
 
 typedef struct muggle_log_handle_property_async_tag
 {
-	muggle_ringbuffer_t ring;
+	muggle_ring_buffer_t ring;
 	muggle_thread_t thread;
 }muggle_log_handle_property_async_t;
 

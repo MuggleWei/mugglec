@@ -29,7 +29,7 @@ void get_case_name(char *buf, size_t max_len, int cnt_producer, int cnt_consumer
 
 void producer_consumer(int capacity, int flag, int total, int cnt_producer, int cnt_consumer, int cnt_interval, int interval_ms)
 {
-	muggle_ringbuffer_t r;
+	muggle_ring_buffer_t r;
 	muggle::LatencyBlock *blocks = (muggle::LatencyBlock*)malloc(sizeof(muggle::LatencyBlock) * total);
 	for (int i = 0; i < total; ++i)
 	{
@@ -39,7 +39,7 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 
 	muggle_atomic_int total_read = 0;
 	muggle_atomic_int consumer_ready = 0;
-	muggle_ringbuffer_init(&r, capacity, flag);
+	muggle_ring_buffer_init(&r, capacity, flag);
 	char case_name[1024];
 	get_case_name(case_name, sizeof(case_name)-1, cnt_producer, cnt_consumer, r.write_mode, r.read_mode);
 
@@ -59,19 +59,19 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 			timespec_get(&start_ts, TIME_UTC);
 			while (1)
 			{
-				muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_ringbuffer_read(&r, pos++);
+				muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_ring_buffer_read(&r, pos++);
 				if (block == nullptr)
 				{
 					break;
 				}
-				if (consumer_idx == 0 || (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE))
+				if (consumer_idx == 0 || (flag & MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE))
 				{
 					timespec_get(&block->ts[2], TIME_UTC);
 				}
 
 				if (cnt_producer == 1)
 				{
-					if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
+					if (flag & MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE)
 					{
 						ASSERT_GE((int)block->idx, (int)recv_idx);
 					}
@@ -117,7 +117,7 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 				if (idx < total)
 				{
 					timespec_get(&blocks[idx].ts[0], TIME_UTC);
-					muggle_ringbuffer_write(&r, &blocks[idx]);
+					muggle_ring_buffer_write(&r, &blocks[idx]);
 					timespec_get(&blocks[idx].ts[1], TIME_UTC);
 				}
 				else
@@ -146,16 +146,16 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 		producer.join();
 	}
 
-	if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
+	if (flag & MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE)
 	{
 		for (int i = 0; i < cnt_consumer; ++i)
 		{
-			muggle_ringbuffer_write(&r, nullptr);
+			muggle_ring_buffer_write(&r, nullptr);
 		}
 	}
 	else
 	{
-		muggle_ringbuffer_write(&r, nullptr);
+		muggle_ring_buffer_write(&r, nullptr);
 	}
 
 	for (auto &consumer : consumers)
@@ -163,7 +163,7 @@ void producer_consumer(int capacity, int flag, int total, int cnt_producer, int 
 		consumer.join();
 	}
 
-	muggle_ringbuffer_destroy(&r);
+	muggle_ring_buffer_destroy(&r);
 
 	// print elapsed
 	uint64_t sum_write_ns = 0;
@@ -221,29 +221,29 @@ int main()
 
 	// mul producer 1 consumer
 	flag = 
-		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK |
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER |
-		MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP;
+		MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK |
+		MUGGLE_RING_BUFFER_FLAG_SINGLE_READER |
+		MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP;
 	producer_consumer(capacity, flag, total, hc, 1, cnt_interval, interval_ms);
 
 	flag = 
-		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK |
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER;
+		MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK |
+		MUGGLE_RING_BUFFER_FLAG_SINGLE_READER;
 	producer_consumer(capacity, flag, total, hc, 1, cnt_interval, interval_ms);
 
 	// 1 producer, mul consumer
 	flag = 
-		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK |
-		MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP;
+		MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK |
+		MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP;
 	producer_consumer(capacity, flag, total, 1, hc, cnt_interval, interval_ms);
 
 	flag = 
-		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK;
+		MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK;
 	producer_consumer(capacity, flag, total, 1, hc, cnt_interval, interval_ms);
 
 	flag = 
-		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK |
-		MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE;
+		MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK |
+		MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE;
 	producer_consumer(capacity, flag, total, 1, hc, cnt_interval, interval_ms);
 
 	return 0;

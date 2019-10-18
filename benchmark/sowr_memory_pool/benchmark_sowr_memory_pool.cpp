@@ -13,7 +13,7 @@
 uint64_t *consumer_read_num = nullptr;
 
 void fn_producer(
-	muggle_ringbuffer_t *ring,
+	muggle_ring_buffer_t *ring,
 	muggle::BenchmarkConfig *config,
 	muggle::LatencyBlock *blocks,
 	muggle_atomic_int *consumer_ready,
@@ -45,7 +45,7 @@ void fn_producer(
 			}
 
 			block->idx = idx;
-			muggle_ringbuffer_write(ring, block);
+			muggle_ring_buffer_write(ring, block);
 		}
 		if (config->loop_interval_ms > 0)
 		{
@@ -61,7 +61,7 @@ void fn_producer(
 }
 
 void fn_consumer(
-	muggle_ringbuffer_t *ring,
+	muggle_ring_buffer_t *ring,
 	muggle_atomic_int *consumer_ready,
 	muggle::LatencyBlock *blocks
 )
@@ -71,7 +71,7 @@ void fn_consumer(
 	uint64_t cnt = 0;
 	while (1)
 	{
-		muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_ringbuffer_read(ring, pos++);
+		muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_ring_buffer_read(ring, pos++);
 		if (!block)
 		{
 			break;
@@ -95,8 +95,8 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 
 	consumer_read_num = (uint64_t*)malloc(sizeof(uint64_t) * cnt_consumer);
 
-	muggle_ringbuffer_t ring;
-	muggle_ringbuffer_init(&ring, 1024 * 16, flag);
+	muggle_ring_buffer_t ring;
+	muggle_ring_buffer_init(&ring, 1024 * 16, flag);
 
 	std::vector<std::thread> producers;
 	std::vector<std::thread> consumers;
@@ -126,14 +126,14 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 		producer.join();
 	}
 
-	muggle_ringbuffer_write(&ring, nullptr);
+	muggle_ring_buffer_write(&ring, nullptr);
 
 	for (auto &consumer : consumers)
 	{
 		consumer.join();
 	}
 
-	muggle_ringbuffer_destroy(&ring);
+	muggle_ring_buffer_destroy(&ring);
 
 	char buf[128];
 

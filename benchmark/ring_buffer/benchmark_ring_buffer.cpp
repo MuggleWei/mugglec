@@ -13,7 +13,7 @@
 uint64_t *consumer_read_num = nullptr;
 
 void fn_producer(
-	muggle_ringbuffer_t *ring,
+	muggle_ring_buffer_t *ring,
 	muggle::BenchmarkConfig *config,
 	muggle::LatencyBlock *blocks,
 	muggle_atomic_int *consumer_ready,
@@ -33,7 +33,7 @@ void fn_producer(
 			blocks[idx].idx = idx;
 
 			timespec_get(&blocks[idx].ts[0], TIME_UTC);
-			muggle_ringbuffer_write(ring, &blocks[idx]);
+			muggle_ring_buffer_write(ring, &blocks[idx]);
 			timespec_get(&blocks[idx].ts[1], TIME_UTC);
 		}
 		if (config->loop_interval_ms > 0)
@@ -44,7 +44,7 @@ void fn_producer(
 }
 
 void fn_consumer(
-	muggle_ringbuffer_t *ring,
+	muggle_ring_buffer_t *ring,
 	muggle_atomic_int *consumer_ready,
 	int flag
 )
@@ -54,12 +54,12 @@ void fn_consumer(
 	uint64_t idx = 0;
 	while (1)
 	{
-		muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_ringbuffer_read(ring, pos++);
+		muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_ring_buffer_read(ring, pos++);
 		if (!block)
 		{
 			break;
 		}
-		if (consumer_idx == 0 || (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE))
+		if (consumer_idx == 0 || (flag & MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE))
 		{
 			timespec_get(&block->ts[2], TIME_UTC);
 		}
@@ -95,8 +95,8 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 
 	consumer_read_num = (uint64_t*)malloc(sizeof(uint64_t) * cnt_consumer);
 
-	muggle_ringbuffer_t ring;
-	muggle_ringbuffer_init(&ring, 1024 * 16, flag);
+	muggle_ring_buffer_t ring;
+	muggle_ring_buffer_init(&ring, 1024 * 16, flag);
 	char case_name[1024];
 	get_case_name(case_name, sizeof(case_name)-1, cnt_producer, cnt_consumer, ring.write_mode, ring.read_mode);
 
@@ -130,16 +130,16 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 		producer.join();
 	}
 
-	if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
+	if (flag & MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE)
 	{
 		for (int i = 0; i < cnt_consumer; ++i)
 		{
-			muggle_ringbuffer_write(&ring, nullptr);
+			muggle_ring_buffer_write(&ring, nullptr);
 		}
 	}
 	else
 	{
-		muggle_ringbuffer_write(&ring, nullptr);
+		muggle_ring_buffer_write(&ring, nullptr);
 	}
 
 	for (auto &consumer : consumers)
@@ -147,11 +147,11 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 		consumer.join();
 	}
 
-	muggle_ringbuffer_destroy(&ring);
+	muggle_ring_buffer_destroy(&ring);
 
 	char buf[128];
 
-	if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
+	if (flag & MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE)
 	{
 		uint64_t cnt_consumer_reads = 0;
 		for (int i = 0; i < cnt_consumer; ++i)
@@ -194,7 +194,7 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 int main()
 {
 	muggle::BenchmarkConfig config;
-	strncpy(config.name, "ringbuffer", sizeof(config.name)-1);
+	strncpy(config.name, "ring_buffer", sizeof(config.name)-1);
 	config.loop = 50;
 	config.cnt_per_loop = 20000;
 	config.loop_interval_ms = 10;
@@ -226,15 +226,15 @@ int main()
 	int flag = 0;
 
 	int w_flags[] = {
-		MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK,
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER,
-		MUGGLE_RINGBUFFER_FLAG_WRITE_BUSY_LOOP
+		MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK,
+		MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER,
+		MUGGLE_RING_BUFFER_FLAG_WRITE_BUSY_LOOP
 	};
 	int r_flags[] = {
-		MUGGLE_RINGBUFFER_FLAG_READ_ALL | MUGGLE_RINGBUFFER_FLAG_READ_WAIT,
-		MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP,
-		MUGGLE_RINGBUFFER_FLAG_SINGLE_READER | MUGGLE_RINGBUFFER_FLAG_READ_WAIT,
-		MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE 
+		MUGGLE_RING_BUFFER_FLAG_READ_ALL | MUGGLE_RING_BUFFER_FLAG_READ_WAIT,
+		MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP,
+		MUGGLE_RING_BUFFER_FLAG_SINGLE_READER | MUGGLE_RING_BUFFER_FLAG_READ_WAIT,
+		MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE 
 	};
 
 	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
@@ -245,18 +245,18 @@ int main()
 
 			Benchmark_wr(fp, config, 1, 1, flag);
 
-			if (!(flag & MUGGLE_RINGBUFFER_FLAG_SINGLE_READER))
+			if (!(flag & MUGGLE_RING_BUFFER_FLAG_SINGLE_READER))
 			{
 				Benchmark_wr(fp, config, 1, hc_half, flag);
 			}
 
-			if (!(flag & MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER))
+			if (!(flag & MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER))
 			{
 				Benchmark_wr(fp, config, hc_half, 1, flag);
 			}
 
-			if (!(flag & MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER) &&
-				!(flag & MUGGLE_RINGBUFFER_FLAG_SINGLE_READER))
+			if (!(flag & MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER) &&
+				!(flag & MUGGLE_RING_BUFFER_FLAG_SINGLE_READER))
 			{
 				Benchmark_wr(fp, config, hc_half, hc_half, flag);
 			}

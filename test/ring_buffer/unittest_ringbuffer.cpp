@@ -8,21 +8,21 @@ int g_cnt_interval = 1024 * 2;
 int g_interval_ms = 1;
 
 int w_flags[] = {
-	MUGGLE_RINGBUFFER_FLAG_WRITE_LOCK,
-	MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER,
-	MUGGLE_RINGBUFFER_FLAG_WRITE_BUSY_LOOP
+	MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK,
+	MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER,
+	MUGGLE_RING_BUFFER_FLAG_WRITE_BUSY_LOOP
 };
 int r_flags[] = {
-	MUGGLE_RINGBUFFER_FLAG_READ_ALL | MUGGLE_RINGBUFFER_FLAG_READ_WAIT,
-	MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP,
-	MUGGLE_RINGBUFFER_FLAG_SINGLE_READER | MUGGLE_RINGBUFFER_FLAG_READ_WAIT,
-	MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE 
+	MUGGLE_RING_BUFFER_FLAG_READ_ALL | MUGGLE_RING_BUFFER_FLAG_READ_WAIT,
+	MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP,
+	MUGGLE_RING_BUFFER_FLAG_SINGLE_READER | MUGGLE_RING_BUFFER_FLAG_READ_WAIT,
+	MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE 
 };
 int invalid_r_flags[] = {
-	MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE | MUGGLE_RINGBUFFER_FLAG_READ_BUSY_LOOP
+	MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE | MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP
 };
 
-TEST(ringbuffer, usage_utils)
+TEST(ring_buffer, usage_utils)
 {
 	muggle_atomic_int capacity = 1 << 10;
 	muggle_atomic_int pos = 1 << ((sizeof(muggle_atomic_int) * 8) - 1);
@@ -65,13 +65,13 @@ TEST(ringbuffer, usage_utils)
 	}
 }
 
-void test_ringbuffer_init_destroy(int expect_ret, int flag)
+void test_ring_buffer_init_destroy(int expect_ret, int flag)
 {
-	muggle_ringbuffer_t r;
+	muggle_ring_buffer_t r;
 	muggle_atomic_int capacity = 16;
 	int ret;
 
-	ret = muggle_ringbuffer_init(&r, capacity, flag);
+	ret = muggle_ring_buffer_init(&r, capacity, flag);
 	EXPECT_EQ(ret, expect_ret);
 	if (expect_ret != MUGGLE_OK)
 	{
@@ -80,17 +80,17 @@ void test_ringbuffer_init_destroy(int expect_ret, int flag)
 
 	EXPECT_EQ(r.capacity, capacity);
 
-	ret = muggle_ringbuffer_destroy(&r);
+	ret = muggle_ring_buffer_destroy(&r);
 	EXPECT_EQ(ret, 0);
 }
 
-TEST(ringbuffer, init_destroy)
+TEST(ring_buffer, init_destroy)
 {
 	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			test_ringbuffer_init_destroy(MUGGLE_OK, w_flags[w_flag] | r_flags[r_flag]);
+			test_ring_buffer_init_destroy(MUGGLE_OK, w_flags[w_flag] | r_flags[r_flag]);
 		}
 	}
 
@@ -98,29 +98,29 @@ TEST(ringbuffer, init_destroy)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(invalid_r_flags) / sizeof(invalid_r_flags[0])); ++r_flag)
 		{
-			test_ringbuffer_init_destroy(MUGGLE_ERR_INVALID_PARAM, w_flags[w_flag] | invalid_r_flags[r_flag]);
+			test_ring_buffer_init_destroy(MUGGLE_ERR_INVALID_PARAM, w_flags[w_flag] | invalid_r_flags[r_flag]);
 		}
 	}
 }
 
 void test_write_read_in_single_thread(int flag)
 {
-	muggle_ringbuffer_t r;
+	muggle_ring_buffer_t r;
 	muggle_atomic_int capacity = 16;
 	muggle_atomic_int pos = 0;
 	int arr[160];
 
-	muggle_ringbuffer_init(&r, capacity, flag);
+	muggle_ring_buffer_init(&r, capacity, flag);
 
 	// push capacity / 2, and get all
 	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
 	{
 		arr[i] = (int)i;
-		muggle_ringbuffer_write(&r, &arr[i]);
+		muggle_ring_buffer_write(&r, &arr[i]);
 	}
 	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
 	{
-		int data = *(int*)muggle_ringbuffer_read(&r, pos++);
+		int data = *(int*)muggle_ring_buffer_read(&r, pos++);
 		EXPECT_EQ(data, (int)i);
 	}
 
@@ -128,15 +128,15 @@ void test_write_read_in_single_thread(int flag)
 	for (muggle_atomic_int i = 0; i < capacity * 5; ++i)
 	{
 		arr[i] = (int)i;
-		muggle_ringbuffer_write(&r, &arr[i]);
+		muggle_ring_buffer_write(&r, &arr[i]);
 
-		int data = *(int*)muggle_ringbuffer_read(&r, pos++);
+		int data = *(int*)muggle_ring_buffer_read(&r, pos++);
 		EXPECT_EQ(data, (int)i);
 	}
 
-	muggle_ringbuffer_destroy(&r);
+	muggle_ring_buffer_destroy(&r);
 }
-TEST(ringbuffer, write_read_in_single_thread)
+TEST(ring_buffer, write_read_in_single_thread)
 {
 	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
 	{
@@ -150,14 +150,14 @@ TEST(ringbuffer, write_read_in_single_thread)
 void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_interval, int interval_ms,
 	int capacity = 1024 * 2, int total = 10000)
 {
-	muggle_ringbuffer_t r;
+	muggle_ring_buffer_t r;
 	int *arr = (int*)malloc(sizeof(int) * total);
 	for (int i = 0; i < total; ++i)
 	{
 		arr[i] = i;
 	}
 	muggle_atomic_int consumer_ready = 0;
-	muggle_ringbuffer_init(&r, capacity, flag);
+	muggle_ring_buffer_init(&r, capacity, flag);
 
 	std::vector<std::thread> consumers;
 	for (int i = 0; i < cnt_consumer; ++i)
@@ -169,7 +169,7 @@ void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_int
 			int recv_idx = 0;
 			while (1)
 			{
-				void *data = muggle_ringbuffer_read(&r, pos++);
+				void *data = muggle_ring_buffer_read(&r, pos++);
 				if (data == nullptr)
 				{
 					break;
@@ -177,7 +177,7 @@ void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_int
 
 				if (cnt_producer == 1)
 				{
-					if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
+					if (flag & MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE)
 					{
 						ASSERT_GE(*(int*)data, recv_idx);
 					}
@@ -211,23 +211,23 @@ void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_int
 				idx = muggle_atomic_fetch_add(&fetch_id, 1, muggle_memory_order_relaxed);
 				if (idx == total - 1)
 				{
-					if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
+					if (flag & MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE)
 					{
 						for (int i = 0; i < cnt_consumer; ++i)
 						{
-							muggle_ringbuffer_write(&r, nullptr);
+							muggle_ring_buffer_write(&r, nullptr);
 						}
 					}
 					else
 					{
-						muggle_ringbuffer_write(&r, nullptr);
+						muggle_ring_buffer_write(&r, nullptr);
 					}
 					break;
 				}
 
 				if (idx < total)
 				{
-					muggle_ringbuffer_write(&r, &arr[idx]);
+					muggle_ring_buffer_write(&r, &arr[idx]);
 				}
 				else
 				{
@@ -251,15 +251,15 @@ void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_int
 		consumer.join();
 	}
 
-	muggle_ringbuffer_destroy(&r);
+	muggle_ring_buffer_destroy(&r);
 	free(arr);
 }
 
 void consume_all_messages(int flag, int cnt_producer, int cnt_consumer,
 	int capacity = 128, int total = 20, int loop = 50)
 {
-	muggle_ringbuffer_t r;
-	muggle_ringbuffer_init(&r, capacity, flag);
+	muggle_ring_buffer_t r;
+	muggle_ring_buffer_init(&r, capacity, flag);
 
 	for (int loop_idx = 0; loop_idx < loop; loop_idx++)
 	{
@@ -277,7 +277,7 @@ void consume_all_messages(int flag, int cnt_producer, int cnt_consumer,
 				muggle_atomic_int pos = loop_idx * (total + 1);
 				while (1)
 				{
-					void *data = muggle_ringbuffer_read(&r, pos++);
+					void *data = muggle_ring_buffer_read(&r, pos++);
 					if (data == nullptr)
 					{
 						break;
@@ -301,7 +301,7 @@ void consume_all_messages(int flag, int cnt_producer, int cnt_consumer,
 					}
 					else
 					{
-						muggle_ringbuffer_write(&r, &arr[idx]);
+						muggle_ring_buffer_write(&r, &arr[idx]);
 					}
 				}
 			}));
@@ -312,18 +312,18 @@ void consume_all_messages(int flag, int cnt_producer, int cnt_consumer,
 			producer.join();
 		}
 
-		if (flag & MUGGLE_RINGBUFFER_FLAG_MSG_READ_ONCE)
+		if (flag & MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE)
 		{
 			while (muggle_atomic_load(&consumer_reads, muggle_memory_order_relaxed) != total);
 			for (int i = 0; i < cnt_consumer; ++i)
 			{
-				muggle_ringbuffer_write(&r, nullptr);
+				muggle_ring_buffer_write(&r, nullptr);
 			}
 		}
 		else
 		{
 			while (muggle_atomic_load(&consumer_reads, muggle_memory_order_relaxed) != total * cnt_consumer);
-			muggle_ringbuffer_write(&r, nullptr);
+			muggle_ring_buffer_write(&r, nullptr);
 		}
 
 		for (auto &consumer : consumers)
@@ -334,10 +334,10 @@ void consume_all_messages(int flag, int cnt_producer, int cnt_consumer,
 		free(arr);
 	}
 
-	muggle_ringbuffer_destroy(&r);
+	muggle_ring_buffer_destroy(&r);
 }
 
-TEST(ringbuffer, one_producer_one_consumer)
+TEST(ring_buffer, one_producer_one_consumer)
 {
 	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
 	{
@@ -347,7 +347,7 @@ TEST(ringbuffer, one_producer_one_consumer)
 		}
 	}
 }
-TEST(ringbuffer, one_producer_mul_consumer)
+TEST(ring_buffer, one_producer_mul_consumer)
 {
 	int hc = (int)std::thread::hardware_concurrency();
 	hc /= 2;
@@ -360,7 +360,7 @@ TEST(ringbuffer, one_producer_mul_consumer)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			if (hc != 1 && (r_flags[r_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_READER))
+			if (hc != 1 && (r_flags[r_flag] & MUGGLE_RING_BUFFER_FLAG_SINGLE_READER))
 			{
 				continue;
 			}
@@ -369,7 +369,7 @@ TEST(ringbuffer, one_producer_mul_consumer)
 	}
 }
 
-TEST(ringbuffer, mul_producer_one_consumer)
+TEST(ring_buffer, mul_producer_one_consumer)
 {
 	int hc = (int)std::thread::hardware_concurrency();
 	hc /= 2;
@@ -382,7 +382,7 @@ TEST(ringbuffer, mul_producer_one_consumer)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			if (hc != 1 && (w_flags[w_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER))
+			if (hc != 1 && (w_flags[w_flag] & MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER))
 			{
 				continue;
 			}
@@ -391,7 +391,7 @@ TEST(ringbuffer, mul_producer_one_consumer)
 	}
 }
 
-TEST(ringbuffer, mul_producer_mul_consumer)
+TEST(ring_buffer, mul_producer_mul_consumer)
 {
 	int hc = (int)std::thread::hardware_concurrency();
 	hc /= 2;
@@ -404,11 +404,11 @@ TEST(ringbuffer, mul_producer_mul_consumer)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			if (hc != 1 && (w_flags[w_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER))
+			if (hc != 1 && (w_flags[w_flag] & MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER))
 			{
 				continue;
 			}
-			if (hc != 1 && (r_flags[r_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_READER))
+			if (hc != 1 && (r_flags[r_flag] & MUGGLE_RING_BUFFER_FLAG_SINGLE_READER))
 			{
 				continue;
 			}
@@ -418,7 +418,7 @@ TEST(ringbuffer, mul_producer_mul_consumer)
 }
 
 
-TEST(ringbuffer, consume_all_msg_one_producer_one_consumer)
+TEST(ring_buffer, consume_all_msg_one_producer_one_consumer)
 {
 	for (int w_flag = 0; w_flag < (int)(sizeof(w_flags) / sizeof(w_flags[0])); ++w_flag)
 	{
@@ -428,7 +428,7 @@ TEST(ringbuffer, consume_all_msg_one_producer_one_consumer)
 		}
 	}
 }
-TEST(ringbuffer, consume_all_msg_one_producer_mul_consumer)
+TEST(ring_buffer, consume_all_msg_one_producer_mul_consumer)
 {
 	int hc = (int)std::thread::hardware_concurrency();
 	hc /= 2;
@@ -441,7 +441,7 @@ TEST(ringbuffer, consume_all_msg_one_producer_mul_consumer)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			if (hc != 1 && (r_flags[r_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_READER))
+			if (hc != 1 && (r_flags[r_flag] & MUGGLE_RING_BUFFER_FLAG_SINGLE_READER))
 			{
 				continue;
 			}
@@ -450,7 +450,7 @@ TEST(ringbuffer, consume_all_msg_one_producer_mul_consumer)
 	}
 }
 
-TEST(ringbuffer, consume_all_msg_mul_producer_one_consumer)
+TEST(ring_buffer, consume_all_msg_mul_producer_one_consumer)
 {
 	int hc = (int)std::thread::hardware_concurrency();
 	hc /= 2;
@@ -463,7 +463,7 @@ TEST(ringbuffer, consume_all_msg_mul_producer_one_consumer)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			if (hc != 1 && (w_flags[w_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER))
+			if (hc != 1 && (w_flags[w_flag] & MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER))
 			{
 				continue;
 			}
@@ -472,7 +472,7 @@ TEST(ringbuffer, consume_all_msg_mul_producer_one_consumer)
 	}
 }
 
-TEST(ringbuffer, consume_all_msg_mul_producer_mul_consumer)
+TEST(ring_buffer, consume_all_msg_mul_producer_mul_consumer)
 {
 	int hc = (int)std::thread::hardware_concurrency();
 	hc /= 2;
@@ -485,11 +485,11 @@ TEST(ringbuffer, consume_all_msg_mul_producer_mul_consumer)
 	{
 		for (int r_flag = 0; r_flag < (int)(sizeof(r_flags) / sizeof(r_flags[0])); ++r_flag)
 		{
-			if (hc != 1 && (w_flags[w_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_WRITER))
+			if (hc != 1 && (w_flags[w_flag] & MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER))
 			{
 				continue;
 			}
-			if (hc != 1 && (r_flags[r_flag] & MUGGLE_RINGBUFFER_FLAG_SINGLE_READER))
+			if (hc != 1 && (r_flags[r_flag] & MUGGLE_RING_BUFFER_FLAG_SINGLE_READER))
 			{
 				continue;
 			}
