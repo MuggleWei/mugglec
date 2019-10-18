@@ -12,6 +12,4 @@
 #include "muggle/cpp/memory/thread_safe_memory_pool.h"
 #include "muggle/cpp/memory/mem_detect.h"
 
-#include "muggle/cpp/sync/tunnel.hpp"
-
 #endif

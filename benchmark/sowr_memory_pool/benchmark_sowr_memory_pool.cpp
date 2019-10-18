@@ -7,6 +7,7 @@
 
 #include "muggle_benchmark/muggle_benchmark.h"
 #include <stdio.h>
+#include <vector>
 #include <thread>
 #include <chrono>
 
