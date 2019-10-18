@@ -209,21 +209,6 @@ void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_int
 			while (1)
 			{
 				idx = muggle_atomic_fetch_add(&fetch_id, 1, muggle_memory_order_relaxed);
-				if (idx == total - 1)
-				{
-					if (flag & MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE)
-					{
-						for (int i = 0; i < cnt_consumer; ++i)
-						{
-							muggle_ring_buffer_write(&r, nullptr);
-						}
-					}
-					else
-					{
-						muggle_ring_buffer_write(&r, nullptr);
-					}
-					break;
-				}
 
 				if (idx < total)
 				{
@@ -246,6 +231,19 @@ void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_int
 	{
 		producer.join();
 	}
+
+	if (flag & MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE)
+	{
+		for (int i = 0; i < cnt_consumer; ++i)
+		{
+			muggle_ring_buffer_write(&r, nullptr);
+		}
+	}
+	else
+	{
+		muggle_ring_buffer_write(&r, nullptr);
+	}
+
 	for (auto &consumer : consumers)
 	{
 		consumer.join();
