@@ -83,7 +83,7 @@ int muggle_log_handle_console_output(
 		const WORD old_sb_attrs = sb_info.wAttributes;
 
 		// change text color
-		fflush(stdout);
+		fflush(fp);
 		if (arg->level >= MUGGLE_LOG_LEVEL_ERROR)
 		{
 			SetConsoleTextAttribute(stdout_handle, FOREGROUND_RED | FOREGROUND_INTENSITY);
@@ -95,7 +95,7 @@ int muggle_log_handle_console_output(
 		
 		ret = (int)fwrite(buf, 1, ret, fp);
 
-		fflush(stdout);
+		fflush(fp);
 
 		// restores text color
 		SetConsoleTextAttribute(stdout_handle, old_sb_attrs);
@@ -111,11 +111,14 @@ int muggle_log_handle_console_output(
 		}
 		ret = (int)fwrite(buf, 1, ret, fp);
 		fwrite("\033[m", 1, strlen("\033[m"), fp);
+
+		fflush(fp);
 #endif
 	}
 	else
 	{
 		ret = (int)fwrite(buf, 1, ret, fp);
+		fflush(fp);
 	}
 
 	if (handle->write_type == MUGGLE_LOG_WRITE_TYPE_SYNC)
