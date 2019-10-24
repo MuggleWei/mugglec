@@ -21,6 +21,7 @@
  // default log priority string
 const char* g_muggle_log_level_str[MUGGLE_LOG_LEVEL_MAX] = {
 	"",
+	"TRACE",
 	"INFO",
 	"WARNING",
 	"ERROR",

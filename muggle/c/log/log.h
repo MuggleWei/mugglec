@@ -34,6 +34,7 @@ do \
 	muggle_log_function(p_log_category, &arg, format, ##__VA_ARGS__); \
 } while (0)
 
+#define MUGGLE_TRACE(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_TRACE, format, ##__VA_ARGS__)
 #define MUGGLE_INFO(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_INFO, format, ##__VA_ARGS__)
 #define MUGGLE_WARNING(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_WARNING, format, ##__VA_ARGS__)
 #define MUGGLE_ERROR(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_ERROR, format, ##__VA_ARGS__)
@@ -44,6 +45,7 @@ do \
 
 #define MUGGLE_ASSERT(x)
 #define MUGGLE_ASSERT_MSG(x, format, ...)
+#define MUGGLE_DEBUG_TRACE(format, ...)
 #define MUGGLE_DEBUG_INFO(format, ...)
 #define MUGGLE_DEBUG_WARNING(format, ...)
 #define MUGGLE_DEBUG_ERROR(format, ...)
@@ -76,6 +78,7 @@ do \
 	} \
 } while (0)
 
+#define MUGGLE_DEBUG_TRACE(format, ...) MUGGLE_TRACE(format, ##__VA_ARGS__)
 #define MUGGLE_DEBUG_INFO(format, ...) MUGGLE_INFO(format, ##__VA_ARGS__)
 #define MUGGLE_DEBUG_WARNING(format, ...) MUGGLE_WARNING(format, ##__VA_ARGS__)
 #define MUGGLE_DEBUG_ERROR(format, ...) MUGGLE_ERROR(format, ##__VA_ARGS__)
