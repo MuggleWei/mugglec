@@ -83,6 +83,7 @@ int muggle_double_buffer_write(muggle_double_buffer_t *buf, void *data)
 	{
 		if (buf->non_blocking)
 		{
+			muggle_mutex_unlock(&buf->mutex);
 			return MUGGLE_ERR_FULL;
 		}
 		muggle_condition_variable_wait(&buf->cv_not_full, &buf->mutex, NULL);
