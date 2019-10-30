@@ -101,7 +101,7 @@ int muggle_log_fmt_gen(
 	{
 		struct timespec ts;
 		timespec_get(&ts, TIME_UTC);
-		num_write = snprintf(p, remaining, "<T>%lld.%d|",
+		num_write = snprintf(p, remaining, "<T>%lld.%09d|",
 			(long long)ts.tv_sec, (int)ts.tv_nsec);
 		if (num_write == -1)
 		{
