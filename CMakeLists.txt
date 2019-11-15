@@ -29,9 +29,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # options
 option(MUGGLE_BUILD_ONLY_C "Only build muggle c lib" OFF)
 option(MUGGLE_BUILD_SHARED_LIB ON)
-option(MUGGLE_BUILD_EXAMPLE "Build example" ON)
-option(BUILD_TESTING "Build test" OFF)
-option(BUILD_BENCHMARK "Build benchmark" OFF)
+option(MUGGLE_BUILD_EXAMPLE "Build example" OFF)
+option(MUGGLE_BUILD_TESTING "Build test" OFF)
+option(MUGGLE_BUILD_BENCHMARK "Build benchmark" OFF)
 
 
 if (MUGGLE_BUILD_SHARED_LIB)
@@ -183,7 +183,7 @@ endif()
 
 
 # test
-if (BUILD_TESTING AND NOT ${MUGGLE_BUILD_ONLY_C})
+if (MUGGLE_BUILD_TESTING AND NOT ${MUGGLE_BUILD_ONLY_C})
 	enable_testing()
 
 	# Download and unpack googletest at configure time
@@ -231,7 +231,7 @@ if (BUILD_TESTING AND NOT ${MUGGLE_BUILD_ONLY_C})
 endif()
 
 # benchmark
-if (BUILD_BENCHMARK AND NOT ${MUGGLE_BUILD_ONLY_C})
+if (MUGGLE_BUILD_BENCHMARK AND NOT ${MUGGLE_BUILD_ONLY_C})
 	SUBDIRLIST(benchmark_root_dir ${CMAKE_CURRENT_LIST_DIR}/benchmark)
 	FOREACH(subdir ${benchmark_root_dir})
 		add_benchmark(${subdir} ${CMAKE_CURRENT_LIST_DIR}/benchmark/${subdir})
