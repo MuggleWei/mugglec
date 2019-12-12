@@ -15,6 +15,7 @@ EXTERN_C_BEGIN
 
 #if MUGGLE_PLATFORM_WINDOWS
 
+MUGGLE_CC_EXPORT
 struct tm* gmtime_r(const time_t *timep, struct tm *result);
 
 #endif
