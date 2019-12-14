@@ -132,28 +132,39 @@ TEST(path, join)
 
 	ret = muggle_path_join("./hello/", "xxx.txt", buf, sizeof(buf));
 	ASSERT_EQ(ret, 0);
-	EXPECT_STREQ(buf, "./hello/xxx.txt");
+	ASSERT_STREQ(buf, "./hello/xxx.txt");
 
 	ret = muggle_path_join("./hello", "xxx.txt", buf, sizeof(buf));
 	ASSERT_EQ(ret, 0);
-	EXPECT_STREQ(buf, "./hello/xxx.txt");
+	ASSERT_STREQ(buf, "./hello/xxx.txt");
 
 	ret = muggle_path_join("hello", "xxx.txt", buf, sizeof(buf));
 	ASSERT_EQ(ret, 0);
-	EXPECT_STREQ(buf, "hello/xxx.txt");
+	ASSERT_STREQ(buf, "hello/xxx.txt");
 
 
 	ret = muggle_path_join("./", "../xxx.txt", buf, sizeof(buf));
 	ASSERT_EQ(ret, 0);
-	EXPECT_STREQ(buf, "./../xxx.txt");
+	ASSERT_STREQ(buf, "./../xxx.txt");
 
 	ret = muggle_path_join(".", "../xxx.txt", buf, sizeof(buf));
 	ASSERT_EQ(ret, 0);
-	EXPECT_STREQ(buf, "./../xxx.txt");
+	ASSERT_STREQ(buf, "./../xxx.txt");
 
 	ret = muggle_path_join(".", "../xxx.txt", buf, sizeof(buf));
 	ASSERT_EQ(ret, 0);
-	EXPECT_STREQ(buf, "./../xxx.txt");
+	ASSERT_STREQ(buf, "./../xxx.txt");
+
+	char buf2[8];
+
+	memset(buf2, (int)'?', sizeof(buf2));
+	ret = muggle_path_join("/xxx", "yy", buf2, sizeof(buf2));
+	ASSERT_EQ(ret, 0);
+	ASSERT_STREQ(buf2, "/xxx/yy");
+
+	memset(buf2, (int)'?', sizeof(buf2));
+	ret = muggle_path_join("/xxx", "yyy", buf2, sizeof(buf2));
+	ASSERT_NE(ret, 0);
 }
 
 TEST(path, normpath)

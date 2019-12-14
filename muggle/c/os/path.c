@@ -208,6 +208,12 @@ int muggle_path_exists(const char *path)
 
 int muggle_path_join(const char *path1, const char *path2, char *ret, unsigned int size)
 {
+	unsigned int max_len = size - 1;
+	if (max_len <= 0)
+	{
+		return MUGGLE_ERR_INVALID_PARAM;
+	}
+
 	int len_path1 = (int)strlen(path1);
 	int len_path2 = (int)strlen(path2);
 	if (len_path1 <= 0 || len_path2 <= 0)
@@ -215,14 +221,16 @@ int muggle_path_join(const char *path1, const char *path2, char *ret, unsigned i
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	if ((unsigned int)len_path1 >= size)
+	if ((unsigned int)len_path1 > max_len)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
-	strncpy(ret, path1, size - 1);
+
+	strncpy(ret, path1, max_len);
 
 	if (*path2 == '\0')
 	{
+		ret[len_path1] = '\0';
 		return MUGGLE_OK;
 	}
 
@@ -236,8 +244,6 @@ int muggle_path_join(const char *path1, const char *path2, char *ret, unsigned i
 
 		ret[pos] = '/';
 		pos++;
-		ret[pos] = '\0';
-
 		len_path1 += 1;
 	}
 
@@ -253,12 +259,13 @@ int muggle_path_join(const char *path1, const char *path2, char *ret, unsigned i
 		len_path2 -= 1;
 	}
 
-	if ((unsigned int)(len_path1 + len_path2) >= size)
+	if ((unsigned int)(len_path1 + len_path2) > max_len)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
 	strncpy(ret + pos, p, len_path2);
+	ret[len_path1 + len_path2] = '\0';
 
 	return MUGGLE_OK;
 }
