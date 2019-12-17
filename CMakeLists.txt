@@ -29,9 +29,14 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # options
 option(MUGGLE_BUILD_ONLY_C "Only build muggle c lib" OFF)
 option(MUGGLE_BUILD_SHARED_LIB ON)
-option(MUGGLE_BUILD_EXAMPLE "Build example" OFF)
-option(MUGGLE_BUILD_TESTING "Build test" OFF)
-option(MUGGLE_BUILD_BENCHMARK "Build benchmark" OFF)
+option(MUGGLE_BUILD_EXAMPLE "Build muggleCC example" OFF)
+option(MUGGLE_BUILD_TESTING "Build muggleCC test" OFF)
+option(MUGGLE_BUILD_BENCHMARK "Build muggleCC benchmark" OFF)
+option(BUILD_TESTING "Buid testing" OFF)
+
+if (MUGGLE_BUILD_TESTING)
+	set(BUILD_TESTING ON)
+endif()
 
 
 if (MUGGLE_BUILD_SHARED_LIB)
@@ -183,7 +188,7 @@ endif()
 
 
 # test
-if (MUGGLE_BUILD_TESTING AND NOT ${MUGGLE_BUILD_ONLY_C})
+if (BUILD_TESTING)
 	enable_testing()
 
 	# Download and unpack googletest at configure time
@@ -222,8 +227,9 @@ if (MUGGLE_BUILD_TESTING AND NOT ${MUGGLE_BUILD_ONLY_C})
 	# add_executable(example src/test/example/example.cpp)
 	# target_link_libraries(example gtest_main)
 	# add_test(NAME example_test COMMAND example)
+endif()
 
-
+if (MUGGLE_BUILD_TESTING AND NOT ${MUGGLE_BUILD_ONLY_C})
 	SUBDIRLIST(test_root_dir ${CMAKE_CURRENT_LIST_DIR}/test)
 	FOREACH(subdir ${test_root_dir})
 		add_gtest(${subdir} ${CMAKE_CURRENT_LIST_DIR}/test/${subdir})
