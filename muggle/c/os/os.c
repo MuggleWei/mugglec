@@ -74,8 +74,10 @@ int muggle_os_mkdir(const char *path)
 	/* Iterate the string */
 	for (p = _path + 1; *p; p++)
 	{
-		if (*p == '/')
+		if (*p == '/' || *p == '\\')
 		{
+			char c = *p;
+
 			/* Temporarily truncate */
 			*p = '\0';
 
@@ -88,7 +90,7 @@ int muggle_os_mkdir(const char *path)
 				}
 			}
 
-			*p = '/';
+			*p = c;
 		}
 	}
 
