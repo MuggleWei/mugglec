@@ -11,6 +11,8 @@
 
 #if MUGGLE_PLATFORM_WINDOWS
 
+#include <process.h>
+
 int muggle_thread_create(muggle_thread_t *thread, muggle_thread_routine routine, void *args)
 {
 	thread->handle = (HANDLE)_beginthreadex(
