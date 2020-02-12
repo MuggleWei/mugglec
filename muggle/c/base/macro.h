@@ -105,25 +105,42 @@
 #define MUGGLE_WAIT_INFINITE ULONG_MAX
 #endif
 
+// winsock
+#if MUGGLE_PLATFORM_WINDOWS
+
+///////////////////////////////////////////////////////////////////
+// From Windows NOTE: 
+// https://docs.microsoft.com/en-us/windows/win32/winsock/creating-a-basic-winsock-application
+// The Iphlpapi.h header file is required if an application is 
+// using the IP Helper APIs.When the Iphlpapi.h header file is 
+// required, the #include line for the Winsock2.h header this 
+// file should be placed before the #include line for the 
+// Iphlpapi.h header file.
+// 
+// The Winsock2.h header file internally includes core elements 
+// from the Windows.h header file, so there is not usually 
+// an #include line for the Windows.h header file in Winsock 
+// applications.If an #include line is needed for the Windows.h 
+// header file, this should be preceded with 
+// the #define WIN32_LEAN_AND_MEAN macro.For historical reasons,
+// the Windows.h header defaults to including the Winsock.h header 
+// file for Windows Sockets 1.1.The declarations in the Winsock.h 
+// header file will conflict with the declarations in the Winsock2.h
+// header file required by Windows Sockets 2.0.The WIN32_LEAN_AND_MEAN
+// macro prevents the Winsock.h from being included by the Windows.h 
+// header.An example illustrating this is shown below.
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#endif
+
 // cache line padding in structure
 #define MUGGLE_CACHE_LINE_SIZE 64
 #define MUGGLE_STRUCT_CACHE_LINE_PADDING(idx) char cache_line_padding_##idx[MUGGLE_CACHE_LINE_SIZE]
 
 // idx % capacity, capacity must be pow of 2
 #define IDX_IN_POW_OF_2_RING(idx, capacity) ((idx) & ((capacity) - 1))
-
-// generally permission
-enum ePermission
-{
-	MUGGLE_PERM_USER_READ		= 0x01,		// user can read
-	MUGGLE_PERM_USER_WRITE		= 0x02,		// user can write
-	MUGGLE_PERM_USER_EXECUTE	= 0x04,		// user can execute
-	MUGGLE_PERM_GRP_READ		= 0x10,		// group can read
-	MUGGLE_PERM_GRP_WRITE		= 0x20,		// group can write
-	MUGGLE_PERM_GRP_EXECUTE		= 0x40,		// group can execute
-	MUGGLE_PERM_OTHER_READ		= 0x100,	// other can read
-	MUGGLE_PERM_OTHER_WRITE		= 0x200,	// other can write
-	MUGGLE_PERM_OTHER_EXECUTE	= 0x400,	// other can execute
-};
 
 #endif

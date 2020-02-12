@@ -4,6 +4,10 @@
 
 #include <windows.h>
 
+// cause struct timeval included in winsock.h, and define WIN32_LEAN_AND_MEAN in macro.h
+// prevent windows.h include winsock.h, so include <winsock.h> here
+#include <winsock.h>
+
 #if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
 #define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
 #else
