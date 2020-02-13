@@ -105,6 +105,13 @@
 #define MUGGLE_WAIT_INFINITE ULONG_MAX
 #endif
 
+// fileno
+#if MUGGLE_PLATFORM_WINDOWS
+#define MUGGLE_FILENO _fileno
+#else
+#define MUGGLE_FILENO fileno
+#endif
+
 // winsock
 #if MUGGLE_PLATFORM_WINDOWS
 
