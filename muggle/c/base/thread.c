@@ -59,6 +59,8 @@ int muggle_thread_hardware_concurrency()
 
 #else
 
+#include <unistd.h>
+
 int muggle_thread_create(muggle_thread_t *thread, muggle_thread_routine routine, void *args)
 {
 	return pthread_create(&thread->th, NULL, routine, args) == 0 ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
