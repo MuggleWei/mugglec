@@ -58,5 +58,10 @@
 #include "muggle/c/log/log_handle_win_debug.h"
 #include "muggle/c/log/log_category.h"
 #include "muggle/c/log/log.h"
+#include "muggle/c/log/log_utils.h"
+
+// net
+#include "muggle/c/net/socket.h"
+#include "muggle/c/net/socket_utils.h"
 
 #endif
