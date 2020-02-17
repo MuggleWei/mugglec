@@ -16,10 +16,10 @@ void get_case_name(char *buf, size_t max_len, int cnt_producer, int cnt_consumer
 void producer_consumer(int capacity, int total, int cnt_producer, int cnt_consumer, int cnt_interval, int interval_ms)
 {
 	muggle_array_blocking_queue_t queue;
-	muggle::LatencyBlock *blocks = (muggle::LatencyBlock*)malloc(sizeof(muggle::LatencyBlock) * total);
+	muggle_benchmark_block *blocks = (muggle_benchmark_block*)malloc(sizeof(muggle_benchmark_block) * total);
 	for (int i = 0; i < total; ++i)
 	{
-		memset(&blocks[i], 0, sizeof(muggle::LatencyBlock));
+		memset(&blocks[i], 0, sizeof(muggle_benchmark_block));
 		blocks[i].idx = (uint64_t)i;
 	}
 
@@ -43,7 +43,7 @@ void producer_consumer(int capacity, int total, int cnt_producer, int cnt_consum
 			timespec_get(&start_ts, TIME_UTC);
 			while (1)
 			{
-				muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_array_blocking_queue_take(&queue);
+				muggle_benchmark_block *block = (muggle_benchmark_block*)muggle_array_blocking_queue_take(&queue);
 				if (block == nullptr)
 				{
 					break;

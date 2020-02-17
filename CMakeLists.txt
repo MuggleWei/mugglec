@@ -59,11 +59,12 @@ if (${MUGGLE_BUILD_ONLY_C})
 else()
 	muggle_add_project(muggleCC ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
 	set(muggle_cc muggleCC)
-
-	muggle_add_project(muggle_benchmark ${CMAKE_CURRENT_LIST_DIR}/muggle_benchmark STATIC)
-	target_link_libraries(muggle_benchmark ${muggle_cc})
-	add_dependencies(muggle_benchmark ${muggle_cc})
 endif()
+
+# muggle benchmark
+muggle_add_project(muggle_benchmark ${CMAKE_CURRENT_LIST_DIR}/muggle_benchmark ${MUGGLE_LIB_TYPE})
+target_link_libraries(muggle_benchmark ${muggle_cc})
+add_dependencies(muggle_benchmark ${muggle_cc})
 
 # link thread and dll lib
 find_package(Threads)
@@ -85,6 +86,10 @@ if (MUGGLE_BUILD_SHARED_LIB)
 	target_compile_definitions(${muggle_cc}
 		PUBLIC MUGGLE_CC_USE_DLL
 		PRIVATE MUGGLE_CC_EXPORTS 
+	)
+	target_compile_definitions(muggle_benchmark
+		PUBLIC MUGGLE_BENCHMARK_USE_DLL
+		PRIVATE MUGGLE_BENCHMARK_EXPORTS 
 	)
 endif()
 

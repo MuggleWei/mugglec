@@ -14,12 +14,9 @@
 #include <future>
 #include <vector>
 #include <functional>
+#include "muggle/c/memory/memory_detect.h"
 #include "muggle/cpp/memory/memory_pool.h"
 #include "muggle/cpp/memory/thread_safe_memory_pool.h"
-
-#if MUGGLE_PLATFORM_WINDOWS
-#include "muggle/cpp/memory/mem_detect.h"
-#endif
 
 typedef std::chrono::duration<double, std::milli> double_dura;
 typedef std::function<void(intptr_t*, int, unsigned int)> allocFunc;
@@ -554,7 +551,7 @@ void delOpFlag()
 
 void run()
 {
-	srand(time(nullptr));
+	srand((unsigned int)time(nullptr));
 
 	genOpFlag();
 
@@ -567,14 +564,14 @@ void run()
 int main()
 {
 #if MUGGLE_PLATFORM_WINDOWS
-	muggle::DebugMemoryLeakDetect detect;
-	detect.Start();
+	struct muggle_debug_memory_state mem_state;
+	muggle_debug_memory_leak_start(&mem_state);
 #endif
 
 	run();
 
 #if MUGGLE_PLATFORM_WINDOWS
-	detect.End();
+	muggle_debug_memory_leak_end(&mem_state);
 #endif
 
 	return 0;

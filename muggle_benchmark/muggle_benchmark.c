@@ -9,9 +9,9 @@
 
 NS_MUGGLE_BEGIN
 
-void GenLatencyReportsHead(
+void muggle_benchmark_gen_reports_head(
 	FILE *fp,
-	BenchmarkConfig *config
+	struct muggle_benchmark_config *config
 )
 {
 	fwrite("case_name", 1, strlen("case_name"), fp);
@@ -37,18 +37,18 @@ void GenLatencyReportsHead(
 
 static int compare_uint64(const void *a, const void *b)
 {
-	const uint64_t &arg1 = *(const uint64_t*)a;
-	const uint64_t &arg2 = *(const uint64_t*)b;
+	const uint64_t arg1 = *(const uint64_t*)a;
+	const uint64_t arg2 = *(const uint64_t*)b;
 
 	if (arg1 < arg2) return -1;
 	if (arg1 > arg2) return 1;
 	return 0;
 }
 
-void GenLatencyReportsBody(
+void muggle_benchmark_gen_reports_body(
 	FILE *fp,
-	BenchmarkConfig *config,
-	LatencyBlock *blocks,
+	struct muggle_benchmark_config *config,
+	struct muggle_benchmark_block *blocks,
 	const char *case_name,
 	uint64_t cnt,
 	uint64_t ts_begin_idx,

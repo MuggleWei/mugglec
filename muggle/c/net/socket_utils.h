@@ -20,6 +20,7 @@ EXTERN_C_BEGIN
  * @host_only: if 1, only show ip address without port
  * RETURN: return presentation string if success, otherwise return NULL
  * */
+MUGGLE_CC_EXPORT
 const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufsize, int host_only);
 
 /*
@@ -29,6 +30,7 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
  * @backlog: maximum length to which the queue of pending connections
  * RETURN: on success, listen socket description is returned, otherwise return MUGGLE_INVALID_SOCKET
  * */
+MUGGLE_CC_EXPORT
 muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlog);
 
 /*
@@ -38,6 +40,7 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
  * @timeout_sec: max seconds for wait connect complete
  * RETURN: on success, connected socket description is returned, otherwise return MUGGLE_INVALID_SOCKET
  * */
+MUGGLE_CC_EXPORT
 muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeout_sec);
 
 EXTERN_C_END

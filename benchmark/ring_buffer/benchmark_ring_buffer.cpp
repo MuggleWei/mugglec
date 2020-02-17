@@ -15,8 +15,8 @@ uint64_t *consumer_read_num = nullptr;
 
 void fn_producer(
 	muggle_ring_buffer_t *ring,
-	muggle::BenchmarkConfig *config,
-	muggle::LatencyBlock *blocks,
+	muggle_benchmark_config *config,
+	muggle_benchmark_block *blocks,
 	muggle_atomic_int *consumer_ready,
 	muggle_atomic_int consumer_cnt,
 	uint64_t start_idx,
@@ -30,7 +30,7 @@ void fn_producer(
 		for (uint64_t j = start_idx; j < end_idx; ++j)
 		{
 			uint64_t idx = i * config->cnt_per_loop + j;
-			memset(&blocks[idx], 0, sizeof(muggle::LatencyBlock));
+			memset(&blocks[idx], 0, sizeof(muggle_benchmark_block));
 			blocks[idx].idx = idx;
 
 			timespec_get(&blocks[idx].ts[0], TIME_UTC);
@@ -55,7 +55,7 @@ void fn_consumer(
 	uint64_t idx = 0;
 	while (1)
 	{
-		muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_ring_buffer_read(ring, pos++);
+		muggle_benchmark_block *block = (muggle_benchmark_block*)muggle_ring_buffer_read(ring, pos++);
 		if (!block)
 		{
 			break;
@@ -88,10 +88,10 @@ void get_case_name(char *buf, size_t max_len, int cnt_producer, int cnt_consumer
 		cnt_consumer, str_r_mode[r_mode]);
 }
 
-void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, int cnt_consumer, int flag)
+void Benchmark_wr(FILE *fp, muggle_benchmark_config &config, int cnt_producer, int cnt_consumer, int flag)
 {
 	uint64_t cnt = config.loop * config.cnt_per_loop;
-	muggle::LatencyBlock *blocks = (muggle::LatencyBlock*)malloc(cnt * sizeof(muggle::LatencyBlock));
+	muggle_benchmark_block *blocks = (muggle_benchmark_block*)malloc(cnt * sizeof(muggle_benchmark_block));
 	muggle_atomic_int consumer_ready = 0;
 
 	consumer_read_num = (uint64_t*)malloc(sizeof(uint64_t) * cnt_consumer);
@@ -178,23 +178,23 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 	free(consumer_read_num);
 
 	snprintf(buf, sizeof(buf) - 1, "%s-w", case_name);
-	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 0, 1, 0);
+	muggle_benchmark_gen_reports_body(fp, &config, blocks, buf, cnt, 0, 1, 0);
 
 	snprintf(buf, sizeof(buf) - 1, "%s-w-sorted", case_name);
-	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 0, 1, 1);
+	muggle_benchmark_gen_reports_body(fp, &config, blocks, buf, cnt, 0, 1, 1);
 
 	snprintf(buf, sizeof(buf) - 1, "%s-wr", case_name);
-	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 0, 2, 0);
+	muggle_benchmark_gen_reports_body(fp, &config, blocks, buf, cnt, 0, 2, 0);
 
 	snprintf(buf, sizeof(buf) - 1, "%s-wr-sorted", case_name);
-	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 0, 2, 1);
+	muggle_benchmark_gen_reports_body(fp, &config, blocks, buf, cnt, 0, 2, 1);
 
 	free(blocks);
 }
 
 int main()
 {
-	muggle::BenchmarkConfig config;
+	muggle_benchmark_config config;
 	strncpy(config.name, "ring_buffer", sizeof(config.name)-1);
 	config.loop = 50;
 	config.cnt_per_loop = 20000;
@@ -210,7 +210,7 @@ int main()
 		exit(1);
 	}
 
-	muggle::GenLatencyReportsHead(fp, &config);
+	muggle_benchmark_gen_reports_head(fp, &config);
 
 	int hc = (int)std::thread::hardware_concurrency();
 	if (hc <= 0)

@@ -8,19 +8,30 @@
 #ifndef MUGGLE_BENCHMARK_H_
 #define MUGGLE_BENCHMARK_H_
 
-#include "muggle/muggle_cc.h"
+#include "muggle/c/muggle_c.h"
 #include <time.h>
 
-NS_MUGGLE_BEGIN
+ // lib and dll
+#if MUGGLE_PLATFORM_WINDOWS && defined(MUGGLE_BENCHMARK_USE_DLL)
+	#ifdef MUGGLE_BENCHMARK_EXPORTS
+		#define MUGGLE_BENCHMARK_EXPORT __declspec(dllexport)
+	#else
+		#define MUGGLE_BENCHMARK_EXPORT __declspec(dllimport)
+	#endif
+#else
+	#define MUGGLE_BENCHMARK_EXPORT
+#endif
 
-struct LatencyBlock
+EXTERN_C_BEGIN
+
+struct muggle_benchmark_block
 {
 	uint64_t idx;
 	struct timespec ts[8];
 	uint64_t elapsed_ns;
 };
 
-struct BenchmarkConfig
+struct muggle_benchmark_config
 {
 	char name[32];
 	uint64_t loop;
@@ -29,15 +40,14 @@ struct BenchmarkConfig
 	int report_step;
 };
 
-void GenLatencyReportsHead(
-	FILE *fp,
-	BenchmarkConfig *config
-);
+MUGGLE_BENCHMARK_EXPORT
+void muggle_benchmark_gen_reports_head(FILE *fp, struct muggle_benchmark_config *config);
 
-void GenLatencyReportsBody(
+MUGGLE_BENCHMARK_EXPORT
+void muggle_benchmark_gen_reports_body(
 	FILE *fp,
-	BenchmarkConfig *config,
-	LatencyBlock *blocks,
+	struct muggle_benchmark_config *config,
+	struct muggle_benchmark_block *blocks,
 	const char *case_name,
 	uint64_t cnt,
 	uint64_t ts_begin_idx,
@@ -45,6 +55,6 @@ void GenLatencyReportsBody(
 	bool sort
 );
 
-NS_MUGGLE_END
+EXTERN_C_END
 
 #endif

@@ -15,8 +15,8 @@ uint64_t *consumer_read_num = nullptr;
 
 void fn_producer(
 	muggle_ring_buffer_t *ring,
-	muggle::BenchmarkConfig *config,
-	muggle::LatencyBlock *blocks,
+	muggle_benchmark_config *config,
+	muggle_benchmark_block *blocks,
 	muggle_atomic_int *consumer_ready,
 	muggle_atomic_int consumer_cnt,
 	uint64_t start_idx,
@@ -26,18 +26,18 @@ void fn_producer(
 	while (muggle_atomic_load(consumer_ready, muggle_memory_order_relaxed) != consumer_cnt);
 
 	muggle_sowr_memory_pool_t pool;
-	muggle_sowr_memory_pool_init(&pool, (muggle_atomic_int)(config->loop * (end_idx - start_idx) / 10), sizeof(muggle::LatencyBlock));
+	muggle_sowr_memory_pool_init(&pool, (muggle_atomic_int)(config->loop * (end_idx - start_idx) / 10), sizeof(muggle_benchmark_block));
 
 	for (uint64_t i = 0; i < config->loop; ++i)
 	{
 		for (uint64_t j = start_idx; j < end_idx; ++j)
 		{
 			uint64_t idx = i * config->cnt_per_loop + j;
-			memset(&blocks[idx], 0, sizeof(muggle::LatencyBlock));
+			memset(&blocks[idx], 0, sizeof(muggle_benchmark_block));
 			blocks[idx].idx = idx;
 
 			timespec_get(&blocks[idx].ts[0], TIME_UTC);
-			muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_sowr_memory_pool_alloc(&pool);
+			muggle_benchmark_block *block = (muggle_benchmark_block*)muggle_sowr_memory_pool_alloc(&pool);
 			timespec_get(&blocks[idx].ts[1], TIME_UTC);
 			if (block == nullptr)
 			{
@@ -64,7 +64,7 @@ void fn_producer(
 void fn_consumer(
 	muggle_ring_buffer_t *ring,
 	muggle_atomic_int *consumer_ready,
-	muggle::LatencyBlock *blocks
+	muggle_benchmark_block *blocks
 )
 {
 	muggle_atomic_int consumer_idx = muggle_atomic_fetch_add(consumer_ready, 1, muggle_memory_order_relaxed);
@@ -72,7 +72,7 @@ void fn_consumer(
 	uint64_t cnt = 0;
 	while (1)
 	{
-		muggle::LatencyBlock *block = (muggle::LatencyBlock*)muggle_ring_buffer_read(ring, pos++);
+		muggle_benchmark_block *block = (muggle_benchmark_block*)muggle_ring_buffer_read(ring, pos++);
 		if (!block)
 		{
 			break;
@@ -88,10 +88,10 @@ void fn_consumer(
 	consumer_read_num[consumer_idx] = cnt;
 }
 
-void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, int cnt_consumer, int flag)
+void Benchmark_wr(FILE *fp, muggle_benchmark_config &config, int cnt_producer, int cnt_consumer, int flag)
 {
 	uint64_t cnt = config.loop * config.cnt_per_loop;
-	muggle::LatencyBlock *blocks = (muggle::LatencyBlock*)malloc(cnt * sizeof(muggle::LatencyBlock));
+	muggle_benchmark_block *blocks = (muggle_benchmark_block*)malloc(cnt * sizeof(muggle_benchmark_block));
 	muggle_atomic_int consumer_ready = 0;
 
 	consumer_read_num = (uint64_t*)malloc(sizeof(uint64_t) * cnt_consumer);
@@ -147,23 +147,23 @@ void Benchmark_wr(FILE *fp, muggle::BenchmarkConfig &config, int cnt_producer, i
 	free(consumer_read_num);
 
 	snprintf(buf, sizeof(buf) - 1, "%dw%dr-sowr-alloc", cnt_producer, cnt_consumer);
-	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 0, 1, 0);
+	muggle_benchmark_gen_reports_body(fp, &config, blocks, buf, cnt, 0, 1, 0);
 
 	snprintf(buf, sizeof(buf) - 1, "%dw%dr-sowr-alloc-sorted", cnt_producer, cnt_consumer);
-	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 0, 1, 1);
+	muggle_benchmark_gen_reports_body(fp, &config, blocks, buf, cnt, 0, 1, 1);
 
 	snprintf(buf, sizeof(buf) - 1, "%dw%dr-sowr-free", cnt_producer, cnt_consumer);
-	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 2, 3, 0);
+	muggle_benchmark_gen_reports_body(fp, &config, blocks, buf, cnt, 2, 3, 0);
 
 	snprintf(buf, sizeof(buf) - 1, "%dw%dr-sowr-free-sorted", cnt_producer, cnt_consumer);
-	muggle::GenLatencyReportsBody(fp, &config, blocks, buf, cnt, 2, 3, 1);
+	muggle_benchmark_gen_reports_body(fp, &config, blocks, buf, cnt, 2, 3, 1);
 
 	free(blocks);
 }
 
 int main()
 {
-	muggle::BenchmarkConfig config;
+	muggle_benchmark_config config;
 	strncpy(config.name, "sowr_memory_pool", sizeof(config.name)-1);
 	config.loop = 50;
 	config.cnt_per_loop = 20000;
@@ -179,7 +179,7 @@ int main()
 		exit(1);
 	}
 
-	muggle::GenLatencyReportsHead(fp, &config);
+	muggle_benchmark_gen_reports_head(fp, &config);
 
 	int hc = (int)std::thread::hardware_concurrency();
 	printf("hardware_concurrency: %d\n", hc);

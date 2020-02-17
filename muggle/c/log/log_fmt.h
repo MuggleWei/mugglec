@@ -51,6 +51,7 @@ typedef struct muggle_log_fmt_arg_tag
  * @size: the size of buf
  * RETURN: the len of formated message, negative represent failed
  * */
+MUGGLE_CC_EXPORT
 int muggle_log_fmt_gen(
 	int fmt_flag, muggle_log_fmt_arg_t *arg,
 	const char *msg, char *buf, int size);

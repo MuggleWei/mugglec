@@ -17,10 +17,10 @@ void producer_consumer(int capacity, int total, int cnt_producer, int cnt_interv
 {
 	int cnt_consumer = 1;
 	muggle_double_buffer_t double_buffer;
-	muggle::LatencyBlock *blocks = (muggle::LatencyBlock*)malloc(sizeof(muggle::LatencyBlock) * total);
+	muggle_benchmark_block *blocks = (muggle_benchmark_block*)malloc(sizeof(muggle_benchmark_block) * total);
 	for (int i = 0; i < total; ++i)
 	{
-		memset(&blocks[i], 0, sizeof(muggle::LatencyBlock));
+		memset(&blocks[i], 0, sizeof(muggle_benchmark_block));
 		blocks[i].idx = (uint64_t)i;
 	}
 
@@ -48,7 +48,7 @@ void producer_consumer(int capacity, int total, int cnt_producer, int cnt_interv
 				muggle_single_buffer_t *buf = muggle_double_buffer_read(&double_buffer);
 				for (int i = 0; i < buf->cnt; ++i)
 				{
-					muggle::LatencyBlock *block = (muggle::LatencyBlock*)buf->datas[i];
+					muggle_benchmark_block *block = (muggle_benchmark_block*)buf->datas[i];
 					if (block == nullptr)
 					{
 						is_end = 1;
