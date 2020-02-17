@@ -50,6 +50,13 @@ muggle_thread_id muggle_thread_current_id()
 	return GetCurrentThreadId();
 }
 
+int muggle_thread_hardware_concurrency()
+{
+	SYSTEM_INFO sysinfo;
+	GetSystemInfo(&sysinfo);
+	return (int)sysinfo.dwNumberOfProcessors;
+}
+
 #else
 
 int muggle_thread_create(muggle_thread_t *thread, muggle_thread_routine routine, void *args)
@@ -70,6 +77,11 @@ int muggle_thread_detach(muggle_thread_t *thread)
 muggle_thread_id muggle_thread_current_id()
 {
 	return pthread_self();
+}
+
+int muggle_thread_hardware_concurrency()
+{
+	return sysconf(_SC_NPROCESSORS_ONLN);
 }
 
 #endif

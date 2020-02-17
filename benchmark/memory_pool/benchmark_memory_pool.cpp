@@ -5,6 +5,20 @@
  *	found in the LICENSE file.
  */
 
+#if MUGGLE_BUILD_C_ONLY
+
+#include "muggle/c/muggle_c.h"
+
+int main()
+{
+	muggle_log_simple_init(MUGGLE_LOG_LEVEL_ERROR, MUGGLE_LOG_LEVEL_ERROR);
+	MUGGLE_ERROR("benchmark_memory_pool not run in BUILD_C_ONLY");
+
+	return 0;
+}
+
+#else
+
 #include <stdint.h>
 #include <string.h>
 #include <iostream>
@@ -563,7 +577,7 @@ void run()
 
 int main()
 {
-#if MUGGLE_PLATFORM_WINDOWS
+#if MUGGLE_PLATFORM_WINDOWS & MUGGLE_DEBUG
 	struct muggle_debug_memory_state mem_state;
 	muggle_debug_memory_leak_start(&mem_state);
 #endif
@@ -576,3 +590,5 @@ int main()
 
 	return 0;
 }
+
+#endif

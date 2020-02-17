@@ -55,10 +55,12 @@ if (${MUGGLE_BUILD_ONLY_C})
 	set_target_properties(muggleC PROPERTIES 
 		LINKER_LANGUAGE C
 	)
-	set(muggle_cc muggleC) 	
+	set(muggle_cc muggleC) 
+	target_compile_definitions(${muggle_cc}	PUBLIC MUGGLE_BUILD_C_ONLY)
 else()
 	muggle_add_project(muggleCC ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
 	set(muggle_cc muggleCC)
+	target_compile_definitions(${muggle_cc} PUBLIC MUGGLE_BUILD_CC)
 endif()
 
 # muggle benchmark
@@ -184,13 +186,12 @@ function(add_gtest name folder)
 endfunction()
 
 # example
-if (${MUGGLE_BUILD_EXAMPLE} AND NOT ${MUGGLE_BUILD_ONLY_C})
+if (${MUGGLE_BUILD_EXAMPLE})
 	SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/example)
 	FOREACH(subdir ${example_dirs})
 		add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/example/${subdir})
 	ENDFOREACH()
 endif()
-
 
 # test
 if (BUILD_TESTING)
@@ -234,7 +235,7 @@ if (BUILD_TESTING)
 	# add_test(NAME example_test COMMAND example)
 endif()
 
-if (MUGGLE_BUILD_TESTING AND NOT ${MUGGLE_BUILD_ONLY_C})
+if (MUGGLE_BUILD_TESTING)
 	SUBDIRLIST(test_root_dir ${CMAKE_CURRENT_LIST_DIR}/test)
 	FOREACH(subdir ${test_root_dir})
 		add_gtest(${subdir} ${CMAKE_CURRENT_LIST_DIR}/test/${subdir})
@@ -242,7 +243,7 @@ if (MUGGLE_BUILD_TESTING AND NOT ${MUGGLE_BUILD_ONLY_C})
 endif()
 
 # benchmark
-if (MUGGLE_BUILD_BENCHMARK AND NOT ${MUGGLE_BUILD_ONLY_C})
+if (MUGGLE_BUILD_BENCHMARK)
 	SUBDIRLIST(benchmark_root_dir ${CMAKE_CURRENT_LIST_DIR}/benchmark)
 	FOREACH(subdir ${benchmark_root_dir})
 		add_benchmark(${subdir} ${CMAKE_CURRENT_LIST_DIR}/benchmark/${subdir})

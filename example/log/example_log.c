@@ -1,5 +1,3 @@
-#include <thread>
-#include <vector>
 #include "muggle/c/muggle_c.h"
 
 void example_log_handle_console(int write_type, int fmt_flag, int level)
@@ -195,16 +193,21 @@ void destroy_log()
 	muggle_log_destroy();
 }
 
+muggle_thread_ret_t example_thread_output_idx(void *void_arg)
+{
+	int idx = (int)(intptr_t)void_arg;
+	MUGGLE_INFO("info: %d", idx);
+	return 0;
+}
+
 void example_default()
 {
 	init_log();
 
-	std::vector<std::thread> threads;
+	muggle_thread_t threads[8];
 	for (int i = 0; i < 8; ++i)
 	{
-		threads.push_back(std::thread([i]{
-			MUGGLE_INFO("info: %d", i);
-		}));
+		muggle_thread_create(&threads[i], example_thread_output_idx, (void*)(intptr_t)i);
 	}
 
 	MUGGLE_DEBUG_TRACE("debug trace");
@@ -218,9 +221,9 @@ void example_default()
 	MUGGLE_ERROR("error");
 	MUGGLE_FATAL("fatal, core dump when debug");
 
-	for (auto &t : threads)
+	for (int i = 0; i < 8; ++i)
 	{
-		t.join();
+		muggle_thread_join(&threads[i]);
 	}
 
 	destroy_log();

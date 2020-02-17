@@ -69,6 +69,12 @@ int muggle_thread_detach(muggle_thread_t *thread);
 MUGGLE_CC_EXPORT
 muggle_thread_id muggle_thread_current_id();
 
+/*
+ * the same as c++11 std::thread::hardware_concurrency
+ * */
+MUGGLE_CC_EXPORT
+int muggle_thread_hardware_concurrency();
+
 EXTERN_C_END
 
 #endif

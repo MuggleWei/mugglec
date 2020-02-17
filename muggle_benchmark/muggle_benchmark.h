@@ -24,21 +24,21 @@
 
 EXTERN_C_BEGIN
 
-struct muggle_benchmark_block
+typedef struct muggle_benchmark_block
 {
 	uint64_t idx;
 	struct timespec ts[8];
 	uint64_t elapsed_ns;
-};
+} muggle_benchmark_block_t;
 
-struct muggle_benchmark_config
+typedef struct muggle_benchmark_config
 {
 	char name[32];
 	uint64_t loop;
 	uint64_t cnt_per_loop;
 	uint64_t loop_interval_ms;
 	int report_step;
-};
+} muggle_benchmark_config_t;
 
 MUGGLE_BENCHMARK_EXPORT
 void muggle_benchmark_gen_reports_head(FILE *fp, struct muggle_benchmark_config *config);

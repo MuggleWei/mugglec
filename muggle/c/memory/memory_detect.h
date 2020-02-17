@@ -35,7 +35,9 @@ void muggle_debug_memory_leak_end(struct muggle_debug_memory_state *state);
 #else
 
 struct muggle_debug_mem_state
-{};
+{
+	void *v;
+};
 
 #define muggle_debug_memory_leak_start(state)
 #define muggle_debug_memory_leak_end(state)

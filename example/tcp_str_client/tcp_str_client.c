@@ -1,4 +1,4 @@
-#include "muggle/muggle_cc.h"
+#include "muggle/c/muggle_c.h"
 
 #define SND_RCV_BUF_SIZE 4096
 
