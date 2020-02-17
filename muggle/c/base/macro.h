@@ -35,6 +35,8 @@
 	#endif
 #elif __linux__
 	#define MUGGLE_PLATFORM_LINUX 1
+#elif __FreeBSD__
+	#define MUGGLE_PLATFORM_FREEBSD 1
 #elif __unix__
 	#define MUGGLE_PLATFORM_UNIX 1
 #elif defined(_POSIX_VERSION)

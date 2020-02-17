@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-muggle_log_category_t g_log_default_category = {0};
+muggle_log_category_t g_log_default_category = {
+	{}, 0, MUGGLE_LOG_LEVEL_FATAL + 1
+};
 
 void muggle_log_add_handle(muggle_log_handle_t *handle)
 {
@@ -20,6 +22,11 @@ void muggle_log_function(
 	const char *format,
 	...)
 {
+	if (category->lowest_log_level > arg->level)
+	{
+		return;
+	}
+
 	char msg[MUGGLE_LOG_MAX_LEN];
 	va_list args;
 

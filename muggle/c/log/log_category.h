@@ -23,6 +23,7 @@ typedef struct muggle_log_category_tag
 {
 	muggle_log_handle_t *handles[MUGGLE_LOG_CATEGORY_MAX_HANDLE];
 	int cnt;
+	int lowest_log_level;
 }muggle_log_category_t;
 
 /*

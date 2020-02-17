@@ -16,6 +16,10 @@ int muggle_log_category_add(muggle_log_category_t *category, muggle_log_handle_t
 	}
 
 	category->handles[category->cnt++] = handle;
+	if (handle->level < category->lowest_log_level)
+	{
+		category->lowest_log_level = handle->level;
+	}
 	return MUGGLE_OK;
 }
 
