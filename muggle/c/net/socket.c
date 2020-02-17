@@ -38,3 +38,26 @@ int muggle_socket_strerror(int errnum, char *buf, size_t bufsize)
 	return strerror_r(errnum, buf, bufsize);
 #endif
 }
+
+int muggle_socket_set_nonblock(muggle_socket_t socket, int on)
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	u_long iMode = (u_long)on;
+
+	// If iMode = 0, blocking is enabled;
+	// If iMode != 0, non-blocking mode is enabled.
+	return ioctlsocket(socket, FIONBIO, &iMode);
+#else
+	int flags = 0;
+	flags = fcntl(socket, F_GETFL, 0);
+	if (on)
+	{
+		flags |= O_NONBLOCK;
+	}
+	else
+	{
+		flags &= ~O_NONBLOCK;
+	}
+	return fcntl(socket, F_SETFL, flags);
+#endif
+}

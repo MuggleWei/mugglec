@@ -84,6 +84,14 @@ int muggle_socket_close(muggle_socket_t socket);
 MUGGLE_CC_EXPORT
 int muggle_socket_strerror(int errnum, char *buf, size_t bufsize);
 
+/*
+ * set socket non block
+ * @on: if 0, set block, otherwise set non block
+ * RETURN: returns 0 on success, on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ * */
+MUGGLE_CC_EXPORT
+int muggle_socket_set_nonblock(muggle_socket_t socket, int on);
+
 EXTERN_C_END
 
 #endif

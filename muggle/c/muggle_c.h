@@ -64,5 +64,6 @@
 // net
 #include "muggle/c/net/socket.h"
 #include "muggle/c/net/socket_utils.h"
+#include "muggle/c/net/socket_event.h"
 
 #endif
