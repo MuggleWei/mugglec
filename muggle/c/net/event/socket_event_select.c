@@ -2,6 +2,7 @@
 #include <string.h>
 #include "muggle/c/log/log.h"
 #include "muggle/c/memory/memory_pool.h"
+#include "socket_event_utils.h"
 
 struct muggle_peer_list_node
 {
@@ -26,7 +27,6 @@ static void muggle_ev_select_debug_print(
 			break;
 		}
 
-		int write_bytes = 0;
 		char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
 		if (node->peer.addr_len == 0 ||
 			muggle_socket_ntop((struct sockaddr*)&node->peer.addr, straddr, MUGGLE_SOCKET_ADDR_STRLEN, 0) == NULL)
@@ -168,62 +168,6 @@ static int muggle_socket_event_select_listen(
 	return 0;
 }
 
-static int muggle_socket_event_select_peer(
-	muggle_socket_event_t *ev,
-	struct muggle_peer_list_node *node)
-{
-	if (ev->on_message)
-	{
-		int ret = ev->on_message(ev, &node->peer);
-		if (ret == 0)
-		{
-			return 0;
-		}
-		else
-		{
-			if (ret == -1)
-			{
-				muggle_socket_close(node->peer.fd);
-			}
-			return 1;
-		}
-	}
-	else
-	{
-		char buf[4096];
-		int n;
-		while (1)
-		{
-			n = recv(node->peer.fd, buf, sizeof(buf), 0);
-			if (n > 0)
-			{
-				continue;
-			}
-			else if (n < 0)
-			{
-				if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
-				{
-					continue;
-				}
-				else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
-				{
-					break;
-				}
-
-				muggle_socket_close(node->peer.fd);
-				return 1;
-			}
-			else
-			{
-				muggle_socket_close(node->peer.fd);
-				return 1;
-			}
-		}
-	}
-
-	return 0;
-}
-
 void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_t *ev_arg)
 {
 	MUGGLE_TRACE("socket event select run...");
@@ -274,9 +218,8 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 		memset(node, 0, sizeof(struct muggle_peer_list_node));
 		node->next = head.next;
 		head.next = node;
-		node->peer.peer_type = ev_arg->peers[i].peer_type;
-		node->peer.fd = ev_arg->peers[i].fd;
-		node->peer.data = ev_arg->peers[i].data;
+
+		memcpy(&node->peer, &ev_arg->peers[i], sizeof(muggle_socket_event_t));
 		if (node->peer.peer_type == MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN ||
 			node->peer.peer_type == MUGGLE_SOCKET_PEER_TYPE_TCP_PEER)
 		{
@@ -324,7 +267,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_PEER:
 					case MUGGLE_SOCKET_PEER_TYPE_UDP_PEER:
 						{
-							need_close = muggle_socket_event_select_peer(ev, node);
+							need_close = muggle_socket_event_peer_on_message(ev, &node->peer);
 						}break;
 					default:
 						{
@@ -343,7 +286,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 #if MUGGLE_ENABLE_TRACE
 						char debug_buf[4096];
 						int debug_offset = 0;
-						debug_offset = snprintf(debug_buf, sizeof(debug_buf) - debug_offset, "new connection |");
+						debug_offset = snprintf(debug_buf, sizeof(debug_buf) - debug_offset, "disconnection |");
 						muggle_ev_select_debug_print(
 							debug_buf, debug_offset, sizeof(debug_buf), &head, nfds);
 #endif
@@ -370,7 +313,8 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 		{
 			ev->on_timer(ev);
 		}
-		if (n == MUGGLE_SOCKET_ERROR)
+		// if (n == MUGGLE_SOCKET_ERROR)
+		else
 		{
 			char err_msg[1024];
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));

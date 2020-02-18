@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 	const char *hello = "hello echo service";
 	muggle_socket_ev_arg_t ev_arg;
 	ev_arg.ev_loop_type = event_loop_type;
-	ev_arg.hints_max_peer = 4;
+	ev_arg.hints_max_peer = 6;
 	ev_arg.cnt_peer = 1;
 	ev_arg.peers = &peer;
 	ev_arg.timeout_ms = -1;

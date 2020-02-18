@@ -2,6 +2,7 @@
 #include <string.h>
 #include "muggle/c/log/log.h"
 #include "event/socket_event_select.h"
+#include "event/socket_event_poll.h"
 
 static int muggle_get_event_loop_type(int event_loop_type)
 {
@@ -70,8 +71,7 @@ void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
 		}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_POLL:
 		{
-			// TODO:
-			MUGGLE_ERROR("to be continued...");
+			muggle_socket_event_poll(&ev, ev_arg);
 		}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL:
 		{
