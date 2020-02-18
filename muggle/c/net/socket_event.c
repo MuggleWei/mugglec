@@ -47,6 +47,10 @@ void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
 	{
 		ev.timeout_ms = -1;
 	}
+	else
+	{
+		ev.timeout_ms = ev_arg->timeout_ms;
+	}
 	ev.datas = ev_arg->datas;
 
 	ev.on_connect = ev_arg->on_connect;
@@ -58,6 +62,7 @@ void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_MULTHREAD:
 		{
 			// TODO:
+			MUGGLE_ERROR("to be continued...");
 		}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT:
 		{
@@ -66,10 +71,12 @@ void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_POLL:
 		{
 			// TODO:
+			MUGGLE_ERROR("to be continued...");
 		}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL:
 		{
 			// TODO:
+			MUGGLE_ERROR("to be continued...");
 		}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE:
 		{

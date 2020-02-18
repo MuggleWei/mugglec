@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 	signal(SIGPIPE, SIG_IGN);
 #endif
 
-	muggle_socket_t client = muggle_tcp_connect(argv[1], argv[2], 3);
+	muggle_socket_t client = muggle_tcp_connect(argv[1], argv[2], 3, NULL);
 	if (client == MUGGLE_INVALID_SOCKET)
 	{
 		exit(EXIT_FAILURE);

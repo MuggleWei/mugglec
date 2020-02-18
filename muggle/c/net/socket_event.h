@@ -9,17 +9,9 @@
 #define MUGGLE_C_SOCKET_EVENT_H_
 
 #include "muggle/c/net/socket.h"
+#include "muggle/c/net/socket_utils.h"
 
 EXTERN_C_BEGIN
-
-enum
-{
-	MUGGLE_SOCKET_PEER_TYPE_NULL = 0,
-	MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN,
-	MUGGLE_SOCKET_PEER_TYPE_TCP_PEER,
-	MUGGLE_SOCKET_PEER_TYPE_UDP_PEER,
-	MUGGLE_SOCKET_PEER_TYPE_MAX,
-};
 
 enum
 {
@@ -35,19 +27,30 @@ enum
 struct muggle_socket_peer;
 struct muggle_socket_event;
 
-// event loop callbacks function
-typedef void (*muggle_socket_event_connect)(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
-typedef void (*muggle_socket_event_error)(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
-typedef void (*muggle_socket_event_message)(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
-typedef void (*muggle_socket_event_timer)(struct muggle_socket_event *ev, int timeout_ms);
+/*
+ * return 0, everything is ok
+ * return -1, muggle_socket_event will close socket and free peer
+ * return 1, user will close socket and muggle_socket_event will free peer
+ * */
+typedef int (*muggle_socket_event_connect)(
+	struct muggle_socket_event *ev, struct muggle_socket_peer *listen_peer, struct muggle_socket_peer *peer);
 
-// socket peer
-typedef struct muggle_socket_peer
-{
-	muggle_socket_t fd;
-	int             peer_type;
-	void            *data;
-}muggle_socket_peer_t;
+/*
+ * when return 0, then muggle_socket_event will close socket, otherwise user is responsible
+ * for close socket. No matter muggle_socket_event or user close socket, the peer
+ * will free by muggle_socket_event, if user wanna transfer peer to other thread for close, need
+ * malloc and copy peer for that
+ * */
+typedef int (*muggle_socket_event_error)(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
+
+/*
+ * return 0, everything is ok
+ * return -1, muggle_socket_event will close socket and free peer
+ * return 1, user will close socket and muggle_socket_event will free peer
+ * */
+typedef int (*muggle_socket_event_message)(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
+
+typedef void (*muggle_socket_event_timer)(struct muggle_socket_event *ev);
 
 // socket event loop handle
 typedef struct muggle_socket_event
@@ -56,10 +59,10 @@ typedef struct muggle_socket_event
 	int  timeout_ms;
 	void *datas;
 
-	muggle_socket_event_connect *on_connect;
-	muggle_socket_event_error   *on_error;
-	muggle_socket_event_message *on_message;
-	muggle_socket_event_timer   *on_timer;
+	muggle_socket_event_connect on_connect;
+	muggle_socket_event_error   on_error;
+	muggle_socket_event_message on_message;
+	muggle_socket_event_timer   on_timer;
 }muggle_socket_event_t;
 
 // socket event loop input arguments
@@ -73,10 +76,10 @@ typedef struct muggle_socket_ev_arg
 	void                 *datas;         // user custom data
 
 	// event callbacks
-	muggle_socket_event_connect *on_connect;
-	muggle_socket_event_error   *on_error;
-	muggle_socket_event_message *on_message;
-	muggle_socket_event_timer   *on_timer;
+	muggle_socket_event_connect on_connect;
+	muggle_socket_event_error   on_error;
+	muggle_socket_event_message on_message;
+	muggle_socket_event_timer   on_timer;
 }muggle_socket_ev_arg_t;
 
 /*

@@ -111,6 +111,12 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 		{
 			break;
 		}
+		else
+		{
+			char err_msg[1024] = {0};
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_WARNING("failed bind %s:%s - %s", host, serv, err_msg);
+		}
 
 		muggle_socket_close(listen_socket);
 		listen_socket = MUGGLE_INVALID_SOCKET;
@@ -140,7 +146,7 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 
 }
 
-muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeout_sec)
+muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeout_sec, muggle_socket_peer_t *peer)
 {
     muggle_socket_t client = MUGGLE_INVALID_SOCKET;
 
@@ -214,6 +220,15 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
             return MUGGLE_INVALID_SOCKET;
         }
     }
+
+	// set peer
+	if (peer)
+	{
+		peer->fd = client;
+		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_TCP_PEER;
+		memcpy(&peer->addr, res->ai_addr, sizeof(res->ai_addrlen));
+		peer->addr_len = res->ai_addrlen;
+	}
 
     freeaddrinfo(ressave);
 

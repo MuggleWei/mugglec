@@ -16,13 +16,18 @@ muggle_socket_t muggle_socket_create(int family, int type, int protocol)
 	return socket(family, type, protocol);
 }
 
-int muggle_socket_close(muggle_socket_t socket)
+int muggle_socket_close(muggle_socket_t fd)
 {
 #if MUGGLE_PLATFORM_WINDOWS
-	return closesocket(socket);
+	return closesocket(fd);
 #else
-	return close(socket);
+	return close(fd);
 #endif
+}
+
+int muggle_socket_shutdown(muggle_socket_t fd, int how)
+{
+	return shutdown(fd, how);
 }
 
 int muggle_socket_strerror(int errnum, char *buf, size_t bufsize)

@@ -23,6 +23,14 @@ EXTERN_C_BEGIN
 #define MUGGLE_INVALID_SOCKET INVALID_SOCKET
 #define MUGGLE_SOCKET_ERROR SOCKET_ERROR
 #define MUGGLE_SOCKET_LAST_ERRNO WSAGetLastError()
+#define MUGGLE_SOCKET_ADDR_STRLEN (INET6_ADDRSTRLEN + 8)
+
+#define MUGGLE_SOCKET_SHUT_RD     SD_RECEIVE
+#define MUGGLE_SOCKET_SHUT_WR     SD_SEND
+#define MUGGLE_SOCKET_SHUT_RDWR   SD_BOTH
+
+#define MUGGLE_SYS_ERRNO_INTR       WSAEINTR
+#define MUGGLE_SYS_ERRNO_WOULDBLOCK WSAEWOULDBLOCK
 
 typedef SOCKET muggle_socket_t;
 typedef int muggle_socklen_t;
@@ -42,9 +50,17 @@ typedef int muggle_socklen_t;
 #include <poll.h>
 #include <sys/epoll.h>
 
-#define MUGGLE_INVALID_SOCKET (-1)
-#define MUGGLE_SOCKET_ERROR (-1)
-#define MUGGLE_SOCKET_LAST_ERRNO errno
+#define MUGGLE_INVALID_SOCKET     (-1)
+#define MUGGLE_SOCKET_ERROR       (-1)
+#define MUGGLE_SOCKET_LAST_ERRNO  errno
+#define MUGGLE_SOCKET_ADDR_STRLEN (INET6_ADDRSTRLEN + 8)
+
+#define MUGGLE_SOCKET_SHUT_RD     SHUT_RD
+#define MUGGLE_SOCKET_SHUT_WR     SHUT_WR
+#define MUGGLE_SOCKET_SHUT_RDWR   SHUT_RDWR
+
+#define MUGGLE_SYS_ERRNO_INTR       EINTR
+#define MUGGLE_SYS_ERRNO_WOULDBLOCK EWOULDBLOCK
 
 typedef int muggle_socket_t;
 typedef socklen_t muggle_socklen_t;
@@ -72,7 +88,14 @@ muggle_socket_t muggle_socket_create(int family, int type, int protocol);
  * RETURN: returns 0 on success, on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
  * */
 MUGGLE_CC_EXPORT
-int muggle_socket_close(muggle_socket_t socket);
+int muggle_socket_close(muggle_socket_t fd);
+
+/*
+ * shutdown socket
+ * RETURN: returns 0 on success, on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ * */
+MUGGLE_CC_EXPORT
+int muggle_socket_shutdown(muggle_socket_t fd, int how);
 
 /*
  * return string describing MUGGLE_SOCKET_LAST_ERRNO
