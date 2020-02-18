@@ -3,7 +3,7 @@
 #include <stdarg.h>
 
 muggle_log_category_t g_log_default_category = {
-	{}, 0, MUGGLE_LOG_LEVEL_FATAL + 1
+	{NULL}, 0, MUGGLE_LOG_LEVEL_FATAL + 1
 };
 
 void muggle_log_add_handle(muggle_log_handle_t *handle)

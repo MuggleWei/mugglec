@@ -9,6 +9,8 @@ struct muggle_peer_list_node
 	muggle_socket_peer_t    peer;
 };
 
+#if MUGGLE_ENABLE_TRACE
+
 static void muggle_ev_select_debug_print(
 	char *buf, int offset, int bufsize,
 	struct muggle_peer_list_node *head, int nfds)
@@ -45,6 +47,8 @@ static void muggle_ev_select_debug_print(
     offset += snprintf(buf + offset, bufsize - offset, "NULL | nfds: %d", nfds);
     MUGGLE_DEBUG_INFO(buf);
 }
+
+#endif
 
 static int muggle_socket_event_select_listen(
 	muggle_socket_event_t *ev,
@@ -142,7 +146,7 @@ static int muggle_socket_event_select_listen(
 				new_node->next = head->next;
 				head->next = new_node;
 
-#if MUGGLE_DEBUG
+#if MUGGLE_ENABLE_TRACE
 				char debug_buf[4096];
 				int debug_offset = 0;
 				debug_offset = snprintf(debug_buf, sizeof(debug_buf) - debug_offset, "new connection |");
@@ -267,6 +271,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 	for (int i = 0; i < ev_arg->cnt_peer; i++)
 	{
 		struct muggle_peer_list_node *node = (struct muggle_peer_list_node*)muggle_memory_pool_alloc(&pool);
+		memset(node, 0, sizeof(struct muggle_peer_list_node));
 		node->next = head.next;
 		head.next = node;
 		node->peer.peer_type = ev_arg->peers[i].peer_type;
@@ -335,7 +340,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 						muggle_memory_pool_free(&pool, node);
 						node = prev_node->next;
 
-#if MUGGLE_DEBUG
+#if MUGGLE_ENABLE_TRACE
 						char debug_buf[4096];
 						int debug_offset = 0;
 						debug_offset = snprintf(debug_buf, sizeof(debug_buf) - debug_offset, "new connection |");

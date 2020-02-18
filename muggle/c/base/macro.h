@@ -15,6 +15,11 @@
 	#define MUGGLE_RELEASE 1
 #endif
 
+// build with trace info
+#if MUGGLE_DEBUG & defined(MUGGLE_BUILD_TRACE)
+	#define MUGGLE_ENABLE_TRACE 1
+#endif
+
 // detect platform
 #ifdef _WIN32
 	#define MUGGLE_PLATFORM_WINDOWS 1

@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-#if !MUGGLE_PLATFROM_WINDOWS
+#if !MUGGLE_PLATFORM_WINDOWS
 	// ignore PIPE
 	signal(SIGPIPE, SIG_IGN);
 #endif

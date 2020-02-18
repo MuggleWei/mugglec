@@ -227,7 +227,7 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
 		peer->fd = client;
 		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_TCP_PEER;
 		memcpy(&peer->addr, res->ai_addr, sizeof(res->ai_addrlen));
-		peer->addr_len = res->ai_addrlen;
+		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
 	}
 
     freeaddrinfo(ressave);

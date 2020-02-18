@@ -28,6 +28,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # options
 option(MUGGLE_BUILD_ONLY_C "Only build muggle c lib" OFF)
+option(MUGGLE_BUILD_TRACE "If build type is debug then build with trace info in source codes" OFF)
 option(MUGGLE_BUILD_SHARED_LIB ON)
 option(MUGGLE_BUILD_EXAMPLE "Build muggleCC example" OFF)
 option(MUGGLE_BUILD_TESTING "Build muggleCC test" OFF)
@@ -61,6 +62,10 @@ else()
 	muggle_add_project(muggleCC ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
 	set(muggle_cc muggleCC)
 	target_compile_definitions(${muggle_cc} PUBLIC MUGGLE_BUILD_CC)
+endif()
+
+if (${MUGGLE_BUILD_TRACE})
+	target_compile_definitions(${muggle_cc} PUBLIC MUGGLE_BUILD_TRACE)
 endif()
 
 # muggle benchmark
