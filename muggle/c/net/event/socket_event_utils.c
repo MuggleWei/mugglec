@@ -58,8 +58,8 @@ void muggle_socket_event_timer_handle(muggle_socket_event_t *ev, struct timespec
 {
 	timespec_get(t2, TIME_UTC);
 	int interval_ms =
-		(t2->tv_sec - t1->tv_sec) * 1000 +
-		(t2->tv_nsec - t1->tv_nsec) / 1000000;
+		(int)((t2->tv_sec - t1->tv_sec) * 1000 +
+		(t2->tv_nsec - t1->tv_nsec) / 1000000);
 	if (interval_ms > ev->timeout_ms)
 	{
 		if (ev->on_timer)

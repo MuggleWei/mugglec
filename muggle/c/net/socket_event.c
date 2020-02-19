@@ -34,9 +34,9 @@ static int muggle_get_event_loop_type(int event_loop_type)
 #if MUGGLE_PLATFORM_LINUX
 		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL;
 #elif MUGGLE_PLATFORM_WINDOWS
-		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_IOCP,
+		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_IOCP;
 #elif MUGGLE_PLATFORM_FREEBSD
-		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE,
+		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE;
 #else
 		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT;
 #endif
@@ -81,15 +81,27 @@ void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
 		}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL:
 		{
+#if MUGGLE_PLATFORM_LINUX
 			muggle_socket_event_epoll(&ev, ev_arg);
+#else
+			MUGGLE_ERROR("epoll event loop support linux only");
+#endif
 		}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_IOCP:
 		{
+#if MUGGLE_PLATFORM_WINDOWS
 			MUGGLE_ERROR("unimplemented event loop type: iocp, to be continued...");
+#else
+			MUGGLE_ERROR("iocp event loop support windows only");
+#endif
 		}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE:
 		{
+#if MUGGLE_PLATFORM_FREEBSD
 			MUGGLE_ERROR("unimplemented event loop type: kqueue, to be continued...");
+#else
+			MUGGLE_ERROR("kqueue event loop support FreeBSD only");
+#endif
 		}break;
 	default:
 		{
