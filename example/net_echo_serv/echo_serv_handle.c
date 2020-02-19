@@ -89,5 +89,5 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 
 void on_timer(struct muggle_socket_event *ev)
 {
-	MUGGLE_INFO("timer with interval(%d) output: %s", ev->timeout_ms, (const char*)ev->datas);
+	MUGGLE_INFO("timer with interval(%dms) output: %s", ev->timeout_ms, (const char*)ev->datas);
 }

@@ -91,7 +91,7 @@ static int muggle_socket_event_poll_listen(
 			}
 			else
 			{
-				muggle_socket_close(peer->fd);
+				muggle_socket_close(listen_peer->fd);
 			}
 
 			return 1;
@@ -161,7 +161,11 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 
 	if (capacity < ev_arg->cnt_peer)
 	{
-		MUGGLE_WARNING("capacity space not enough for all peers");
+		MUGGLE_ERROR("capacity space not enough for all peers");
+		for (int i = 0; i < ev_arg->cnt_peer; ++i)
+		{
+			muggle_socket_close(ev_arg[i].peers->fd);
+		}
 		return;
 	}
 
@@ -191,6 +195,11 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 		cnt_fd++;
 	}
 
+	struct timespec t1, t2;
+	if (ev->timeout_ms > 0)
+	{
+		timespec_get(&t1, TIME_UTC);
+	}
 	while (1)
 	{
 #if MUGGLE_PLATFORM_WINDOWS
@@ -215,7 +224,7 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_PEER:
 					case MUGGLE_SOCKET_PEER_TYPE_UDP_PEER:
 						{
-							need_close = muggle_socket_event_peer_on_message(ev, peer);
+							need_close = muggle_socket_event_on_message(ev, peer);
 						}break;
 					default:
 						{
@@ -265,10 +274,17 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 					break;
 				}
 			}
+
+			// when loop is busy, timeout will not trigger, use
+			// customize timer handle avoid that
+			if (ev->timeout_ms > 0)
+			{
+				muggle_socket_event_timer_handle(ev, &t1, &t2);
+			}
 		}
 		else if (n == 0)
 		{
-			ev->on_timer(ev);
+			muggle_socket_event_timer_handle(ev, &t1, &t2);
 		}
 		else
 		{

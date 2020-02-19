@@ -3,6 +3,7 @@
 #include "muggle/c/log/log.h"
 #include "event/socket_event_select.h"
 #include "event/socket_event_poll.h"
+#include "event/socket_event_epoll.h"
 
 static int muggle_get_event_loop_type(int event_loop_type)
 {
@@ -57,6 +58,7 @@ void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
 	ev.on_connect = ev_arg->on_connect;
 	ev.on_error = ev_arg->on_error;
 	ev.on_message = ev_arg->on_message;
+	ev.on_timer = ev_arg->on_timer;
 
 	switch (ev.ev_loop_type)
 	{
@@ -75,8 +77,7 @@ void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
 		}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL:
 		{
-			// TODO:
-			MUGGLE_ERROR("to be continued...");
+			muggle_socket_event_epoll(&ev, ev_arg);
 		}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE:
 		{

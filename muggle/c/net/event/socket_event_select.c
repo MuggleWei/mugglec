@@ -7,7 +7,7 @@
 struct muggle_peer_list_node
 {
 	struct muggle_peer_list_node *next;
-	muggle_socket_peer_t    peer;
+	muggle_socket_peer_t         peer;
 };
 
 #if MUGGLE_ENABLE_TRACE
@@ -182,11 +182,15 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 	if (capacity < ev_arg->cnt_peer)
 	{
 		MUGGLE_WARNING("capacity space not enough for all peers");
+		for (int i = 0; i < ev_arg->cnt_peer; ++i)
+		{
+			muggle_socket_close(ev_arg[i].peers->fd);
+		}
 		return;
 	}
 
 	// set timeout
-	struct timeval timeout;
+	struct timeval timeout, save_timeout;
 	struct timeval *p_timeout = &timeout;
 	memset(&timeout, 0, sizeof(timeout));
 	if (ev->timeout_ms < 0)
@@ -197,6 +201,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 	{
 		timeout.tv_sec = ev->timeout_ms / 1000;
 		timeout.tv_usec = (ev->timeout_ms % 1000) * 1000;
+		memcpy(&save_timeout, &timeout, sizeof(struct timeval));
 	}
 
 	// fixed size pool for peers
@@ -205,6 +210,10 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 	{
 		MUGGLE_ERROR("failed init memory pool for capacity: %d, unit size: %d",
 			capacity, sizeof(struct muggle_peer_list_node));
+		for (int i = 0; i < ev_arg->cnt_peer; ++i)
+		{
+			muggle_socket_close(ev_arg[i].peers->fd);
+		}
 		return;
 	}
 	muggle_memory_pool_set_flag(&pool, MUGGLE_MEMORY_POOL_CONSTANT_SIZE);
@@ -245,9 +254,19 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 		FD_SET(node->peer.fd, &allset);
 		node = node->next;
 	}
+
+	struct timespec t1, t2;
+	if (ev->timeout_ms > 0)
+	{
+		timespec_get(&t1, TIME_UTC);
+	}
 	while (1)
 	{
 		rset = allset;
+		if (p_timeout)
+		{
+			memcpy(&timeout, &save_timeout, sizeof(struct timeval));
+		}
 		int n = select(nfds + 1, &rset, NULL, NULL, p_timeout);
 		if (n > 0)
 		{
@@ -267,7 +286,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_PEER:
 					case MUGGLE_SOCKET_PEER_TYPE_UDP_PEER:
 						{
-							need_close = muggle_socket_event_peer_on_message(ev, &node->peer);
+							need_close = muggle_socket_event_on_message(ev, &node->peer);
 						}break;
 					default:
 						{
@@ -308,10 +327,17 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 					node = node->next;
 				}
 			}
+
+			// when loop is busy, timeout will not trigger, use
+			// customize timer handle avoid that
+			if (ev->timeout_ms > 0)
+			{
+				muggle_socket_event_timer_handle(ev, &t1, &t2);
+			}
 		}
 		else if (n == 0)
 		{
-			ev->on_timer(ev);
+			muggle_socket_event_timer_handle(ev, &t1, &t2);
 		}
 		// if (n == MUGGLE_SOCKET_ERROR)
 		else
