@@ -469,3 +469,306 @@ muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_so
 
 	return udp_socket;
 }
+
+static int muggle_mcast_join_all(
+	muggle_socket_t fd,
+	const struct sockaddr *grp,
+	socklen_t grplen,
+	const char *iface)
+{
+#ifdef MCAST_JOIN_GROUP
+	struct group_req req;
+	if (iface == NULL)
+	{
+		req.gr_interface = 0;
+	}
+	else
+	{
+		req.gr_interface = if_nametoindex(iface);
+		if (req.gr_interface == 0)
+		{
+			char err_msg[1024] = {0};
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_WARNING("failed convert net interface(%s) to index, let kernel select - %s", iface, err_msg);
+		}
+	}
+
+	if (grplen > sizeof(req.gr_group))
+	{
+		MUGGLE_ERROR("failed mcast join, group size too big");
+		return -1;
+	}
+	memcpy(&req.gr_group, grp, grplen);
+
+	int level = -1;
+	switch (grp->sa_family)
+	{
+	case AF_INET:
+		{
+			level = IPPROTO_IP;
+		}break;
+	case AF_INET6:
+		{
+			level = IPPROTO_IPV6;
+		}break;
+	default:
+		{
+			MUGGLE_ERROR("unsupported socket family: %d", grp->sa_family);
+			return -1;
+		}break;
+	}
+
+	return setsockopt(fd, level, MCAST_JOIN_GROUP, &req, sizeof(req));
+#else
+	switch (grp->sa_family)
+	{
+	case AF_INET:
+		{
+            struct ip_mreq mreq;
+            memcpy(&mreq.imr_multiaddr, &(((const struct sockaddr_in*)grp)->sin_addr), sizeof(struct in_addr));
+
+            if (iface != NULL)
+            {
+                struct ifreq ifreq;
+                memset(&ifreq, 0, sizeof(ifreq));
+                strncpy(ifreq.ifr_name, iface, IFNAMSIZ - 1);
+                if (ioctl(fd, SIOCGIFADDR, &ifreq) < 0)
+                {
+                    MUGGLE_ERROR("failed ioctl(SIOCGIFADDR)");
+                    return -1;
+                }
+                memcpy(&mreq.imr_interface, &(((struct sockaddr_in*)&ifreq.ifr_addr)->sin_addr), sizeof(struct in_addr));
+            }
+            else
+            {
+                mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+            }
+
+            return setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+		}break;
+	case AF_INET6:
+		{
+#ifndef IPV6_JOIN_GROUP
+#define IPV6_JOIN_GROUP IPV6_ADD_MEMBERSHIP
+#endif
+			struct ipv6_mreq mreq6;
+			memcpy(&mreq6.ipv6mr_multiaddr, &(((const struct sockaddr_in6*)grp)->sin6_addr), sizeof(struct in6_addr));
+
+			if (iface == NULL)
+			{
+				mreq6.ipv6mr_interface = 0;
+			}
+			else
+			{
+				mreq6.ipv6mr_interface = if_nametoindex(iface);
+				if (mreq6.ipv6mr_interface == 0)
+				{
+					char err_msg[1024] = {0};
+					muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+					MUGGLE_WARNING("failed convert net interface(%s) to index, let kernel select - %s", iface, err_msg);
+				}
+			}
+
+			return setsockopt(fd, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq6, sizeof(mreq6));
+		}break;
+	default:
+		{
+			MUGGLE_ERROR("unsupported socket family: %d", grp->sa_family);
+			return -1;
+		}break;
+	}
+#endif
+
+	return -1;
+}
+
+static int muggle_mcast_join_souce_group(
+	muggle_socket_t fd,
+	const struct sockaddr *grp,
+	socklen_t grplen,
+	const char *iface,
+	const char *src_grp)
+{
+	// get source group address
+	struct addrinfo hints, *res;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_DGRAM;
+
+	int n;
+	if ((n = getaddrinfo(src_grp, NULL, &hints, &res)) != 0)
+	{
+#if MUGGLE_PLATFORM_WINDOWS
+		char err_msg[1024] = {0};
+		muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
+		MUGGLE_ERROR("failed mcast join source group for %s - getaddrinfo return '%s'",
+			src_grp, err_msg);
+#else
+		MUGGLE_ERROR("failed mcast join source group for %s - getaddrinfo return '%s'",
+			src_grp, gai_strerror(n));
+#endif
+		return -1;
+	}
+
+	struct sockaddr_storage srcaddr;
+	muggle_socklen_t srcaddr_len;
+	if (res == NULL)
+	{
+		return -1;
+	}
+	else
+	{
+		memcpy(&srcaddr, res->ai_addr, sizeof(res->ai_addrlen));
+		srcaddr_len = (muggle_socklen_t)res->ai_addrlen;
+	}
+	freeaddrinfo(res);
+
+	// join multicast souce group
+#ifdef MCAST_JOIN_GROUP
+    struct group_source_req req;
+
+	if (iface == NULL)
+	{
+        req.gsr_interface = 0; // kernel select interface
+	}
+	else
+	{
+        req.gsr_interface = if_nametoindex(iface);
+        if (req.gsr_interface == 0)
+		{
+			char err_msg[1024] = {0};
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_WARNING("failed convert net interface(%s) to index, let kernel select - %s", iface, err_msg);
+		}
+	}
+
+    if (grplen > sizeof(req.gsr_group) || srcaddr_len > sizeof(req.gsr_source))
+    {
+        MUGGLE_ERROR("grplen or srclen too big");
+        return -1;
+    }
+
+    memcpy(&req.gsr_group, grp, grplen);
+    memcpy(&req.gsr_source, &srcaddr, srcaddr_len);
+
+    int level = -1;
+    switch (grp->sa_family)
+    {
+    case AF_INET:
+        {
+            level = IPPROTO_IP;
+        }break;
+    case AF_INET6:
+        {
+            level = IPPROTO_IPV6;
+        }break;
+    default:
+        {
+			MUGGLE_ERROR("unsupported socket family: %d", grp->sa_family);
+			return -1;
+        }break;
+    }
+
+    return setsockopt(fd, level, MCAST_JOIN_SOURCE_GROUP, &req, sizeof(req));
+#endif
+
+	return -1;
+}
+
+
+muggle_socket_t muggle_mcast_join(
+	const char *host,
+	const char *serv,
+	const char *iface,
+	const char *src_grp,
+	muggle_socket_peer_t *peer)
+{
+	muggle_socket_t fd = MUGGLE_INVALID_SOCKET;
+
+	struct addrinfo hints, *res;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_DGRAM;
+
+	int n;
+	if ((n = getaddrinfo(host, serv, &hints, &res)) != 0)
+	{
+#if MUGGLE_PLATFORM_WINDOWS
+		char err_msg[1024] = {0};
+		muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
+		MUGGLE_ERROR("failed mcast join for %s:%s - getaddrinfo return '%s'",
+				host, serv, err_msg);
+#else
+		MUGGLE_ERROR("failed mcast join for %s:%s - getaddrinfo return '%s'",
+				host, serv, gai_strerror(n));
+#endif
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	struct addrinfo *ressave = res;
+	for (; res != NULL; res = res->ai_next)
+	{
+		fd = muggle_socket_create(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (fd == MUGGLE_INVALID_SOCKET)
+		{
+			continue;
+		}
+
+		// always set SO_REUSEADDR for listen socket
+		int on = 1;
+		if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
+		{
+			char err_msg[1024] = {0};
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_WARNING("failed setsockopt SO_REUSEADDR on - %s", err_msg);
+		}
+
+		if (bind(fd, res->ai_addr, (muggle_socklen_t)res->ai_addrlen) != 0)
+		{
+			char err_msg[1024] = {0};
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_WARNING("failed bind %s:%s - %s", host, serv, err_msg);
+
+			muggle_socket_close(fd);
+			fd = MUGGLE_INVALID_SOCKET;
+			continue;
+		}
+
+		int ret = 0;
+		if (src_grp == NULL)
+		{
+			ret = muggle_mcast_join_all(fd, res->ai_addr, res->ai_addrlen, iface);
+		}
+		else
+		{
+			ret = muggle_mcast_join_souce_group(fd, res->ai_addr, res->ai_addrlen, iface, src_grp);
+		}
+		if (ret == 0)
+		{
+			break;
+		}
+
+		muggle_socket_close(fd);
+		fd = MUGGLE_INVALID_SOCKET;
+	}
+
+	if (res == NULL)
+	{
+		MUGGLE_ERROR("failed to create and bind udp socket for %s:%s", host, serv);
+		freeaddrinfo(ressave);
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	// set peer
+	if (peer)
+	{
+		peer->fd = fd;
+		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
+		memcpy(&peer->addr, res->ai_addr, sizeof(res->ai_addrlen));
+		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
+	}
+
+	freeaddrinfo(ressave);
+
+	return fd;
+}

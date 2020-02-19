@@ -66,8 +66,8 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
 
 /*
  * udp bind
- * @host: target host
- * @serv: target service or port
+ * @host: bind host
+ * @serv: bind service or port
  * @peer: store bind peer information, if not care about info, set NULL
  * RETURN: on success, binded socket description is returned, otherwise return MUGGLE_INVALID_SOCKET
  * */
@@ -83,6 +83,23 @@ muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socke
  * */
 MUGGLE_CC_EXPORT
 muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_socket_peer_t *peer);
+
+/*
+ * udp multicast join for receive
+ * @host: multicast host
+ * @serv: multicast service or port
+ * @iface: net interface name, see 'ifconfig -s', if NULL, let kernel select interface
+ * @src_grp: multicast source group, if NULL, receive all
+ * @peer: socket peer store the connection information, if not care about connection info, set NULL
+ * RETURN: on success, mcast joined socket description is returned, otherwise return MUGGLE_INVALID_SOCKET
+ * */
+MUGGLE_CC_EXPORT
+muggle_socket_t muggle_mcast_join(
+	const char *host,
+	const char *serv,
+	const char *iface,
+	const char *src_grp,
+	muggle_socket_peer_t *peer);
 
 EXTERN_C_END
 

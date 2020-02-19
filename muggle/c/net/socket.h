@@ -49,6 +49,8 @@ typedef int muggle_socklen_t;
 #include <sys/select.h>
 #include <poll.h>
 #include <sys/epoll.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
 
 #define MUGGLE_INVALID_SOCKET     (-1)
 #define MUGGLE_SOCKET_ERROR       (-1)
