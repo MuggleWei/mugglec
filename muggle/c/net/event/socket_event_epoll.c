@@ -231,11 +231,8 @@ void muggle_socket_event_epoll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t
 		muggle_epoll_peer_t *epeer = p_epeers[i];
 		memcpy(&epeer->peer, &ev_arg->peers[i], sizeof(muggle_socket_peer_t));
 		epeer->epev.events = EPOLLIN | EPOLLET;
-		if (epeer->peer.peer_type == MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN ||
-			epeer->peer.peer_type == MUGGLE_SOCKET_PEER_TYPE_TCP_PEER)
-		{
-			muggle_socket_set_nonblock(epeer->peer.fd, 1);
-		}
+
+		muggle_socket_set_nonblock(epeer->peer.fd, 1);
 
 		if (epoll_ctl(epfd, EPOLL_CTL_ADD, epeer->peer.fd, &epeer->epev) == MUGGLE_INVALID_SOCKET)
 		{

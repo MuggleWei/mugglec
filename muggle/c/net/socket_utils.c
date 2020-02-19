@@ -64,7 +64,7 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 
 }
 
-muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlog)
+muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlog, muggle_socket_peer_t *peer)
 {
 	muggle_socket_t listen_socket = MUGGLE_INVALID_SOCKET;
 
@@ -140,10 +140,18 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 		return MUGGLE_INVALID_SOCKET;
 	}
 
+	// set peer
+	if (peer)
+	{
+		peer->fd = listen_socket;
+		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN;
+		memcpy(&peer->addr, res->ai_addr, sizeof(res->ai_addrlen));
+		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
+	}
+
 	freeaddrinfo(ressave);
 
 	return listen_socket;
-
 }
 
 muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeout_sec, muggle_socket_peer_t *peer)
@@ -317,4 +325,147 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
 #endif
 
     return client;
+}
+
+muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socket_peer_t *peer)
+{
+	muggle_socket_t udp_socket = MUGGLE_INVALID_SOCKET;
+
+	struct addrinfo hints, *res;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_flags = AI_PASSIVE;
+
+	int n;
+	if ((n = getaddrinfo(host, serv, &hints, &res)) != 0)
+	{
+#if MUGGLE_PLATFORM_WINDOWS
+		char err_msg[1024] = {0};
+		muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
+		MUGGLE_ERROR("failed udp bind for %s:%s - getaddrinfo return '%s'",
+				host, serv, err_msg);
+#else
+		MUGGLE_ERROR("failed udp bind for %s:%s - getaddrinfo return '%s'",
+				host, serv, gai_strerror(n));
+#endif
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	struct addrinfo *ressave = res;
+	for (; res != NULL; res = res->ai_next)
+	{
+		udp_socket = muggle_socket_create(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (udp_socket == MUGGLE_INVALID_SOCKET)
+		{
+			continue;
+		}
+
+		// always set SO_REUSEADDR for listen socket
+		int on = 1;
+		if (setsockopt(udp_socket, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
+		{
+			char err_msg[1024] = {0};
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_WARNING("failed setsockopt SO_REUSEADDR on - %s", err_msg);
+		}
+
+		if (bind(udp_socket, res->ai_addr, (muggle_socklen_t)res->ai_addrlen) == 0)
+		{
+			break;
+		}
+		else
+		{
+			char err_msg[1024] = {0};
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_WARNING("failed bind %s:%s - %s", host, serv, err_msg);
+		}
+
+		muggle_socket_close(udp_socket);
+		udp_socket = MUGGLE_INVALID_SOCKET;
+	}
+
+	if (res == NULL)
+	{
+		MUGGLE_ERROR("failed to create and bind udp socket for %s:%s", host, serv);
+		freeaddrinfo(ressave);
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	// set peer
+	if (peer)
+	{
+		peer->fd = udp_socket;
+		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
+		memcpy(&peer->addr, res->ai_addr, sizeof(res->ai_addrlen));
+		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
+	}
+
+	freeaddrinfo(ressave);
+
+	return udp_socket;
+}
+
+muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_socket_peer_t *peer)
+{
+	muggle_socket_t udp_socket = MUGGLE_INVALID_SOCKET;
+
+	struct addrinfo hints, *res;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_flags = AI_PASSIVE;
+
+	int n;
+	if ((n = getaddrinfo(host, serv, &hints, &res)) != 0)
+	{
+#if MUGGLE_PLATFORM_WINDOWS
+		char err_msg[1024] = {0};
+		muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
+		MUGGLE_ERROR("failed udp connect for %s:%s - getaddrinfo return '%s'",
+				host, serv, err_msg);
+#else
+		MUGGLE_ERROR("failed udp connect for %s:%s - getaddrinfo return '%s'",
+				host, serv, gai_strerror(n));
+#endif
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	struct addrinfo *ressave = res;
+	for (; res != NULL; res = res->ai_next)
+	{
+		udp_socket = muggle_socket_create(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (udp_socket == MUGGLE_INVALID_SOCKET)
+		{
+			continue;
+		}
+
+		if (connect(udp_socket, res->ai_addr, res->ai_addrlen) == 0)
+		{
+			break;
+		}
+
+		muggle_socket_close(udp_socket);
+		udp_socket = MUGGLE_INVALID_SOCKET;
+	}
+
+	if (res == NULL)
+	{
+		MUGGLE_ERROR("failed to create and connect udp socket for %s:%s", host, serv);
+		freeaddrinfo(ressave);
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	// set peer
+	if (peer)
+	{
+		peer->fd = udp_socket;
+		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
+		memcpy(&peer->addr, res->ai_addr, sizeof(res->ai_addrlen));
+		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
+	}
+
+	freeaddrinfo(ressave);
+
+	return udp_socket;
 }

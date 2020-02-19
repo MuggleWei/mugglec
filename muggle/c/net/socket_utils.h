@@ -47,10 +47,11 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
  * @host: internet host
  * @serv: internet service or port
  * @backlog: maximum length to which the queue of pending connections
+ * @peer: store listen peer information, if not care about info, set NULL
  * RETURN: on success, listen socket description is returned, otherwise return MUGGLE_INVALID_SOCKET
  * */
 MUGGLE_CC_EXPORT
-muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlog);
+muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlog, muggle_socket_peer_t *peer);
 
 /*
  * tcp connect
@@ -62,6 +63,26 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
  * */
 MUGGLE_CC_EXPORT
 muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeout_sec, muggle_socket_peer_t *peer);
+
+/*
+ * udp bind
+ * @host: target host
+ * @serv: target service or port
+ * @peer: store bind peer information, if not care about info, set NULL
+ * RETURN: on success, binded socket description is returned, otherwise return MUGGLE_INVALID_SOCKET
+ * */
+MUGGLE_CC_EXPORT
+muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socket_peer_t *peer);
+
+/*
+ * udp connect
+ * @host: target host
+ * @serv: target service or port
+ * @peer: socket peer store the connection information, if not care about connection info, set NULL
+ * RETURN: on success, connected socket description is returned, otherwise return MUGGLE_INVALID_SOCKET
+ * */
+MUGGLE_CC_EXPORT
+muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_socket_peer_t *peer);
 
 EXTERN_C_END
 

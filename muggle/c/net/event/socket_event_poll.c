@@ -187,11 +187,9 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 		fds[i].events = POLLIN;
 
 		memcpy(&peers[i], &ev_arg->peers[i], sizeof(muggle_socket_peer_t));
-		if (peers[i].peer_type == MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN ||
-			peers[i].peer_type == MUGGLE_SOCKET_PEER_TYPE_TCP_PEER)
-		{
-			muggle_socket_set_nonblock(peers[i].fd, 1);
-		}
+
+		muggle_socket_set_nonblock(peers[i].fd, 1);
+
 		cnt_fd++;
 	}
 

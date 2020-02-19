@@ -20,6 +20,9 @@ int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 	if (peer->data)
 	{
 		MUGGLE_INFO("disconnect - %s", (char*)peer->data);
+
+		free(peer->data);
+		peer->data = NULL;
 	}
 
 	return 0;
@@ -30,12 +33,37 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 	char buf[4096];
 	int n;
 	int ret = 0;
+	struct sockaddr_storage addr;
+	muggle_socklen_t addrlen;
 	while (1)
 	{
-		n = recv(peer->fd, buf, sizeof(buf), 0);
+		if (peer->peer_type == MUGGLE_SOCKET_PEER_TYPE_UDP_PEER)
+		{
+			addrlen = sizeof(addr);
+			n = recvfrom(peer->fd, buf, sizeof(buf), 0, (struct sockaddr*)&addr, &addrlen);
+		}
+		else if (peer->peer_type == MUGGLE_SOCKET_PEER_TYPE_TCP_PEER)
+		{
+			n = recv(peer->fd, buf, sizeof(buf), 0);
+		}
+		else
+		{
+			MUGGLE_ERROR("something wrong");
+			exit(EXIT_FAILURE);
+		}
+
 		if (n > 0)
 		{
-			int num_bytes = send(peer->fd, buf, n, 0);
+			int num_bytes = 0;
+			if (peer->peer_type == MUGGLE_SOCKET_PEER_TYPE_UDP_PEER)
+			{
+				num_bytes = sendto(peer->fd, buf, n, 0, (struct sockaddr*)&addr, addrlen);
+			}
+			else
+			{
+				num_bytes = send(peer->fd, buf, n, 0);
+			}
+
 			if (num_bytes != n)
 			{
 				if (num_bytes == MUGGLE_SOCKET_ERROR)
@@ -82,6 +110,9 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 	if (ret != 0 && peer->data)
 	{
 		MUGGLE_INFO("disconnect - %s", (char*)peer->data);
+
+		free(peer->data);
+		peer->data = NULL;
 	}
 
 	return ret;

@@ -169,9 +169,9 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (argc != 3)
+	if (argc != 4)
 	{
-		MUGGLE_ERROR("usage: %s <IP> <Port>", argv[0]);
+		MUGGLE_ERROR("usage: %s <IP> <Port> <tcp|udp>", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -183,21 +183,42 @@ int main(int argc, char *argv[])
 	signal(SIGPIPE, SIG_IGN);
 #endif
 
-	muggle_socket_t client = muggle_tcp_connect(argv[1], argv[2], 3, NULL);
-	if (client == MUGGLE_INVALID_SOCKET)
+	muggle_socket_peer_t peer;
+	if (strcmp(argv[3], "tcp") == 0)
 	{
+		peer.fd = muggle_tcp_connect(argv[1], argv[2], 3, &peer);
+	}
+	else if (strcmp(argv[3], "udp") == 0)
+	{
+		peer.fd = muggle_udp_connect(argv[1], argv[2], &peer);
+	}
+	else
+	{
+		MUGGLE_ERROR("invalid socket peer type: %s", argv[3]);
 		exit(EXIT_FAILURE);
 	}
 
-	MUGGLE_INFO("connect");
+	if (peer.fd == MUGGLE_INVALID_SOCKET)
+	{
+		MUGGLE_ERROR("%s failed connect: %s:%s", argv[3], argv[1], argv[2]);
+		exit(EXIT_FAILURE);
+	}
+
+	char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
+	if (muggle_socket_ntop((struct sockaddr*)&peer.addr, straddr, MUGGLE_SOCKET_ADDR_STRLEN, 0) == NULL)
+	{
+		snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "unknown:unknown");
+	}
+
+	MUGGLE_INFO("%s connect %s", argv[3], straddr);
 
 #if MUGGLE_PLATFORM_WINDOWS
-	str_client_windows(stdin, client);
+	str_client_windows(stdin, peer.fd);
 #else
-	str_client_posix(stdin, client); // use select
+	str_client_posix(stdin, peer.fd); // use select
 #endif
 
-	muggle_socket_close(client);
+	muggle_socket_close(peer.fd);
 
 	return 0;
 }

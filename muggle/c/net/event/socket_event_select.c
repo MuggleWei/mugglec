@@ -229,11 +229,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 		head.next = node;
 
 		memcpy(&node->peer, &ev_arg->peers[i], sizeof(muggle_socket_event_t));
-		if (node->peer.peer_type == MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN ||
-			node->peer.peer_type == MUGGLE_SOCKET_PEER_TYPE_TCP_PEER)
-		{
-			muggle_socket_set_nonblock(node->peer.fd, 1);
-		}
+		muggle_socket_set_nonblock(node->peer.fd, 1);
 	}
 
 	// select

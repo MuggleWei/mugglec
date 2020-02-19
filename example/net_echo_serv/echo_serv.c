@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
 	if (argc < 3)
 	{
-		MUGGLE_ERROR("usage: %s <IP> <Port> [thread|select|poll|epoll]", argv[0]);
+		MUGGLE_ERROR("usage: %s <IP> <Port> [thread|select|poll|epoll|iocp|kqueue]", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -25,13 +25,26 @@ int main(int argc, char *argv[])
 	signal(SIGPIPE, SIG_IGN);
 #endif
 
-	// create listen socket
 	const char *host = argv[1];
 	const char *serv = argv[2];
-	muggle_socket_t listen_socket = muggle_tcp_listen(host, serv, 512);
-	if (listen_socket == MUGGLE_INVALID_SOCKET)
+
+	// peers
+	int cnt_peer = 2;
+	muggle_socket_peer_t peers[2];
+
+	// create listen socket
+	peers[0].fd = muggle_tcp_listen(host, serv, 512, &peers[0]);
+	if (peers[0].fd == MUGGLE_INVALID_SOCKET)
 	{
 		MUGGLE_ERROR("failed create tcp listen for %s:%s", host, serv);
+		exit(EXIT_FAILURE);
+	}
+
+	// create bind udp
+	peers[1].fd = muggle_udp_bind(host, serv, &peers[1]);
+	if (peers[1].fd == MUGGLE_INVALID_SOCKET)
+	{
+		MUGGLE_ERROR("failed create udp bind for %s:%s", host, serv);
 		exit(EXIT_FAILURE);
 	}
 
@@ -55,6 +68,14 @@ int main(int argc, char *argv[])
 		{
 			event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL;
 		}
+		else if (strcmp(argv[3], "iocp") == 0)
+		{
+			event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_IOCP;
+		}
+		else if (strcmp(argv[3], "kqueue") == 0)
+		{
+			event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE;
+		}
 		else
 		{
 			MUGGLE_ERROR("invalid socket event loop type: %s", argv[3]);
@@ -62,19 +83,13 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// fillup peer
-	muggle_socket_peer_t peer;
-	memset(&peer, 0, sizeof(peer));
-	peer.fd = listen_socket;
-	peer.peer_type = MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN;
-
 	// fill up event loop input arguments
 	const char *hello = "hello echo service";
 	muggle_socket_ev_arg_t ev_arg;
 	ev_arg.ev_loop_type = event_loop_type;
 	ev_arg.hints_max_peer = 1024;
-	ev_arg.cnt_peer = 1;
-	ev_arg.peers = &peer;
+	ev_arg.cnt_peer = cnt_peer;
+	ev_arg.peers = peers;
 	ev_arg.timeout_ms = 5000;
 	ev_arg.datas = (void*)hello;
 	ev_arg.on_connect = on_connect;
