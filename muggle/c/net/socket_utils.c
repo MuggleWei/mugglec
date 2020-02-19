@@ -145,7 +145,7 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 	{
 		peer->fd = listen_socket;
 		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN;
-		memcpy(&peer->addr, res->ai_addr, sizeof(res->ai_addrlen));
+		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
 		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
 	}
 
@@ -234,7 +234,7 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
 	{
 		peer->fd = client;
 		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_TCP_PEER;
-		memcpy(&peer->addr, res->ai_addr, sizeof(res->ai_addrlen));
+		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
 		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
 	}
 
@@ -397,7 +397,7 @@ muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socke
 	{
 		peer->fd = udp_socket;
 		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
-		memcpy(&peer->addr, res->ai_addr, sizeof(res->ai_addrlen));
+		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
 		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
 	}
 
@@ -440,7 +440,7 @@ muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_so
 			continue;
 		}
 
-		if (connect(udp_socket, res->ai_addr, res->ai_addrlen) == 0)
+		if (connect(udp_socket, res->ai_addr, (muggle_socklen_t)res->ai_addrlen) == 0)
 		{
 			break;
 		}
@@ -461,7 +461,7 @@ muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_so
 	{
 		peer->fd = udp_socket;
 		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
-		memcpy(&peer->addr, res->ai_addr, sizeof(res->ai_addrlen));
+		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
 		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
 	}
 
@@ -473,7 +473,7 @@ muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_so
 static int muggle_mcast_join_all(
 	muggle_socket_t fd,
 	const struct sockaddr *grp,
-	socklen_t grplen,
+	muggle_socklen_t grplen,
 	const char *iface)
 {
 #ifdef MCAST_JOIN_GROUP
@@ -484,6 +484,9 @@ static int muggle_mcast_join_all(
 	}
 	else
 	{
+#if MUGGLE_PLATFORM_WINDOWS
+		req.gr_interface = 0;
+#else
 		req.gr_interface = if_nametoindex(iface);
 		if (req.gr_interface == 0)
 		{
@@ -491,6 +494,7 @@ static int muggle_mcast_join_all(
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
 			MUGGLE_WARNING("failed convert net interface(%s) to index, let kernel select - %s", iface, err_msg);
 		}
+#endif
 	}
 
 	if (grplen > sizeof(req.gr_group))
@@ -585,7 +589,7 @@ static int muggle_mcast_join_all(
 static int muggle_mcast_join_souce_group(
 	muggle_socket_t fd,
 	const struct sockaddr *grp,
-	socklen_t grplen,
+	muggle_socklen_t grplen,
 	const char *iface,
 	const char *src_grp)
 {
@@ -618,7 +622,7 @@ static int muggle_mcast_join_souce_group(
 	}
 	else
 	{
-		memcpy(&srcaddr, res->ai_addr, sizeof(res->ai_addrlen));
+		memcpy(&srcaddr, res->ai_addr, res->ai_addrlen);
 		srcaddr_len = (muggle_socklen_t)res->ai_addrlen;
 	}
 	freeaddrinfo(res);
@@ -633,6 +637,9 @@ static int muggle_mcast_join_souce_group(
 	}
 	else
 	{
+#if MUGGLE_PLATFORM_WINDOWS
+		req.gsr_interface = 0;
+#else
         req.gsr_interface = if_nametoindex(iface);
         if (req.gsr_interface == 0)
 		{
@@ -640,6 +647,7 @@ static int muggle_mcast_join_souce_group(
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
 			MUGGLE_WARNING("failed convert net interface(%s) to index, let kernel select - %s", iface, err_msg);
 		}
+#endif
 	}
 
     if (grplen > sizeof(req.gsr_group) || srcaddr_len > sizeof(req.gsr_source))
@@ -737,11 +745,11 @@ muggle_socket_t muggle_mcast_join(
 		int ret = 0;
 		if (src_grp == NULL)
 		{
-			ret = muggle_mcast_join_all(fd, res->ai_addr, res->ai_addrlen, iface);
+			ret = muggle_mcast_join_all(fd, res->ai_addr, (muggle_socklen_t)res->ai_addrlen, iface);
 		}
 		else
 		{
-			ret = muggle_mcast_join_souce_group(fd, res->ai_addr, res->ai_addrlen, iface, src_grp);
+			ret = muggle_mcast_join_souce_group(fd, res->ai_addr, (muggle_socklen_t)res->ai_addrlen, iface, src_grp);
 		}
 		if (ret == 0)
 		{
@@ -764,7 +772,7 @@ muggle_socket_t muggle_mcast_join(
 	{
 		peer->fd = fd;
 		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
-		memcpy(&peer->addr, res->ai_addr, sizeof(res->ai_addrlen));
+		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
 		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
 	}
 
