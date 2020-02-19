@@ -14,6 +14,13 @@ static int muggle_get_event_loop_type(int event_loop_type)
 	}
 #endif
 
+#if !MUGGLE_PLATFORM_WINDOWS
+	if (event_loop_type == MUGGLE_SOCKET_EVENT_LOOP_TYPE_IOCP)
+	{
+		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_NULL;
+	}
+#endif
+
 #if !MUGGLE_PLATFORM_FREEBSD
 	if (event_loop_type == MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE)
 	{
@@ -26,15 +33,13 @@ static int muggle_get_event_loop_type(int event_loop_type)
 	{
 #if MUGGLE_PLATFORM_LINUX
 		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL;
+#elif MUGGLE_PLATFORM_WINDOWS
+		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_IOCP,
+#elif MUGGLE_PLATFORM_FREEBSD
+		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE,
 #else
 		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT;
 #endif
-	}
-
-	// TODO: Only support linux and windows for the time being
-	if (event_loop_type == MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE)
-	{
-		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT;
 	}
 
 	return event_loop_type;
@@ -64,8 +69,7 @@ void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
 	{
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_MULTHREAD:
 		{
-			// TODO:
-			MUGGLE_ERROR("to be continued...");
+			MUGGLE_ERROR("unimplemented event loop type: multhread, to be continued...");
 		}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT:
 		{
@@ -79,9 +83,13 @@ void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
 		{
 			muggle_socket_event_epoll(&ev, ev_arg);
 		}break;
+	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_IOCP:
+		{
+			MUGGLE_ERROR("unimplemented event loop type: iocp, to be continued...");
+		}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE:
 		{
-			MUGGLE_ERROR("unsupport event loop type: kqueue");
+			MUGGLE_ERROR("unimplemented event loop type: kqueue, to be continued...");
 		}break;
 	default:
 		{
