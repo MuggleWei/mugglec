@@ -88,7 +88,9 @@ muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_so
  * udp multicast join for receive
  * @host: multicast host
  * @serv: multicast service or port
- * @iface: net interface name, see 'ifconfig -s', if NULL, let kernel select interface
+ * @iface:
+ *   in *nix: net interface name, see 'ifconfig -s', if NULL, let kernel select interface
+ *   in windows: this argument represent ip host, and port as serv
  * @src_grp: multicast source group, if NULL, receive all
  * @peer: socket peer store the connection information, if not care about connection info, set NULL
  * RETURN: on success, mcast joined socket description is returned, otherwise return MUGGLE_INVALID_SOCKET

@@ -470,6 +470,183 @@ muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_so
 	return udp_socket;
 }
 
+#if MUGGLE_PLATFORM_WINDOWS
+
+muggle_socket_t muggle_mcast_join(
+	const char *host,
+	const char *serv,
+	const char *iface,
+	const char *src_grp,
+	muggle_socket_peer_t *peer)
+{
+	muggle_socket_t fd = MUGGLE_INVALID_SOCKET;
+
+	struct addrinfo hints, *res;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_DGRAM;
+
+	int n;
+	if ((n = getaddrinfo(iface, serv, &hints, &res)) != 0)
+	{
+#if MUGGLE_PLATFORM_WINDOWS
+		char err_msg[1024] = { 0 };
+		muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
+		MUGGLE_ERROR("failed mcast join for %s:%s - getaddrinfo return '%s'",
+			host, serv, err_msg);
+#else
+		MUGGLE_ERROR("failed mcast join for %s:%s - getaddrinfo return '%s'",
+			host, serv, gai_strerror(n));
+#endif
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	struct addrinfo *ressave = res;
+	for (; res != NULL; res = res->ai_next)
+	{
+		fd = muggle_socket_create(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (fd == MUGGLE_INVALID_SOCKET)
+		{
+			continue;
+		}
+
+		// always set SO_REUSEADDR for listen socket
+		int on = 1;
+		if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
+		{
+			char err_msg[1024] = { 0 };
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_WARNING("failed setsockopt SO_REUSEADDR on - %s", err_msg);
+		}
+
+		if (bind(fd, res->ai_addr, (muggle_socklen_t)res->ai_addrlen) != 0)
+		{
+			char err_msg[1024] = { 0 };
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_WARNING("failed bind %s:%s - %s", host, serv, err_msg);
+
+			muggle_socket_close(fd);
+			fd = MUGGLE_INVALID_SOCKET;
+			continue;
+		}
+
+		int ret = 0;
+		if (res->ai_family == AF_INET)
+		{
+			struct sockaddr_in iface_addr, host_addr;
+			if (inet_pton(res->ai_family, iface, &iface_addr.sin_addr) <= 0)
+			{
+				muggle_socket_close(fd);
+				continue;
+			}
+			if (inet_pton(res->ai_family, host, &host_addr.sin_addr) <= 0)
+			{
+				muggle_socket_close(fd);
+				continue;
+			}
+
+			if (src_grp == NULL)
+			{
+				struct ip_mreq mreq;
+				mreq.imr_interface.s_addr = iface_addr.sin_addr.s_addr;
+				mreq.imr_multiaddr.s_addr = host_addr.sin_addr.s_addr;
+				ret = setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq));
+				if (ret != 0)
+				{
+					char err_msg[1024] = { 0 };
+					muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+					MUGGLE_ERROR("failed setsockopt IP_ADD_MEMBERSHIP - %s", err_msg);
+				}
+			}
+			else
+			{
+				struct sockaddr_in src_addr;
+				if (inet_pton(res->ai_family, src_grp, &src_addr.sin_addr) <= 0)
+				{
+					muggle_socket_close(fd);
+					continue;
+				}
+
+				struct ip_mreq_source mreq;
+				mreq.imr_interface.s_addr = iface_addr.sin_addr.s_addr;
+				mreq.imr_sourceaddr.s_addr = src_addr.sin_addr.s_addr;
+				mreq.imr_multiaddr.s_addr = host_addr.sin_addr.s_addr;
+				ret = setsockopt(fd, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, (char *)&mreq, sizeof(mreq));
+				if (ret != 0)
+				{
+					char err_msg[1024] = { 0 };
+					muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+					MUGGLE_ERROR("failed setsockopt IP_ADD_SOURCE_MEMBERSHIP - %s", err_msg);
+				}
+			}
+		}
+		else if (res->ai_family == AF_INET6)
+		{
+			struct sockaddr_in6 iface_addr, host_addr;
+			if (inet_pton(res->ai_family, iface, &iface_addr.sin6_addr) <= 0)
+			{
+				muggle_socket_close(fd);
+				continue;
+			}
+			if (inet_pton(res->ai_family, host, &host_addr.sin6_addr) <= 0)
+			{
+				muggle_socket_close(fd);
+				continue;
+			}
+
+			if (src_grp == NULL)
+			{
+				struct ipv6_mreq mreqv6;
+				mreqv6.ipv6mr_interface = iface_addr.sin6_scope_id;
+				mreqv6.ipv6mr_multiaddr = host_addr.sin6_addr;
+				ret = setsockopt(fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (char *)&mreqv6, sizeof(mreqv6));
+			}
+			else
+			{
+				struct sockaddr_in6 src_addr;
+				if (inet_pton(res->ai_family, iface, &src_addr.sin6_addr) <= 0)
+				{
+					muggle_socket_close(fd);
+					continue;
+				}
+
+				MUGGLE_ERROR("unimplemented windows ipv6 mcast join source group!");
+				ret = -1;
+			}
+		}
+
+		if (ret == 0)
+		{
+			break;
+		}
+
+		muggle_socket_close(fd);
+		fd = MUGGLE_INVALID_SOCKET;
+	}
+
+	if (res == NULL)
+	{
+		MUGGLE_ERROR("failed mcast join for multi[%s:%s], iface[%s], src_grp[%s]", host, serv, iface, src_grp);
+		freeaddrinfo(ressave);
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	// set peer
+	if (peer)
+	{
+		peer->fd = fd;
+		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
+		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
+		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
+	}
+
+	freeaddrinfo(ressave);
+
+	return fd;
+}
+
+#else
+
 static int muggle_mcast_join_all(
 	muggle_socket_t fd,
 	const struct sockaddr *grp,
@@ -484,9 +661,6 @@ static int muggle_mcast_join_all(
 	}
 	else
 	{
-#if MUGGLE_PLATFORM_WINDOWS
-		req.gr_interface = 0;
-#else
 		req.gr_interface = if_nametoindex(iface);
 		if (req.gr_interface == 0)
 		{
@@ -494,7 +668,6 @@ static int muggle_mcast_join_all(
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
 			MUGGLE_WARNING("failed convert net interface(%s) to index, let kernel select - %s", iface, err_msg);
 		}
-#endif
 	}
 
 	if (grplen > sizeof(req.gr_group))
@@ -637,9 +810,6 @@ static int muggle_mcast_join_souce_group(
 	}
 	else
 	{
-#if MUGGLE_PLATFORM_WINDOWS
-		req.gsr_interface = 0;
-#else
         req.gsr_interface = if_nametoindex(iface);
         if (req.gsr_interface == 0)
 		{
@@ -647,7 +817,6 @@ static int muggle_mcast_join_souce_group(
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
 			MUGGLE_WARNING("failed convert net interface(%s) to index, let kernel select - %s", iface, err_msg);
 		}
-#endif
 	}
 
     if (grplen > sizeof(req.gsr_group) || srcaddr_len > sizeof(req.gsr_source))
@@ -780,3 +949,5 @@ muggle_socket_t muggle_mcast_join(
 
 	return fd;
 }
+
+#endif
