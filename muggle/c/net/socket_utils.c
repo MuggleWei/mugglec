@@ -64,6 +64,38 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 
 }
 
+int muggle_socket_getaddrinfo(const char *host, const char *serv, struct addrinfo *hints, struct addrinfo *addrinfo, struct sockaddr *addr)
+{
+	struct addrinfo *res;
+	int n;
+	if ((n = getaddrinfo(host, serv, hints, &res)) != 0)
+	{
+#if MUGGLE_PLATFORM_WINDOWS
+		char err_msg[1024] = { 0 };
+		muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
+		MUGGLE_ERROR("failed muggle_socket_getaddrinfo for %s:%s - getaddrinfo return '%s'",
+			host, serv, err_msg);
+#else
+		MUGGLE_ERROR("failed muggle_socket_getaddrinfo for %s:%s - getaddrinfo return '%s'",
+			host, serv, gai_strerror(n));
+#endif
+		return -1;
+	}
+
+	int ret = -1;
+	if (res)
+	{
+		memcpy(addrinfo, res, sizeof(struct addrinfo));
+		memcpy(addr, res->ai_addr, res->ai_addrlen);
+		freeaddrinfo(res);
+		addrinfo->ai_addr = addr;
+		addrinfo->ai_next = NULL;
+		return 0;
+	}
+
+	return -1;
+}
+
 muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlog, muggle_socket_peer_t *peer)
 {
 	muggle_socket_t listen_socket = MUGGLE_INVALID_SOCKET;
@@ -98,7 +130,7 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 			continue;
 		}
 
-		// always set SO_REUSEADDR for listen socket
+		// always set SO_REUSEADDR for bind socket
 		int on = 1;
 		if (setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
 		{
@@ -361,7 +393,7 @@ muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socke
 			continue;
 		}
 
-		// always set SO_REUSEADDR for listen socket
+		// always set SO_REUSEADDR for bind socket
 		int on = 1;
 		if (setsockopt(udp_socket, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
 		{
@@ -481,96 +513,116 @@ muggle_socket_t muggle_mcast_join(
 {
 	muggle_socket_t fd = MUGGLE_INVALID_SOCKET;
 
-	struct addrinfo hints, *res;
+	if (host == NULL)
+	{
+		MUGGLE_ERROR("failed muggle_mcast_join - with null host");
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	if (serv == NULL)
+	{
+		MUGGLE_ERROR("failed muggle_mcast_join - with null serv");
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	struct addrinfo hints;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_DGRAM;
 
-	int n;
-	if ((n = getaddrinfo(iface, serv, &hints, &res)) != 0)
+	// get multicast address info
+	struct addrinfo multicast_addrinfo;
+	struct sockaddr_storage multicast_addr;
+	if (muggle_socket_getaddrinfo(host, serv, &hints, &multicast_addrinfo, (struct sockaddr*)&multicast_addr) != 0)
 	{
-#if MUGGLE_PLATFORM_WINDOWS
-		char err_msg[1024] = { 0 };
-		muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
-		MUGGLE_ERROR("failed mcast join for %s:%s - getaddrinfo return '%s'",
-			host, serv, err_msg);
-#else
-		MUGGLE_ERROR("failed mcast join for %s:%s - getaddrinfo return '%s'",
-			host, serv, gai_strerror(n));
-#endif
+		MUGGLE_ERROR("failed get multicast address info for %s:%s", host, serv);
 		return MUGGLE_INVALID_SOCKET;
 	}
 
-	struct addrinfo *ressave = res;
-	for (; res != NULL; res = res->ai_next)
+	// get local address
+	const char *ipv4_host_any = "0.0.0.0";
+	const char *ipv6_host_any = "::";
+	if (iface == NULL)
 	{
-		fd = muggle_socket_create(res->ai_family, res->ai_socktype, res->ai_protocol);
-		if (fd == MUGGLE_INVALID_SOCKET)
+		if (multicast_addrinfo.ai_family == AF_INET)
 		{
-			continue;
+			iface = ipv4_host_any;
 		}
-
-		// always set SO_REUSEADDR for listen socket
-		int on = 1;
-		if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
+		else if (multicast_addrinfo.ai_family = AF_INET6)
 		{
-			char err_msg[1024] = { 0 };
-			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_WARNING("failed setsockopt SO_REUSEADDR on - %s", err_msg);
+			iface = ipv6_host_any;
 		}
+	}
+	struct addrinfo local_addrinfo;
+	struct sockaddr_storage local_addr;
+	if (muggle_socket_getaddrinfo(iface, serv, &hints, &local_addrinfo, (struct sockaddr*)&local_addr) != 0)
+	{
+		MUGGLE_ERROR("failed get local address info for %s:%s", iface, serv);
+		return MUGGLE_INVALID_SOCKET;
+	}
 
-		if (bind(fd, res->ai_addr, (muggle_socklen_t)res->ai_addrlen) != 0)
+	// create and bind local socket
+	fd = muggle_socket_create(local_addrinfo.ai_family, local_addrinfo.ai_socktype, local_addrinfo.ai_protocol);
+	if (fd == MUGGLE_INVALID_SOCKET)
+	{
+		char err_msg[1024] = { 0 };
+		muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+		MUGGLE_ERROR("failed muggle_socket_create info for %s:%s - %s", iface, serv, err_msg);
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	// always set SO_REUSEADDR for bind socket
+	int on = 1;
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
+	{
+		char err_msg[1024] = { 0 };
+		muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+		MUGGLE_WARNING("failed setsockopt SO_REUSEADDR on - %s", err_msg);
+	}
+
+	if (bind(fd, local_addrinfo.ai_addr, (muggle_socklen_t)local_addrinfo.ai_addrlen) != 0)
+	{
+		char err_msg[1024] = { 0 };
+		muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+		MUGGLE_WARNING("failed bind %s:%s - %s", iface, serv, err_msg);
+
+		muggle_socket_close(fd);
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	// join mcast
+	int ret = 0;
+	if (local_addrinfo.ai_family == AF_INET)
+	{
+		if (src_grp == NULL)
 		{
-			char err_msg[1024] = { 0 };
-			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_WARNING("failed bind %s:%s - %s", host, serv, err_msg);
-
-			muggle_socket_close(fd);
-			fd = MUGGLE_INVALID_SOCKET;
-			continue;
-		}
-
-		int ret = 0;
-		if (res->ai_family == AF_INET)
-		{
-			struct sockaddr_in iface_addr, host_addr;
-			if (inet_pton(res->ai_family, iface, &iface_addr.sin_addr) <= 0)
+			struct ip_mreq mreq;
+			mreq.imr_interface.s_addr = ((struct sockaddr_in*)&local_addr)->sin_addr.s_addr;
+			mreq.imr_multiaddr.s_addr = ((struct sockaddr_in*)&multicast_addr)->sin_addr.s_addr;
+			ret = setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq));
+			if (ret != 0)
 			{
-				muggle_socket_close(fd);
-				continue;
+				char err_msg[1024] = { 0 };
+				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+				MUGGLE_ERROR("failed setsockopt IP_ADD_MEMBERSHIP - %s", err_msg);
 			}
-			if (inet_pton(res->ai_family, host, &host_addr.sin_addr) <= 0)
+		}
+		else
+		{
+			struct sockaddr_in src_addr;
+			if (inet_pton(multicast_addrinfo.ai_family, src_grp, &src_addr.sin_addr) <= 0)
 			{
-				muggle_socket_close(fd);
-				continue;
-			}
-
-			if (src_grp == NULL)
-			{
-				struct ip_mreq mreq;
-				mreq.imr_interface.s_addr = iface_addr.sin_addr.s_addr;
-				mreq.imr_multiaddr.s_addr = host_addr.sin_addr.s_addr;
-				ret = setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq));
-				if (ret != 0)
-				{
-					char err_msg[1024] = { 0 };
-					muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-					MUGGLE_ERROR("failed setsockopt IP_ADD_MEMBERSHIP - %s", err_msg);
-				}
+				char err_msg[1024] = { 0 };
+				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+				MUGGLE_ERROR("failed inet_pton for %s - %s", src_grp, err_msg);
+				ret = -1;
 			}
 			else
 			{
-				struct sockaddr_in src_addr;
-				if (inet_pton(res->ai_family, src_grp, &src_addr.sin_addr) <= 0)
-				{
-					muggle_socket_close(fd);
-					continue;
-				}
-
 				struct ip_mreq_source mreq;
-				mreq.imr_interface.s_addr = iface_addr.sin_addr.s_addr;
+				mreq.imr_interface.s_addr = ((struct sockaddr_in*)&local_addr)->sin_addr.s_addr;
 				mreq.imr_sourceaddr.s_addr = src_addr.sin_addr.s_addr;
-				mreq.imr_multiaddr.s_addr = host_addr.sin_addr.s_addr;
+				mreq.imr_multiaddr.s_addr = ((struct sockaddr_in*)&multicast_addr)->sin_addr.s_addr;
 				ret = setsockopt(fd, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, (char *)&mreq, sizeof(mreq));
 				if (ret != 0)
 				{
@@ -580,54 +632,32 @@ muggle_socket_t muggle_mcast_join(
 				}
 			}
 		}
-		else if (res->ai_family == AF_INET6)
+	}
+	else if (local_addrinfo.ai_family == AF_INET6)
+	{
+		if (src_grp == NULL)
 		{
-			struct sockaddr_in6 iface_addr, host_addr;
-			if (inet_pton(res->ai_family, iface, &iface_addr.sin6_addr) <= 0)
+			struct ipv6_mreq mreqv6;
+			mreqv6.ipv6mr_interface = ((struct sockaddr_in6*)&local_addr)->sin6_scope_id;
+			mreqv6.ipv6mr_multiaddr = ((struct sockaddr_in6*)&multicast_addr)->sin6_addr;
+			ret = setsockopt(fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (char *)&mreqv6, sizeof(mreqv6));
+			if (ret != 0)
 			{
-				muggle_socket_close(fd);
-				continue;
-			}
-			if (inet_pton(res->ai_family, host, &host_addr.sin6_addr) <= 0)
-			{
-				muggle_socket_close(fd);
-				continue;
-			}
-
-			if (src_grp == NULL)
-			{
-				struct ipv6_mreq mreqv6;
-				mreqv6.ipv6mr_interface = iface_addr.sin6_scope_id;
-				mreqv6.ipv6mr_multiaddr = host_addr.sin6_addr;
-				ret = setsockopt(fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (char *)&mreqv6, sizeof(mreqv6));
-			}
-			else
-			{
-				struct sockaddr_in6 src_addr;
-				if (inet_pton(res->ai_family, iface, &src_addr.sin6_addr) <= 0)
-				{
-					muggle_socket_close(fd);
-					continue;
-				}
-
-				MUGGLE_ERROR("unimplemented windows ipv6 mcast join source group!");
-				ret = -1;
+				char err_msg[1024] = { 0 };
+				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+				MUGGLE_ERROR("failed setsockopt IPV6_ADD_MEMBERSHIP - %s", err_msg);
 			}
 		}
-
-		if (ret == 0)
+		else
 		{
-			break;
+			MUGGLE_ERROR("unimplemented windows ipv6 mcast join source group!");
+			ret = -1;
 		}
-
-		muggle_socket_close(fd);
-		fd = MUGGLE_INVALID_SOCKET;
 	}
 
-	if (res == NULL)
+	if (ret != 0)
 	{
-		MUGGLE_ERROR("failed mcast join for multi[%s:%s], iface[%s], src_grp[%s]", host, serv, iface, src_grp);
-		freeaddrinfo(ressave);
+		muggle_socket_close(fd);
 		return MUGGLE_INVALID_SOCKET;
 	}
 
@@ -636,13 +666,132 @@ muggle_socket_t muggle_mcast_join(
 	{
 		peer->fd = fd;
 		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
-		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
-		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
+		memcpy(&peer->addr, local_addrinfo.ai_addr, local_addrinfo.ai_addrlen);
+		peer->addr_len = (muggle_socklen_t)local_addrinfo.ai_addrlen;
 	}
 
-	freeaddrinfo(ressave);
-
 	return fd;
+}
+
+int muggle_mcast_leave(
+	muggle_socket_t fd,
+	const char *host,
+	const char *serv,
+	const char *iface,
+	const char *src_grp)
+{
+	if (host == NULL)
+	{
+		MUGGLE_ERROR("failed muggle_mcast_leave - with null host");
+		return -1;
+	}
+
+	if (serv == NULL)
+	{
+		MUGGLE_ERROR("failed muggle_mcast_leave - with null serv");
+		return -1;
+	}
+
+	struct addrinfo hints;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_DGRAM;
+
+	// get multicast address info
+	struct addrinfo multicast_addrinfo;
+	struct sockaddr_storage multicast_addr;
+	if (muggle_socket_getaddrinfo(host, serv, &hints, &multicast_addrinfo, (struct sockaddr*)&multicast_addr) != 0)
+	{
+		MUGGLE_ERROR("failed get multicast address info for %s:%s", host, serv);
+		return -1;
+	}
+
+	// get local address
+	const char *ipv4_host_any = "0.0.0.0";
+	const char *ipv6_host_any = "::";
+	if (iface == NULL)
+	{
+		if (multicast_addrinfo.ai_family == AF_INET)
+		{
+			iface = ipv4_host_any;
+		}
+		else if (multicast_addrinfo.ai_family = AF_INET6)
+		{
+			iface = ipv6_host_any;
+		}
+	}
+	struct addrinfo local_addrinfo;
+	struct sockaddr_storage local_addr;
+	if (muggle_socket_getaddrinfo(iface, serv, &hints, &local_addrinfo, (struct sockaddr*)&local_addr) != 0)
+	{
+		MUGGLE_ERROR("failed get local address info for %s:%s", iface, serv);
+		return -1;
+	}
+
+	// leave mcast
+	if (local_addrinfo.ai_family == AF_INET)
+	{
+		if (src_grp == NULL)
+		{
+			struct ip_mreq mreq;
+			mreq.imr_interface.s_addr = ((struct sockaddr_in*)&local_addr)->sin_addr.s_addr;
+			mreq.imr_multiaddr.s_addr = ((struct sockaddr_in*)&multicast_addr)->sin_addr.s_addr;
+			if (setsockopt(fd, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) != 0)
+			{
+				char err_msg[1024] = { 0 };
+				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+				MUGGLE_ERROR("failed setsockopt IP_DROP_MEMBERSHIP - %s", err_msg);
+				return -1;
+			}
+		}
+		else
+		{
+			struct sockaddr_in src_addr;
+			if (inet_pton(multicast_addrinfo.ai_family, src_grp, &src_addr.sin_addr) <= 0)
+			{
+				char err_msg[1024] = { 0 };
+				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+				MUGGLE_ERROR("failed inet_pton for %s - %s", src_grp, err_msg);
+				return -1;
+			}
+			else
+			{
+				struct ip_mreq_source mreq;
+				mreq.imr_interface.s_addr = ((struct sockaddr_in*)&local_addr)->sin_addr.s_addr;
+				mreq.imr_sourceaddr.s_addr = src_addr.sin_addr.s_addr;
+				mreq.imr_multiaddr.s_addr = ((struct sockaddr_in*)&multicast_addr)->sin_addr.s_addr;
+				if (setsockopt(fd, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) != 0)
+				{
+					char err_msg[1024] = { 0 };
+					muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+					MUGGLE_ERROR("failed setsockopt IP_DROP_SOURCE_MEMBERSHIP - %s", err_msg);
+					return -1;
+				}
+			}
+		}
+	}
+	else if (local_addrinfo.ai_family == AF_INET6)
+	{
+		if (src_grp == NULL)
+		{
+			struct ipv6_mreq mreqv6;
+			mreqv6.ipv6mr_interface = ((struct sockaddr_in6*)&local_addr)->sin6_scope_id;
+			mreqv6.ipv6mr_multiaddr = ((struct sockaddr_in6*)&multicast_addr)->sin6_addr;
+			if (setsockopt(fd, IPPROTO_IPV6, IPV6_DROP_MEMBERSHIP, (char *)&mreqv6, sizeof(mreqv6)) != 0)
+			{
+				char err_msg[1024] = { 0 };
+				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+				MUGGLE_ERROR("failed setsockopt IPV6_DROP_MEMBERSHIP - %s", err_msg);
+			}
+		}
+		else
+		{
+			MUGGLE_ERROR("unimplemented windows ipv6 mcast leave source group!");
+			return -1;
+		}
+	}
+
+	return 0;
 }
 
 #else
@@ -891,7 +1040,7 @@ muggle_socket_t muggle_mcast_join(
 			continue;
 		}
 
-		// always set SO_REUSEADDR for listen socket
+		// always set SO_REUSEADDR for bind socket
 		int on = 1;
 		if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
 		{

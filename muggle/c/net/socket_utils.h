@@ -43,6 +43,18 @@ MUGGLE_CC_EXPORT
 const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufsize, int host_only);
 
 /*
+ * getaddrinfo
+ * @host: internet host
+ * @serv: internet service or port
+ * @hints: specifies criteria for selecting the socket address structures
+ * @addrinfo: the first matching addrinfo returned from getaddrinfo
+ * @addr: the first matching sockaddr in addrinfo
+ * RETURN: returns 0 if it succeeds, otherwise return -1
+ * */
+MUGGLE_CC_EXPORT
+int muggle_socket_getaddrinfo(const char *host, const char *serv, struct addrinfo *hints, struct addrinfo *addrinfo, struct sockaddr *addr);
+
+/*
  * tcp listen
  * @host: internet host
  * @serv: internet service or port
@@ -85,13 +97,13 @@ MUGGLE_CC_EXPORT
 muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_socket_peer_t *peer);
 
 /*
- * udp multicast join for receive
+ * udp multicast join
  * @host: multicast host
  * @serv: multicast service or port
  * @iface:
  *   in *nix: net interface name, see 'ifconfig -s', if NULL, let kernel select interface
  *   in windows: this argument represent ip host, and port as serv
- * @src_grp: multicast source group, if NULL, receive all
+ * @src_grp: multicast source group, if NULL, not source-specific
  * @peer: socket peer store the connection information, if not care about connection info, set NULL
  * RETURN: on success, mcast joined socket description is returned, otherwise return MUGGLE_INVALID_SOCKET
  * */
@@ -102,6 +114,24 @@ muggle_socket_t muggle_mcast_join(
 	const char *iface,
 	const char *src_grp,
 	muggle_socket_peer_t *peer);
+
+/*
+* udp multicast leave
+* @host: multicast host
+* @serv: multicast service or port
+* @iface:
+*   in *nix: net interface name, see 'ifconfig -s', if NULL, let kernel select interface
+*   in windows: this argument represent ip host, and port as serv
+* @src_grp: multicast source group, if NULL, not source-specific
+* RETURN: on success return 0, otherwise return -1
+* */
+MUGGLE_CC_EXPORT
+int muggle_mcast_leave(
+	muggle_socket_t fd,
+	const char *host,
+	const char *serv,
+	const char *iface,
+	const char *src_grp);
 
 EXTERN_C_END
 

@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
 		src_grp = argv[4];
 	}
 
+	MUGGLE_INFO("join multicast group");
 	muggle_socket_t fd = muggle_mcast_join(grp_host, grp_serv, iface, src_grp, NULL);
 	if (fd == MUGGLE_INVALID_SOCKET)
 	{
@@ -60,6 +61,15 @@ int main(int argc, char *argv[])
 			snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "unknown:unknown");
 		}
 		MUGGLE_INFO("recv %d bytes from %s", n, straddr);
+
+		if (n > 10)
+		{
+			MUGGLE_INFO("leave multicast group");
+			if (muggle_mcast_leave(fd, grp_host, grp_serv, iface, src_grp) != 0)
+			{
+				MUGGLE_ERROR("failed leave multicast group");
+			}
+		}
 	}
 
 	return 0;
