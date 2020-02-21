@@ -1,202 +1,483 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
+#define TEST_BYTES_BUF_SPACE 16
+
+void check_empty_status(muggle_bytes_buffer_t *bytes_buf, int capacity)
+{
+	char space[2 * TEST_BYTES_BUF_SPACE];
+	int n = 0;
+	void *ptr;
+	bool ret = false;
+
+	n = muggle_bytes_buffer_writable(bytes_buf);
+	ASSERT_EQ(n, capacity - 1);
+
+	n = muggle_bytes_buffer_readable(bytes_buf);
+	ASSERT_EQ(n, 0);
+
+	ret = muggle_bytes_buffer_fetch(bytes_buf, 1, space);
+	ASSERT_FALSE(ret);
+
+	ret = muggle_bytes_buffer_read(bytes_buf, 1, space);
+	ASSERT_FALSE(ret);
+
+	ret = muggle_bytes_buffer_write(bytes_buf, capacity, space);
+	ASSERT_FALSE(ret);
+
+	ptr = muggle_bytes_buffer_writer_fc(bytes_buf, capacity);
+	ASSERT_TRUE(ptr == NULL);
+
+	ptr = muggle_bytes_buffer_writer_fc(bytes_buf, capacity - 1);
+	ASSERT_TRUE(ptr != NULL);
+
+	ret = muggle_bytes_buffer_writer_move(bytes_buf, capacity);
+	ASSERT_FALSE(ret);
+
+	ptr = muggle_bytes_buffer_reader_fc(bytes_buf, 1);
+	ASSERT_TRUE(ptr == NULL);
+
+	ret = muggle_bytes_buffer_reader_move(bytes_buf, 1);
+	ASSERT_FALSE(ret);
+}
+
+/*
+ * build status: w greater than r, r not equal 0
+ * @w: writer position
+ * @r: reader position
+ * */
+void build_status_w_gt_r_ne_0(muggle_bytes_buffer_t *bytes_buf, int capacity, int w, int r)
+{
+	bool ret = false;
+
+	ASSERT_GT(w, r);
+
+	muggle_bytes_buffer_clear(bytes_buf);
+
+	check_empty_status(bytes_buf, capacity);
+
+	ret = muggle_bytes_buffer_writer_move(bytes_buf, w);
+	ASSERT_TRUE(ret);
+
+	ret = muggle_bytes_buffer_reader_move(bytes_buf, r);
+	ASSERT_TRUE(ret);
+}
+
+/*
+* build status: w greater than r, r not equal 0
+* @w: writer position
+* @r: reader position
+* @t: truncate position
+* */
+void build_status_r_gt_w(muggle_bytes_buffer_t *bytes_buf, int capacity, int w, int r, int t)
+{
+	bytes_buf->w = w;
+	bytes_buf->r = r;
+	bytes_buf->t = t;
+}
+
 TEST(bytes_buffer, empty)
 {
-	int capacity = 1024 * 16;
+	int capacity = TEST_BYTES_BUF_SPACE + 1;
 	muggle_bytes_buffer_t bytes_buf;
 	bool ret = muggle_bytes_buffer_init(&bytes_buf, capacity);
 	ASSERT_TRUE(ret);
-	
-	void *ptr;
-	int n;
-	int32_t ival;
 
-	// empty status
+	int n = 0;
+	void *ptr = NULL;
+	char space[2 * TEST_BYTES_BUF_SPACE];
+	memset(space, 0, sizeof(space));
+	
+	check_empty_status(&bytes_buf, capacity);
+
+	muggle_bytes_buffer_destroy(&bytes_buf);
+}
+
+TEST(bytes_buffer, w_ge_r0)
+{
+	int capacity = TEST_BYTES_BUF_SPACE + 1;
+	muggle_bytes_buffer_t bytes_buf;
+	bool ret = muggle_bytes_buffer_init(&bytes_buf, capacity);
+	ASSERT_TRUE(ret);
+
+	int n = 0;
+	void *ptr = NULL;
+	char space[2 * TEST_BYTES_BUF_SPACE];
+	memset(space, 0, sizeof(space));
+
+	// test write, writer find contiguous, writable and readable
 	{
+		// check empty status
+		check_empty_status(&bytes_buf, capacity);
+
+		// writer fetch
+		ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, capacity);
+		ASSERT_TRUE(ptr == NULL);
+
+		ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, capacity - 1);
+		ASSERT_TRUE(ptr != NULL);
+
+		// writer move
+		ret = muggle_bytes_buffer_writer_move(&bytes_buf, 4);
+		ASSERT_TRUE(ret);
+
+		// check status
 		n = muggle_bytes_buffer_writable(&bytes_buf);
-		ASSERT_EQ(n, capacity - 1);
+		ASSERT_EQ(n, capacity - 1 - 4);
 
 		n = muggle_bytes_buffer_readable(&bytes_buf);
-		ASSERT_EQ(n, 0);
+		ASSERT_EQ(n, 4);
 
-		ret = muggle_bytes_buffer_fetch(&bytes_buf, sizeof(ival), &ival);
-		ASSERT_FALSE(ret);
+		ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, capacity - 1 - 4);
+		ASSERT_TRUE(ptr != NULL);
 
-		ret = muggle_bytes_buffer_read(&bytes_buf, sizeof(ival), &ival);
-		ASSERT_FALSE(ret);
-
-		ptr = muggle_bytes_buffer_reader_get(&bytes_buf, sizeof(ival));
+		ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, capacity - 1 - 4 + 1);
 		ASSERT_TRUE(ptr == NULL);
+
+		// write
+		ret = muggle_bytes_buffer_write(&bytes_buf, 4, space);
+		ASSERT_TRUE(ret);
+
+		// check status
+		n = muggle_bytes_buffer_writable(&bytes_buf);
+		ASSERT_EQ(n, capacity - 1 - 2 * 4);
+
+		n = muggle_bytes_buffer_readable(&bytes_buf);
+		ASSERT_EQ(n, 2 * 4);
+
+		ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, capacity - 1 - 2 * 4);
+		ASSERT_TRUE(ptr != NULL);
+
+		ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, capacity - 1 - 2 * 4 + 1);
+		ASSERT_TRUE(ptr == NULL);
+	}
+
+	// test read
+	muggle_bytes_buffer_clear(&bytes_buf);
+	{
+		// check empty status
+		check_empty_status(&bytes_buf, capacity);
+
+		// writer move
+		ret = muggle_bytes_buffer_writer_move(&bytes_buf, 4);
+		ASSERT_TRUE(ret);
+
+		// read
+		ret = muggle_bytes_buffer_read(&bytes_buf, 5, space);
+		ASSERT_FALSE(ret);
+
+		ret = muggle_bytes_buffer_read(&bytes_buf, 4, space);
+		ASSERT_TRUE(ret);
+
+		// check empty status
+		check_empty_status(&bytes_buf, capacity);
+	}
+
+	// test reader find contiguous and reader move
+	muggle_bytes_buffer_clear(&bytes_buf);
+	{
+		// check empty status
+		check_empty_status(&bytes_buf, capacity);
+
+		// writer move
+		ret = muggle_bytes_buffer_writer_move(&bytes_buf, 4);
+		ASSERT_TRUE(ret);
+
+		// reader find contiguous
+		ptr = muggle_bytes_buffer_reader_fc(&bytes_buf, 5);
+		ASSERT_TRUE(ptr == NULL);
+
+		ptr = muggle_bytes_buffer_reader_fc(&bytes_buf, 4);
+		ASSERT_TRUE(ptr != NULL);
+
+		// reader move
+		ret = muggle_bytes_buffer_reader_move(&bytes_buf, 5);
+		ASSERT_FALSE(ret);
+
+		ret = muggle_bytes_buffer_reader_move(&bytes_buf, 4);
+		ASSERT_TRUE(ret);
+
+		// check empty status
+		check_empty_status(&bytes_buf, capacity);
 	}
 
 	muggle_bytes_buffer_destroy(&bytes_buf);
 }
 
-TEST(bytes_buffer, w_lead_r)
+TEST(bytes_buffer, w_ge_r_ne_0)
 {
+	int capacity = TEST_BYTES_BUF_SPACE + 1;
 	muggle_bytes_buffer_t bytes_buf;
-	int capacity = sizeof(int32_t) * 8 + 1;
-	
 	bool ret = muggle_bytes_buffer_init(&bytes_buf, capacity);
 	ASSERT_TRUE(ret);
-	
-	int n;
-	int32_t ival_arr[16];
-	int ival_size = sizeof(int32_t);
-	for (int32_t i = 0; i < sizeof(ival_arr)/ sizeof(ival_arr[0]); ++i)
+
+	int n = 0;
+	void *ptr = NULL;
+	char space[2 * TEST_BYTES_BUF_SPACE];
+	memset(space, 0, sizeof(space));
+	for (int w = 2; w < capacity; ++w)
 	{
-		ival_arr[i] = i;
-	}
+		for (int r = 1; r < w; ++r)
+		{
+			build_status_w_gt_r_ne_0(&bytes_buf, capacity, w, r);
 
-	// write 1 int and read 1 int
-	{
-		int32_t idx = 5;
-		ret = muggle_bytes_buffer_write(&bytes_buf, ival_size, &ival_arr[idx]);
-		ASSERT_TRUE(ret);
+			int writable = muggle_bytes_buffer_writable(&bytes_buf);
+			ASSERT_EQ(writable, capacity - 1 - w + r);
 
-		n = muggle_bytes_buffer_writable(&bytes_buf);
-		ASSERT_EQ(n, capacity - 1 - ival_size);
+			int readable = muggle_bytes_buffer_readable(&bytes_buf);
+			ASSERT_EQ(readable, w - r);
 
-		n = muggle_bytes_buffer_readable(&bytes_buf);
-		ASSERT_EQ(n, ival_size);
+			if (writable > 0)
+			{
+				// writer
+				int cw = capacity - w;
+				int jw = r - 1;
+				int x = cw > jw ? cw : jw;
 
-		int32_t ival = 99999;
-		ret = muggle_bytes_buffer_fetch(&bytes_buf, ival_size, &ival);
-		ASSERT_TRUE(ret);
-		ASSERT_EQ(ival, ival_arr[idx]);
+				ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, x + 1);
+				ASSERT_TRUE(ptr == NULL);
 
-		ival = 99999;
-		ret = muggle_bytes_buffer_read(&bytes_buf, ival_size, &ival);
-		ASSERT_TRUE(ret);
-		ASSERT_EQ(ival, ival_arr[idx]);
+				ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, x);
+				ASSERT_TRUE(ptr != NULL);
+			}
 
-		n = muggle_bytes_buffer_readable(&bytes_buf);
-		ASSERT_EQ(n, 0);
-	}
+			if (readable > 0)
+			{
+				// reader
+				ptr = muggle_bytes_buffer_reader_fc(&bytes_buf, readable + 1);
+				ASSERT_TRUE(ptr == NULL);
 
-	// writer_get write 1 int and read 1 int
-	{
-		muggle_bytes_buffer_clear(&bytes_buf);
+				ptr = muggle_bytes_buffer_reader_fc(&bytes_buf, readable);
+				ASSERT_TRUE(ptr != NULL);
 
-		int32_t idx = 5;
-		int32_t *ptr = (int32_t*)muggle_bytes_buffer_writer_get(&bytes_buf, ival_size);
-		ASSERT_TRUE(ptr != NULL);
-		*ptr = ival_arr[idx];
-		ASSERT_TRUE(ret);
+				for (int i = 0; i < readable; ++i)
+				{
+					*((char*)ptr + i) = (char)i;
+				}
 
-		n = muggle_bytes_buffer_writable(&bytes_buf);
-		ASSERT_EQ(n, capacity - 1 - ival_size);
+				// fetch
+				for (int i = 0; i < sizeof(space); ++i)
+				{
+					space[i] = (char)255;
+				}
 
-		n = muggle_bytes_buffer_readable(&bytes_buf);
-		ASSERT_EQ(n, ival_size);
+				ret = muggle_bytes_buffer_fetch(&bytes_buf, readable + 1, space);
+				ASSERT_FALSE(ret);
 
-		int32_t ival = 99999;
-		ret = muggle_bytes_buffer_fetch(&bytes_buf, ival_size, &ival);
-		ASSERT_TRUE(ret);
-		ASSERT_EQ(ival, ival_arr[idx]);
+				ret = muggle_bytes_buffer_fetch(&bytes_buf, readable, space);
+				ASSERT_TRUE(ret);
 
-		ival = 99999;
-		ret = muggle_bytes_buffer_read(&bytes_buf, ival_size, &ival);
-		ASSERT_TRUE(ret);
-		ASSERT_EQ(ival, ival_arr[idx]);
+				for (int i = 0; i < sizeof(space); ++i)
+				{
+					if (i < readable)
+					{
+						ASSERT_EQ(space[i], (char)i);
+					}
+					else
+					{
+						ASSERT_EQ(space[i], (char)255);
+					}
+				}
 
-		n = muggle_bytes_buffer_readable(&bytes_buf);
-		ASSERT_EQ(n, 0);
-	}
+				// read
+				for (int i = 0; i < sizeof(space); ++i)
+				{
+					space[i] = (char)255;
+				}
 
-	// write 1 int and reader_get read 1 int
-	{
-		muggle_bytes_buffer_clear(&bytes_buf);
+				ret = muggle_bytes_buffer_read(&bytes_buf, readable + 1, space);
+				ASSERT_FALSE(ret);
 
-		int32_t idx = 5;
-		ret = muggle_bytes_buffer_write(&bytes_buf, ival_size, &ival_arr[idx]);
-		ASSERT_TRUE(ret);
+				ret = muggle_bytes_buffer_read(&bytes_buf, readable, space);
+				ASSERT_TRUE(ret);
 
-		n = muggle_bytes_buffer_writable(&bytes_buf);
-		ASSERT_EQ(n, capacity - 1 - ival_size);
+				for (int i = 0; i < sizeof(space); ++i)
+				{
+					if (i < readable)
+					{
+						ASSERT_EQ(space[i], (char)i);
+					}
+					else
+					{
+						ASSERT_EQ(space[i], (char)255);
+					}
+				}
 
-		n = muggle_bytes_buffer_readable(&bytes_buf);
-		ASSERT_EQ(n, ival_size);
-
-		int32_t ival = 99999;
-		ret = muggle_bytes_buffer_fetch(&bytes_buf, ival_size, &ival);
-		ASSERT_TRUE(ret);
-		ASSERT_EQ(ival, ival_arr[idx]);
-
-		void *ptr = muggle_bytes_buffer_reader_get(&bytes_buf, ival_size);
-		ASSERT_TRUE(ptr != NULL);
-		ASSERT_EQ(*(int32_t*)ptr, ival_arr[idx]);
-
-		n = muggle_bytes_buffer_readable(&bytes_buf);
-		ASSERT_EQ(n, 0);
-
-		n = muggle_bytes_buffer_writable(&bytes_buf);
-		ASSERT_EQ(n, capacity - 1);
-
-		ptr = muggle_bytes_buffer_writer_get(&bytes_buf, capacity - 1);
-		ASSERT_TRUE(ptr == NULL);
-
-		muggle_bytes_buffer_refresh(&bytes_buf);
-
-		ptr = muggle_bytes_buffer_writer_get(&bytes_buf, capacity - 1);
-		ASSERT_TRUE(ptr != NULL);
-
-		n = muggle_bytes_buffer_writable(&bytes_buf);
-		ASSERT_EQ(n, 0);
-	}
-	
-	// write 2 int and read 1 int success and failed read 2 int
-	{
-		muggle_bytes_buffer_clear(&bytes_buf);
-
-		int32_t idx = 5;
-		ret = muggle_bytes_buffer_write(&bytes_buf, ival_size, &ival_arr[idx]);
-		ASSERT_TRUE(ret);
-
-		ret = muggle_bytes_buffer_write(&bytes_buf, ival_size, &ival_arr[idx]);
-		ASSERT_TRUE(ret);
-
-		int32_t ival = 99999;
-		ret = muggle_bytes_buffer_read(&bytes_buf, ival_size, &ival);
-		ASSERT_TRUE(ret);
-		ASSERT_EQ(ival, ival_arr[idx]);
-
-		int32_t tmp_arr[2];
-		ret = muggle_bytes_buffer_read(&bytes_buf, ival_size * 2, tmp_arr);
-		ASSERT_FALSE(ret);
-	}
-
-	// write and writer_get
-	{
-		muggle_bytes_buffer_clear(&bytes_buf);
-		char *tmp_space = (char*)malloc(capacity * 2);
-
-		ret = muggle_bytes_buffer_write(&bytes_buf, 4, &tmp_space);
-		ASSERT_TRUE(ret);
-
-		int32_t *ptr = (int32_t*)muggle_bytes_buffer_writer_get(&bytes_buf, capacity - 1 - 4);
-		ASSERT_TRUE(ptr != NULL);
-
-		n = muggle_bytes_buffer_writable(&bytes_buf);
-		ASSERT_EQ(n, 0);
-
-		free(tmp_space);
+				// check empty status
+				check_empty_status(&bytes_buf, capacity);
+			}
+		}
 	}
 
 	muggle_bytes_buffer_destroy(&bytes_buf);
 }
 
-TEST(bytes_buffer, r_lead_w)
+TEST(bytes_buffer, r_gt_w)
 {
-	int capacity = 64;
-	char space[64];
-
+	int capacity = TEST_BYTES_BUF_SPACE + 1;
 	muggle_bytes_buffer_t bytes_buf;
 	bool ret = muggle_bytes_buffer_init(&bytes_buf, capacity);
 	ASSERT_TRUE(ret);
 
-	// TODO:
+	int n = 0;
+	void *ptr = NULL;
+	char space[2 * TEST_BYTES_BUF_SPACE];
+	memset(space, 0, sizeof(space));
+
+	for (int r = 1; r < capacity; ++r)
+	{
+		for (int w = 0; w < r; ++w)
+		{
+			for (int t = r; t < capacity; ++t)
+			{
+				build_status_r_gt_w(&bytes_buf, capacity, w, r, t);
+
+				int writable = muggle_bytes_buffer_writable(&bytes_buf);
+				ASSERT_EQ(writable, r - w - 1);
+
+				int readable = muggle_bytes_buffer_readable(&bytes_buf);
+				ASSERT_EQ(readable, t - r + w);
+
+				if (writable > 0)
+				{
+					// writer
+					int cw = r - w - 1;
+
+					ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, cw + 1);
+					ASSERT_TRUE(ptr == NULL);
+
+					ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, cw);
+					ASSERT_TRUE(ptr != NULL);
+				}
+
+				if (readable > 0)
+				{
+					// reader
+					int cw = t - r;
+					int jr = w;
+
+					ptr = muggle_bytes_buffer_reader_fc(&bytes_buf, cw + 1);
+					ASSERT_TRUE(ptr == NULL);
+
+					ptr = muggle_bytes_buffer_reader_fc(&bytes_buf, cw);
+					ASSERT_TRUE(ptr != NULL);
+
+					for (int i = 0; i < readable; ++i)
+					{
+						if (i < cw)
+						{
+							*((char*)ptr + i) = (char)i;
+						}
+						else
+						{
+							bytes_buf.buffer[i - cw] = (char)i;
+						}
+					}
+
+					// fetch
+					for (int i = 0; i < sizeof(space); ++i)
+					{
+						space[i] = (char)255;
+					}
+
+					ret = muggle_bytes_buffer_fetch(&bytes_buf, readable + 1, space);
+					ASSERT_FALSE(ret);
+
+					ret = muggle_bytes_buffer_fetch(&bytes_buf, readable, space);
+					ASSERT_TRUE(ret);
+
+					for (int i = 0; i < sizeof(space); ++i)
+					{
+						if (i < readable)
+						{
+							ASSERT_EQ(space[i], (char)i);
+						}
+						else
+						{
+							if (space[i] != (char)255)
+							{
+								printf("fuck");
+							}
+							ASSERT_EQ(space[i], (char)255);
+						}
+					}
+
+					// read
+					for (int i = 0; i < sizeof(space); ++i)
+					{
+						space[i] = (char)255;
+					}
+
+					ret = muggle_bytes_buffer_read(&bytes_buf, readable + 1, space);
+					ASSERT_FALSE(ret);
+
+					ret = muggle_bytes_buffer_read(&bytes_buf, readable, space);
+					ASSERT_TRUE(ret);
+
+					for (int i = 0; i < sizeof(space); ++i)
+					{
+						if (i < readable)
+						{
+							ASSERT_EQ(space[i], (char)i);
+						}
+						else
+						{
+							ASSERT_EQ(space[i], (char)255);
+						}
+					}
+
+					// check empty status
+					check_empty_status(&bytes_buf, capacity);
+				}
+			}
+		}
+	}
+
+	muggle_bytes_buffer_destroy(&bytes_buf);
+}
+
+TEST(bytes_buffer, truncate)
+{
+	int capacity = TEST_BYTES_BUF_SPACE + 1;
+	muggle_bytes_buffer_t bytes_buf;
+	bool ret = muggle_bytes_buffer_init(&bytes_buf, capacity);
+	ASSERT_TRUE(ret);
+
+	int n = 0;
+	void *ptr = NULL;
+	char space[2 * TEST_BYTES_BUF_SPACE];
+	for (int i = 0; i < sizeof(space); ++i)
+	{
+		space[i] = (char)255;
+	}
+
+	for (int w = 2; w < capacity; ++w)
+	{
+		for (int r = 1; r < w; ++r)
+		{
+			int cw = capacity - w;
+			if (cw < r - 1)
+			{
+				build_status_w_gt_r_ne_0(&bytes_buf, capacity, w, r);
+
+				memset(bytes_buf.buffer, 0, bytes_buf.c);
+				muggle_bytes_buffer_write(&bytes_buf, cw + 1, space);
+
+				ASSERT_EQ(bytes_buf.t, w);
+				for (int i = 0; i < bytes_buf.c; ++i)
+				{
+					if (i < cw + 1)
+					{
+						ASSERT_EQ(bytes_buf.buffer[i], (char)255);
+					}
+					else
+					{
+						ASSERT_EQ(bytes_buf.buffer[i], (char)0);
+					}
+				}
+			}
+		}
+	}
 
 	muggle_bytes_buffer_destroy(&bytes_buf);
 }

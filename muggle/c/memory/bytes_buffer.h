@@ -18,10 +18,10 @@ EXTERN_C_BEGIN
 
 typedef struct muggle_bytes_buffer
 {
-	int capacity;
-	int write_pos;
-	int read_pos;
-	int truncate_pos;
+	int c;
+	int w;
+	int r;
+	int t;
 	char *buffer;
 }muggle_bytes_buffer_t;
 
@@ -78,30 +78,44 @@ MUGGLE_CC_EXPORT
 bool muggle_bytes_buffer_write(muggle_bytes_buffer_t *bytes_buf, int num_bytes, void *src);
 
 /*
- * get contiguous memory for write and move writer to end position of this block
+ * find contiguous memory for write without move writer
  * @num_bytes: number of required memory bytes
  * RETURN: if has enough contiguous memory for write, return start of writer memory
  *         if return null, mean have no enough contiguous memory for write
+ * NOTE: usually use with muggle_bytes_buffer_writer_move
  * */
 MUGGLE_CC_EXPORT
-void* muggle_bytes_buffer_writer_get(muggle_bytes_buffer_t *bytes_buf, int num_bytes);
+void* muggle_bytes_buffer_writer_fc(muggle_bytes_buffer_t *bytes_buf, int num_bytes);
 
 /*
- * get contiguous memory for read and move reader to end position of this block
- * @num_bytes: number of required memory bytes, and return contiguous memory when failed
+ * move writer forward in contiguous memory
+ * @num_bytes: move forward number bytes
+ * RETURN: if has enough contiguous memory for writer move forward (include after 
+ *         jump), return true, otherwise return false
+ * NOTE: usually use with muggle_bytes_buffer_writer_fc
+ * */
+MUGGLE_CC_EXPORT
+bool muggle_bytes_buffer_writer_move(muggle_bytes_buffer_t *bytes_buf, int num_bytes);
+
+/*
+ * find contiguous memory for read without move reader
+ * @num_bytes: number of required memory bytes
  * RETURN: if has enough contiguous memory for read, return start of read memory
  *         if return null, mean have no enough contiguous memory for read
- * NOTE: if use this function to read bytes, recommended invoke muggle_bytes_buffer_refresh
- *       after this function when return success
+ * NOTE: usually use with muggle_bytes_buffer_reader_move
  * */
 MUGGLE_CC_EXPORT
-void* muggle_bytes_buffer_reader_get(muggle_bytes_buffer_t *bytes_buf, int num_bytes);
+void* muggle_bytes_buffer_reader_fc(muggle_bytes_buffer_t *bytes_buf, int num_bytes);
 
 /*
- * refresh bytes buffer, try to maximize contiguous memory 
+ * move reader forward in contiguous memory
+ * @num_bytes: move forward number bytes
+ * RETURN: if has enough contiguous memory for reader move forward (don't include after 
+ *         jump), return true, otherwise return false
+ * NOTE: usually use with muggle_bytes_buffer_reader_fc
  * */
 MUGGLE_CC_EXPORT
-void muggle_bytes_buffer_refresh(muggle_bytes_buffer_t *bytes_buf);
+bool muggle_bytes_buffer_reader_move(muggle_bytes_buffer_t *bytes_buf, int num_bytes);
 
 /*
  * clear bytes in bytes buffer 
