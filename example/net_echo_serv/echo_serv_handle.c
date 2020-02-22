@@ -107,14 +107,6 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 		}
 	}
 
-	if (ret != 0 && peer->data)
-	{
-		MUGGLE_INFO("disconnect - %s", (char*)peer->data);
-
-		free(peer->data);
-		peer->data = NULL;
-	}
-
 	return ret;
 }
 

@@ -48,6 +48,8 @@ static void on_read(struct muggle_socket_event *ev, struct muggle_socket_peer *p
 
 int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 {
+	MUGGLE_WARNING("disconnection");
+
 	muggle_bytes_buffer_t *bytes_buf = (muggle_bytes_buffer_t*)peer->data;
 	muggle_bytes_buffer_destroy(bytes_buf);
 
@@ -84,9 +86,22 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 				break;
 			}
 		}
+		else if (n < 0)
+		{
+			if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+			{
+				continue;
+			}
+			else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
+			{
+				break;
+			}
+
+			return -1;
+		}
 		else
 		{
-			break;
+			return -1;
 		}
 	}
 

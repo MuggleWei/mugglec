@@ -1,5 +1,20 @@
 #include "socket_event_utils.h"
 
+static inline muggle_socket_event_on_message_error(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
+{
+	if (ev->on_error)
+	{
+		if (ev->on_error(ev, peer) == 0)
+		{
+			muggle_socket_close(peer->fd);
+		}
+	}
+	else
+	{
+		muggle_socket_close(peer->fd);
+	}
+}
+
 int muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
 {
 	if (ev->on_message)
@@ -13,7 +28,7 @@ int muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer
 		{
 			if (ret == -1)
 			{
-				muggle_socket_close(peer->fd);
+				muggle_socket_event_on_message_error(ev, peer);
 			}
 			return 1;
 		}
@@ -40,28 +55,12 @@ int muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer
 					break;
 				}
 
-				int ret = 0;
-				if (ev->on_error)
-				{
-					ret = ev->on_error(ev, peer);
-				}
-				if (ret != 0)
-				{
-					muggle_socket_close(peer->fd);
-				}
+				muggle_socket_event_on_message_error(ev, peer);
 				return 1;
 			}
 			else
 			{
-				int ret = 0;
-				if (ev->on_error)
-				{
-					ret = ev->on_error(ev, peer);
-				}
-				if (ret != 0)
-				{
-					muggle_socket_close(peer->fd);
-				}
+				muggle_socket_event_on_message_error(ev, peer);
 				return 1;
 			}
 		}
