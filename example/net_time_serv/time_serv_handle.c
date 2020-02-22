@@ -33,9 +33,9 @@ int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 	// remove peer from container
 	struct peer_container *container = (struct peer_container*)ev->datas;
 	int idx = (int)(intptr_t)peer->data;
-	if (idx != container->cnt_peer)
+	if (idx != container->cnt_peer - 1)
 	{
-		container->peers[idx] = container->peers[container->cnt_peer];
+		container->peers[idx] = container->peers[container->cnt_peer - 1];
 	}
 	--container->cnt_peer;
 
