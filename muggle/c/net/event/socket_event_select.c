@@ -335,13 +335,19 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 		{
 			muggle_socket_event_timer_handle(ev, &t1, &t2);
 		}
-		// if (n == MUGGLE_SOCKET_ERROR)
 		else
 		{
 			char err_msg[1024];
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
 			MUGGLE_ERROR("failed select loop - %s", err_msg);
 
+			ev->to_exit = 1;
+		}
+
+		// exit loop
+		if (ev->to_exit)
+		{
+			MUGGLE_INFO("exit event loop");
 			node = head.next;
 			while (node)
 			{

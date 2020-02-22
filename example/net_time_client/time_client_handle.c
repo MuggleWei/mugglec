@@ -48,10 +48,19 @@ static void on_read(struct muggle_socket_event *ev, struct muggle_socket_peer *p
 
 int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 {
-	MUGGLE_WARNING("disconnection");
+	// output disconnection address string
+	char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
+	if (muggle_socket_ntop((struct sockaddr*)&peer->addr, straddr, MUGGLE_SOCKET_ADDR_STRLEN, 0) == NULL)
+	{
+		snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "unknown:unknown");
+	}
+	MUGGLE_WARNING("disconnect - %s", straddr);
 
 	muggle_bytes_buffer_t *bytes_buf = (muggle_bytes_buffer_t*)peer->data;
 	muggle_bytes_buffer_destroy(bytes_buf);
+
+	// exit event loop
+	muggle_socket_event_loop_exit(ev);
 
 	return 0;
 }

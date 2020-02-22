@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
 	if (argc < 3)
 	{
-		MUGGLE_ERROR("usage: %s <IP> <Port> [mcast-ip] [mcast-port]", argv[0]);
+		MUGGLE_ERROR("usage: %s <IP> <Port> [udp-ip] [udp-port]", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 

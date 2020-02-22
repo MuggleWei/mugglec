@@ -58,6 +58,7 @@ typedef struct muggle_socket_event
 {
 	int  ev_loop_type;
 	int  timeout_ms;
+	int  to_exit;
 	void *datas;
 
 	muggle_socket_event_connect on_connect;
@@ -89,6 +90,12 @@ typedef struct muggle_socket_ev_arg
  * */
 MUGGLE_CC_EXPORT
 void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg);
+
+/*
+ * exit event loop 
+ * */
+MUGGLE_CC_EXPORT
+void muggle_socket_event_loop_exit(muggle_socket_event_t *ev);
 
 EXTERN_C_END
 

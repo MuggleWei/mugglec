@@ -336,8 +336,14 @@ void muggle_socket_event_epoll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t
 		{
 			char err_msg[1024];
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_ERROR("failed select loop - %s", err_msg);
+			MUGGLE_ERROR("failed epoll loop - %s", err_msg);
 
+			ev->to_exit = 1;
+		}
+
+		if (ev->to_exit)
+		{
+			MUGGLE_INFO("exit event loop");
 			for (int i = 0; i < cnt_fd; ++i)
 			{
 				muggle_socket_close(p_epeers[i]->peer.fd);

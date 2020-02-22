@@ -58,6 +58,7 @@ void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
 	{
 		ev.timeout_ms = ev_arg->timeout_ms;
 	}
+	ev.to_exit = 0;
 	ev.datas = ev_arg->datas;
 
 	ev.on_connect = ev_arg->on_connect;
@@ -108,4 +109,9 @@ void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
 			MUGGLE_ERROR("unsupport event loop type: %d", ev.ev_loop_type);
 		}break;
 	}
+}
+
+void muggle_socket_event_loop_exit(muggle_socket_event_t *ev)
+{
+	ev->to_exit = 1;
 }
