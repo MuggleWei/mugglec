@@ -228,7 +228,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 		node->next = head.next;
 		head.next = node;
 
-		memcpy(&node->peer, &ev_arg->peers[i], sizeof(muggle_socket_event_t));
+		memcpy(&node->peer, &ev_arg->peers[i], sizeof(muggle_socket_peer_t));
 		muggle_socket_set_nonblock(node->peer.fd, 1);
 	}
 

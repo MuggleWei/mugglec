@@ -40,12 +40,28 @@ int muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer
 					break;
 				}
 
-				muggle_socket_close(peer->fd);
+				int ret = 0;
+				if (ev->on_error)
+				{
+					ret = ev->on_error(ev, peer);
+				}
+				if (ret != 0)
+				{
+					muggle_socket_close(peer->fd);
+				}
 				return 1;
 			}
 			else
 			{
-				muggle_socket_close(peer->fd);
+				int ret = 0;
+				if (ev->on_error)
+				{
+					ret = ev->on_error(ev, peer);
+				}
+				if (ret != 0)
+				{
+					muggle_socket_close(peer->fd);
+				}
 				return 1;
 			}
 		}
@@ -60,7 +76,7 @@ void muggle_socket_event_timer_handle(muggle_socket_event_t *ev, struct timespec
 	int interval_ms =
 		(int)((t2->tv_sec - t1->tv_sec) * 1000 +
 		(t2->tv_nsec - t1->tv_nsec) / 1000000);
-	if (interval_ms > ev->timeout_ms)
+	if (interval_ms >= ev->timeout_ms)
 	{
 		if (ev->on_timer)
 		{
