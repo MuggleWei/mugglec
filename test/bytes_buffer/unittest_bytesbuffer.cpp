@@ -69,7 +69,7 @@ void build_status_w_gt_r_ne_0(muggle_bytes_buffer_t *bytes_buf, int capacity, in
 * @r: reader position
 * @t: truncate position
 * */
-void build_status_r_gt_w(muggle_bytes_buffer_t *bytes_buf, int capacity, int w, int r, int t)
+void build_status_r_gt_w(muggle_bytes_buffer_t *bytes_buf, int w, int r, int t)
 {
 	bytes_buf->w = w;
 	bytes_buf->r = r;
@@ -83,8 +83,6 @@ TEST(bytes_buffer, empty)
 	bool ret = muggle_bytes_buffer_init(&bytes_buf, capacity);
 	ASSERT_TRUE(ret);
 
-	int n = 0;
-	void *ptr = NULL;
 	char space[2 * TEST_BYTES_BUF_SPACE];
 	memset(space, 0, sizeof(space));
 	
@@ -211,7 +209,6 @@ TEST(bytes_buffer, w_ge_r_ne_0)
 	bool ret = muggle_bytes_buffer_init(&bytes_buf, capacity);
 	ASSERT_TRUE(ret);
 
-	int n = 0;
 	void *ptr = NULL;
 	char space[2 * TEST_BYTES_BUF_SPACE];
 	memset(space, 0, sizeof(space));
@@ -256,7 +253,7 @@ TEST(bytes_buffer, w_ge_r_ne_0)
 				}
 
 				// fetch
-				for (int i = 0; i < sizeof(space); ++i)
+				for (int i = 0; i < (int)sizeof(space); ++i)
 				{
 					space[i] = (char)255;
 				}
@@ -267,7 +264,7 @@ TEST(bytes_buffer, w_ge_r_ne_0)
 				ret = muggle_bytes_buffer_fetch(&bytes_buf, readable, space);
 				ASSERT_TRUE(ret);
 
-				for (int i = 0; i < sizeof(space); ++i)
+				for (int i = 0; i < (int)sizeof(space); ++i)
 				{
 					if (i < readable)
 					{
@@ -280,7 +277,7 @@ TEST(bytes_buffer, w_ge_r_ne_0)
 				}
 
 				// read
-				for (int i = 0; i < sizeof(space); ++i)
+				for (int i = 0; i < (int)sizeof(space); ++i)
 				{
 					space[i] = (char)255;
 				}
@@ -291,7 +288,7 @@ TEST(bytes_buffer, w_ge_r_ne_0)
 				ret = muggle_bytes_buffer_read(&bytes_buf, readable, space);
 				ASSERT_TRUE(ret);
 
-				for (int i = 0; i < sizeof(space); ++i)
+				for (int i = 0; i < (int)sizeof(space); ++i)
 				{
 					if (i < readable)
 					{
@@ -319,7 +316,6 @@ TEST(bytes_buffer, r_gt_w)
 	bool ret = muggle_bytes_buffer_init(&bytes_buf, capacity);
 	ASSERT_TRUE(ret);
 
-	int n = 0;
 	void *ptr = NULL;
 	char space[2 * TEST_BYTES_BUF_SPACE];
 	memset(space, 0, sizeof(space));
@@ -330,7 +326,7 @@ TEST(bytes_buffer, r_gt_w)
 		{
 			for (int t = r; t < capacity; ++t)
 			{
-				build_status_r_gt_w(&bytes_buf, capacity, w, r, t);
+				build_status_r_gt_w(&bytes_buf, w, r, t);
 
 				int writable = muggle_bytes_buffer_writable(&bytes_buf);
 				ASSERT_EQ(writable, r - w - 1);
@@ -354,7 +350,6 @@ TEST(bytes_buffer, r_gt_w)
 				{
 					// reader
 					int cw = t - r;
-					int jr = w;
 
 					ptr = muggle_bytes_buffer_reader_fc(&bytes_buf, cw + 1);
 					ASSERT_TRUE(ptr == NULL);
@@ -375,7 +370,7 @@ TEST(bytes_buffer, r_gt_w)
 					}
 
 					// fetch
-					for (int i = 0; i < sizeof(space); ++i)
+					for (int i = 0; i < (int)sizeof(space); ++i)
 					{
 						space[i] = (char)255;
 					}
@@ -386,7 +381,7 @@ TEST(bytes_buffer, r_gt_w)
 					ret = muggle_bytes_buffer_fetch(&bytes_buf, readable, space);
 					ASSERT_TRUE(ret);
 
-					for (int i = 0; i < sizeof(space); ++i)
+					for (int i = 0; i < (int)sizeof(space); ++i)
 					{
 						if (i < readable)
 						{
@@ -403,7 +398,7 @@ TEST(bytes_buffer, r_gt_w)
 					}
 
 					// read
-					for (int i = 0; i < sizeof(space); ++i)
+					for (int i = 0; i < (int)sizeof(space); ++i)
 					{
 						space[i] = (char)255;
 					}
@@ -414,7 +409,7 @@ TEST(bytes_buffer, r_gt_w)
 					ret = muggle_bytes_buffer_read(&bytes_buf, readable, space);
 					ASSERT_TRUE(ret);
 
-					for (int i = 0; i < sizeof(space); ++i)
+					for (int i = 0; i < (int)sizeof(space); ++i)
 					{
 						if (i < readable)
 						{
@@ -443,10 +438,8 @@ TEST(bytes_buffer, truncate)
 	bool ret = muggle_bytes_buffer_init(&bytes_buf, capacity);
 	ASSERT_TRUE(ret);
 
-	int n = 0;
-	void *ptr = NULL;
 	char space[2 * TEST_BYTES_BUF_SPACE];
-	for (int i = 0; i < sizeof(space); ++i)
+	for (int i = 0; i < (int)sizeof(space); ++i)
 	{
 		space[i] = (char)255;
 	}

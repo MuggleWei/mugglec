@@ -1,6 +1,6 @@
 #include "socket_event_utils.h"
 
-static inline muggle_socket_event_on_message_error(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
+static inline void muggle_socket_event_on_message_error(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
 {
 	if (ev->on_error)
 	{
