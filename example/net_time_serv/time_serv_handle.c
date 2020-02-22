@@ -19,7 +19,11 @@ void trace_output_peers(struct peer_container *container)
 		}
 		muggle_socket_peer_t *tmp_peer = container->peers[i];
 		muggle_socket_ntop((struct sockaddr*)&tmp_peer->addr, straddr, MUGGLE_SOCKET_ADDR_STRLEN, 0);
+#if MUGGLE_PLATFORM_WINDOWS
+		offset += snprintf(buf + offset, sizeof(buf) - offset, "[%s]<%d> | ", straddr, (int)(intptr_t)tmp_peer->data);
+#else
 		offset += snprintf(buf + offset, sizeof(buf) - offset, "%d[%s]<%d> | ", tmp_peer->fd, straddr, (int)(intptr_t)tmp_peer->data);
+#endif
 		++cnt;
 	}
     MUGGLE_INFO(buf);
