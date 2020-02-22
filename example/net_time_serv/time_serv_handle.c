@@ -1,5 +1,32 @@
 #include "time_serv_handle.h"
 
+#if MUGGLE_BUILD_TRACE
+
+void trace_output_peers(struct peer_container *container)
+{
+	char buf[4096];
+	int offset = 0;
+
+	char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
+	offset += snprintf(buf + offset, sizeof(buf) - offset, "peer container: ");
+	int cnt = 0;
+	for (int i = 0; i < container->cnt_peer; ++i)
+	{
+		if (cnt >= 8)
+		{
+			offset += snprintf(buf + offset, sizeof(buf) - offset, " ...");
+			break;
+		}
+		muggle_socket_peer_t *tmp_peer = container->peers[i];
+		muggle_socket_ntop((struct sockaddr*)&tmp_peer->addr, straddr, MUGGLE_SOCKET_ADDR_STRLEN, 0);
+		offset += snprintf(buf + offset, sizeof(buf) - offset, "%d[%s]<%d> | ", tmp_peer->fd, straddr, (int)(intptr_t)tmp_peer->data);
+		++cnt;
+	}
+    MUGGLE_INFO(buf);
+}
+
+#endif
+
 int on_connect(
 	struct muggle_socket_event *ev, struct muggle_socket_peer *listen_peer, struct muggle_socket_peer *peer)
 {
@@ -16,6 +43,10 @@ int on_connect(
 	container->peers[container->cnt_peer] = peer;
 	peer->data = (void*)(intptr_t)container->cnt_peer;
 	++container->cnt_peer;
+
+#if MUGGLE_BUILD_TRACE
+	trace_output_peers(container);
+#endif
 
 	return 0;
 }
@@ -36,8 +67,13 @@ int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 	if (idx != container->cnt_peer - 1)
 	{
 		container->peers[idx] = container->peers[container->cnt_peer - 1];
+		container->peers[idx]->data = (void*)(intptr_t)idx;
 	}
 	--container->cnt_peer;
+
+#if MUGGLE_BUILD_TRACE
+	trace_output_peers(container);
+#endif
 
 	return 0;
 }
