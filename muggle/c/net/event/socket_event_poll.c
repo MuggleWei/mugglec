@@ -232,7 +232,7 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 
 					--n;
 				}
-				else if (fds[i].revents & (POLLIN | POLLERR))
+				else if (fds[i].revents & (POLLHUP | POLLERR))
 				{
 					if (ev->on_error != NULL)
 					{
@@ -286,6 +286,11 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 		}
 		else
 		{
+			if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+			{
+				continue;
+			}
+
 			char err_msg[1024];
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
 			MUGGLE_ERROR("failed poll loop - %s", err_msg);

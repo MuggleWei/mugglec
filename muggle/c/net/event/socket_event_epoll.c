@@ -334,6 +334,11 @@ void muggle_socket_event_epoll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t
 		}
 		else
 		{
+			if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+			{
+				continue;
+			}
+
 			char err_msg[1024];
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
 			MUGGLE_ERROR("failed epoll loop - %s", err_msg);

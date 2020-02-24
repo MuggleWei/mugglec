@@ -337,6 +337,11 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 		}
 		else
 		{
+			if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+			{
+				continue;
+			}
+
 			char err_msg[1024];
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
 			MUGGLE_ERROR("failed select loop - %s", err_msg);
