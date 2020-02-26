@@ -19,19 +19,19 @@ EXTERN_C_BEGIN
 #define MUGGLE_LOG_DEFAULT(level, format, ...) \
 do \
 { \
-	muggle_log_fmt_arg_t arg = { \
+	muggle_log_fmt_arg_t mlf_arg##__LINE__ = { \
 		level, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id() \
 	}; \
-	muggle_log_function(&g_log_default_category, &arg, format, ##__VA_ARGS__); \
+	muggle_log_function(&g_log_default_category, &mlf_arg##__LINE__, format, ##__VA_ARGS__); \
 } while (0)
 
 #define MUGGLE_LOG(p_log_category, level, format, ...) \
 do \
 { \
-	muggle_log_fmt_arg_t arg = { \
+	muggle_log_fmt_arg_t mlf_arg##__LINE__ = { \
 		level, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id() \
 	}; \
-	muggle_log_function(p_log_category, &arg, format, ##__VA_ARGS__); \
+	muggle_log_function(p_log_category, &mlf_arg##__LINE__, format, ##__VA_ARGS__); \
 } while (0)
 
 #define MUGGLE_TRACE(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_TRACE, format, ##__VA_ARGS__)
@@ -59,10 +59,10 @@ do \
 { \
 	if (!(x)) \
 	{ \
-		muggle_log_fmt_arg_t arg = { \
+		muggle_log_fmt_arg_t mlf_arg##__LINE__ = { \
 			MUGGLE_LOG_LEVEL_FATAL, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id() \
 		}; \
-		muggle_log_function(&g_log_default_category, &arg, "Assertion: "#x); \
+		muggle_log_function(&g_log_default_category, &mlf_arg##__LINE__, "Assertion: "#x); \
 	} \
 } while (0)
 
@@ -71,10 +71,10 @@ do \
 { \
 	if (!(x)) \
 	{ \
-		muggle_log_fmt_arg_t arg = { \
+		muggle_log_fmt_arg_t mlf_arg##__LINE__ = { \
 			MUGGLE_LOG_LEVEL_FATAL, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id() \
 		}; \
-		muggle_log_function(&g_log_default_category, &arg, "Assertion: "#x format, ##__VA_ARGS__); \
+		muggle_log_function(&g_log_default_category, &mlf_arg##__LINE__, "Assertion: "#x format, ##__VA_ARGS__); \
 	} \
 } while (0)
 
