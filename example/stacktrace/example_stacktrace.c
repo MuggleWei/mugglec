@@ -13,7 +13,6 @@ void example_get_stacktrace(int idx, muggle_stacktrace_t *st)
 		if (muggle_stacktrace_get(st, 0) == -1)
 		{
 			MUGGLE_ERROR("failed get stacktrace");
-			exit(EXIT_FAILURE);
 		}
 	}
 	else

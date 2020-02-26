@@ -76,16 +76,19 @@ add_dependencies(muggle_benchmark ${muggle_cc})
 # link thread and dll lib
 find_package(Threads)
 if (WIN32)
-target_link_libraries(${muggle_cc}
-	${CMAKE_THREAD_LIBS_INIT}
-	${CMAKE_DL_LIBS}
-	synchronization
-)
+	target_link_libraries(${muggle_cc}
+		${CMAKE_THREAD_LIBS_INIT}
+		${CMAKE_DL_LIBS}
+		synchronization
+	)
+	if (${MUGGLE_BUILD_TRACE})
+		target_link_libraries(${muggle_cc} debug Dbghelp)
+	endif()
 else()
-target_link_libraries(${muggle_cc}
-	${CMAKE_THREAD_LIBS_INIT}
-	${CMAKE_DL_LIBS}
-)
+	target_link_libraries(${muggle_cc}
+		${CMAKE_THREAD_LIBS_INIT}
+		${CMAKE_DL_LIBS}
+	)
 endif()
 
 # export macro for windows

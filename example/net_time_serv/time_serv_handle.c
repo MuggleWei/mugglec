@@ -1,6 +1,6 @@
 #include "time_serv_handle.h"
 
-#if MUGGLE_BUILD_TRACE
+#if defined(MUGGLE_BUILD_TRACE)
 
 void trace_output_peers(struct peer_container *container)
 {
@@ -48,7 +48,7 @@ int on_connect(
 	peer->data = (void*)(intptr_t)container->cnt_peer;
 	++container->cnt_peer;
 
-#if MUGGLE_BUILD_TRACE
+#if defined(MUGGLE_BUILD_TRACE)
 	trace_output_peers(container);
 #endif
 
@@ -75,7 +75,7 @@ int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 	}
 	--container->cnt_peer;
 
-#if MUGGLE_BUILD_TRACE
+#if defined(MUGGLE_BUILD_TRACE)
 	trace_output_peers(container);
 #endif
 
