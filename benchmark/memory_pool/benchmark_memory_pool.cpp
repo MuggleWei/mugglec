@@ -12,7 +12,7 @@
 int main()
 {
 	muggle_log_simple_init(MUGGLE_LOG_LEVEL_ERROR, MUGGLE_LOG_LEVEL_ERROR);
-	MUGGLE_ERROR("benchmark_memory_pool not run in BUILD_C_ONLY");
+	MUGGLE_LOG_ERROR("benchmark_memory_pool not run in BUILD_C_ONLY");
 
 	return 0;
 }

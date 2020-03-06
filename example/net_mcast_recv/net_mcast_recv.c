@@ -4,19 +4,19 @@ int main(int argc, char *argv[])
 {
 	if (muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_INFO) != 0)
 	{
-		MUGGLE_ERROR("failed initalize log");
+		MUGGLE_LOG_ERROR("failed initalize log");
 		exit(EXIT_FAILURE);
 	}
 
 	if (muggle_socket_lib_init() != 0)
 	{
-		MUGGLE_ERROR("failed initalize socket library");
+		MUGGLE_LOG_ERROR("failed initalize socket library");
 		exit(EXIT_FAILURE);
 	}
 
 	if (argc < 3)
 	{
-		MUGGLE_ERROR("usage: %s <mcast-IP> <mcast-Port> [net-iface] [mcast-source-group]", argv[0]);
+		MUGGLE_LOG_ERROR("usage: %s <mcast-IP> <mcast-Port> [net-iface] [mcast-source-group]", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -38,11 +38,11 @@ int main(int argc, char *argv[])
 		src_grp = argv[4];
 	}
 
-	MUGGLE_INFO("join multicast group");
+	MUGGLE_LOG_INFO("join multicast group");
 	muggle_socket_t fd = muggle_mcast_join(grp_host, grp_serv, iface, src_grp, NULL);
 	if (fd == MUGGLE_INVALID_SOCKET)
 	{
-		MUGGLE_ERROR("failed multicast join %s:%s", grp_host, grp_serv);
+		MUGGLE_LOG_ERROR("failed multicast join %s:%s", grp_host, grp_serv);
 		exit(EXIT_FAILURE);
 	}
 
@@ -60,14 +60,14 @@ int main(int argc, char *argv[])
 		{
 			snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "unknown:unknown");
 		}
-		MUGGLE_INFO("recv %d bytes from %s", n, straddr);
+		MUGGLE_LOG_INFO("recv %d bytes from %s", n, straddr);
 
 		if (n > 10)
 		{
-			MUGGLE_INFO("leave multicast group");
+			MUGGLE_LOG_INFO("leave multicast group");
 			if (muggle_mcast_leave(fd, grp_host, grp_serv, iface, src_grp) != 0)
 			{
-				MUGGLE_ERROR("failed leave multicast group");
+				MUGGLE_LOG_ERROR("failed leave multicast group");
 			}
 		}
 	}

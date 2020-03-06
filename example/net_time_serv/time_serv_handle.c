@@ -26,7 +26,7 @@ void trace_output_peers(struct peer_container *container)
 #endif
 		++cnt;
 	}
-    MUGGLE_INFO(buf);
+    MUGGLE_LOG_INFO(buf);
 }
 
 #endif
@@ -40,7 +40,7 @@ int on_connect(
 	{
 		snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "unknown:unknown");
 	}
-	MUGGLE_INFO("connect - %s", straddr);
+	MUGGLE_LOG_INFO("connect - %s", straddr);
 
 	// save peer into container
 	struct peer_container *container = (struct peer_container*)ev->datas;
@@ -63,7 +63,7 @@ int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 	{
 		snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "unknown:unknown");
 	}
-	MUGGLE_INFO("disconnect - %s", straddr);
+	MUGGLE_LOG_INFO("disconnect - %s", straddr);
 
 	// remove peer from container
 	struct peer_container *container = (struct peer_container*)ev->datas;

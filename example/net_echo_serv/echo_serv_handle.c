@@ -10,7 +10,7 @@ int on_connect(
 	}
 	peer->data = (void*)straddr;
 
-	MUGGLE_INFO("connect - %s", (char*)peer->data);
+	MUGGLE_LOG_INFO("connect - %s", (char*)peer->data);
 
 	return 0;
 }
@@ -19,7 +19,7 @@ int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 {
 	if (peer->data)
 	{
-		MUGGLE_INFO("disconnect - %s", (char*)peer->data);
+		MUGGLE_LOG_INFO("disconnect - %s", (char*)peer->data);
 
 		free(peer->data);
 		peer->data = NULL;
@@ -48,7 +48,7 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 		}
 		else
 		{
-			MUGGLE_ERROR("something wrong");
+			MUGGLE_LOG_ERROR("something wrong");
 			exit(EXIT_FAILURE);
 		}
 
@@ -70,11 +70,11 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 				{
 					char err_msg[1024] = {0};
 					muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-					MUGGLE_WARNING("failed send msg - %s", err_msg);
+					MUGGLE_LOG_WARNING("failed send msg - %s", err_msg);
 				}
 				else
 				{
-					MUGGLE_WARNING("send buffer full");
+					MUGGLE_LOG_WARNING("send buffer full");
 				}
 				ret = -1;
 				break;
@@ -95,7 +95,7 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 			{
 				char err_msg[1024];
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_INFO("failed recv from %s - %s", (char*)peer->data, (char*)peer->data);
+				MUGGLE_LOG_INFO("failed recv from %s - %s", (char*)peer->data, (char*)peer->data);
 			}
 			ret = -1;
 			break;
@@ -112,5 +112,5 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 
 void on_timer(struct muggle_socket_event *ev)
 {
-	MUGGLE_INFO("timer with interval(%dms) output: %s", ev->timeout_ms, (const char*)ev->datas);
+	MUGGLE_LOG_INFO("timer with interval(%dms) output: %s", ev->timeout_ms, (const char*)ev->datas);
 }

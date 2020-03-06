@@ -4,19 +4,19 @@ int main(int argc, char *argv[])
 {
 	if (muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_INFO) != 0)
 	{
-		MUGGLE_ERROR("failed initalize log");
+		MUGGLE_LOG_ERROR("failed initalize log");
 		exit(EXIT_FAILURE);
 	}
 
 	if (muggle_socket_lib_init() != 0)
 	{
-		MUGGLE_ERROR("failed initalize socket library");
+		MUGGLE_LOG_ERROR("failed initalize socket library");
 		exit(EXIT_FAILURE);
 	}
 
 	if (argc < 3)
 	{
-		MUGGLE_ERROR("usage: %s <IP> <Port> [thread|select|poll|epoll|iocp|kqueue]", argv[0]);
+		MUGGLE_LOG_ERROR("usage: %s <IP> <Port> [thread|select|poll|epoll|iocp|kqueue]", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	peers[0].fd = muggle_tcp_listen(host, serv, 512, &peers[0]);
 	if (peers[0].fd == MUGGLE_INVALID_SOCKET)
 	{
-		MUGGLE_ERROR("failed create tcp listen for %s:%s", host, serv);
+		MUGGLE_LOG_ERROR("failed create tcp listen for %s:%s", host, serv);
 		exit(EXIT_FAILURE);
 	}
 
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	peers[1].fd = muggle_udp_bind(host, serv, &peers[1]);
 	if (peers[1].fd == MUGGLE_INVALID_SOCKET)
 	{
-		MUGGLE_ERROR("failed create udp bind for %s:%s", host, serv);
+		MUGGLE_LOG_ERROR("failed create udp bind for %s:%s", host, serv);
 		exit(EXIT_FAILURE);
 	}
 
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			MUGGLE_ERROR("invalid socket event loop type: %s", argv[3]);
+			MUGGLE_LOG_ERROR("invalid socket event loop type: %s", argv[3]);
 			exit(EXIT_FAILURE);
 		}
 	}

@@ -34,11 +34,11 @@ do \
 	muggle_log_function(p_log_category, &mlf_arg##__LINE__, format, ##__VA_ARGS__); \
 } while (0)
 
-#define MUGGLE_TRACE(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_TRACE, format, ##__VA_ARGS__)
-#define MUGGLE_INFO(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_INFO, format, ##__VA_ARGS__)
-#define MUGGLE_WARNING(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_WARNING, format, ##__VA_ARGS__)
-#define MUGGLE_ERROR(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_ERROR, format, ##__VA_ARGS__)
-#define MUGGLE_FATAL(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_FATAL, format, ##__VA_ARGS__)
+#define MUGGLE_LOG_TRACE(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_TRACE, format, ##__VA_ARGS__)
+#define MUGGLE_LOG_INFO(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_INFO, format, ##__VA_ARGS__)
+#define MUGGLE_LOG_WARNING(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_WARNING, format, ##__VA_ARGS__)
+#define MUGGLE_LOG_ERROR(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_ERROR, format, ##__VA_ARGS__)
+#define MUGGLE_LOG_FATAL(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_FATAL, format, ##__VA_ARGS__)
 
 
 #if MUGGLE_RELEASE
@@ -78,11 +78,11 @@ do \
 	} \
 } while (0)
 
-#define MUGGLE_DEBUG_TRACE(format, ...) MUGGLE_TRACE(format, ##__VA_ARGS__)
-#define MUGGLE_DEBUG_INFO(format, ...) MUGGLE_INFO(format, ##__VA_ARGS__)
-#define MUGGLE_DEBUG_WARNING(format, ...) MUGGLE_WARNING(format, ##__VA_ARGS__)
-#define MUGGLE_DEBUG_ERROR(format, ...) MUGGLE_ERROR(format, ##__VA_ARGS__)
-#define MUGGLE_DEBUG_FATAL(format, ...) MUGGLE_FATAL(format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_TRACE(format, ...) MUGGLE_LOG_TRACE(format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_INFO(format, ...) MUGGLE_LOG_INFO(format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_WARNING(format, ...) MUGGLE_LOG_WARNING(format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_ERROR(format, ...) MUGGLE_LOG_ERROR(format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_FATAL(format, ...) MUGGLE_LOG_FATAL(format, ##__VA_ARGS__)
 #define MUGGLE_DEBUG_LOG(ptr_log_handle, level, format, ...) MUGGLE_LOG(ptr_log_handle, level, format, ##__VA_ARGS__)
 
 #endif

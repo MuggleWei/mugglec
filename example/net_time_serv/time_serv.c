@@ -4,19 +4,19 @@ int main(int argc, char *argv[])
 {
 	if (muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_INFO) != 0)
 	{
-		MUGGLE_ERROR("failed initalize log");
+		MUGGLE_LOG_ERROR("failed initalize log");
 		exit(EXIT_FAILURE);
 	}
 
 	if (muggle_socket_lib_init() != 0)
 	{
-		MUGGLE_ERROR("failed initalize socket library");
+		MUGGLE_LOG_ERROR("failed initalize socket library");
 		exit(EXIT_FAILURE);
 	}
 
 	if (argc < 3)
 	{
-		MUGGLE_ERROR("usage: %s <IP> <Port> [udp-ip] [udp-port]", argv[0]);
+		MUGGLE_LOG_ERROR("usage: %s <IP> <Port> [udp-ip] [udp-port]", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 		udp_peer.fd = muggle_udp_connect(multicast_host, multicast_serv, &udp_peer);
 		if (udp_peer.fd == MUGGLE_INVALID_SOCKET)
 		{
-			MUGGLE_ERROR("failed connect multicast target");
+			MUGGLE_LOG_ERROR("failed connect multicast target");
 			exit(EXIT_FAILURE);
 		}
 		p_udp_peer = &udp_peer;
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	listen_peer.fd = muggle_tcp_listen(host, serv, 512, &listen_peer);
 	if (listen_peer.fd == MUGGLE_INVALID_SOCKET)
 	{
-		MUGGLE_ERROR("failed create tcp listen for %s:%s", host, serv);
+		MUGGLE_LOG_ERROR("failed create tcp listen for %s:%s", host, serv);
 		exit(EXIT_FAILURE);
 	}
 

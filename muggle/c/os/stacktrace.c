@@ -33,7 +33,7 @@ int muggle_stacktrace_get(muggle_stacktrace_t *st, unsigned int max_cnt_frame)
 	st->symbols = malloc((cnt_frame - 1) * sizeof(char*));
 	if (st->symbols == NULL)
 	{
-		MUGGLE_ERROR("failed allocate memory for stack strace symbols");
+		MUGGLE_LOG_ERROR("failed allocate memory for stack strace symbols");
 		free(symbol);
 		return -1;
 	}
@@ -47,7 +47,7 @@ int muggle_stacktrace_get(muggle_stacktrace_t *st, unsigned int max_cnt_frame)
 		st->symbols[idx] = malloc(len + 1);
 		if (st->symbols[idx] == NULL)
 		{
-			MUGGLE_ERROR("failed allocate memory for stack strace single symbol");
+			MUGGLE_LOG_ERROR("failed allocate memory for stack strace single symbol");
 			muggle_stacktrace_free(st);
 			free(symbol);
 			return -1;
@@ -86,7 +86,7 @@ int muggle_stacktrace_get(muggle_stacktrace_t *st, unsigned int max_cnt_frame)
 	st->symbols = malloc((cnt_frame - 1) * sizeof(char*));
 	if (st->symbols == NULL)
 	{
-		MUGGLE_ERROR("failed allocate memory for stack strace symbols");
+		MUGGLE_LOG_ERROR("failed allocate memory for stack strace symbols");
 		free(symbols);
 		return -1;
 	}
@@ -99,7 +99,7 @@ int muggle_stacktrace_get(muggle_stacktrace_t *st, unsigned int max_cnt_frame)
 		st->symbols[idx] = malloc(len + 1);
 		if (st->symbols[idx] == NULL)
 		{
-			MUGGLE_ERROR("failed allocate memory for stack strace single symbol");
+			MUGGLE_LOG_ERROR("failed allocate memory for stack strace single symbol");
 			muggle_stacktrace_free(st);
 			free(symbols);
 			return -1;

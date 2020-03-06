@@ -5,13 +5,13 @@ int main(int argc, char *argv[])
 	// initialize log
 	if (muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_INFO) != 0)
 	{
-		MUGGLE_ERROR("failed init log");
+		MUGGLE_LOG_ERROR("failed init log");
 		exit(EXIT_FAILURE);
 	}
 
 	if (argc != 4)
 	{
-		MUGGLE_ERROR("usage: %s <host> <port> <tcp|udp|mcast>", argv[0]);
+		MUGGLE_LOG_ERROR("usage: %s <host> <port> <tcp|udp|mcast>", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			MUGGLE_ERROR("invalid socket peer type: %s", argv[3]);
+			MUGGLE_LOG_ERROR("invalid socket peer type: %s", argv[3]);
 			exit(EXIT_FAILURE);
 		}
 
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 		{
 			if (strcmp(argv[3], "tcp") == 0)
 			{
-				MUGGLE_ERROR("failed connect %s:%s", argv[1], argv[2]);
+				MUGGLE_LOG_ERROR("failed connect %s:%s", argv[1], argv[2]);
 				if (++tcp_contiguous_failed >= 3)
 				{
 					exit(EXIT_FAILURE);
@@ -59,19 +59,19 @@ int main(int argc, char *argv[])
 				else
 				{
 					muggle_msleep(3000);
-					MUGGLE_INFO("try to reconnect %s:%s", argv[1], argv[2]);
+					MUGGLE_LOG_INFO("try to reconnect %s:%s", argv[1], argv[2]);
 				}
 				continue;
 			}
 			else
 			{
-				MUGGLE_ERROR("%s failed create socket for: %s:%s", argv[3], argv[1], argv[2]);
+				MUGGLE_LOG_ERROR("%s failed create socket for: %s:%s", argv[3], argv[1], argv[2]);
 				exit(EXIT_FAILURE);
 			}
 		}
 		else if (strcmp(argv[3], "tcp") == 0)
 		{
-			MUGGLE_INFO("%s success connect %s:%s", argv[3], argv[1], argv[2]);
+			MUGGLE_LOG_INFO("%s success connect %s:%s", argv[3], argv[1], argv[2]);
 		}
 
 		// reset tcp contiguous connection failed count

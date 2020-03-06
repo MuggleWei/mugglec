@@ -79,7 +79,7 @@ static int muggle_socket_event_poll_listen(
 
 			char err_msg[1024];
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_ERROR("failed accept - %s", err_msg);
+			MUGGLE_LOG_ERROR("failed accept - %s", err_msg);
 
 			// close listen socket
 			if (ev->on_error != NULL)
@@ -106,7 +106,7 @@ static int muggle_socket_event_poll_listen(
 				snprintf(straddr, sizeof(straddr), "unknown:unknown");
 			}
 
-			MUGGLE_WARNING("refuse connection %s - number of connection reached the upper limit", straddr);
+			MUGGLE_LOG_WARNING("refuse connection %s - number of connection reached the upper limit", straddr);
 			muggle_socket_close(peer->fd);
 		}
 		else
@@ -150,7 +150,7 @@ static int muggle_socket_event_poll_listen(
 
 void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t *ev_arg)
 {
-	MUGGLE_TRACE("socket event poll run...");
+	MUGGLE_LOG_TRACE("socket event poll run...");
 
 	// set fd capacity
 	int capacity = ev_arg->hints_max_peer;
@@ -161,7 +161,7 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 
 	if (capacity < ev_arg->cnt_peer)
 	{
-		MUGGLE_ERROR("capacity space not enough for all peers");
+		MUGGLE_LOG_ERROR("capacity space not enough for all peers");
 		for (int i = 0; i < ev_arg->cnt_peer; ++i)
 		{
 			muggle_socket_close(ev_arg[i].peers->fd);
@@ -226,7 +226,7 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 						}break;
 					default:
 						{
-							MUGGLE_ERROR("invalid peer type: %d", peer->peer_type);
+							MUGGLE_LOG_ERROR("invalid peer type: %d", peer->peer_type);
 						}break;
 					}
 
@@ -293,14 +293,14 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 
 			char err_msg[1024];
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_ERROR("failed poll loop - %s", err_msg);
+			MUGGLE_LOG_ERROR("failed poll loop - %s", err_msg);
 
 			ev->to_exit = 1;
 		}
 
 		if (ev->to_exit)
 		{
-			MUGGLE_INFO("exit event loop");
+			MUGGLE_LOG_INFO("exit event loop");
 			for (int i = 0; i < cnt_fd; ++i)
 			{
 				muggle_socket_close(p_peers[i]->fd);

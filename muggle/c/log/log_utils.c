@@ -22,37 +22,37 @@ int muggle_log_simple_init(int level_console, int level_file_rotating)
     char process_path[MUGGLE_MAX_PATH];
     if (muggle_os_process_path(process_path, sizeof(process_path)) != 0)
     {
-        MUGGLE_ERROR("failed get process path");
+        MUGGLE_LOG_ERROR("failed get process path");
         return -1;
     }
 
     char process_dir[MUGGLE_MAX_PATH];
     if (muggle_path_dirname(process_path, process_dir, sizeof(process_dir)) != 0)
     {
-        MUGGLE_ERROR("failed get dirname from path: %s", process_path);
+        MUGGLE_LOG_ERROR("failed get dirname from path: %s", process_path);
         return -1;
     }
 
     char process_name[MUGGLE_MAX_PATH];
     if (muggle_path_basename(process_path, process_name, sizeof(process_name)) != 0)
     {
-        MUGGLE_ERROR("failed get basename from path: %s", process_path);
+        MUGGLE_LOG_ERROR("failed get basename from path: %s", process_path);
         return -1;
     }
 
     char log_dir[MUGGLE_MAX_PATH];
     if (muggle_path_join(process_dir, "log", log_dir, sizeof(log_dir)) != 0)
     {
-        MUGGLE_ERROR("failed join log dir");
+        MUGGLE_LOG_ERROR("failed join log dir");
         return -1;
     }
 
     if (!muggle_path_exists(log_dir))
     {
-        MUGGLE_INFO("log dir not exists, mkdir %s", log_dir);
+        MUGGLE_LOG_INFO("log dir not exists, mkdir %s", log_dir);
         if (muggle_os_mkdir(log_dir) != 0)
         {
-            MUGGLE_ERROR("failed mkdir: %s", log_dir);
+            MUGGLE_LOG_ERROR("failed mkdir: %s", log_dir);
             return -1;
         }
     }
@@ -63,7 +63,7 @@ int muggle_log_simple_init(int level_console, int level_file_rotating)
     char log_path[MUGGLE_MAX_PATH];
     if (muggle_path_join(log_dir, log_name, log_path, sizeof(log_path)) != 0)
     {
-        MUGGLE_ERROR("failed join log path");
+        MUGGLE_LOG_ERROR("failed join log path");
         return -1;
     }
 
@@ -77,7 +77,7 @@ int muggle_log_simple_init(int level_console, int level_file_rotating)
     );
     if (ret != 0)
     {
-        MUGGLE_ERROR("failed init log rotating file handle with path: %s", log_path);
+        MUGGLE_LOG_ERROR("failed init log rotating file handle with path: %s", log_path);
         return -1;
     }
 

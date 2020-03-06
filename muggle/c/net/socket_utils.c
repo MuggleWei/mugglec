@@ -13,7 +13,7 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 			{
 				char err_msg[1024] = {0};
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_ERROR("failed inet_ntop - %s", err_msg);
+				MUGGLE_LOG_ERROR("failed inet_ntop - %s", err_msg);
 				return NULL;
 			}
 
@@ -22,7 +22,7 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 				size_t offset = strlen(buf);
 				if (bufsize - offset < 8)
 				{
-					MUGGLE_ERROR("buffer size(%d) is not enough for socket address presentation string", (int)bufsize);
+					MUGGLE_LOG_ERROR("buffer size(%d) is not enough for socket address presentation string", (int)bufsize);
 					return NULL;
 				}
 				snprintf((char*)buf + offset, bufsize - offset, ":%d", (int)ntohs(sin->sin_port));
@@ -37,7 +37,7 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 			{
 				char err_msg[1024] = {0};
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_ERROR("failed inet_ntop - %s", err_msg);
+				MUGGLE_LOG_ERROR("failed inet_ntop - %s", err_msg);
 				return NULL;
 			}
 
@@ -46,7 +46,7 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 				size_t offset = strlen(buf);
 				if (bufsize - offset < 8)
 				{
-					MUGGLE_ERROR("buffer size(%d) is not enough for socket address presentation string", (int)bufsize);
+					MUGGLE_LOG_ERROR("buffer size(%d) is not enough for socket address presentation string", (int)bufsize);
 					return NULL;
 				}
 				snprintf((char*)buf + offset, bufsize - offset, ":%d", (int)ntohs(sin6->sin6_port));
@@ -56,7 +56,7 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 		}break;
 	default:
 		{
-			MUGGLE_ERROR("invalid AF_* family(%d) for socket_ntop", sa->sa_family);
+			MUGGLE_LOG_ERROR("invalid AF_* family(%d) for socket_ntop", sa->sa_family);
 		}
 	}
 
@@ -73,10 +73,10 @@ int muggle_socket_getaddrinfo(const char *host, const char *serv, struct addrinf
 #if MUGGLE_PLATFORM_WINDOWS
 		char err_msg[1024] = { 0 };
 		muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
-		MUGGLE_ERROR("failed muggle_socket_getaddrinfo for %s:%s - getaddrinfo return '%s'",
+		MUGGLE_LOG_ERROR("failed muggle_socket_getaddrinfo for %s:%s - getaddrinfo return '%s'",
 			host, serv, err_msg);
 #else
-		MUGGLE_ERROR("failed muggle_socket_getaddrinfo for %s:%s - getaddrinfo return '%s'",
+		MUGGLE_LOG_ERROR("failed muggle_socket_getaddrinfo for %s:%s - getaddrinfo return '%s'",
 			host, serv, gai_strerror(n));
 #endif
 		return -1;
@@ -112,10 +112,10 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 #if MUGGLE_PLATFORM_WINDOWS
 		char err_msg[1024] = {0};
 		muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
-		MUGGLE_ERROR("failed tcp listen for %s:%s - getaddrinfo return '%s'",
+		MUGGLE_LOG_ERROR("failed tcp listen for %s:%s - getaddrinfo return '%s'",
 				host, serv, err_msg);
 #else
-		MUGGLE_ERROR("failed tcp listen for %s:%s - getaddrinfo return '%s'",
+		MUGGLE_LOG_ERROR("failed tcp listen for %s:%s - getaddrinfo return '%s'",
 				host, serv, gai_strerror(n));
 #endif
 		return MUGGLE_INVALID_SOCKET;
@@ -136,7 +136,7 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 		{
 			char err_msg[1024] = {0};
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_WARNING("failed setsockopt SO_REUSEADDR on - %s", err_msg);
+			MUGGLE_LOG_WARNING("failed setsockopt SO_REUSEADDR on - %s", err_msg);
 		}
 
 		if (bind(listen_socket, res->ai_addr, (muggle_socklen_t)res->ai_addrlen) == 0)
@@ -147,7 +147,7 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 		{
 			char err_msg[1024] = {0};
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_WARNING("failed bind %s:%s - %s", host, serv, err_msg);
+			MUGGLE_LOG_WARNING("failed bind %s:%s - %s", host, serv, err_msg);
 		}
 
 		muggle_socket_close(listen_socket);
@@ -156,7 +156,7 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 
 	if (res == NULL)
 	{
-		MUGGLE_ERROR("failed to create and bind tcp socket for %s:%s", host, serv);
+		MUGGLE_LOG_ERROR("failed to create and bind tcp socket for %s:%s", host, serv);
 		freeaddrinfo(ressave);
 		return MUGGLE_INVALID_SOCKET;
 	}
@@ -165,7 +165,7 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 	{
 		char err_msg[1024] = {0};
 		muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-		MUGGLE_ERROR("failed listen for %s:%s - %s", host, serv, err_msg);
+		MUGGLE_LOG_ERROR("failed listen for %s:%s - %s", host, serv, err_msg);
 
 		muggle_socket_close(listen_socket);
 		freeaddrinfo(ressave);
@@ -202,10 +202,10 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
 #if MUGGLE_PLATFORM_WINDOWS
         char err_msg[1024] = {0};
         muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
-        MUGGLE_ERROR("failed nonblocking tcp connect for %s:%s - getaddrinfo return '%s'",
+        MUGGLE_LOG_ERROR("failed nonblocking tcp connect for %s:%s - getaddrinfo return '%s'",
             host, serv, err_msg);
 #else
-        MUGGLE_ERROR("failed nonblocking tcp connect for %s:%s - getaddrinfo return '%s'",
+        MUGGLE_LOG_ERROR("failed nonblocking tcp connect for %s:%s - getaddrinfo return '%s'",
             host, serv, gai_strerror(n));
 #endif
         return MUGGLE_INVALID_SOCKET;
@@ -223,7 +223,7 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
 
     if (res == NULL)
     {
-        MUGGLE_ERROR("failed create socket for %s:%s", host, serv);
+        MUGGLE_LOG_ERROR("failed create socket for %s:%s", host, serv);
         freeaddrinfo(ressave);
         return MUGGLE_INVALID_SOCKET;
     }
@@ -253,7 +253,7 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
         {
             char err_msg[1024] = {0};
             muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-            MUGGLE_ERROR("failed connect for %s:%s - %s", host, serv, err_msg);
+            MUGGLE_LOG_ERROR("failed connect for %s:%s - %s", host, serv, err_msg);
 
             muggle_socket_close(client);
             freeaddrinfo(ressave);
@@ -304,14 +304,14 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
     if (n == 0)
     {
         muggle_socket_close(client);
-        MUGGLE_ERROR("failed nonblocking tcp connect for %s:%s - timeout(%d sec)", host, serv, timeout_sec);
+        MUGGLE_LOG_ERROR("failed nonblocking tcp connect for %s:%s - timeout(%d sec)", host, serv, timeout_sec);
         return MUGGLE_INVALID_SOCKET;
     }
     else if (n == MUGGLE_SOCKET_ERROR)
     {
         char err_msg[1024] = {0};
         muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-        MUGGLE_ERROR("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
+        MUGGLE_LOG_ERROR("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
 
         muggle_socket_close(client);
         return MUGGLE_INVALID_SOCKET;
@@ -325,7 +325,7 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
         {
             char err_msg[1024] = {0};
             muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-            MUGGLE_ERROR("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
+            MUGGLE_LOG_ERROR("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
 
             muggle_socket_close(client);
             return MUGGLE_INVALID_SOCKET;
@@ -333,7 +333,7 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
     }
     else
     {
-        MUGGLE_ERROR("failed nonblocking tcp connect for %s:%s - socket not set", host, serv);
+        MUGGLE_LOG_ERROR("failed nonblocking tcp connect for %s:%s - socket not set", host, serv);
         muggle_socket_close(client);
         return MUGGLE_INVALID_SOCKET;
     }
@@ -342,7 +342,7 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
     {
         char err_msg[1024] = {0};
         muggle_socket_strerror(error, err_msg, sizeof(err_msg));
-        MUGGLE_ERROR("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
+        MUGGLE_LOG_ERROR("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
 
         muggle_socket_close(client);
         return MUGGLE_INVALID_SOCKET;
@@ -375,10 +375,10 @@ muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socke
 #if MUGGLE_PLATFORM_WINDOWS
 		char err_msg[1024] = {0};
 		muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
-		MUGGLE_ERROR("failed udp bind for %s:%s - getaddrinfo return '%s'",
+		MUGGLE_LOG_ERROR("failed udp bind for %s:%s - getaddrinfo return '%s'",
 				host, serv, err_msg);
 #else
-		MUGGLE_ERROR("failed udp bind for %s:%s - getaddrinfo return '%s'",
+		MUGGLE_LOG_ERROR("failed udp bind for %s:%s - getaddrinfo return '%s'",
 				host, serv, gai_strerror(n));
 #endif
 		return MUGGLE_INVALID_SOCKET;
@@ -399,7 +399,7 @@ muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socke
 		{
 			char err_msg[1024] = {0};
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_WARNING("failed setsockopt SO_REUSEADDR on - %s", err_msg);
+			MUGGLE_LOG_WARNING("failed setsockopt SO_REUSEADDR on - %s", err_msg);
 		}
 
 		if (bind(udp_socket, res->ai_addr, (muggle_socklen_t)res->ai_addrlen) == 0)
@@ -410,7 +410,7 @@ muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socke
 		{
 			char err_msg[1024] = {0};
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_WARNING("failed bind %s:%s - %s", host, serv, err_msg);
+			MUGGLE_LOG_WARNING("failed bind %s:%s - %s", host, serv, err_msg);
 		}
 
 		muggle_socket_close(udp_socket);
@@ -419,7 +419,7 @@ muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socke
 
 	if (res == NULL)
 	{
-		MUGGLE_ERROR("failed to create and bind udp socket for %s:%s", host, serv);
+		MUGGLE_LOG_ERROR("failed to create and bind udp socket for %s:%s", host, serv);
 		freeaddrinfo(ressave);
 		return MUGGLE_INVALID_SOCKET;
 	}
@@ -454,10 +454,10 @@ muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_so
 #if MUGGLE_PLATFORM_WINDOWS
 		char err_msg[1024] = {0};
 		muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
-		MUGGLE_ERROR("failed udp connect for %s:%s - getaddrinfo return '%s'",
+		MUGGLE_LOG_ERROR("failed udp connect for %s:%s - getaddrinfo return '%s'",
 				host, serv, err_msg);
 #else
-		MUGGLE_ERROR("failed udp connect for %s:%s - getaddrinfo return '%s'",
+		MUGGLE_LOG_ERROR("failed udp connect for %s:%s - getaddrinfo return '%s'",
 				host, serv, gai_strerror(n));
 #endif
 		return MUGGLE_INVALID_SOCKET;
@@ -483,7 +483,7 @@ muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_so
 
 	if (res == NULL)
 	{
-		MUGGLE_ERROR("failed to create and connect udp socket for %s:%s", host, serv);
+		MUGGLE_LOG_ERROR("failed to create and connect udp socket for %s:%s", host, serv);
 		freeaddrinfo(ressave);
 		return MUGGLE_INVALID_SOCKET;
 	}
@@ -513,13 +513,13 @@ muggle_socket_t muggle_mcast_join(
 
 	if (host == NULL)
 	{
-		MUGGLE_ERROR("failed muggle_mcast_join - with null host");
+		MUGGLE_LOG_ERROR("failed muggle_mcast_join - with null host");
 		return MUGGLE_INVALID_SOCKET;
 	}
 
 	if (serv == NULL)
 	{
-		MUGGLE_ERROR("failed muggle_mcast_join - with null serv");
+		MUGGLE_LOG_ERROR("failed muggle_mcast_join - with null serv");
 		return MUGGLE_INVALID_SOCKET;
 	}
 
@@ -533,7 +533,7 @@ muggle_socket_t muggle_mcast_join(
 	struct sockaddr_storage multicast_addr;
 	if (muggle_socket_getaddrinfo(host, serv, &hints, &multicast_addrinfo, (struct sockaddr*)&multicast_addr) != 0)
 	{
-		MUGGLE_ERROR("failed get multicast address info for %s:%s", host, serv);
+		MUGGLE_LOG_ERROR("failed get multicast address info for %s:%s", host, serv);
 		return MUGGLE_INVALID_SOCKET;
 	}
 
@@ -559,7 +559,7 @@ muggle_socket_t muggle_mcast_join(
 	struct sockaddr_storage local_addr;
 	if (muggle_socket_getaddrinfo(iface, serv, &hints, &local_addrinfo, (struct sockaddr*)&local_addr) != 0)
 	{
-		MUGGLE_ERROR("failed get local address info for %s:%s", iface, serv);
+		MUGGLE_LOG_ERROR("failed get local address info for %s:%s", iface, serv);
 		return MUGGLE_INVALID_SOCKET;
 	}
 
@@ -574,7 +574,7 @@ muggle_socket_t muggle_mcast_join(
 		{
 			char err_msg[1024] = { 0 };
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_WARNING("failed convert net interface(%s) to index, let kernel select - %s", iface, err_msg);
+			MUGGLE_LOG_WARNING("failed convert net interface(%s) to index, let kernel select - %s", iface, err_msg);
 		}
 	}
 
@@ -588,7 +588,7 @@ muggle_socket_t muggle_mcast_join(
 	{
 		char err_msg[1024] = { 0 };
 		muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-		MUGGLE_ERROR("failed muggle_socket_create info for multicast[%s:%s] iface[%s] - %s", host, serv, iface, err_msg);
+		MUGGLE_LOG_ERROR("failed muggle_socket_create info for multicast[%s:%s] iface[%s] - %s", host, serv, iface, err_msg);
 		return MUGGLE_INVALID_SOCKET;
 	}
 
@@ -598,7 +598,7 @@ muggle_socket_t muggle_mcast_join(
 	{
 		char err_msg[1024] = { 0 };
 		muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-		MUGGLE_WARNING("failed setsockopt SO_REUSEADDR on - %s", err_msg);
+		MUGGLE_LOG_WARNING("failed setsockopt SO_REUSEADDR on - %s", err_msg);
 	}
 
 	// bind
@@ -606,7 +606,7 @@ muggle_socket_t muggle_mcast_join(
 	{
 		char err_msg[1024] = { 0 };
 		muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-		MUGGLE_WARNING("failed bind %s:%s - %s", iface, serv, err_msg);
+		MUGGLE_LOG_WARNING("failed bind %s:%s - %s", iface, serv, err_msg);
 
 		muggle_socket_close(fd);
 		return MUGGLE_INVALID_SOCKET;
@@ -625,7 +625,7 @@ muggle_socket_t muggle_mcast_join(
 	}break;
 	default:
 	{
-		MUGGLE_ERROR("unsupported socket family: %d", multicast_addrinfo.ai_family);
+		MUGGLE_LOG_ERROR("unsupported socket family: %d", multicast_addrinfo.ai_family);
 		muggle_socket_close(fd);
 		return MUGGLE_INVALID_SOCKET;
 	}break;
@@ -646,7 +646,7 @@ muggle_socket_t muggle_mcast_join(
 			{
 				char err_msg[1024] = { 0 };
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_ERROR("failed setsockopt IP_ADD_MEMBERSHIP - %s", err_msg);
+				MUGGLE_LOG_ERROR("failed setsockopt IP_ADD_MEMBERSHIP - %s", err_msg);
 			}
 		}
 		else
@@ -656,7 +656,7 @@ muggle_socket_t muggle_mcast_join(
 			{
 				char err_msg[1024] = { 0 };
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_ERROR("failed inet_pton for %s - %s", src_grp, err_msg);
+				MUGGLE_LOG_ERROR("failed inet_pton for %s - %s", src_grp, err_msg);
 				ret = -1;
 			}
 			else
@@ -670,7 +670,7 @@ muggle_socket_t muggle_mcast_join(
 				{
 					char err_msg[1024] = { 0 };
 					muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-					MUGGLE_ERROR("failed setsockopt IP_ADD_SOURCE_MEMBERSHIP - %s", err_msg);
+					MUGGLE_LOG_ERROR("failed setsockopt IP_ADD_SOURCE_MEMBERSHIP - %s", err_msg);
 				}
 			}
 		}
@@ -687,12 +687,12 @@ muggle_socket_t muggle_mcast_join(
 			{
 				char err_msg[1024] = { 0 };
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_ERROR("failed setsockopt IPV6_ADD_MEMBERSHIP - %s", err_msg);
+				MUGGLE_LOG_ERROR("failed setsockopt IPV6_ADD_MEMBERSHIP - %s", err_msg);
 			}
 		}
 		else
 		{
-			MUGGLE_ERROR("unimplemented windows ipv6 mcast join source group!");
+			MUGGLE_LOG_ERROR("unimplemented windows ipv6 mcast join source group!");
 			ret = -1;
 		}
 	}
@@ -706,7 +706,7 @@ muggle_socket_t muggle_mcast_join(
 		struct sockaddr_storage src_addr;
 		if (muggle_socket_getaddrinfo(src_grp, NULL, &hints, &src_addrinfo, (struct sockaddr*)&src_addr) != 0)
 		{
-			MUGGLE_ERROR("failed get source group address info for %s", src_grp);
+			MUGGLE_LOG_ERROR("failed get source group address info for %s", src_grp);
 			return MUGGLE_INVALID_SOCKET;
 		}
 		else
@@ -720,7 +720,7 @@ muggle_socket_t muggle_mcast_join(
 		{
 			char err_msg[1024] = { 0 };
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_ERROR("failed setsockopt MCAST_JOIN_SOURCE_GROUP - %s", err_msg);
+			MUGGLE_LOG_ERROR("failed setsockopt MCAST_JOIN_SOURCE_GROUP - %s", err_msg);
 		}
 	}
 	else
@@ -730,7 +730,7 @@ muggle_socket_t muggle_mcast_join(
 
 		if (multicast_addrinfo.ai_addrlen > sizeof(req.gr_group))
 		{
-			MUGGLE_ERROR("failed mcast join, group size too big");
+			MUGGLE_LOG_ERROR("failed mcast join, group size too big");
 			return -1;
 		}
 		memcpy(&req.gr_group, multicast_addrinfo.ai_addr, multicast_addrinfo.ai_addrlen);
@@ -740,7 +740,7 @@ muggle_socket_t muggle_mcast_join(
 		{
 			char err_msg[1024] = { 0 };
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_ERROR("failed setsockopt MCAST_JOIN_GROUP - %s", err_msg);
+			MUGGLE_LOG_ERROR("failed setsockopt MCAST_JOIN_GROUP - %s", err_msg);
 		}
 	}
 #else
@@ -774,13 +774,13 @@ int muggle_mcast_leave(
 {
 	if (host == NULL)
 	{
-		MUGGLE_ERROR("failed muggle_mcast_leave - with null host");
+		MUGGLE_LOG_ERROR("failed muggle_mcast_leave - with null host");
 		return -1;
 	}
 
 	if (serv == NULL)
 	{
-		MUGGLE_ERROR("failed muggle_mcast_leave - with null serv");
+		MUGGLE_LOG_ERROR("failed muggle_mcast_leave - with null serv");
 		return -1;
 	}
 
@@ -794,7 +794,7 @@ int muggle_mcast_leave(
 	struct sockaddr_storage multicast_addr;
 	if (muggle_socket_getaddrinfo(host, serv, &hints, &multicast_addrinfo, (struct sockaddr*)&multicast_addr) != 0)
 	{
-		MUGGLE_ERROR("failed get multicast address info for %s:%s", host, serv);
+		MUGGLE_LOG_ERROR("failed get multicast address info for %s:%s", host, serv);
 		return -1;
 	}
 
@@ -811,7 +811,7 @@ int muggle_mcast_leave(
 	}break;
 	default:
 	{
-		MUGGLE_ERROR("unsupported socket family: %d", multicast_addrinfo.ai_family);
+		MUGGLE_LOG_ERROR("unsupported socket family: %d", multicast_addrinfo.ai_family);
 		return -1;
 	}break;
 	}
@@ -835,7 +835,7 @@ int muggle_mcast_leave(
 	struct sockaddr_storage local_addr;
 	if (muggle_socket_getaddrinfo(iface, serv, &hints, &local_addrinfo, (struct sockaddr*)&local_addr) != 0)
 	{
-		MUGGLE_ERROR("failed get local address info for %s:%s", iface, serv);
+		MUGGLE_LOG_ERROR("failed get local address info for %s:%s", iface, serv);
 		return -1;
 	}
 
@@ -851,7 +851,7 @@ int muggle_mcast_leave(
 			{
 				char err_msg[1024] = { 0 };
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_ERROR("failed setsockopt IP_DROP_MEMBERSHIP - %s", err_msg);
+				MUGGLE_LOG_ERROR("failed setsockopt IP_DROP_MEMBERSHIP - %s", err_msg);
 				return -1;
 			}
 		}
@@ -862,7 +862,7 @@ int muggle_mcast_leave(
 			{
 				char err_msg[1024] = { 0 };
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_ERROR("failed inet_pton for %s - %s", src_grp, err_msg);
+				MUGGLE_LOG_ERROR("failed inet_pton for %s - %s", src_grp, err_msg);
 				return -1;
 			}
 			else
@@ -875,7 +875,7 @@ int muggle_mcast_leave(
 				{
 					char err_msg[1024] = { 0 };
 					muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-					MUGGLE_ERROR("failed setsockopt IP_DROP_SOURCE_MEMBERSHIP - %s", err_msg);
+					MUGGLE_LOG_ERROR("failed setsockopt IP_DROP_SOURCE_MEMBERSHIP - %s", err_msg);
 					return -1;
 				}
 			}
@@ -892,12 +892,12 @@ int muggle_mcast_leave(
 			{
 				char err_msg[1024] = { 0 };
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_ERROR("failed setsockopt IPV6_DROP_MEMBERSHIP - %s", err_msg);
+				MUGGLE_LOG_ERROR("failed setsockopt IPV6_DROP_MEMBERSHIP - %s", err_msg);
 			}
 		}
 		else
 		{
-			MUGGLE_ERROR("unimplemented windows ipv6 mcast leave source group!");
+			MUGGLE_LOG_ERROR("unimplemented windows ipv6 mcast leave source group!");
 			return -1;
 		}
 	}
@@ -911,7 +911,7 @@ int muggle_mcast_leave(
 		{
 			char err_msg[1024] = { 0 };
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_WARNING("failed convert net interface(%s) to index, let kernel select - %s", iface, err_msg);
+			MUGGLE_LOG_WARNING("failed convert net interface(%s) to index, let kernel select - %s", iface, err_msg);
 		}
 	}
 
@@ -924,7 +924,7 @@ int muggle_mcast_leave(
 		struct sockaddr_storage src_addr;
 		if (muggle_socket_getaddrinfo(src_grp, NULL, &hints, &src_addrinfo, (struct sockaddr*)&src_addr) != 0)
 		{
-			MUGGLE_ERROR("failed get source group address info for %s", src_grp);
+			MUGGLE_LOG_ERROR("failed get source group address info for %s", src_grp);
 			return -1;
 		}
 		else
@@ -937,7 +937,7 @@ int muggle_mcast_leave(
 		{
 			char err_msg[1024] = { 0 };
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_ERROR("failed setsockopt MCAST_LEAVE_SOURCE_GROUP - %s", err_msg);
+			MUGGLE_LOG_ERROR("failed setsockopt MCAST_LEAVE_SOURCE_GROUP - %s", err_msg);
 			return -1;
 		}
 	}
@@ -948,7 +948,7 @@ int muggle_mcast_leave(
 
 		if (multicast_addrinfo.ai_addrlen > sizeof(req.gr_group))
 		{
-			MUGGLE_ERROR("failed mcast join, group size too big");
+			MUGGLE_LOG_ERROR("failed mcast join, group size too big");
 			return -1;
 		}
 		memcpy(&req.gr_group, multicast_addrinfo.ai_addr, multicast_addrinfo.ai_addrlen);
@@ -957,7 +957,7 @@ int muggle_mcast_leave(
 		{
 			char err_msg[1024] = { 0 };
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_ERROR("failed setsockopt MCAST_LEAVE_GROUP - %s", err_msg);
+			MUGGLE_LOG_ERROR("failed setsockopt MCAST_LEAVE_GROUP - %s", err_msg);
 			return -1;
 		}
 	}

@@ -28,11 +28,11 @@ muggle_thread_ret_t thread_get_console_input(void *arg)
 			{
 				char err_msg[1024] = { 0 };
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_WARNING("failed send msg - %s", err_msg);
+				MUGGLE_LOG_WARNING("failed send msg - %s", err_msg);
 			}
 			else
 			{
-				MUGGLE_WARNING("send buffer full");
+				MUGGLE_LOG_WARNING("send buffer full");
 			}
 			return 0;
 		}
@@ -56,7 +56,7 @@ void str_client_windows(FILE *fp, muggle_socket_t client)
 		int num_bytes = recv(client, recvbuf, SND_RCV_BUF_SIZE, 0);
 		if (num_bytes == 0)
 		{
-			MUGGLE_INFO("disconnect");
+			MUGGLE_LOG_INFO("disconnect");
 			return;
 		}
 		else if (num_bytes == MUGGLE_SOCKET_ERROR)
@@ -68,12 +68,12 @@ void str_client_windows(FILE *fp, muggle_socket_t client)
 
 			char err_msg[1024] = { 0 };
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_ERROR("failed recv - %s", err_msg);
+			MUGGLE_LOG_ERROR("failed recv - %s", err_msg);
 			break;
 		}
 
 		recvbuf[num_bytes] = '\0';
-		MUGGLE_INFO(recvbuf);
+		MUGGLE_LOG_INFO(recvbuf);
 	}
 }
 
@@ -98,7 +98,7 @@ void str_client_posix(FILE *fp, muggle_socket_t client)
 		{
 			char err_msg[1024] = { 0 };
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_ERROR("failed select - %s", err_msg);
+			MUGGLE_LOG_ERROR("failed select - %s", err_msg);
 			break;
 		}
 		else if (n == 0)
@@ -111,7 +111,7 @@ void str_client_posix(FILE *fp, muggle_socket_t client)
 			int num_bytes = recv(client, recvbuf, SND_RCV_BUF_SIZE, 0);
 			if (num_bytes == 0)
 			{
-				MUGGLE_INFO("disconnect");
+				MUGGLE_LOG_INFO("disconnect");
 				break;
 			}
 			else if (num_bytes == MUGGLE_SOCKET_ERROR)
@@ -123,12 +123,12 @@ void str_client_posix(FILE *fp, muggle_socket_t client)
 
 				char err_msg[1024] = {0};
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_ERROR("failed recv - %s", err_msg);
+				MUGGLE_LOG_ERROR("failed recv - %s", err_msg);
 				break;
 			}
 
 			recvbuf[num_bytes] = '\0';
-			MUGGLE_INFO(recvbuf);
+			MUGGLE_LOG_INFO(recvbuf);
 		}
 
 		if (FD_ISSET(MUGGLE_FILENO(fp), &rset))
@@ -147,11 +147,11 @@ void str_client_posix(FILE *fp, muggle_socket_t client)
 				{
 					char err_msg[1024] = { 0 };
 					muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-					MUGGLE_WARNING("failed send msg - %s", err_msg);
+					MUGGLE_LOG_WARNING("failed send msg - %s", err_msg);
 				}
 				else
 				{
-					MUGGLE_WARNING("send buffer full");
+					MUGGLE_LOG_WARNING("send buffer full");
 				}
 				break;
 			}
@@ -165,13 +165,13 @@ int main(int argc, char *argv[])
 	// initialize log
 	if (muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_INFO) != 0)
 	{
-		MUGGLE_ERROR("failed init log");
+		MUGGLE_LOG_ERROR("failed init log");
 		exit(EXIT_FAILURE);
 	}
 
 	if (argc != 4)
 	{
-		MUGGLE_ERROR("usage: %s <IP> <Port> <tcp|udp>", argv[0]);
+		MUGGLE_LOG_ERROR("usage: %s <IP> <Port> <tcp|udp>", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -194,13 +194,13 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		MUGGLE_ERROR("invalid socket peer type: %s", argv[3]);
+		MUGGLE_LOG_ERROR("invalid socket peer type: %s", argv[3]);
 		exit(EXIT_FAILURE);
 	}
 
 	if (peer.fd == MUGGLE_INVALID_SOCKET)
 	{
-		MUGGLE_ERROR("%s failed connect: %s:%s", argv[3], argv[1], argv[2]);
+		MUGGLE_LOG_ERROR("%s failed connect: %s:%s", argv[3], argv[1], argv[2]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
 		snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "unknown:unknown");
 	}
 
-	MUGGLE_INFO("%s connect %s", argv[3], straddr);
+	MUGGLE_LOG_INFO("%s connect %s", argv[3], straddr);
 
 #if MUGGLE_PLATFORM_WINDOWS
 	str_client_windows(stdin, peer.fd);

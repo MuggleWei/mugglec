@@ -182,7 +182,7 @@ void init_log()
 	);
 	if (ret != MUGGLE_OK)
 	{
-		MUGGLE_ERROR("failed init log rotating file handle with path: %s", file_path);
+		MUGGLE_LOG_ERROR("failed init log rotating file handle with path: %s", file_path);
 		return;
 	}
 	muggle_log_add_handle(&handle_rotating_file);
@@ -196,7 +196,7 @@ void destroy_log()
 muggle_thread_ret_t example_thread_output_idx(void *void_arg)
 {
 	int idx = (int)(intptr_t)void_arg;
-	MUGGLE_INFO("info: %d", idx);
+	MUGGLE_LOG_INFO("info: %d", idx);
 	return 0;
 }
 
@@ -215,11 +215,11 @@ void example_default()
 	MUGGLE_DEBUG_WARNING("debug warning");
 	MUGGLE_ASSERT_MSG(1 == 1, "assert message");
 
-	MUGGLE_TRACE("trace");
-	MUGGLE_INFO("info");
-	MUGGLE_WARNING("warning");
-	MUGGLE_ERROR("error");
-	MUGGLE_FATAL("fatal, core dump when debug");
+	MUGGLE_LOG_TRACE("trace");
+	MUGGLE_LOG_INFO("info");
+	MUGGLE_LOG_WARNING("warning");
+	MUGGLE_LOG_ERROR("error");
+	MUGGLE_LOG_FATAL("fatal, core dump when debug");
 
 	for (int i = 0; i < 8; ++i)
 	{
