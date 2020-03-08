@@ -6,6 +6,7 @@
  */
 
 #include "parity.h"
+#include <stdio.h>
 
 static const unsigned char s_odd_parity[256] = {
 	1, 1, 2, 2, 4, 4, 7, 7, 8, 8, 11, 11, 13, 13, 14, 14,
@@ -89,13 +90,13 @@ void output_even_parity()
 	muggle_parity_gen(0x00);
 }
 
-bool muggle_parity_check_odd(unsigned char b)
+int muggle_parity_check_odd(unsigned char b)
 {
-	return b == s_odd_parity[b];
+	return b == s_odd_parity[b] ? 1 : 0;
 }
-bool muggle_parity_check_even(unsigned char b)
+int muggle_parity_check_even(unsigned char b)
 {
-	return b == s_even_parity[b];
+	return b == s_even_parity[b] ? 1 : 0;
 }
 
 unsigned char muggle_parity_set_odd(unsigned char b)

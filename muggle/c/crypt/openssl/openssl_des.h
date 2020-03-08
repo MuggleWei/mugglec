@@ -16,7 +16,7 @@
 #ifndef MUGGLE_C_OPENSSL_DES_H_
 #define MUGGLE_C_OPENSSL_DES_H_
 
-#include "muggle/c/muggle_c.h"
+#include "muggle/c/base/macro.h"
 #include "muggle/c/crypt/crypt_utils.h"
 
 EXTERN_C_BEGIN

@@ -6,44 +6,47 @@
  */
 
 #include "des.h"
+#include <stddef.h>
+#include "muggle/c/base/utils.h"
+#include "muggle/c/log/log.h"
 #include "openssl/openssl_des.h"
 
 // default callbacks
-static int des_default_ip(muggle_64bit_block_t *block)
+int des_default_ip(muggle_64bit_block_t *block)
 {
 	MUGGLE_OPENSSL_DES_IP(block->u32.l, block->u32.h);
 	return 0;
 }
-static int des_default_fp(muggle_64bit_block_t *block)
+int des_default_fp(muggle_64bit_block_t *block)
 {
 	MUGGLE_OPENSSL_DES_FP(block->u32.l, block->u32.h);
 	return 0;
 }
-static int des_default_gen_subkey(const muggle_64bit_block_t *key, muggle_des_subkeys_t *ks)
+int des_default_gen_subkey(const muggle_64bit_block_t *key, muggle_des_subkeys_t *ks)
 {
 	muggle_openssl_des_set_key_unchecked((unsigned char*)(&key->bytes[0]), ks);
 	return 0;
 }
-static muggle_64bit_block_t des_default_ep(uint32_t r)
+muggle_64bit_block_t des_default_ep(uint32_t r)
 {
 	muggle_64bit_block_t block;
 	block.u32.l = r;
 	block.u32.h = r;
 	return block;
 }
-static uint32_t des_default_sbox(muggle_64bit_block_t v)
+uint32_t des_default_sbox(muggle_64bit_block_t v)
 {
 	return muggle_openssl_des_sbox(v);
 }
 
-static muggle_des_cb_t des_default_encrypt_callbacks = {
+muggle_des_cb_t des_default_encrypt_callbacks = {
 	des_default_ip,
 	des_default_fp,
 	des_default_gen_subkey,
 	des_default_ep,
 	des_default_sbox
 };
-static muggle_des_cb_t des_default_decrypt_callbacks = {
+muggle_des_cb_t des_default_decrypt_callbacks = {
 	des_default_fp,
 	des_default_ip,
 	des_default_gen_subkey,
@@ -196,7 +199,7 @@ int muggle_des_cipher(
 
 	if (ROUND_UP_POW_OF_2_MUL(num_bytes, 8) != num_bytes)
 	{
-		MUGGLE_LOG_ERROR("DES with ECB mode failed: input bytes is not multiple of 8");
+		MUGGLE_LOG_ERROR("DES cipher failed: input bytes is not multiple of 8");
 		return -1;
 	}
 	size_t len = num_bytes / 8;
@@ -215,7 +218,7 @@ int muggle_des_cipher(
 
 	if (ret != 0)
 	{
-		MUGGLE_LOG_ERROR("DES with CBC mode failed, failed gen subkey");
+		MUGGLE_LOG_ERROR("DES cipher failed, failed gen subkey");
 		return -1;
 	}
 
@@ -228,9 +231,13 @@ int muggle_des_ecb(
 {
 	int ret = 0;
 	size_t len = num_bytes / 8, offset = 0;
+	muggle_64bit_block_t *input_block, *output_block;
 	for (size_t i = 0; i < len; ++i)
 	{
-		ret = muggle_des_crypt(enc, (muggle_64bit_block_t*)(input+offset), (muggle_64bit_block_t*)(output+offset), ks, callbacks);
+		input_block = (muggle_64bit_block_t*)(input + offset);
+		output_block = (muggle_64bit_block_t*)(output + offset);
+
+		ret = muggle_des_crypt(enc, input_block, output_block, ks, callbacks);
 		if (ret != 0)
 		{
 			MUGGLE_LOG_ERROR("DES ECB crypt failed");

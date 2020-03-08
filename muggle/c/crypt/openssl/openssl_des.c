@@ -14,6 +14,7 @@
  * */
 
 #include "openssl_des.h"
+#include <string.h>
 #include "muggle/c/crypt/des.h"
 #include "muggle/c/crypt/parity.h"
 

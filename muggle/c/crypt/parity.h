@@ -8,7 +8,7 @@
 #ifndef MUGGLE_C_PARITY_H_
 #define MUGGLE_C_PARITY_H_
 
-#include "muggle/c/muggle_c.h"
+#include "muggle/c/base/macro.h"
 
 EXTERN_C_BEGIN
 
@@ -24,12 +24,13 @@ void muggle_output_even_parity();
 
 /*
  * parity check
+ * RETURN: 1 - check success, 0 - check failed
  * */
 MUGGLE_CC_EXPORT
-bool muggle_parity_check_odd(unsigned char b);
+int muggle_parity_check_odd(unsigned char b);
 
 MUGGLE_CC_EXPORT
-bool muggle_parity_check_even(unsigned char b);
+int muggle_parity_check_even(unsigned char b);
 
 /*
  * set parity

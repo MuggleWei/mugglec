@@ -72,5 +72,6 @@
 #include "muggle/c/crypt/crypt_utils.h"
 #include "muggle/c/crypt/parity.h"
 #include "muggle/c/crypt/des.h"
+#include "muggle/c/crypt/tdes.h"
 
 #endif
