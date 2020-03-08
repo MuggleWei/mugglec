@@ -70,12 +70,19 @@ int muggle_des_crypt(
 	muggle_des_cb_t *callbacks);
 
 /*
- * DES encrypt/decrypt in ECB mode
+ * DES encrypt/decrypt in mode
+ * @mode: block cipher mode, use MUGGLE_BLOCK_CIPHER_MODE_*
  * @enc: MUGGLE_ENCRYPT - encrypt input, MUGGLE_DECRYPT - decrypt input
  * @input: plaintext bytes
  * @output: ciphertext bytes
  * @num_bytes: length of input/output bytes
  * @key: key
+ * @iv: initialization vector;
+ * 	ECB: doesn't make sense in ECB mode
+ * 	CTR: equal to init counter values
+ * @update_iv: 1 - update, 0 - don't update;
+ *  ECB: doesn't make sense in ECB mode
+ *  CTR: whether CTR need update counter values
  * @callbacks: if NULL, use default callbacks
  * RETURN: 
  *  return 0 on success, otherwise failed
@@ -83,31 +90,8 @@ int muggle_des_crypt(
  * NOTE: Don't use ECB mode in product environment
  * */
 MUGGLE_CC_EXPORT
-int muggle_des_ecb(
-	int enc,
-	const unsigned char *input,
-	unsigned char *output,
-	unsigned int num_bytes,
-	muggle_des_key_block key,
-	muggle_des_cb_t *callbacks);
-
-/*
- * DES encrypt/decrypt in CBC mode
- * @enc: 1 - encrypt, 0 - decrypt
- * @input: plaintext block
- * @output: ciphertext block
- * @num_bytes: length of input/output bytes
- * @key: key
- * @iv: initialization vector
- * @update_iv: 1 - update, 0 - don't update
- * @callbacks: if NULL, use default callbacks
- * RETURN: 
- *  return 0 on success, otherwise failed
- *
- * NOTE: Don't use ECB mode in product environment
- * */
-MUGGLE_CC_EXPORT
-int muggle_des_cbc(
+int muggle_des_cipher(
+	int mode,
 	int enc,
 	const unsigned char *input,
 	unsigned char *output,

@@ -23,7 +23,7 @@ void example_des_block()
 		plaintext.bytes[i] = 0x01 << i;
 		// plaintext.bytes[i] = rand() % 256;
 	}
-	printf("plaintext: ");
+	printf("input plaintext: ");
 	muggle_output_hex(plaintext.bytes, 8, 0);
 
 	// encrypt
@@ -39,10 +39,14 @@ void example_des_block()
 	muggle_output_hex(plaintext.bytes, 8, 0);
 }
 
-void example_des_cbc()
+const char *block_cipher_mode_names[] = {
+	"ECB", "CBC", "CFB", "OFB", "CTR"
+};
+
+void example_des_cipher(int mode)
 {
 	printf("============================\n");
-	printf("DES encrypt/decrypt CBC mode\n");
+	printf("DES encrypt/decrypt %s mode\n", block_cipher_mode_names[mode]);
 
 	// key
 	muggle_des_key_block key;
@@ -66,36 +70,38 @@ void example_des_cbc()
 
 	for (int i = 0; i < cnt; ++i)
 	{
+		// input[i] = (unsigned char)(rand() % 256);
 		input[i] = (unsigned char)('a' + i);
 	}
-	printf("plaintext: ");
+	printf("input plaintext: ");
 	muggle_output_hex(input, space, 0);
 
 	// des with cbc encrypt
-	if (muggle_des_cbc(MUGGLE_ENCRYPT, input, output, space, key, &iv, 1, NULL) != 0)
+	if (muggle_des_cipher(mode, MUGGLE_ENCRYPT, input, output, space, key, &iv, 1, NULL) != 0)
 	{
-		MUGGLE_LOG_ERROR("failed DES encryption with CBC mode");
+		MUGGLE_LOG_ERROR("failed DES encryption with %s mode", block_cipher_mode_names[mode]);
 		free(input);
 		free(output);
 		free(plaintext);
 		return;
 	}
-	printf("ciphertext: ");
+
+	printf("encryption ciphertext: ");
 	muggle_output_hex(output, space, 0);
 	printf("return iv: ");
 	muggle_output_hex((unsigned char*)iv.bytes, 8, 0);
 
 	// des with cbc decrypt
 	iv.u64 = 688888;
-	if (muggle_des_cbc(MUGGLE_DECRYPT, output, plaintext, space, key, &iv, 1, NULL) != 0)
+	if (muggle_des_cipher(mode, MUGGLE_DECRYPT, output, plaintext, space, key, &iv, 1, NULL) != 0)
 	{
-		MUGGLE_LOG_ERROR("failed DES decryption with CBC mode");
+		MUGGLE_LOG_ERROR("failed DES decryption with %s mode", block_cipher_mode_names[mode]);
 		free(input);
 		free(output);
 		free(plaintext);
 		return;
 	}
-	printf("return plaintext: ");
+	printf("decryption plaintext: ");
 	muggle_output_hex(plaintext, space, 0);
 	printf("return iv: ");
 	muggle_output_hex((unsigned char*)iv.bytes, 8, 0);
@@ -119,8 +125,12 @@ int main()
 	// crypt single block
 	example_des_block();
 
-	// cbc mode
-	example_des_cbc();
+	// encrypt/decrypt plaintext
+	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_ECB);
+	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_CBC);
+	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_CFB);
+	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_OFB);
+	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_CTR);
 
 	return 0;
 }
