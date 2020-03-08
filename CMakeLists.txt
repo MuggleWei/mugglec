@@ -27,9 +27,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/muggle_utils.cmake)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # options
-option(MUGGLE_BUILD_ONLY_C "Only build muggle c lib" OFF)
+set(MUGGLE_BUILD_ONLY_C ON)
+# option(MUGGLE_BUILD_ONLY_C "Only build muggle c lib" OFF) # deprecate all cpp file
 option(MUGGLE_BUILD_TRACE "If build type is debug then build with trace info in source codes" OFF)
-option(MUGGLE_BUILD_SHARED_LIB ON)
+option(MUGGLE_BUILD_SHARED_LIB ON "build shared or static library")
 option(MUGGLE_BUILD_EXAMPLE "Build muggleCC example" OFF)
 option(MUGGLE_BUILD_TESTING "Build muggleCC test" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build muggleCC benchmark" OFF)
@@ -52,16 +53,24 @@ include_directories(
 )
 
 if (${MUGGLE_BUILD_ONLY_C})
-	muggle_add_project(muggleC ${CMAKE_CURRENT_LIST_DIR}/muggle/c ${MUGGLE_LIB_TYPE})
-	set_target_properties(muggleC PROPERTIES 
+	# muggle_add_project(muggleC ${CMAKE_CURRENT_LIST_DIR}/muggle/c ${MUGGLE_LIB_TYPE})
+	# set_target_properties(muggleC PROPERTIES 
+	# 	LINKER_LANGUAGE C
+	# )
+	# set(muggle_cc muggleC) 
+	# target_compile_definitions(${muggle_cc}	PUBLIC MUGGLE_BUILD_C_ONLY)
+
+	set(muggle_cc muggleCC)
+	muggle_add_project(${muggle_cc} ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
+	set_target_properties(${muggle_cc} PROPERTIES 
 		LINKER_LANGUAGE C
 	)
-	set(muggle_cc muggleC) 
 	target_compile_definitions(${muggle_cc}	PUBLIC MUGGLE_BUILD_C_ONLY)
 else()
-	muggle_add_project(muggleCC ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
-	set(muggle_cc muggleCC)
-	target_compile_definitions(${muggle_cc} PUBLIC MUGGLE_BUILD_CC)
+	# deprecated all cpp sources
+	# muggle_add_project(muggleCC ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
+	# set(muggle_cc muggleCC)
+	# target_compile_definitions(${muggle_cc} PUBLIC MUGGLE_BUILD_CC)
 endif()
 
 if (${MUGGLE_BUILD_TRACE})

@@ -9,6 +9,6 @@
 #define MUGGLE_CC_H_
 
 #include "muggle/c/muggle_c.h"
-#include "muggle/cpp/muggle_cpp.h"
+// #include "muggle/cpp/muggle_cpp.h"
 
 #endif
