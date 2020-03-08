@@ -16,6 +16,7 @@ EXTERN_C_BEGIN
 #define IS_POW_OF_2(x)             (!((x)&((x)-1)))
 #define ROUND_UP_POW_OF_2_MUL(x,n) (((x)+(n)-1)&~((n)-1))
 
+MUGGLE_CC_EXPORT
 uint64_t next_pow_of_2(uint64_t x);
 
 EXTERN_C_END

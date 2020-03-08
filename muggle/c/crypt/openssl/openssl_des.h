@@ -108,18 +108,21 @@ struct muggle_des_subkeys;
  * 	return -1 if key parity error
  * 	return -2 if illegal weak key
  * */
+MUGGLE_CC_EXPORT
 int muggle_openssl_des_set_key_checked(unsigned char *key, struct muggle_des_subkeys *ks);
 
 /*
  * equal to openssl - DES_set_key_unchecked
  * @key: 64bit char array
  * */
+MUGGLE_CC_EXPORT
 void muggle_openssl_des_set_key_unchecked(unsigned char *key, struct muggle_des_subkeys *ks);
 
 /*
  * equal to openssl - D_ENCRYPT after first sentence
  * @block: (extend r) xor subkey
  * */
+MUGGLE_CC_EXPORT
 uint32_t muggle_openssl_des_sbox(muggle_64bit_block_t block);
 
 EXTERN_C_END

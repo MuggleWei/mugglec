@@ -77,7 +77,7 @@ TEST(baseutils, round_pow_of_2)
 		{
 			uint32_t x = ROUND_UP_POW_OF_2_MUL(i,0x01<<j);
 			EXPECT_EQ(x % 0x01<<j, 0);
-			EXPECT_LT(x-i, 0x01<<j);
+			EXPECT_LT(x-i, (uint32_t)0x01<<j);
 		}
 	}
 }

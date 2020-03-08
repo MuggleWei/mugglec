@@ -66,10 +66,14 @@ typedef union muggle_32bit_block
    56 57 58 59 60 61 62 63      56 33 58 59 60 61 62 63
 
 */
+MUGGLE_CC_EXPORT
 void muggle_8x8bit_rotate_row(muggle_64bit_block_t *block, int row_idx, unsigned int step);
+
+MUGGLE_CC_EXPORT
 void muggle_8x8bit_rotate_col(muggle_64bit_block_t *block, int col_idx, unsigned int step);
 
 // for debug
+MUGGLE_CC_EXPORT
 void muggle_output_hex(unsigned char *bytes, unsigned int len, int bytes_per_line);
 
 EXTERN_C_END

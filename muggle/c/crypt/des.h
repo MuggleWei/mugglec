@@ -61,6 +61,7 @@ typedef struct muggle_des_callbacks
  * @ks: sub key schedule
  * @callbacks: DES callback functions, if NULL, use default callbacks(compatible with openssl)
  * */
+MUGGLE_CC_EXPORT
 int muggle_des_crypt(
 	int enc,
 	const muggle_64bit_block_t *input,
@@ -81,6 +82,7 @@ int muggle_des_crypt(
  *
  * NOTE: Don't use ECB mode in product environment
  * */
+MUGGLE_CC_EXPORT
 int muggle_des_ecb(
 	int enc,
 	const unsigned char *input,
@@ -104,6 +106,7 @@ int muggle_des_ecb(
  *
  * NOTE: Don't use ECB mode in product environment
  * */
+MUGGLE_CC_EXPORT
 int muggle_des_cbc(
 	int enc,
 	const unsigned char *input,
