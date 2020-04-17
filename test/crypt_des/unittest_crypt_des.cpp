@@ -51,6 +51,42 @@ void crypt_des_test(int mode)
 	}
 }
 
+TEST(crypt_des, block_size)
+{
+	muggle_64bit_block_t block;
+	ASSERT_EQ(sizeof(block), 8);
+}
+
+void test_crypt_des_bit_perm(unsigned int from, unsigned int to)
+{
+	muggle_64bit_block_t in;
+	muggle_64bit_block_t out;
+
+	// the bit need offset
+	memset(&in, 0, sizeof(in));
+	in.u64 = 0x01LLU << from;
+	muggle_des_ip(&in, &out);
+	ASSERT_EQ(out.u64, 0x01LLU << to);
+}
+
+TEST(crypt_des, IP)
+{
+	uint32_t ip_table[] = {
+		58, 50, 42, 34, 26, 18, 10, 2,
+		60, 52, 44, 36, 28, 20, 12, 4,
+		62, 54, 46, 38, 30, 22, 14, 6,
+		64, 56, 48, 40, 32, 24, 16, 8,
+		57, 49, 41, 33, 25, 17, 9,  1,
+		59, 51, 43, 35, 27, 19, 11, 3,
+		61, 53, 45, 37, 29, 21, 13, 5,
+		63, 55, 47, 39, 31, 23, 15, 7
+	};
+	for (uint32_t i = 0; i < sizeof(ip_table) / sizeof(ip_table[0]); i++)
+	{
+		test_crypt_des_bit_perm(ip_table[i]-1, i);
+	}
+}
+
 TEST(crypt_des, ecb)
 {
 	crypt_des_test(MUGGLE_BLOCK_CIPHER_MODE_ECB);

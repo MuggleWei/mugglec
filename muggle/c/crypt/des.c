@@ -7,6 +7,7 @@
 
 #include "des.h"
 #include <stddef.h>
+#include <string.h>
 #include "muggle/c/base/utils.h"
 #include "muggle/c/log/log.h"
 #include "openssl/openssl_des.h"
@@ -37,6 +38,37 @@ muggle_64bit_block_t des_default_ep(uint32_t r)
 uint32_t des_default_sbox(muggle_64bit_block_t v)
 {
 	return muggle_openssl_des_sbox(v);
+}
+
+/*
+ * bit permutation in 64bits array to 32bits array
+ * */
+#define MOVE_BIT_64TO32(in, from, to) (((uint32_t)((in_bytes[(from)/8])>>(from%8))&0x01)<<to)
+
+void muggle_des_ip(const muggle_64bit_block_t *in, muggle_64bit_block_t *out)
+{
+	memset(out, 0, sizeof(muggle_64bit_block_t));
+
+	// move bit one by one
+	const unsigned char *in_bytes = in->bytes;
+	out->u32.l =
+		MOVE_BIT_64TO32(in_bytes, 57, 0)  | MOVE_BIT_64TO32(in_bytes, 49, 1)  | MOVE_BIT_64TO32(in_bytes, 41, 2)  | MOVE_BIT_64TO32(in_bytes, 33, 3)  |
+		MOVE_BIT_64TO32(in_bytes, 25, 4)  | MOVE_BIT_64TO32(in_bytes, 17, 5)  | MOVE_BIT_64TO32(in_bytes, 9, 6)   | MOVE_BIT_64TO32(in_bytes, 1, 7)   |
+		MOVE_BIT_64TO32(in_bytes, 59, 8)  | MOVE_BIT_64TO32(in_bytes, 51, 9)  | MOVE_BIT_64TO32(in_bytes, 43, 10) | MOVE_BIT_64TO32(in_bytes, 35, 11) |
+		MOVE_BIT_64TO32(in_bytes, 27, 12) | MOVE_BIT_64TO32(in_bytes, 19, 13) | MOVE_BIT_64TO32(in_bytes, 11, 14) | MOVE_BIT_64TO32(in_bytes, 3, 15)  |
+		MOVE_BIT_64TO32(in_bytes, 61, 16) | MOVE_BIT_64TO32(in_bytes, 53, 17) | MOVE_BIT_64TO32(in_bytes, 45, 18) | MOVE_BIT_64TO32(in_bytes, 37, 19) |
+		MOVE_BIT_64TO32(in_bytes, 29, 20) | MOVE_BIT_64TO32(in_bytes, 21, 21) | MOVE_BIT_64TO32(in_bytes, 13, 22) | MOVE_BIT_64TO32(in_bytes, 5, 23)  |
+		MOVE_BIT_64TO32(in_bytes, 63, 24) | MOVE_BIT_64TO32(in_bytes, 55, 25) | MOVE_BIT_64TO32(in_bytes, 47, 26) | MOVE_BIT_64TO32(in_bytes, 39, 27) |
+		MOVE_BIT_64TO32(in_bytes, 31, 28) | MOVE_BIT_64TO32(in_bytes, 23, 29) | MOVE_BIT_64TO32(in_bytes, 15, 30) | MOVE_BIT_64TO32(in_bytes, 7, 31);
+	out->u32.h =
+		MOVE_BIT_64TO32(in_bytes, 56, 0)  | MOVE_BIT_64TO32(in_bytes, 48, 1)  | MOVE_BIT_64TO32(in_bytes, 40, 2)  | MOVE_BIT_64TO32(in_bytes, 32, 3)  |
+		MOVE_BIT_64TO32(in_bytes, 24, 4)  | MOVE_BIT_64TO32(in_bytes, 16, 5)  | MOVE_BIT_64TO32(in_bytes, 8, 6)   | MOVE_BIT_64TO32(in_bytes, 0, 7)   |
+		MOVE_BIT_64TO32(in_bytes, 58, 8)  | MOVE_BIT_64TO32(in_bytes, 50, 9)  | MOVE_BIT_64TO32(in_bytes, 42, 10) | MOVE_BIT_64TO32(in_bytes, 34, 11) |
+		MOVE_BIT_64TO32(in_bytes, 26, 12) | MOVE_BIT_64TO32(in_bytes, 18, 13) | MOVE_BIT_64TO32(in_bytes, 10, 14) | MOVE_BIT_64TO32(in_bytes, 2, 15)  |
+		MOVE_BIT_64TO32(in_bytes, 60, 16) | MOVE_BIT_64TO32(in_bytes, 52, 17) | MOVE_BIT_64TO32(in_bytes, 44, 18) | MOVE_BIT_64TO32(in_bytes, 36, 19) |
+		MOVE_BIT_64TO32(in_bytes, 28, 20) | MOVE_BIT_64TO32(in_bytes, 20, 21) | MOVE_BIT_64TO32(in_bytes, 12, 22) | MOVE_BIT_64TO32(in_bytes, 4, 23)  |
+		MOVE_BIT_64TO32(in_bytes, 62, 24) | MOVE_BIT_64TO32(in_bytes, 54, 25) | MOVE_BIT_64TO32(in_bytes, 46, 26) | MOVE_BIT_64TO32(in_bytes, 38, 27) |
+		MOVE_BIT_64TO32(in_bytes, 30, 28) | MOVE_BIT_64TO32(in_bytes, 22, 29) | MOVE_BIT_64TO32(in_bytes, 14, 30) | MOVE_BIT_64TO32(in_bytes, 6, 31);
 }
 
 muggle_des_cb_t des_default_encrypt_callbacks = {
