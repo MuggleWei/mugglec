@@ -49,7 +49,6 @@ typedef union muggle_32bit_block
 	}u16;
 }muggle_32bit_block_t;
 
-
 /*
 
    image a 8x8 matrix like Rubik's cube, rotate row and column's
