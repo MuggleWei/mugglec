@@ -85,6 +85,9 @@ void muggle_8x8bit_rotate_col(muggle_64bit_block_t *block, int col_idx, unsigned
 MUGGLE_CC_EXPORT
 void muggle_output_hex(unsigned char *bytes, unsigned int len, int bytes_per_line);
 
+MUGGLE_CC_EXPORT
+void muggle_output_bin(unsigned char *bytes, unsigned int row, unsigned int col);
+
 EXTERN_C_END
 
 #endif

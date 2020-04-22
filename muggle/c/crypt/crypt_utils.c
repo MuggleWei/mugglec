@@ -37,3 +37,16 @@ void muggle_output_hex(unsigned char *bytes, unsigned int len, int bytes_per_lin
 	}
 	printf("\n");
 }
+void muggle_output_bin(unsigned char *bytes, unsigned int row, unsigned int col)
+{
+	unsigned int val = 0;
+	for (unsigned int i = 0; i < row; ++i)
+	{
+		for (unsigned int j = 0; j < col; ++j)
+		{
+			val = (0x01<<j) & bytes[i];
+			printf("%u ", val == 0 ? 0 : 1);
+		}
+		printf("\n");
+	}
+}
