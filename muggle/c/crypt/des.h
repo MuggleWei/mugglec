@@ -13,10 +13,11 @@
 
 EXTERN_C_BEGIN
 
-typedef struct muggle_des_subkey
+typedef struct muggle_des_48bit
 {
 	unsigned char bytes[8];
-}muggle_des_subkey_t;
+}muggle_des_48bit_t;
+typedef struct muggle_des_48bit muggle_des_subkey_t;
 
 typedef struct muggle_des_subkeys
 {

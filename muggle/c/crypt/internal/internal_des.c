@@ -150,7 +150,7 @@ void muggle_des_fp(const muggle_64bit_block_t *in, muggle_64bit_block_t *out)
 	);
 }
 
-void muggle_des_expand(const muggle_32bit_block_t *in, muggle_des_subkey_t *out)
+void muggle_des_expand(const muggle_32bit_block_t *in, muggle_des_48bit_t *out)
 {
 	/*
 	 * Expand Permutation

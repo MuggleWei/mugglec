@@ -49,7 +49,7 @@ void muggle_des_fp(const muggle_64bit_block_t *in, muggle_64bit_block_t *out);
  * @out: 48bits in 8 bytes
  * */
 MUGGLE_CC_EXPORT
-void muggle_des_expand(const muggle_32bit_block_t *in, muggle_des_subkey_t *out);
+void muggle_des_expand(const muggle_32bit_block_t *in, muggle_des_48bit_t *out);
 
 /*
  * DES S-Box
@@ -57,7 +57,7 @@ void muggle_des_expand(const muggle_32bit_block_t *in, muggle_des_subkey_t *out)
  * @out: 4bit x 8 output
  * */
 MUGGLE_CC_EXPORT
-void muggle_des_sbox(const muggle_des_subkey_t *in, muggle_des_subkey_t *out);
+void muggle_des_sbox(const muggle_des_subkey_t *in, muggle_des_48bit_t *out);
 
 /*
  * DES P permutation
@@ -86,7 +86,7 @@ void muggle_des_pc1(const muggle_64bit_block_t *in, muggle_64bit_block_t *out);
 /*
  * DES PC-2
  * @k: contain 28bit in k->u32.l and 28bit in k->u32.h
- * @sk: output sub key
+ * @sk: output smuggle_des_subkey_t ub key
  * */
 MUGGLE_CC_EXPORT
 void muggle_des_pc2(muggle_64bit_block_t *k, muggle_des_subkey_t *sk);
