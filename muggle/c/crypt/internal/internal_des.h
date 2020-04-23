@@ -14,10 +14,12 @@
 
 EXTERN_C_BEGIN
 
+#define MUGGLE_CRYPT_DES_DEBUG 0
+
 /*
  * move single bit
  * */
-#define MOVE_SINGLE_BIT(in, from, to) ((((in)>>from)&0x01)<<to)
+#define MOVE_SINGLE_BIT(in, from, to) ((((in)>>(from))&0x01)<<(to))
 
 /*
  * key shift

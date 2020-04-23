@@ -11,7 +11,7 @@
 #include "muggle/c/base/utils.h"
 #include "muggle/c/log/log.h"
 
-static uint32_t s_muggle_des_sbox_table[8][64] = {
+static const unsigned char s_muggle_des_sbox_table[8][64] = {
 	{
 		// S1
 		14, 4,  13, 1, 2,  15, 11, 8,  3,  10, 6,  12, 5,  9,  0, 7,
@@ -181,9 +181,8 @@ void muggle_des_sbox(const muggle_des_subkey_t *in, muggle_des_subkey_t *out)
 	for (int i = 0; i < 8; i++)
 	{
 		unsigned char b = in->bytes[i];
-		unsigned char row = (b & 0x01) + ((b >> 4) & 0x02);
-		unsigned char col = (b >> 1) & 0x0f;
-		out->bytes[i] = s_muggle_des_sbox_table[i][16 * row + col];
+		uint32_t idx = ((b & 0x020) | (b & 0x01) << 4) | ((b >> 1) & 0x0f);
+		out->bytes[i] = s_muggle_des_sbox_table[i][idx];
 	}
 }
 
@@ -208,12 +207,36 @@ void muggle_des_p(const muggle_32bit_block_t *in, muggle_32bit_block_t *out)
 	);
 }
 
+#if MUGGLE_CRYPT_DES_DEBUG
+void convert_48bit_to_4bytes(const muggle_des_subkey_t *sk, unsigned char *bytes)
+{
+	bytes[0] = ((sk->bytes[0] & 0x3f) | ((sk->bytes[1] << 6) & 0xc0));
+	bytes[1] = ((sk->bytes[1] >> 4) & 0x0f) | ((sk->bytes[2] << 4) & 0xf0);
+	bytes[2] = ((sk->bytes[2] >> 4) & 0x03) | ((sk->bytes[3] << 2) & 0xfc);
+	bytes[3] = ((sk->bytes[4] & 0x3f) | ((sk->bytes[5] << 6) & 0xc0));
+	bytes[4] = ((sk->bytes[5] >> 4) & 0x0f) | ((sk->bytes[6] << 4) & 0xf0);
+	bytes[5] = ((sk->bytes[6] >> 4) & 0x03) | ((sk->bytes[7] << 2) & 0xfc);
+}
+#endif
+
 void muggle_des_f(const muggle_32bit_block_t *in, const muggle_des_subkey_t *sk, muggle_32bit_block_t *out)
 {
 	muggle_des_subkey_t p;
 
+#if MUGGLE_CRYPT_DES_DEBUG
+	printf("input: ");
+	muggle_output_hex((unsigned char*)in->bytes, 4, 0);
+#endif
+
 	// Expand Permutation
 	muggle_des_expand(in, &p);
+
+#if MUGGLE_CRYPT_DES_DEBUG
+	unsigned char bytes[6];
+	convert_48bit_to_4bytes(&p, bytes);
+	printf("E: ");
+	muggle_output_hex(bytes, 6, 0);
+#endif
 
 	// XOR subkey
 	for (int i = 0; i < 8; i++)
@@ -221,20 +244,27 @@ void muggle_des_f(const muggle_32bit_block_t *in, const muggle_des_subkey_t *sk,
 		p.bytes[i] = p.bytes[i] ^ sk->bytes[i];
 	}
 
+#if MUGGLE_CRYPT_DES_DEBUG
+	convert_48bit_to_4bytes(&p, bytes);
+	printf("XOR key: ");
+	muggle_output_hex(bytes, 6, 0);
+#endif
+
 	// S-Box Permutation
 	muggle_des_sbox(&p, &p);
 
-	const unsigned char *in_bytes = in->bytes;
+#if MUGGLE_CRYPT_DES_DEBUG
+	printf("sbox: ");
+	muggle_output_hex(p.bytes, 8, 0);
+#endif
+
+
+	const unsigned char *in_bytes = p.bytes;
 	muggle_32bit_block_t u32_block;
-	u32_block.u32 =
-		((uint32_t)in_bytes[0]         & 0x0000000f) |
-		(((uint32_t)in_bytes[1] << 4)  & 0x000000f0) |
-		(((uint32_t)in_bytes[2] << 8)  & 0x00000f00) |
-		(((uint32_t)in_bytes[3] << 12) & 0x0000f000) |
-		(((uint32_t)in_bytes[4] << 16) & 0x000f0000) |
-		(((uint32_t)in_bytes[5] << 20) & 0x00f00000) |
-		(((uint32_t)in_bytes[6] << 24) & 0x0f000000) |
-		(((uint32_t)in_bytes[7] << 28) & 0xf0000000);
+	u32_block.bytes[0] = (p.bytes[0] & 0x0f) | ((p.bytes[1] << 4) & 0xf0);
+	u32_block.bytes[1] = (p.bytes[2] & 0x0f) | ((p.bytes[3] << 4) & 0xf0);
+	u32_block.bytes[2] = (p.bytes[4] & 0x0f) | ((p.bytes[5] << 4) & 0xf0);
+	u32_block.bytes[3] = (p.bytes[6] & 0x0f) | ((p.bytes[7] << 4) & 0xf0);
 
 	// P permutation
 	muggle_des_p(&u32_block, out);

@@ -44,13 +44,14 @@ void muggle_des_gen_subkeys(const muggle_64bit_block_t *key, muggle_des_subkeys_
 	// PC-1
 	muggle_des_pc1(key, &out);
 
-	// testxxx
+#if MUGGLE_CRYPT_DES_DEBUG
 	printf("PC-1 C:");
 	muggle_output_hex(&out.bytes[0], 4, 0);
 	muggle_output_bin(&out.bytes[0], 4, 8);
 	printf("PC-1 D:");
 	muggle_output_hex(&out.bytes[4], 4, 0);
 	muggle_output_bin(&out.bytes[4], 4, 8);
+#endif
 
 	const int key_round_shift[16] = {
 		1, 1, 2, 2,
@@ -92,38 +93,37 @@ int muggle_des_crypt(
 		// IP
 		muggle_des_ip(input, &b64);
 
-		// testxxx
+#if MUGGLE_CRYPT_DES_DEBUG
 		printf("IP: ");
 		muggle_output_hex(b64.bytes, 8, 0);
+#endif
 
 		// Feistel, 16 rounds
 		for (int i = 0; i < 16; ++i)
 		{
+#if MUGGLE_CRYPT_DES_DEBUG
+			printf("feistel[%d]: ", i);
+			muggle_output_hex(b64.bytes, 8, 0);
+#endif
+
 			muggle_32bit_block_t *r = (muggle_32bit_block_t*)&b64.u32.h;
 			muggle_des_f(r, &ks->sk[i], &b32);
 			tmp = b64.u32.l ^ b32.u32;
 			b64.u32.l = b64.u32.h;
 			b64.u32.h = tmp;
-
-			// testxxx
-			printf("feistel[%d]: ", i);
-			muggle_output_hex(b64.bytes, 8, 0);
 		}
+
+#if MUGGLE_CRYPT_DES_DEBUG
+		printf("feistel[16]: ");
+		muggle_output_hex(b64.bytes, 8, 0);
+#endif
 
 		// FP
 		tmp = b64.u32.l;
 		b64.u32.l = b64.u32.h;
 		b64.u32.h = tmp;
 
-		// testxxx
-		printf("last swap: ");
-		muggle_output_hex(b64.bytes, 8, 0);
-
 		muggle_des_fp(&b64, output);
-
-		// testxxx
-		printf("FP: ");
-		muggle_output_hex(output->bytes, 8, 0);
 	}
 
 	return 0;

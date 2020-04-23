@@ -29,16 +29,15 @@ void example_des_block()
 	key.u64 = 0;
 	printf("key: ");
 	muggle_output_hex((unsigned char*)key.bytes, 8, 0);
-	muggle_output_bin((unsigned char*)key.bytes, 8, 8);
 
 	// generate subkey
 	muggle_des_subkeys_t ks;
 	muggle_des_gen_subkeys(&key, &ks);
-	for (int i = 0; i < 16; i++)
-	{
-		printf("sk[%d]: ", i);
-		output_subkey(&ks.sk[i]);
-	}
+	// for (int i = 0; i < 16; i++)
+	// {
+	// 	printf("sk[%d]: ", i);
+	// 	output_subkey(&ks.sk[i]);
+	// }
 
 	// plaintext block
 	muggle_64bit_block_t plaintext;
@@ -47,6 +46,8 @@ void example_des_block()
 		plaintext.bytes[i] = 0x01 << i;
 		// plaintext.bytes[i] = rand() % 256;
 	}
+	plaintext.u64 = 0x01llu << 57;
+
 	printf("input plaintext: ");
 	muggle_output_hex(plaintext.bytes, 8, 0);
 
@@ -55,6 +56,7 @@ void example_des_block()
 	muggle_des_crypt(MUGGLE_ENCRYPT, &plaintext, &ks, &ciphertext);
 	printf("encryption ciphertext: ");
 	muggle_output_hex(ciphertext.bytes, 8, 0);
+	muggle_output_bin(ciphertext.bytes, 8, 8);
 
 //	// decrypt
 //	memset(&plaintext, 0, sizeof(plaintext));

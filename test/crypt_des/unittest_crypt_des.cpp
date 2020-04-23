@@ -181,7 +181,7 @@ TEST(crypt_des, E)
 
 TEST(crypt_des, sbox)
 {
-	uint32_t sbox_table[8][64] = {
+	unsigned char sbox_table[8][64] = {
 		{
 			// S1
 			14, 4,  13, 1, 2,  15, 11, 8,  3,  10, 6,  12, 5,  9,  0, 7,
