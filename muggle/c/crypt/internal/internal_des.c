@@ -225,7 +225,7 @@ void muggle_des_f(const muggle_32bit_block_t *in, const muggle_des_subkey_t *sk,
 
 #if MUGGLE_CRYPT_DES_DEBUG
 	printf("input: ");
-	muggle_output_hex((unsigned char*)in->bytes, 4, 0);
+	muggle_output_hex(in->bytes, 4, 0);
 #endif
 
 	// Expand Permutation

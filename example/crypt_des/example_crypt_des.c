@@ -22,41 +22,42 @@ void example_des_block()
 	printf("============================\n");
 	printf("DES encrypt/decrypt single block\n");
 
-	// key
 	muggle_64bit_block_t key;
-	// key.u64 = 0xf125cce7abe32f7c;
-	// key.u64 = 0x8040201008040201llu;
-	key.u64 = 0;
-	printf("key: ");
-	muggle_output_hex((unsigned char*)key.bytes, 8, 0);
-
-	// generate subkey
 	muggle_des_subkeys_t ks;
-	muggle_des_gen_subkeys(&key, &ks);
-	// for (int i = 0; i < 16; i++)
-	// {
-	// 	printf("sk[%d]: ", i);
-	// 	output_subkey(&ks.sk[i]);
-	// }
+	muggle_64bit_block_t plaintext, ciphertext;
 
-	// plaintext block
-	muggle_64bit_block_t plaintext;
-	for (int i = 0; i < 8; ++i)
-	{
-		plaintext.bytes[i] = 0x01 << i;
-		// plaintext.bytes[i] = rand() % 256;
-	}
-	plaintext.u64 = 0x01llu << 57;
+	// key
+	key.u64 = 0;
+
+	// plaintext
+	// plaintext.u64 = 0x01llu << 57;
+	unsigned char bytes[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
+	memcpy(plaintext.bytes, bytes, 8);
+
+	printf("key: ");
+	muggle_output_hex(key.bytes, 8, 0);
 
 	printf("input plaintext: ");
 	muggle_output_hex(plaintext.bytes, 8, 0);
 
+	// encrypt genkey
+	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key, &ks);
+
 	// encrypt
-	muggle_64bit_block_t ciphertext;
-	muggle_des_crypt(MUGGLE_ENCRYPT, &plaintext, &ks, &ciphertext);
+	muggle_des_crypt(&plaintext, &ks, &ciphertext);
 	printf("encryption ciphertext: ");
 	muggle_output_hex(ciphertext.bytes, 8, 0);
 	muggle_output_bin(ciphertext.bytes, 8, 8);
+
+	// decrypt genkey
+	muggle_des_gen_subkeys(MUGGLE_DECRYPT, &key, &ks);
+
+	// decrypt
+	muggle_des_crypt(&ciphertext, &ks, &plaintext);
+	printf("decryption plaintext: ");
+	muggle_output_hex(plaintext.bytes, 8, 0);
+	muggle_output_bin(plaintext.bytes, 8, 8);
+
 
 //	// decrypt
 //	memset(&plaintext, 0, sizeof(plaintext));

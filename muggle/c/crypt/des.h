@@ -24,16 +24,21 @@ typedef struct muggle_des_subkeys
 	muggle_des_subkey_t sk[16];
 }muggle_des_subkeys_t;
 
-/*
+/**
  * DES key schedule
+ * @param mode: MUGGLE_DECRYPT or MUGGLE_ENCRYPT
+ * @param key: input key
+ * @param subkeys: output subkeys
  * */
 MUGGLE_CC_EXPORT
-void muggle_des_gen_subkeys(const muggle_64bit_block_t *key, muggle_des_subkeys_t *subkeys);
+void muggle_des_gen_subkeys(
+	int mode,
+	const muggle_64bit_block_t *key,
+	muggle_des_subkeys_t *subkeys);
 
 
 /*
  * DES encrypt/decrypt a single 64bit block
- * @enc: MUGGLE_ENCRYPT - encrypt input, MUGGLE_DECRYPT - decrypt input
  * @input: input block
  * @ks: sub key schedule
  * @output: output block
@@ -41,7 +46,6 @@ void muggle_des_gen_subkeys(const muggle_64bit_block_t *key, muggle_des_subkeys_
  * */
 MUGGLE_CC_EXPORT
 int muggle_des_crypt(
-	int enc,
 	const muggle_64bit_block_t *input,
 	const muggle_des_subkeys_t *ks,
 	muggle_64bit_block_t *output);

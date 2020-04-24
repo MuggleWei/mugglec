@@ -23,7 +23,7 @@ void muggle_8x8bit_rotate_col(muggle_64bit_block_t *block, int col_idx, unsigned
 	block->u64 = ((v << step) | (v >> (64 - step))) | (block->u64 & (~mask));
 }
 
-void muggle_output_hex(unsigned char *bytes, unsigned int len, int bytes_per_line)
+void muggle_output_hex(const unsigned char *bytes, unsigned int len, int bytes_per_line)
 {
 	int cnt = 0;
 	for (unsigned int i = 0; i < len; ++i)
@@ -37,7 +37,7 @@ void muggle_output_hex(unsigned char *bytes, unsigned int len, int bytes_per_lin
 	}
 	printf("\n");
 }
-void muggle_output_bin(unsigned char *bytes, unsigned int row, unsigned int col)
+void muggle_output_bin(const unsigned char *bytes, unsigned int row, unsigned int col)
 {
 	unsigned int val = 0;
 	for (unsigned int i = 0; i < row; ++i)
