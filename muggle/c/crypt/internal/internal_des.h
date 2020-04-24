@@ -26,6 +26,16 @@ EXTERN_C_BEGIN
  * */
 #define DES_KEY_SHIFT(in, shift, mask) (((in)<<(shift))|(((in)>>(28-(shift)))&(mask)))
 
+typedef int (*fn_muggle_des_cipher)(
+	int mode,
+	muggle_64bit_block_t key,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	muggle_64bit_block_t *iv,
+	int update_iv,
+	unsigned char *output
+);
+
 
 /*
  * DES Initial Permutation
@@ -90,6 +100,30 @@ void muggle_des_pc1(const muggle_64bit_block_t *in, muggle_64bit_block_t *out);
  * */
 MUGGLE_CC_EXPORT
 void muggle_des_pc2(muggle_64bit_block_t *k, muggle_des_subkey_t *sk);
+
+/*
+ * callbacks
+ * */
+int muggle_des_ecb(
+	int mode, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	muggle_64bit_block_t *iv, int update_iv, unsigned char *output);
+
+int muggle_des_cbc(
+	int mode, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	muggle_64bit_block_t *iv, int update_iv, unsigned char *output);
+
+int muggle_des_cfb(
+	int mode, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	muggle_64bit_block_t *iv, int update_iv, unsigned char *output);
+
+int muggle_des_ofb(
+	int mode, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	muggle_64bit_block_t *iv, int update_iv, unsigned char *output);
+
+int muggle_des_ctr(
+	int mode, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	muggle_64bit_block_t *iv, int update_iv, unsigned char *output);
+
 
 EXTERN_C_END
 

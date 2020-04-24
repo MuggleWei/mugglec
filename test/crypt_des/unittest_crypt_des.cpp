@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <string.h>
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 #include "muggle/c/crypt/internal/internal_des.h"
@@ -291,6 +293,50 @@ TEST(crypt_des, P)
 		block.u32 = 0x01 << (p_table[i] - 1);
 		muggle_des_p(&block, &block);
 		ASSERT_EQ(block.u32, 0x01 << i);
+	}
+}
+
+TEST(crypt_des, EncrypDecrypt)
+{
+	unsigned char keys[][8] = {
+		{0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef},
+		{0x13, 0x34, 0x57, 0x79, 0x9b, 0xbc, 0xdf, 0xf1}
+	};
+	unsigned char plaintexts[][8] = {
+		{0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xE7},
+		{0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF},
+		{0x54, 0x68, 0x65, 0x20, 0x71, 0x75, 0x66, 0x63}
+	};
+
+	for (size_t i = 0; i < sizeof(keys) / sizeof(keys[0]); i++)
+	{
+		for (size_t j = 0; j < sizeof(plaintexts) / sizeof(plaintexts[0]); j++)
+		{
+			muggle_64bit_block_t key;
+			muggle_des_subkeys_t ks;
+			muggle_64bit_block_t plaintext, ciphertext, decrypt_ret;
+
+			// key
+			memcpy(key.bytes, keys[i], 8);
+
+			// plaintext
+			memcpy(plaintext.bytes, plaintexts[j], 8);
+
+			// encrypt genkey
+			muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key, &ks);
+
+			// encrypt
+			muggle_des_crypt(&plaintext, &ks, &ciphertext);
+
+			// decrypt genkey
+			muggle_des_gen_subkeys(MUGGLE_DECRYPT, &key, &ks);
+
+			// decrypt
+			muggle_des_crypt(&ciphertext, &ks, &decrypt_ret);
+
+			int ret = memcmp(plaintext.bytes, decrypt_ret.bytes, 8);
+			ASSERT_EQ(ret, 0);
+		}
 	}
 }
 
