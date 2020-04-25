@@ -1,6 +1,8 @@
 #include "muggle/c/muggle_c.h"
 #include "muggle/c/crypt/openssl/openssl_des.h"
 
+#define EXAMPLE_MESSAGE_LEN 512
+
 const char *block_cipher_mode_names[] = {
 	"ECB", "CBC", "CFB", "OFB", "CTR"
 };
@@ -52,14 +54,14 @@ void example_des_block()
 			printf("input plaintext: ");
 			muggle_output_hex(plaintext.bytes, 8, 0);
 
-			// encrypt genkey
+			// encrypt subkeys
 			muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key, &ks);
 
 			// encrypt
 			muggle_des_crypt(&plaintext, &ks, &ciphertext);
 			printf("encryption ciphertext: ");
 			muggle_output_hex(ciphertext.bytes, 8, 0);
-			muggle_output_bin(ciphertext.bytes, 8, 8);
+			// muggle_output_bin(ciphertext.bytes, 8, 8);
 
 			// decrypt genkey
 			muggle_des_gen_subkeys(MUGGLE_DECRYPT, &key, &ks);
@@ -75,7 +77,6 @@ void example_des_block()
 
 void gen_input_var(muggle_64bit_block_t *key, muggle_64bit_block_t *iv, unsigned char *input, unsigned int num_bytes)
 {
-	srand((unsigned int)time(NULL));
 	key->u32.l = (uint32_t)rand();
 	key->u32.h = (uint32_t)rand();
 	iv->u32.l = (uint32_t)rand();
@@ -86,14 +87,8 @@ void gen_input_var(muggle_64bit_block_t *key, muggle_64bit_block_t *iv, unsigned
 	}
 }
 
-#define EXAMPLE_MESSAGE_LEN 512
-
 void example_des_cipher(int block_cipher_mode)
 {
-	static const char* block_cipher_mode_names[MAX_MUGGLE_BLOCK_CIPHER_MODE] = {
-		"ECB", "CBC", "CFB", "OFB", "CTR"
-	};
-
 	printf("============================\n");
 	printf("DES encrypt/decrypt %s mode\n", block_cipher_mode_names[block_cipher_mode]);
 

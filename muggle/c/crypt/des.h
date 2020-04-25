@@ -26,13 +26,13 @@ typedef struct muggle_des_subkeys
 
 /**
  * DES key schedule
- * @param mode encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
+ * @param op encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
  * @param key des input key
  * @param subkeys output subkeys
  * */
 MUGGLE_CC_EXPORT
 void muggle_des_gen_subkeys(
-	int mode,
+	int op,
 	const muggle_64bit_block_t *key,
 	muggle_des_subkeys_t *subkeys);
 
@@ -64,8 +64,7 @@ int muggle_des_crypt(
  *  ECB: doesn't make sense in ECB mode
  *  CTR: whether CTR need update counter values
  * @param output output bytes
- * RETURN: 
- *  return 0 on success, otherwise failed
+ * @return return 0 on success, otherwise failed
  *
  * NOTE: Don't use ECB mode in product environment
  * */

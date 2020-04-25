@@ -1,28 +1,28 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
-// void gen_input_var(
-// 	muggle_des_key_block *key1,
-// 	muggle_des_key_block *key2,
-// 	muggle_des_key_block *key3,
-// 	muggle_64bit_block_t *iv,
-// 	unsigned char *input, unsigned int num_bytes)
-// {
-// 	srand((unsigned int)time(NULL));
-// 	key1->u32.l = (uint32_t)rand();
-// 	key1->u32.h = (uint32_t)rand();
-// 	key2->u32.l = (uint32_t)rand();
-// 	key2->u32.h = (uint32_t)rand();
-// 	key3->u32.l = (uint32_t)rand();
-// 	key3->u32.h = (uint32_t)rand();
-// 	iv->u32.l = (uint32_t)rand();
-// 	iv->u32.h = (uint32_t)rand();
-// 	for (unsigned int i = 0; i < num_bytes; ++i)
-// 	{
-// 		input[i] = (unsigned char)(rand() % 256);
-// 	}
-// }
-// 
+void gen_input_var(
+	muggle_64bit_block_t *key1,
+	muggle_64bit_block_t *key2,
+	muggle_64bit_block_t *key3,
+	muggle_64bit_block_t *iv,
+	unsigned char *input, unsigned int num_bytes)
+{
+	srand((unsigned int)time(NULL));
+	key1->u32.l = (uint32_t)rand();
+	key1->u32.h = (uint32_t)rand();
+	key2->u32.l = (uint32_t)rand();
+	key2->u32.h = (uint32_t)rand();
+	key3->u32.l = (uint32_t)rand();
+	key3->u32.h = (uint32_t)rand();
+	iv->u32.l = (uint32_t)rand();
+	iv->u32.h = (uint32_t)rand();
+	for (unsigned int i = 0; i < num_bytes; ++i)
+	{
+		input[i] = (unsigned char)(rand() % 256);
+	}
+}
+
 // void crypt_tdes_test(int mode)
 // {
 // 	int ret;

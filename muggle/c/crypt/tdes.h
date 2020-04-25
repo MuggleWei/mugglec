@@ -14,59 +14,51 @@
 
 EXTERN_C_BEGIN
 
-// /*
-//  * Triple DES encrypt/decrypt a single 64bit block
-//  * @enc: MUGGLE_ENCRYPT - encrypt input, MUGGLE_DECRYPT - decrypt input
-//  * @input: input block
-//  * @output: output block
-//  * @ks[1|2|3]: sub key schedule 1|2|3
-//  * @callbacks: DES callback functions, if NULL, use default callbacks(compatible with openssl)
-//  * */
-// MUGGLE_CC_EXPORT
-// int muggle_tdes_crypt(
-// 	int enc,
-// 	const muggle_64bit_block_t *input,
-// 	muggle_64bit_block_t *output,
-// 	muggle_des_subkeys_t *ks1,
-// 	muggle_des_subkeys_t *ks2,
-// 	muggle_des_subkeys_t *ks3,
-// 	muggle_des_cb_t *encrypt_cb,
-// 	muggle_des_cb_t *decrypt_cb);
-// 
-// /*
-//  * Triple DES encrypt/decrypt in mode
-//  * @mode: block cipher mode, use MUGGLE_BLOCK_CIPHER_MODE_*
-//  * @enc: MUGGLE_ENCRYPT - encrypt input, MUGGLE_DECRYPT - decrypt input
-//  * @input: plaintext bytes
-//  * @output: ciphertext bytes
-//  * @num_bytes: length of input/output bytes
-//  * @key: key
-//  * @iv: initialization vector;
-//  * 	ECB: doesn't make sense in ECB mode
-//  * 	CTR: equal to init counter values
-//  * @update_iv: 1 - update, 0 - don't update;
-//  *  ECB: doesn't make sense in ECB mode
-//  *  CTR: whether CTR need update counter values
-//  * @callbacks: if NULL, use default callbacks
-//  * RETURN: 
-//  *  return 0 on success, otherwise failed
-//  *
-//  * NOTE: Don't use ECB mode in product environment
-//  * */
-// MUGGLE_CC_EXPORT
-// int muggle_tdes_cipher(
-// 	int mode,
-// 	int enc,
-// 	const unsigned char *input,
-// 	unsigned char *output,
-// 	unsigned int num_bytes,
-// 	muggle_des_key_block key1,
-// 	muggle_des_key_block key2,
-// 	muggle_des_key_block key3,
-// 	muggle_64bit_block_t *iv,
-// 	int update_iv,
-// 	muggle_des_cb_t *encrypt_cb,
-// 	muggle_des_cb_t *decrypt_cb);
+/*
+ * Triple DES encrypt/decrypt a single 64bit block
+ * @param input input block
+ * @ks[1|2|3]: sub key schedule 1|2|3
+ * @output: output block
+ * @callbacks: DES callback functions, if NULL, use default callbacks(compatible with openssl)
+ * */
+MUGGLE_CC_EXPORT
+int muggle_tdes_crypt(
+	const muggle_64bit_block_t *input,
+	muggle_des_subkeys_t *ks1,
+	muggle_des_subkeys_t *ks2,
+	muggle_des_subkeys_t *ks3,
+	muggle_64bit_block_t *output);
+
+/*
+ * Triple DES encrypt/decrypt in mode
+ * @param block_cipher_mode block cipher mode, use MUGGLE_BLOCK_CIPHER_MODE_*
+ * @param op encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
+ * @param key[1|2|3] tdes input keys
+ * @input: plaintext bytes
+ * @param num_bytes length of input/output bytes
+ * @param iv initialization vector;
+ * 	ECB: doesn't make sense in ECB mode
+ * 	CTR: equal to init counter values
+ * @param update_iv 1 - update, 0 - don't update;
+ *  ECB: doesn't make sense in ECB mode
+ *  CTR: whether CTR need update counter values
+ * @param output output bytes
+ * @return return 0 on success, otherwise failed
+ *
+ * NOTE: Don't use ECB mode in product environment
+ * */
+MUGGLE_CC_EXPORT
+int muggle_tdes_cipher(
+	int block_cipher_mode,
+	int op,
+	muggle_64bit_block_t key1,
+	muggle_64bit_block_t key2,
+	muggle_64bit_block_t key3,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	muggle_64bit_block_t *iv,
+	int update_iv,
+	unsigned char *output);
 
 EXTERN_C_END
 

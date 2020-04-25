@@ -21,7 +21,7 @@ fn_muggle_des_cipher s_fn_muggle_des[] = {
 };
 
 void muggle_des_gen_subkeys(
-	int mode,
+	int op,
 	const muggle_64bit_block_t *key,
 	muggle_des_subkeys_t *subkeys)
 {
@@ -60,7 +60,7 @@ void muggle_des_gen_subkeys(
 
 		// PC-2
 		int idx = i;
-		if (mode == MUGGLE_DECRYPT)
+		if (op == MUGGLE_DECRYPT)
 		{
 			idx = 15 - i;
 		}
