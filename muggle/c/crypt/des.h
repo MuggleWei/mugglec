@@ -53,7 +53,7 @@ int muggle_des_crypt(
 /*
  * DES encrypt/decrypt in mode
  * @param block_cipher_mode block cipher mode, use MUGGLE_BLOCK_CIPHER_MODE_*
- * @param mode encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
+ * @param op encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
  * @param key des input key
  * @param input input bytes, length must be multiple of 8
  * @param num_bytes length of input/output bytes
@@ -72,7 +72,7 @@ int muggle_des_crypt(
 MUGGLE_CC_EXPORT
 int muggle_des_cipher(
 	int block_cipher_mode,
-	int mode,
+	int op,
 	muggle_64bit_block_t key,
 	const unsigned char *input,
 	unsigned int num_bytes,

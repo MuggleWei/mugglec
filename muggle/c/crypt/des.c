@@ -119,7 +119,7 @@ int muggle_des_crypt(
 
 int muggle_des_cipher(
 	int block_cipher_mode,
-	int mode,
+	int op,
 	muggle_64bit_block_t key,
 	const unsigned char *input,
 	unsigned int num_bytes,
@@ -129,7 +129,7 @@ int muggle_des_cipher(
 {
 	if (block_cipher_mode < 0 || block_cipher_mode >= MAX_MUGGLE_BLOCK_CIPHER_MODE)
 	{
-		MUGGLE_LOG_ERROR("DES cipher failed: invalid block cipher mode: %d", mode);
+		MUGGLE_LOG_ERROR("DES cipher failed: invalid block cipher mode: %d", block_cipher_mode);
 		return -1;
 	}
 
@@ -145,6 +145,6 @@ int muggle_des_cipher(
 		return -1;
 	}
 
-	return s_fn_muggle_des[block_cipher_mode](mode, key, input, num_bytes, iv, update_iv, output);
+	return s_fn_muggle_des[block_cipher_mode](op, key, input, num_bytes, iv, update_iv, output);
 }
  

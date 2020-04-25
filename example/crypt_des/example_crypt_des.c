@@ -73,73 +73,62 @@ void example_des_block()
 	}
 }
 
-// void example_des_cipher(int mode)
-// {
-// 	printf("============================\n");
-// 	printf("DES encrypt/decrypt %s mode\n", block_cipher_mode_names[mode]);
-// 
-// 	// key
-// 	muggle_des_key_block key;
-// 	key.u64 = 0xf125cce7abe32f7c;
-// 	printf("key: ");
-// 	muggle_output_hex((unsigned char*)key.bytes, 8, 0);
-// 
-// 	// iv
-// 	muggle_64bit_block_t iv;
-// 	iv.u64 = 688888;
-// 	printf("iv: ");
-// 	muggle_output_hex((unsigned char*)iv.bytes, 8, 0);
-// 
-// 	int cnt = 26;
-// 	int space = ROUND_UP_POW_OF_2_MUL(cnt, 8);
-// 	unsigned char *input = (unsigned char*)malloc(space);
-// 	unsigned char *output = (unsigned char*)malloc(space);
-// 	unsigned char *plaintext = (unsigned char*)malloc(space);
-// 	memset(input, 0, space);
-// 	memset(output, 0, space);
-// 
-// 	for (int i = 0; i < cnt; ++i)
-// 	{
-// 		// input[i] = (unsigned char)(rand() % 256);
-// 		input[i] = (unsigned char)('a' + i);
-// 	}
-// 	printf("input plaintext: ");
-// 	muggle_output_hex(input, space, 0);
-// 
-// 	// encrypt
-// 	if (muggle_des_cipher(mode, MUGGLE_ENCRYPT, input, output, space, key, &iv, 1, NULL) != 0)
-// 	{
-// 		MUGGLE_LOG_ERROR("failed DES encryption with %s mode", block_cipher_mode_names[mode]);
-// 		free(input);
-// 		free(output);
-// 		free(plaintext);
-// 		return;
-// 	}
-// 
-// 	printf("encryption ciphertext: ");
-// 	muggle_output_hex(output, space, 0);
-// 	printf("return iv: ");
-// 	muggle_output_hex((unsigned char*)iv.bytes, 8, 0);
-// 
-// 	// decrypt
-// 	iv.u64 = 688888;
-// 	if (muggle_des_cipher(mode, MUGGLE_DECRYPT, output, plaintext, space, key, &iv, 1, NULL) != 0)
-// 	{
-// 		MUGGLE_LOG_ERROR("failed DES decryption with %s mode", block_cipher_mode_names[mode]);
-// 		free(input);
-// 		free(output);
-// 		free(plaintext);
-// 		return;
-// 	}
-// 	printf("decryption plaintext: ");
-// 	muggle_output_hex(plaintext, space, 0);
-// 	printf("return iv: ");
-// 	muggle_output_hex((unsigned char*)iv.bytes, 8, 0);
-// 
-// 	free(input);
-// 	free(output);
-// 	free(plaintext);
-// }
+void gen_input_var(muggle_64bit_block_t *key, muggle_64bit_block_t *iv, unsigned char *input, unsigned int num_bytes)
+{
+	srand((unsigned int)time(NULL));
+	key->u32.l = (uint32_t)rand();
+	key->u32.h = (uint32_t)rand();
+	iv->u32.l = (uint32_t)rand();
+	iv->u32.h = (uint32_t)rand();
+	for (unsigned int i = 0; i < num_bytes; ++i)
+	{
+		input[i] = (unsigned char)(rand() % 256);
+	}
+}
+
+#define EXAMPLE_MESSAGE_LEN 512
+
+void example_des_cipher(int block_cipher_mode)
+{
+	static const char* block_cipher_mode_names[MAX_MUGGLE_BLOCK_CIPHER_MODE] = {
+		"ECB", "CBC", "CFB", "OFB", "CTR"
+	};
+
+	printf("============================\n");
+	printf("DES encrypt/decrypt %s mode\n", block_cipher_mode_names[block_cipher_mode]);
+
+	int ret;
+	muggle_64bit_block_t key;
+	muggle_64bit_block_t iv, iv2, iv_save;
+	unsigned char input[EXAMPLE_MESSAGE_LEN], ciphertext[EXAMPLE_MESSAGE_LEN], plaintext[EXAMPLE_MESSAGE_LEN];
+	unsigned int num_bytes = (unsigned int)sizeof(input);
+	for (int i = 0; i < 16; ++i)
+	{
+		gen_input_var(&key, &iv, input, num_bytes);
+		iv_save.u64 = iv2.u64 = iv.u64;
+
+		muggle_des_cipher(block_cipher_mode, MUGGLE_ENCRYPT, key, input, num_bytes, &iv, 1, ciphertext);
+		muggle_des_cipher(block_cipher_mode, MUGGLE_DECRYPT, key, ciphertext, num_bytes, &iv2, 1, plaintext);
+
+		printf("key: ");
+		muggle_output_hex((unsigned char*)key.bytes, 8, 0);
+		printf("iv: ");
+		muggle_output_hex((unsigned char*)iv_save.bytes, 8, 0);
+		printf("input: \n");
+		muggle_output_hex((unsigned char*)input, num_bytes, 16);
+		printf("ciphertext: \n");
+		muggle_output_hex((unsigned char*)ciphertext, num_bytes, 16);
+		printf("plaintext: \n");
+		muggle_output_hex((unsigned char*)plaintext, num_bytes, 16);
+
+		ret = memcmp(input, plaintext, num_bytes);
+		if (ret != 0)
+		{
+			MUGGLE_LOG_ERROR("DES failed: input plaintext != decryption plaintext");
+			exit(EXIT_FAILURE);
+		}
+	}
+}
 
 int main()
 {
@@ -155,12 +144,12 @@ int main()
 	// crypt single block
 	example_des_block();
 
-//	// encrypt/decrypt plaintext
-//	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_ECB);
-//	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_CBC);
-//	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_CFB);
-//	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_OFB);
-//	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_CTR);
+	// encrypt/decrypt plaintext
+	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_ECB);
+	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_CBC);
+	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_CFB);
+	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_OFB);
+	example_des_cipher(MUGGLE_BLOCK_CIPHER_MODE_CTR);
 
 	return 0;
 }

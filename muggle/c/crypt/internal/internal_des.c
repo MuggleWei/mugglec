@@ -338,7 +338,7 @@ void muggle_des_pc2(muggle_64bit_block_t *k, muggle_des_subkey_t *sk)
 
 
 int muggle_des_ecb(
-	int mode, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output)
 {
 	int ret = 0;
@@ -347,7 +347,7 @@ int muggle_des_ecb(
 
 	// generate subkey
 	muggle_des_subkeys_t ks;
-	muggle_des_gen_subkeys(mode, &key, &ks);
+	muggle_des_gen_subkeys(op, &key, &ks);
 
 	for (size_t i = 0; i < len; ++i)
 	{
@@ -367,7 +367,7 @@ int muggle_des_ecb(
 }
 
 int muggle_des_cbc(
-	int mode, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output)
 {
 	int ret = 0;
@@ -378,14 +378,14 @@ int muggle_des_cbc(
 
 	// generate subkey
 	muggle_des_subkeys_t ks;
-	muggle_des_gen_subkeys(mode, &key, &ks);
+	muggle_des_gen_subkeys(op, &key, &ks);
 
 	for (size_t i = 0; i < len; ++i)
 	{
 		input_block = (muggle_64bit_block_t*)(input + offset);
 		output_block = (muggle_64bit_block_t*)(output + offset);
 
-		if (mode == MUGGLE_ENCRYPT)
+		if (op == MUGGLE_ENCRYPT)
 		{
 			v.u64 ^= input_block->u64;
 			ret = muggle_des_crypt(&v, &ks, output_block);
@@ -422,7 +422,7 @@ int muggle_des_cbc(
 }
 
 int muggle_des_cfb(
-	int mode, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output)
 {
 	int ret = 0;
@@ -440,7 +440,7 @@ int muggle_des_cfb(
 		input_block = (muggle_64bit_block_t*)(input + offset);
 		output_block = (muggle_64bit_block_t*)(output + offset);
 
-		if (mode == MUGGLE_ENCRYPT)
+		if (op == MUGGLE_ENCRYPT)
 		{
 			ret = muggle_des_crypt(&v, &ks, output_block);
 			if (ret != 0)
@@ -475,7 +475,7 @@ int muggle_des_cfb(
 }
 
 int muggle_des_ofb(
-	int mode, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output)
 {
 	int ret = 0;
@@ -514,7 +514,7 @@ int muggle_des_ofb(
 }
 
 int muggle_des_ctr(
-	int mode, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output)
 {
 	int ret = 0;
