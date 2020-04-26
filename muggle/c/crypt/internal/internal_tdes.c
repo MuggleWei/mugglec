@@ -71,7 +71,7 @@ int muggle_tdes_cbc(
 		if (op == MUGGLE_ENCRYPT)
 		{
 			v.u64 ^= input_block->u64;
-			ret = muggle_tdes_crypt(input_block, &ks1, &ks2, &ks3, output_block);
+			ret = muggle_tdes_crypt(&v, &ks1, &ks2, &ks3, output_block);
 			if (ret != 0)
 			{
 				MUGGLE_LOG_ERROR("TDES ECB encrypt failed");
@@ -119,7 +119,7 @@ int muggle_tdes_cfb(
 	// NOTE: CFB mode always use encrypt
 	muggle_des_subkeys_t ks1, ks2, ks3;
 	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key1, &ks1);
-	muggle_des_gen_subkeys(MUGGLE_DECRYPT, &key2, &ks2);
+	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key2, &ks2);
 	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key3, &ks3);
 
 	for (size_t i = 0; i < len; ++i)
@@ -129,7 +129,7 @@ int muggle_tdes_cfb(
 
 		if (op == MUGGLE_ENCRYPT)
 		{
-			ret = muggle_tdes_crypt(input_block, &ks1, &ks2, &ks3, output_block);
+			ret = muggle_tdes_crypt(&v, &ks1, &ks2, &ks3, output_block);
 			if (ret != 0)
 			{
 				MUGGLE_LOG_ERROR("TDES CFB crypt failed");
@@ -140,7 +140,7 @@ int muggle_tdes_cfb(
 		}
 		else
 		{
-			ret = muggle_tdes_crypt(input_block, &ks3, &ks2, &ks1, output_block);
+			ret = muggle_tdes_crypt(&v, &ks1, &ks2, &ks3, output_block);
 			if (ret != 0)
 			{
 				MUGGLE_LOG_ERROR("TDES CFB crypt failed");
@@ -176,7 +176,7 @@ int muggle_tdes_ofb(
 	// NOTE: OFB mode always use encrypt
 	muggle_des_subkeys_t ks1, ks2, ks3;
 	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key1, &ks1);
-	muggle_des_gen_subkeys(MUGGLE_DECRYPT, &key2, &ks2);
+	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key2, &ks2);
 	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key3, &ks3);
 
 	for (size_t i = 0; i < len; ++i)
@@ -186,11 +186,11 @@ int muggle_tdes_ofb(
 
 		if (op == MUGGLE_ENCRYPT)
 		{
-			ret = muggle_tdes_crypt(input_block, &ks1, &ks2, &ks3, output_block);
+			ret = muggle_tdes_crypt(&v, &ks1, &ks2, &ks3, output_block);
 		}
 		else
 		{
-			ret = muggle_tdes_crypt(input_block, &ks3, &ks2, &ks1, output_block);
+			ret = muggle_tdes_crypt(&v, &ks1, &ks2, &ks3, output_block);
 		}
 		if (ret != 0)
 		{
@@ -226,7 +226,7 @@ int muggle_tdes_ctr(
 	// NOTE: CRT mode always use encrypt
 	muggle_des_subkeys_t ks1, ks2, ks3;
 	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key1, &ks1);
-	muggle_des_gen_subkeys(MUGGLE_DECRYPT, &key2, &ks2);
+	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key2, &ks2);
 	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key3, &ks3);
 
 	for (size_t i = 0; i < len; ++i)
@@ -240,7 +240,7 @@ int muggle_tdes_ctr(
 		}
 		else
 		{
-			ret = muggle_tdes_crypt(&v, &ks3, &ks2, &ks1, output_block);
+			ret = muggle_tdes_crypt(&v, &ks1, &ks2, &ks3, output_block);
 		}
 		if (ret != 0)
 		{

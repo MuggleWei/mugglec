@@ -28,7 +28,6 @@ int muggle_tdes_crypt(
 		MUGGLE_LOG_ERROR("TDES crypt failed, failed in step 1");
 		return ret;
 	}
-	muggle_output_hex(t1.bytes, 8, 0);
 
 	ret = muggle_des_crypt(&t1, ks2, &t2);
 	if (ret != 0)
@@ -36,7 +35,6 @@ int muggle_tdes_crypt(
 		MUGGLE_LOG_ERROR("TDES crypt failed, failed in step 2");
 		return ret;
 	}
-	muggle_output_hex(t2.bytes, 8, 0);
 
 	ret = muggle_des_crypt(&t2, ks3, output);
 	if (ret != 0)
@@ -44,7 +42,6 @@ int muggle_tdes_crypt(
 		MUGGLE_LOG_ERROR("TDES crypt failed, failed in step 3");
 		return ret;
 	}
-	muggle_output_hex(output->bytes, 8, 0);
 
 	return 0;
 }

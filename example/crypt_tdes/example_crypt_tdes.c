@@ -1,7 +1,7 @@
 #include "muggle/c/muggle_c.h"
 #include "muggle/c/crypt/openssl/openssl_des.h"
 
-#define EXAMPLE_MESSAGE_LEN 16
+#define EXAMPLE_MESSAGE_LEN 512
 
 const char *block_cipher_mode_names[] = {
 	"ECB", "CBC", "CFB", "OFB", "CTR"
@@ -72,7 +72,7 @@ void example_tdes_block()
 		muggle_des_gen_subkeys(MUGGLE_DECRYPT, &key3, &ks3);
 
 		// decrypt
-		muggle_tdes_crypt(&output_block, &ks1, &ks2, &ks3, &decrypt_ret);
+		muggle_tdes_crypt(&output_block, &ks3, &ks2, &ks1, &decrypt_ret);
 		printf("decryption plaintext: ");
 		muggle_output_hex(decrypt_ret.bytes, 8, 0);
 
@@ -126,6 +126,12 @@ void example_tdes_cipher(int block_cipher_mode)
 		if (ret != 0)
 		{
 			MUGGLE_LOG_ERROR("TDES failed: input plaintext != decryption plaintext");
+			exit(EXIT_FAILURE);
+		}
+
+		if (iv.u64 != iv2.u64)
+		{
+			MUGGLE_LOG_ERROR("TDES failed: encryption iv != decryption iv");
 			exit(EXIT_FAILURE);
 		}
 	}
