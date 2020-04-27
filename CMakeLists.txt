@@ -35,16 +35,26 @@ option(MUGGLE_BUILD_EXAMPLE "Build muggleCC example" OFF)
 option(MUGGLE_BUILD_TESTING "Build muggleCC test" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build muggleCC benchmark" OFF)
 option(BUILD_TESTING "Buid testing" OFF)
-
-if (MUGGLE_BUILD_TESTING)
-	set(BUILD_TESTING ON)
-endif()
-
+option(MUGGLE_CRYPT_COMPARE_OPENSSL "Link openssl in unittest for compare result" OFF)
 
 if (MUGGLE_BUILD_SHARED_LIB)
 	set(MUGGLE_LIB_TYPE SHARED)
 else()
 	set(MUGGLE_LIB_TYPE STATIC)
+endif()
+
+if (MUGGLE_BUILD_TESTING)
+	set(BUILD_TESTING ON)
+endif()
+
+if (MUGGLE_CRYPT_COMPARE_OPENSSL)
+	find_package(OpenSSL QUIET)
+	if (OPENSSL_FOUND)
+		message("Find openssl - for compare crypt result in unittest")
+		message("Openssl include dir: ${OPENSSL_INCLUDE_DIR}")
+		message("Openssl libraries: ${OPENSSL_LIBRARIES}")
+		set(MUGGLE_LINK_OPENSSL ON)
+	endif()
 endif()
 
 # include directories
@@ -199,6 +209,20 @@ function(add_gtest name folder)
 		${muggle_cc}
 		gtest_main
 	)
+
+	# link openssl
+	if (MUGGLE_LINK_OPENSSL)
+		target_link_libraries(${name}
+			${OPENSSL_LIBRARIES}
+		)
+		target_include_directories(${name} PUBLIC
+			${OPENSSL_INCLUDE_DIR}
+		)
+		target_compile_definitions(${name}
+			PUBLIC MUGGLE_LINK_OPENSSL
+		)
+	endif()
+
 	add_test(NAME ${name} COMMAND ${name})
 endfunction()
 

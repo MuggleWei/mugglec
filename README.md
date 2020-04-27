@@ -13,7 +13,8 @@ cmake .. \
     -DMUGGLE_BUILD_EXAMPLE=ON \
     -DMUGGLE_BUILD_TESTING=OFF \
     -DMUGGLE_BUILD_BENCHMARK=OFF \
-    -DBUILD_TESTING=OFF
+    -DBUILD_TESTING=OFF \
+	-DMUGGLE_CRYPT_COMPARE_OPENSSL=OFF
 ```
 * MUGGLE_BUILD_TRACE: just for debug, you will never switch it on   
 * MUGGLE_BUILD_SHARED_LIB: build shared lib or static lib   
@@ -21,3 +22,4 @@ cmake .. \
 * MUGGLE_BUILD_TESTING: build muggleCC testings, if it's on, BUILD_TESTING will be set ON   
 * MUGGLE_BUILD_BENCHMARK: for performance test   
 * BUILD_TESTING: build gtest, if it's on, will download gtest in first time of cmake build, if you need gtest, don't download repeatedly   
+* MUGGLE_CRYPT_COMPARE_OPENSSL: link openssl in unittest, if it's on, will try to link openssl to compare result of crypt
