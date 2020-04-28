@@ -1,6 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "gtest/gtest.h"
+#if MUGGLE_TEST_LINK_OPENSSL
+#include "openssl/des.h"
+#endif
+
 #include "muggle/c/muggle_c.h"
 #include "muggle/c/crypt/internal/internal_des.h"
 
@@ -338,6 +342,25 @@ TEST(crypt_des, EncrypDecrypt)
 
 			int ret = memcmp(plaintext.bytes, decrypt_ret.bytes, 8);
 			ASSERT_EQ(ret, 0);
+
+#if MUGGLE_TEST_LINK_OPENSSL
+			const_DES_cblock *openssl_input = &plaintexts[i];
+			const_DES_cblock *openssl_key = &keys[i];
+			DES_cblock openssl_output;
+			DES_key_schedule openssl_ks;
+
+			DES_set_key_unchecked(openssl_key, &openssl_ks);
+			DES_ecb_encrypt(openssl_input, &openssl_output, &openssl_ks, DES_ENCRYPT);
+			ret = memcmp(ciphertext.bytes, openssl_output, 8);
+			if (ret != 0)
+			{
+				printf("muggle ciphertext: ");
+				muggle_output_hex(ciphertext.bytes, 8, 0);
+				printf("openssl ciphertext: ");
+				muggle_output_hex(openssl_output, 8, 0);
+			}
+			ASSERT_EQ(ret, 0);
+#endif
 		}
 	}
 }

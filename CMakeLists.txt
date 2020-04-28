@@ -53,7 +53,7 @@ if (MUGGLE_CRYPT_COMPARE_OPENSSL)
 		message("Find openssl - for compare crypt result in unittest")
 		message("Openssl include dir: ${OPENSSL_INCLUDE_DIR}")
 		message("Openssl libraries: ${OPENSSL_LIBRARIES}")
-		set(MUGGLE_LINK_OPENSSL ON)
+		set(MUGGLE_TEST_LINK_OPENSSL ON)
 	endif()
 endif()
 
@@ -211,16 +211,19 @@ function(add_gtest name folder)
 	)
 
 	# link openssl
-	if (MUGGLE_LINK_OPENSSL)
-		target_link_libraries(${name}
-			${OPENSSL_LIBRARIES}
-		)
-		target_include_directories(${name} PUBLIC
-			${OPENSSL_INCLUDE_DIR}
-		)
-		target_compile_definitions(${name}
-			PUBLIC MUGGLE_LINK_OPENSSL
-		)
+	if (${name} MATCHES "^test_crypt*")
+		message("${name} link openssl")
+		if (MUGGLE_TEST_LINK_OPENSSL)
+			target_link_libraries(${name}
+				${OPENSSL_LIBRARIES}
+				)
+			target_include_directories(${name} PUBLIC
+				${OPENSSL_INCLUDE_DIR}
+				)
+			target_compile_definitions(${name}
+				PUBLIC MUGGLE_TEST_LINK_OPENSSL
+				)
+		endif()
 	endif()
 
 	add_test(NAME ${name} COMMAND ${name})

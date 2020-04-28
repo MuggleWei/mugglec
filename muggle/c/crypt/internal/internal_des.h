@@ -19,12 +19,12 @@ EXTERN_C_BEGIN
 /*
  * move single bit
  * */
-#define MOVE_SINGLE_BIT(in, from, to) ((((in)>>(from))&0x01)<<(to))
+#define MUGGLE_MOVE_BIT(in, from, to) ((((in)>>(from))&0x01)<<(to))
 
 /*
  * key shift
  * */
-#define DES_KEY_SHIFT(in, shift, mask) (((in)<<(shift))|(((in)>>(28-(shift)))&(mask)))
+#define MUGGLE_DES_KEY_SHIFT(in, shift, mask) (((in)<<(shift))|(((in)>>(28-(shift)))&(mask)))
 
 typedef int (*fn_muggle_des_cipher)(
 	int op,

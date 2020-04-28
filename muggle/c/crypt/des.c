@@ -55,8 +55,8 @@ void muggle_des_gen_subkeys(
 	for (int i = 0; i < 16; i++)
 	{
 		// shift
-		out.u32.l = DES_KEY_SHIFT(out.u32.l, key_round_shift[i], key_round_mask[i]);
-		out.u32.h = DES_KEY_SHIFT(out.u32.h, key_round_shift[i], key_round_mask[i]);
+		out.u32.l = MUGGLE_DES_KEY_SHIFT(out.u32.l, key_round_shift[i], key_round_mask[i]);
+		out.u32.h = MUGGLE_DES_KEY_SHIFT(out.u32.h, key_round_shift[i], key_round_mask[i]);
 
 		// PC-2
 		int idx = i;

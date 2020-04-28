@@ -90,24 +90,24 @@ void muggle_des_ip(const muggle_64bit_block_t *in, muggle_64bit_block_t *out)
 
 	// move bit one by one
 	out->u32.l = (uint32_t)(
-		MOVE_SINGLE_BIT(in->u64, 57, 0)  | MOVE_SINGLE_BIT(in->u64, 49, 1)  | MOVE_SINGLE_BIT(in->u64, 41, 2)  | MOVE_SINGLE_BIT(in->u64, 33, 3)  |
-		MOVE_SINGLE_BIT(in->u64, 25, 4)  | MOVE_SINGLE_BIT(in->u64, 17, 5)  | MOVE_SINGLE_BIT(in->u64, 9, 6)   | MOVE_SINGLE_BIT(in->u64, 1, 7)   |
-		MOVE_SINGLE_BIT(in->u64, 59, 8)  | MOVE_SINGLE_BIT(in->u64, 51, 9)  | MOVE_SINGLE_BIT(in->u64, 43, 10) | MOVE_SINGLE_BIT(in->u64, 35, 11) |
-		MOVE_SINGLE_BIT(in->u64, 27, 12) | MOVE_SINGLE_BIT(in->u64, 19, 13) | MOVE_SINGLE_BIT(in->u64, 11, 14) | MOVE_SINGLE_BIT(in->u64, 3, 15)  |
-		MOVE_SINGLE_BIT(in->u64, 61, 16) | MOVE_SINGLE_BIT(in->u64, 53, 17) | MOVE_SINGLE_BIT(in->u64, 45, 18) | MOVE_SINGLE_BIT(in->u64, 37, 19) |
-		MOVE_SINGLE_BIT(in->u64, 29, 20) | MOVE_SINGLE_BIT(in->u64, 21, 21) | MOVE_SINGLE_BIT(in->u64, 13, 22) | MOVE_SINGLE_BIT(in->u64, 5, 23)  |
-		MOVE_SINGLE_BIT(in->u64, 63, 24) | MOVE_SINGLE_BIT(in->u64, 55, 25) | MOVE_SINGLE_BIT(in->u64, 47, 26) | MOVE_SINGLE_BIT(in->u64, 39, 27) |
-		MOVE_SINGLE_BIT(in->u64, 31, 28) | MOVE_SINGLE_BIT(in->u64, 23, 29) | MOVE_SINGLE_BIT(in->u64, 15, 30) | MOVE_SINGLE_BIT(in->u64, 7, 31)
+		MUGGLE_MOVE_BIT(in->u64, 57, 0)  | MUGGLE_MOVE_BIT(in->u64, 49, 1)  | MUGGLE_MOVE_BIT(in->u64, 41, 2)  | MUGGLE_MOVE_BIT(in->u64, 33, 3)  |
+		MUGGLE_MOVE_BIT(in->u64, 25, 4)  | MUGGLE_MOVE_BIT(in->u64, 17, 5)  | MUGGLE_MOVE_BIT(in->u64, 9, 6)   | MUGGLE_MOVE_BIT(in->u64, 1, 7)   |
+		MUGGLE_MOVE_BIT(in->u64, 59, 8)  | MUGGLE_MOVE_BIT(in->u64, 51, 9)  | MUGGLE_MOVE_BIT(in->u64, 43, 10) | MUGGLE_MOVE_BIT(in->u64, 35, 11) |
+		MUGGLE_MOVE_BIT(in->u64, 27, 12) | MUGGLE_MOVE_BIT(in->u64, 19, 13) | MUGGLE_MOVE_BIT(in->u64, 11, 14) | MUGGLE_MOVE_BIT(in->u64, 3, 15)  |
+		MUGGLE_MOVE_BIT(in->u64, 61, 16) | MUGGLE_MOVE_BIT(in->u64, 53, 17) | MUGGLE_MOVE_BIT(in->u64, 45, 18) | MUGGLE_MOVE_BIT(in->u64, 37, 19) |
+		MUGGLE_MOVE_BIT(in->u64, 29, 20) | MUGGLE_MOVE_BIT(in->u64, 21, 21) | MUGGLE_MOVE_BIT(in->u64, 13, 22) | MUGGLE_MOVE_BIT(in->u64, 5, 23)  |
+		MUGGLE_MOVE_BIT(in->u64, 63, 24) | MUGGLE_MOVE_BIT(in->u64, 55, 25) | MUGGLE_MOVE_BIT(in->u64, 47, 26) | MUGGLE_MOVE_BIT(in->u64, 39, 27) |
+		MUGGLE_MOVE_BIT(in->u64, 31, 28) | MUGGLE_MOVE_BIT(in->u64, 23, 29) | MUGGLE_MOVE_BIT(in->u64, 15, 30) | MUGGLE_MOVE_BIT(in->u64, 7, 31)
 	);
 	out->u32.h = (uint32_t)(
-		MOVE_SINGLE_BIT(in->u64, 56, 0)  | MOVE_SINGLE_BIT(in->u64, 48, 1)  | MOVE_SINGLE_BIT(in->u64, 40, 2)  | MOVE_SINGLE_BIT(in->u64, 32, 3)  |
-		MOVE_SINGLE_BIT(in->u64, 24, 4)  | MOVE_SINGLE_BIT(in->u64, 16, 5)  | MOVE_SINGLE_BIT(in->u64, 8, 6)   | MOVE_SINGLE_BIT(in->u64, 0, 7)   |
-		MOVE_SINGLE_BIT(in->u64, 58, 8)  | MOVE_SINGLE_BIT(in->u64, 50, 9)  | MOVE_SINGLE_BIT(in->u64, 42, 10) | MOVE_SINGLE_BIT(in->u64, 34, 11) |
-		MOVE_SINGLE_BIT(in->u64, 26, 12) | MOVE_SINGLE_BIT(in->u64, 18, 13) | MOVE_SINGLE_BIT(in->u64, 10, 14) | MOVE_SINGLE_BIT(in->u64, 2, 15)  |
-		MOVE_SINGLE_BIT(in->u64, 60, 16) | MOVE_SINGLE_BIT(in->u64, 52, 17) | MOVE_SINGLE_BIT(in->u64, 44, 18) | MOVE_SINGLE_BIT(in->u64, 36, 19) |
-		MOVE_SINGLE_BIT(in->u64, 28, 20) | MOVE_SINGLE_BIT(in->u64, 20, 21) | MOVE_SINGLE_BIT(in->u64, 12, 22) | MOVE_SINGLE_BIT(in->u64, 4, 23)  |
-		MOVE_SINGLE_BIT(in->u64, 62, 24) | MOVE_SINGLE_BIT(in->u64, 54, 25) | MOVE_SINGLE_BIT(in->u64, 46, 26) | MOVE_SINGLE_BIT(in->u64, 38, 27) |
-		MOVE_SINGLE_BIT(in->u64, 30, 28) | MOVE_SINGLE_BIT(in->u64, 22, 29) | MOVE_SINGLE_BIT(in->u64, 14, 30) | MOVE_SINGLE_BIT(in->u64, 6, 31)
+		MUGGLE_MOVE_BIT(in->u64, 56, 0)  | MUGGLE_MOVE_BIT(in->u64, 48, 1)  | MUGGLE_MOVE_BIT(in->u64, 40, 2)  | MUGGLE_MOVE_BIT(in->u64, 32, 3)  |
+		MUGGLE_MOVE_BIT(in->u64, 24, 4)  | MUGGLE_MOVE_BIT(in->u64, 16, 5)  | MUGGLE_MOVE_BIT(in->u64, 8, 6)   | MUGGLE_MOVE_BIT(in->u64, 0, 7)   |
+		MUGGLE_MOVE_BIT(in->u64, 58, 8)  | MUGGLE_MOVE_BIT(in->u64, 50, 9)  | MUGGLE_MOVE_BIT(in->u64, 42, 10) | MUGGLE_MOVE_BIT(in->u64, 34, 11) |
+		MUGGLE_MOVE_BIT(in->u64, 26, 12) | MUGGLE_MOVE_BIT(in->u64, 18, 13) | MUGGLE_MOVE_BIT(in->u64, 10, 14) | MUGGLE_MOVE_BIT(in->u64, 2, 15)  |
+		MUGGLE_MOVE_BIT(in->u64, 60, 16) | MUGGLE_MOVE_BIT(in->u64, 52, 17) | MUGGLE_MOVE_BIT(in->u64, 44, 18) | MUGGLE_MOVE_BIT(in->u64, 36, 19) |
+		MUGGLE_MOVE_BIT(in->u64, 28, 20) | MUGGLE_MOVE_BIT(in->u64, 20, 21) | MUGGLE_MOVE_BIT(in->u64, 12, 22) | MUGGLE_MOVE_BIT(in->u64, 4, 23)  |
+		MUGGLE_MOVE_BIT(in->u64, 62, 24) | MUGGLE_MOVE_BIT(in->u64, 54, 25) | MUGGLE_MOVE_BIT(in->u64, 46, 26) | MUGGLE_MOVE_BIT(in->u64, 38, 27) |
+		MUGGLE_MOVE_BIT(in->u64, 30, 28) | MUGGLE_MOVE_BIT(in->u64, 22, 29) | MUGGLE_MOVE_BIT(in->u64, 14, 30) | MUGGLE_MOVE_BIT(in->u64, 6, 31)
 	);
 }
 
@@ -130,24 +130,24 @@ void muggle_des_fp(const muggle_64bit_block_t *in, muggle_64bit_block_t *out)
 
 	// move bit one by one
 	out->u32.l = (uint32_t)(
-		MOVE_SINGLE_BIT(in->u64, 39, 0)  | MOVE_SINGLE_BIT(in->u64, 7, 1)   | MOVE_SINGLE_BIT(in->u64, 47, 2)  | MOVE_SINGLE_BIT(in->u64, 15, 3)  |
-		MOVE_SINGLE_BIT(in->u64, 55, 4)  | MOVE_SINGLE_BIT(in->u64, 23, 5)  | MOVE_SINGLE_BIT(in->u64, 63, 6)  | MOVE_SINGLE_BIT(in->u64, 31, 7)  |
-		MOVE_SINGLE_BIT(in->u64, 38, 8)  | MOVE_SINGLE_BIT(in->u64, 6, 9)   | MOVE_SINGLE_BIT(in->u64, 46, 10) | MOVE_SINGLE_BIT(in->u64, 14, 11) |
-		MOVE_SINGLE_BIT(in->u64, 54, 12) | MOVE_SINGLE_BIT(in->u64, 22, 13) | MOVE_SINGLE_BIT(in->u64, 62, 14) | MOVE_SINGLE_BIT(in->u64, 30, 15) |
-		MOVE_SINGLE_BIT(in->u64, 37, 16) | MOVE_SINGLE_BIT(in->u64, 5, 17)  | MOVE_SINGLE_BIT(in->u64, 45, 18) | MOVE_SINGLE_BIT(in->u64, 13, 19) |
-		MOVE_SINGLE_BIT(in->u64, 53, 20) | MOVE_SINGLE_BIT(in->u64, 21, 21) | MOVE_SINGLE_BIT(in->u64, 61, 22) | MOVE_SINGLE_BIT(in->u64, 29, 23) |
-		MOVE_SINGLE_BIT(in->u64, 36, 24) | MOVE_SINGLE_BIT(in->u64, 4, 25)  | MOVE_SINGLE_BIT(in->u64, 44, 26) | MOVE_SINGLE_BIT(in->u64, 12, 27) |
-		MOVE_SINGLE_BIT(in->u64, 52, 28) | MOVE_SINGLE_BIT(in->u64, 20, 29) | MOVE_SINGLE_BIT(in->u64, 60, 30) | MOVE_SINGLE_BIT(in->u64, 28, 31)
+		MUGGLE_MOVE_BIT(in->u64, 39, 0)  | MUGGLE_MOVE_BIT(in->u64, 7, 1)   | MUGGLE_MOVE_BIT(in->u64, 47, 2)  | MUGGLE_MOVE_BIT(in->u64, 15, 3)  |
+		MUGGLE_MOVE_BIT(in->u64, 55, 4)  | MUGGLE_MOVE_BIT(in->u64, 23, 5)  | MUGGLE_MOVE_BIT(in->u64, 63, 6)  | MUGGLE_MOVE_BIT(in->u64, 31, 7)  |
+		MUGGLE_MOVE_BIT(in->u64, 38, 8)  | MUGGLE_MOVE_BIT(in->u64, 6, 9)   | MUGGLE_MOVE_BIT(in->u64, 46, 10) | MUGGLE_MOVE_BIT(in->u64, 14, 11) |
+		MUGGLE_MOVE_BIT(in->u64, 54, 12) | MUGGLE_MOVE_BIT(in->u64, 22, 13) | MUGGLE_MOVE_BIT(in->u64, 62, 14) | MUGGLE_MOVE_BIT(in->u64, 30, 15) |
+		MUGGLE_MOVE_BIT(in->u64, 37, 16) | MUGGLE_MOVE_BIT(in->u64, 5, 17)  | MUGGLE_MOVE_BIT(in->u64, 45, 18) | MUGGLE_MOVE_BIT(in->u64, 13, 19) |
+		MUGGLE_MOVE_BIT(in->u64, 53, 20) | MUGGLE_MOVE_BIT(in->u64, 21, 21) | MUGGLE_MOVE_BIT(in->u64, 61, 22) | MUGGLE_MOVE_BIT(in->u64, 29, 23) |
+		MUGGLE_MOVE_BIT(in->u64, 36, 24) | MUGGLE_MOVE_BIT(in->u64, 4, 25)  | MUGGLE_MOVE_BIT(in->u64, 44, 26) | MUGGLE_MOVE_BIT(in->u64, 12, 27) |
+		MUGGLE_MOVE_BIT(in->u64, 52, 28) | MUGGLE_MOVE_BIT(in->u64, 20, 29) | MUGGLE_MOVE_BIT(in->u64, 60, 30) | MUGGLE_MOVE_BIT(in->u64, 28, 31)
 	);
 	out->u32.h = (uint32_t)(
-		MOVE_SINGLE_BIT(in->u64, 35, 0)  | MOVE_SINGLE_BIT(in->u64, 3, 1)   | MOVE_SINGLE_BIT(in->u64, 43, 2)  | MOVE_SINGLE_BIT(in->u64, 11, 3)  |
-		MOVE_SINGLE_BIT(in->u64, 51, 4)  | MOVE_SINGLE_BIT(in->u64, 19, 5)  | MOVE_SINGLE_BIT(in->u64, 59, 6)  | MOVE_SINGLE_BIT(in->u64, 27, 7)  |
-		MOVE_SINGLE_BIT(in->u64, 34, 8)  | MOVE_SINGLE_BIT(in->u64, 2, 9)   | MOVE_SINGLE_BIT(in->u64, 42, 10) | MOVE_SINGLE_BIT(in->u64, 10, 11) |
-		MOVE_SINGLE_BIT(in->u64, 50, 12) | MOVE_SINGLE_BIT(in->u64, 18, 13) | MOVE_SINGLE_BIT(in->u64, 58, 14) | MOVE_SINGLE_BIT(in->u64, 26, 15) |
-		MOVE_SINGLE_BIT(in->u64, 33, 16) | MOVE_SINGLE_BIT(in->u64, 1, 17)  | MOVE_SINGLE_BIT(in->u64, 41, 18) | MOVE_SINGLE_BIT(in->u64, 9, 19)  |
-		MOVE_SINGLE_BIT(in->u64, 49, 20) | MOVE_SINGLE_BIT(in->u64, 17, 21) | MOVE_SINGLE_BIT(in->u64, 57, 22) | MOVE_SINGLE_BIT(in->u64, 25, 23) |
-		MOVE_SINGLE_BIT(in->u64, 32, 24) | MOVE_SINGLE_BIT(in->u64, 0, 25)  | MOVE_SINGLE_BIT(in->u64, 40, 26) | MOVE_SINGLE_BIT(in->u64, 8, 27)  |
-		MOVE_SINGLE_BIT(in->u64, 48, 28) | MOVE_SINGLE_BIT(in->u64, 16, 29) | MOVE_SINGLE_BIT(in->u64, 56, 30) | MOVE_SINGLE_BIT(in->u64, 24, 31)
+		MUGGLE_MOVE_BIT(in->u64, 35, 0)  | MUGGLE_MOVE_BIT(in->u64, 3, 1)   | MUGGLE_MOVE_BIT(in->u64, 43, 2)  | MUGGLE_MOVE_BIT(in->u64, 11, 3)  |
+		MUGGLE_MOVE_BIT(in->u64, 51, 4)  | MUGGLE_MOVE_BIT(in->u64, 19, 5)  | MUGGLE_MOVE_BIT(in->u64, 59, 6)  | MUGGLE_MOVE_BIT(in->u64, 27, 7)  |
+		MUGGLE_MOVE_BIT(in->u64, 34, 8)  | MUGGLE_MOVE_BIT(in->u64, 2, 9)   | MUGGLE_MOVE_BIT(in->u64, 42, 10) | MUGGLE_MOVE_BIT(in->u64, 10, 11) |
+		MUGGLE_MOVE_BIT(in->u64, 50, 12) | MUGGLE_MOVE_BIT(in->u64, 18, 13) | MUGGLE_MOVE_BIT(in->u64, 58, 14) | MUGGLE_MOVE_BIT(in->u64, 26, 15) |
+		MUGGLE_MOVE_BIT(in->u64, 33, 16) | MUGGLE_MOVE_BIT(in->u64, 1, 17)  | MUGGLE_MOVE_BIT(in->u64, 41, 18) | MUGGLE_MOVE_BIT(in->u64, 9, 19)  |
+		MUGGLE_MOVE_BIT(in->u64, 49, 20) | MUGGLE_MOVE_BIT(in->u64, 17, 21) | MUGGLE_MOVE_BIT(in->u64, 57, 22) | MUGGLE_MOVE_BIT(in->u64, 25, 23) |
+		MUGGLE_MOVE_BIT(in->u64, 32, 24) | MUGGLE_MOVE_BIT(in->u64, 0, 25)  | MUGGLE_MOVE_BIT(in->u64, 40, 26) | MUGGLE_MOVE_BIT(in->u64, 8, 27)  |
+		MUGGLE_MOVE_BIT(in->u64, 48, 28) | MUGGLE_MOVE_BIT(in->u64, 16, 29) | MUGGLE_MOVE_BIT(in->u64, 56, 30) | MUGGLE_MOVE_BIT(in->u64, 24, 31)
 	);
 }
 
@@ -197,14 +197,14 @@ void muggle_des_p(const muggle_32bit_block_t *in, muggle_32bit_block_t *out)
 	 *   19  13  30   6  22  11   4  25
 	 * */
 	out->u32 = (uint32_t)(
-		MOVE_SINGLE_BIT(in->u32, 15, 0)   | MOVE_SINGLE_BIT(in->u32, 6,  1)  | MOVE_SINGLE_BIT(in->u32, 19, 2)  | MOVE_SINGLE_BIT(in->u32, 20, 3)   |
-		MOVE_SINGLE_BIT(in->u32, 28, 4)   | MOVE_SINGLE_BIT(in->u32, 11, 5)  | MOVE_SINGLE_BIT(in->u32, 27, 6)  | MOVE_SINGLE_BIT(in->u32, 16, 7)   |
-		MOVE_SINGLE_BIT(in->u32, 0,  8)   | MOVE_SINGLE_BIT(in->u32, 14, 9)  | MOVE_SINGLE_BIT(in->u32, 22, 10) | MOVE_SINGLE_BIT(in->u32, 25, 11)  |
-		MOVE_SINGLE_BIT(in->u32, 4,  12)  | MOVE_SINGLE_BIT(in->u32, 17, 13) | MOVE_SINGLE_BIT(in->u32, 30, 14) | MOVE_SINGLE_BIT(in->u32, 9,  15)  |
-		MOVE_SINGLE_BIT(in->u32, 1,  16)  | MOVE_SINGLE_BIT(in->u32, 7, 17)  | MOVE_SINGLE_BIT(in->u32, 23, 18) | MOVE_SINGLE_BIT(in->u32, 13,  19) |
-		MOVE_SINGLE_BIT(in->u32, 31,  20) | MOVE_SINGLE_BIT(in->u32, 26, 21) | MOVE_SINGLE_BIT(in->u32, 2, 22)  | MOVE_SINGLE_BIT(in->u32, 8,  23)  |
-		MOVE_SINGLE_BIT(in->u32, 18,  24) | MOVE_SINGLE_BIT(in->u32, 12, 25) | MOVE_SINGLE_BIT(in->u32, 29, 26) | MOVE_SINGLE_BIT(in->u32, 5,  27)  |
-		MOVE_SINGLE_BIT(in->u32, 21,  28) | MOVE_SINGLE_BIT(in->u32, 10, 29) | MOVE_SINGLE_BIT(in->u32, 3, 30)  | MOVE_SINGLE_BIT(in->u32, 24,  31)
+		MUGGLE_MOVE_BIT(in->u32, 15, 0)   | MUGGLE_MOVE_BIT(in->u32, 6,  1)  | MUGGLE_MOVE_BIT(in->u32, 19, 2)  | MUGGLE_MOVE_BIT(in->u32, 20, 3)   |
+		MUGGLE_MOVE_BIT(in->u32, 28, 4)   | MUGGLE_MOVE_BIT(in->u32, 11, 5)  | MUGGLE_MOVE_BIT(in->u32, 27, 6)  | MUGGLE_MOVE_BIT(in->u32, 16, 7)   |
+		MUGGLE_MOVE_BIT(in->u32, 0,  8)   | MUGGLE_MOVE_BIT(in->u32, 14, 9)  | MUGGLE_MOVE_BIT(in->u32, 22, 10) | MUGGLE_MOVE_BIT(in->u32, 25, 11)  |
+		MUGGLE_MOVE_BIT(in->u32, 4,  12)  | MUGGLE_MOVE_BIT(in->u32, 17, 13) | MUGGLE_MOVE_BIT(in->u32, 30, 14) | MUGGLE_MOVE_BIT(in->u32, 9,  15)  |
+		MUGGLE_MOVE_BIT(in->u32, 1,  16)  | MUGGLE_MOVE_BIT(in->u32, 7, 17)  | MUGGLE_MOVE_BIT(in->u32, 23, 18) | MUGGLE_MOVE_BIT(in->u32, 13,  19) |
+		MUGGLE_MOVE_BIT(in->u32, 31,  20) | MUGGLE_MOVE_BIT(in->u32, 26, 21) | MUGGLE_MOVE_BIT(in->u32, 2, 22)  | MUGGLE_MOVE_BIT(in->u32, 8,  23)  |
+		MUGGLE_MOVE_BIT(in->u32, 18,  24) | MUGGLE_MOVE_BIT(in->u32, 12, 25) | MUGGLE_MOVE_BIT(in->u32, 29, 26) | MUGGLE_MOVE_BIT(in->u32, 5,  27)  |
+		MUGGLE_MOVE_BIT(in->u32, 21,  28) | MUGGLE_MOVE_BIT(in->u32, 10, 29) | MUGGLE_MOVE_BIT(in->u32, 3, 30)  | MUGGLE_MOVE_BIT(in->u32, 24,  31)
 	);
 }
 
@@ -288,23 +288,23 @@ void muggle_des_pc1(const muggle_64bit_block_t *in, muggle_64bit_block_t *out)
 	 *
 	 * */
 	out->u32.l = (uint32_t)(
-		MOVE_SINGLE_BIT(in->u64, 56, 0)  | MOVE_SINGLE_BIT(in->u64, 48, 1)  | MOVE_SINGLE_BIT(in->u64, 40, 2)  | MOVE_SINGLE_BIT(in->u64, 32, 3)  |
-		MOVE_SINGLE_BIT(in->u64, 24, 4)  | MOVE_SINGLE_BIT(in->u64, 16, 5)  | MOVE_SINGLE_BIT(in->u64, 8, 6)   | MOVE_SINGLE_BIT(in->u64, 0, 7)   |
-		MOVE_SINGLE_BIT(in->u64, 57, 8)  | MOVE_SINGLE_BIT(in->u64, 49, 9)  | MOVE_SINGLE_BIT(in->u64, 41, 10) | MOVE_SINGLE_BIT(in->u64, 33, 11) |
-		MOVE_SINGLE_BIT(in->u64, 25, 12) | MOVE_SINGLE_BIT(in->u64, 17, 13) | MOVE_SINGLE_BIT(in->u64, 9, 14)  | MOVE_SINGLE_BIT(in->u64, 1, 15)  |
-		MOVE_SINGLE_BIT(in->u64, 58, 16) | MOVE_SINGLE_BIT(in->u64, 50, 17) | MOVE_SINGLE_BIT(in->u64, 42, 18) | MOVE_SINGLE_BIT(in->u64, 34, 19) |
-		MOVE_SINGLE_BIT(in->u64, 26, 20) | MOVE_SINGLE_BIT(in->u64, 18, 21) | MOVE_SINGLE_BIT(in->u64, 10, 22) | MOVE_SINGLE_BIT(in->u64, 2, 23)  |
-		MOVE_SINGLE_BIT(in->u64, 59, 24) | MOVE_SINGLE_BIT(in->u64, 51, 25) | MOVE_SINGLE_BIT(in->u64, 43, 26) | MOVE_SINGLE_BIT(in->u64, 35, 27)
+		MUGGLE_MOVE_BIT(in->u64, 56, 0)  | MUGGLE_MOVE_BIT(in->u64, 48, 1)  | MUGGLE_MOVE_BIT(in->u64, 40, 2)  | MUGGLE_MOVE_BIT(in->u64, 32, 3)  |
+		MUGGLE_MOVE_BIT(in->u64, 24, 4)  | MUGGLE_MOVE_BIT(in->u64, 16, 5)  | MUGGLE_MOVE_BIT(in->u64, 8, 6)   | MUGGLE_MOVE_BIT(in->u64, 0, 7)   |
+		MUGGLE_MOVE_BIT(in->u64, 57, 8)  | MUGGLE_MOVE_BIT(in->u64, 49, 9)  | MUGGLE_MOVE_BIT(in->u64, 41, 10) | MUGGLE_MOVE_BIT(in->u64, 33, 11) |
+		MUGGLE_MOVE_BIT(in->u64, 25, 12) | MUGGLE_MOVE_BIT(in->u64, 17, 13) | MUGGLE_MOVE_BIT(in->u64, 9, 14)  | MUGGLE_MOVE_BIT(in->u64, 1, 15)  |
+		MUGGLE_MOVE_BIT(in->u64, 58, 16) | MUGGLE_MOVE_BIT(in->u64, 50, 17) | MUGGLE_MOVE_BIT(in->u64, 42, 18) | MUGGLE_MOVE_BIT(in->u64, 34, 19) |
+		MUGGLE_MOVE_BIT(in->u64, 26, 20) | MUGGLE_MOVE_BIT(in->u64, 18, 21) | MUGGLE_MOVE_BIT(in->u64, 10, 22) | MUGGLE_MOVE_BIT(in->u64, 2, 23)  |
+		MUGGLE_MOVE_BIT(in->u64, 59, 24) | MUGGLE_MOVE_BIT(in->u64, 51, 25) | MUGGLE_MOVE_BIT(in->u64, 43, 26) | MUGGLE_MOVE_BIT(in->u64, 35, 27)
 	);
 
 	out->u32.h = (uint32_t)(
-		MOVE_SINGLE_BIT(in->u64, 62, 0)  | MOVE_SINGLE_BIT(in->u64, 54, 1)  | MOVE_SINGLE_BIT(in->u64, 46, 2)  | MOVE_SINGLE_BIT(in->u64, 38, 3)  |
-		MOVE_SINGLE_BIT(in->u64, 30, 4)  | MOVE_SINGLE_BIT(in->u64, 22, 5)  | MOVE_SINGLE_BIT(in->u64, 14, 6)  | MOVE_SINGLE_BIT(in->u64, 6, 7)   |
-		MOVE_SINGLE_BIT(in->u64, 61, 8)  | MOVE_SINGLE_BIT(in->u64, 53, 9)  | MOVE_SINGLE_BIT(in->u64, 45, 10) | MOVE_SINGLE_BIT(in->u64, 37, 11) |
-		MOVE_SINGLE_BIT(in->u64, 29, 12) | MOVE_SINGLE_BIT(in->u64, 21, 13) | MOVE_SINGLE_BIT(in->u64, 13, 14) | MOVE_SINGLE_BIT(in->u64, 5, 15)  |
-		MOVE_SINGLE_BIT(in->u64, 60, 16) | MOVE_SINGLE_BIT(in->u64, 52, 17) | MOVE_SINGLE_BIT(in->u64, 44, 18) | MOVE_SINGLE_BIT(in->u64, 36, 19) |
-		MOVE_SINGLE_BIT(in->u64, 28, 20) | MOVE_SINGLE_BIT(in->u64, 20, 21) | MOVE_SINGLE_BIT(in->u64, 12, 22) | MOVE_SINGLE_BIT(in->u64, 4, 23)  |
-		MOVE_SINGLE_BIT(in->u64, 27, 24) | MOVE_SINGLE_BIT(in->u64, 19, 25) | MOVE_SINGLE_BIT(in->u64, 11, 26) | MOVE_SINGLE_BIT(in->u64, 3, 27)
+		MUGGLE_MOVE_BIT(in->u64, 62, 0)  | MUGGLE_MOVE_BIT(in->u64, 54, 1)  | MUGGLE_MOVE_BIT(in->u64, 46, 2)  | MUGGLE_MOVE_BIT(in->u64, 38, 3)  |
+		MUGGLE_MOVE_BIT(in->u64, 30, 4)  | MUGGLE_MOVE_BIT(in->u64, 22, 5)  | MUGGLE_MOVE_BIT(in->u64, 14, 6)  | MUGGLE_MOVE_BIT(in->u64, 6, 7)   |
+		MUGGLE_MOVE_BIT(in->u64, 61, 8)  | MUGGLE_MOVE_BIT(in->u64, 53, 9)  | MUGGLE_MOVE_BIT(in->u64, 45, 10) | MUGGLE_MOVE_BIT(in->u64, 37, 11) |
+		MUGGLE_MOVE_BIT(in->u64, 29, 12) | MUGGLE_MOVE_BIT(in->u64, 21, 13) | MUGGLE_MOVE_BIT(in->u64, 13, 14) | MUGGLE_MOVE_BIT(in->u64, 5, 15)  |
+		MUGGLE_MOVE_BIT(in->u64, 60, 16) | MUGGLE_MOVE_BIT(in->u64, 52, 17) | MUGGLE_MOVE_BIT(in->u64, 44, 18) | MUGGLE_MOVE_BIT(in->u64, 36, 19) |
+		MUGGLE_MOVE_BIT(in->u64, 28, 20) | MUGGLE_MOVE_BIT(in->u64, 20, 21) | MUGGLE_MOVE_BIT(in->u64, 12, 22) | MUGGLE_MOVE_BIT(in->u64, 4, 23)  |
+		MUGGLE_MOVE_BIT(in->u64, 27, 24) | MUGGLE_MOVE_BIT(in->u64, 19, 25) | MUGGLE_MOVE_BIT(in->u64, 11, 26) | MUGGLE_MOVE_BIT(in->u64, 3, 27)
 	);
 }
 
@@ -326,14 +326,14 @@ void muggle_des_pc2(muggle_64bit_block_t *k, muggle_des_subkey_t *sk)
 
 	uint32_t c = k->u32.l;
 	uint32_t d = k->u32.h;
-	sk->bytes[0] = MOVE_SINGLE_BIT(c, 13, 0) | MOVE_SINGLE_BIT(c, 16, 1) | MOVE_SINGLE_BIT(c, 10, 2) | MOVE_SINGLE_BIT(c, 23, 3) | MOVE_SINGLE_BIT(c, 0, 4)  | MOVE_SINGLE_BIT(c, 4, 5);
-	sk->bytes[1] = MOVE_SINGLE_BIT(c, 2, 0)  | MOVE_SINGLE_BIT(c, 27, 1) | MOVE_SINGLE_BIT(c, 14, 2) | MOVE_SINGLE_BIT(c, 5, 3)  | MOVE_SINGLE_BIT(c, 20, 4) | MOVE_SINGLE_BIT(c, 9, 5);
-	sk->bytes[2] = MOVE_SINGLE_BIT(c, 22, 0) | MOVE_SINGLE_BIT(c, 18, 1) | MOVE_SINGLE_BIT(c, 11, 2) | MOVE_SINGLE_BIT(c, 3, 3)  | MOVE_SINGLE_BIT(c, 25, 4) | MOVE_SINGLE_BIT(c, 7, 5);
-	sk->bytes[3] = MOVE_SINGLE_BIT(c, 15, 0) | MOVE_SINGLE_BIT(c, 6, 1)  | MOVE_SINGLE_BIT(c, 26, 2) | MOVE_SINGLE_BIT(c, 19, 3) | MOVE_SINGLE_BIT(c, 12, 4) | MOVE_SINGLE_BIT(c, 1, 5);
-	sk->bytes[4] = MOVE_SINGLE_BIT(d, 12, 0) | MOVE_SINGLE_BIT(d, 23, 1) | MOVE_SINGLE_BIT(d, 2, 2)  | MOVE_SINGLE_BIT(d, 8, 3)  | MOVE_SINGLE_BIT(d, 18, 4) | MOVE_SINGLE_BIT(d, 26, 4);
-	sk->bytes[5] = MOVE_SINGLE_BIT(d, 1, 0)  | MOVE_SINGLE_BIT(d, 11, 1) | MOVE_SINGLE_BIT(d, 22, 2) | MOVE_SINGLE_BIT(d, 16, 3) | MOVE_SINGLE_BIT(d, 4, 4)  | MOVE_SINGLE_BIT(d, 19, 4);
-	sk->bytes[6] = MOVE_SINGLE_BIT(d, 15, 0) | MOVE_SINGLE_BIT(d, 20, 1) | MOVE_SINGLE_BIT(d, 10, 2) | MOVE_SINGLE_BIT(d, 27, 3) | MOVE_SINGLE_BIT(d, 5, 4)  | MOVE_SINGLE_BIT(d, 24, 4);
-	sk->bytes[7] = MOVE_SINGLE_BIT(d, 17, 0) | MOVE_SINGLE_BIT(d, 13, 1) | MOVE_SINGLE_BIT(d, 21, 2) | MOVE_SINGLE_BIT(d, 7, 3)  | MOVE_SINGLE_BIT(d, 0, 4)  | MOVE_SINGLE_BIT(d, 3, 4);
+	sk->bytes[0] = MUGGLE_MOVE_BIT(c, 13, 0) | MUGGLE_MOVE_BIT(c, 16, 1) | MUGGLE_MOVE_BIT(c, 10, 2) | MUGGLE_MOVE_BIT(c, 23, 3) | MUGGLE_MOVE_BIT(c, 0, 4)  | MUGGLE_MOVE_BIT(c, 4, 5);
+	sk->bytes[1] = MUGGLE_MOVE_BIT(c, 2, 0)  | MUGGLE_MOVE_BIT(c, 27, 1) | MUGGLE_MOVE_BIT(c, 14, 2) | MUGGLE_MOVE_BIT(c, 5, 3)  | MUGGLE_MOVE_BIT(c, 20, 4) | MUGGLE_MOVE_BIT(c, 9, 5);
+	sk->bytes[2] = MUGGLE_MOVE_BIT(c, 22, 0) | MUGGLE_MOVE_BIT(c, 18, 1) | MUGGLE_MOVE_BIT(c, 11, 2) | MUGGLE_MOVE_BIT(c, 3, 3)  | MUGGLE_MOVE_BIT(c, 25, 4) | MUGGLE_MOVE_BIT(c, 7, 5);
+	sk->bytes[3] = MUGGLE_MOVE_BIT(c, 15, 0) | MUGGLE_MOVE_BIT(c, 6, 1)  | MUGGLE_MOVE_BIT(c, 26, 2) | MUGGLE_MOVE_BIT(c, 19, 3) | MUGGLE_MOVE_BIT(c, 12, 4) | MUGGLE_MOVE_BIT(c, 1, 5);
+	sk->bytes[4] = MUGGLE_MOVE_BIT(d, 12, 0) | MUGGLE_MOVE_BIT(d, 23, 1) | MUGGLE_MOVE_BIT(d, 2, 2)  | MUGGLE_MOVE_BIT(d, 8, 3)  | MUGGLE_MOVE_BIT(d, 18, 4) | MUGGLE_MOVE_BIT(d, 26, 4);
+	sk->bytes[5] = MUGGLE_MOVE_BIT(d, 1, 0)  | MUGGLE_MOVE_BIT(d, 11, 1) | MUGGLE_MOVE_BIT(d, 22, 2) | MUGGLE_MOVE_BIT(d, 16, 3) | MUGGLE_MOVE_BIT(d, 4, 4)  | MUGGLE_MOVE_BIT(d, 19, 4);
+	sk->bytes[6] = MUGGLE_MOVE_BIT(d, 15, 0) | MUGGLE_MOVE_BIT(d, 20, 1) | MUGGLE_MOVE_BIT(d, 10, 2) | MUGGLE_MOVE_BIT(d, 27, 3) | MUGGLE_MOVE_BIT(d, 5, 4)  | MUGGLE_MOVE_BIT(d, 24, 4);
+	sk->bytes[7] = MUGGLE_MOVE_BIT(d, 17, 0) | MUGGLE_MOVE_BIT(d, 13, 1) | MUGGLE_MOVE_BIT(d, 21, 2) | MUGGLE_MOVE_BIT(d, 7, 3)  | MUGGLE_MOVE_BIT(d, 0, 4)  | MUGGLE_MOVE_BIT(d, 3, 4);
 }
 
 
