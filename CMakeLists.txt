@@ -38,16 +38,23 @@ option(BUILD_TESTING "Buid testing" OFF)
 option(MUGGLE_CRYPT_COMPARE_OPENSSL "Link openssl in unittest for compare result" OFF)
 
 if (MUGGLE_BUILD_SHARED_LIB)
+	message("muggleCC build shared")
 	set(MUGGLE_LIB_TYPE SHARED)
 else()
+	message("muggleCC build static")
 	set(MUGGLE_LIB_TYPE STATIC)
 endif()
 
 if (MUGGLE_BUILD_TESTING)
+	message("muggleCC build testing on")
 	set(BUILD_TESTING ON)
+else()
+	message("muggleCC build testing off")
 endif()
 
+set(MUGGLE_TEST_LINK_OPENSSL OFF)
 if (MUGGLE_CRYPT_COMPARE_OPENSSL)
+	message("muggleCC crypt compare openssl on")
 	find_package(OpenSSL QUIET)
 	if (OPENSSL_FOUND)
 		message("Find openssl - for compare crypt result in unittest")
@@ -55,6 +62,8 @@ if (MUGGLE_CRYPT_COMPARE_OPENSSL)
 		message("Openssl libraries: ${OPENSSL_LIBRARIES}")
 		set(MUGGLE_TEST_LINK_OPENSSL ON)
 	endif()
+else()
+	message("muggleCC crypt compare openssl off")
 endif()
 
 # include directories
@@ -211,9 +220,9 @@ function(add_gtest name folder)
 	)
 
 	# link openssl
-	if (${name} MATCHES "^test_crypt*")
-		message("${name} link openssl")
-		if (MUGGLE_TEST_LINK_OPENSSL)
+	if (MUGGLE_TEST_LINK_OPENSSL)
+		if (${name} MATCHES "^test_crypt*")
+			message("${name} link openssl")
 			target_link_libraries(${name}
 				${OPENSSL_LIBRARIES}
 				)
