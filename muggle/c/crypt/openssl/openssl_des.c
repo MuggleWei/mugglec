@@ -109,6 +109,13 @@
 		openssl_des_sptrans[7][(t>>26L)&0x3f]; \
 }
 
+#define MUGGLE_OPENSSL_C2L(in, l) \
+	l = \
+	(((uint32_t)(*((in)+0)) << 0L)& 0x000000ffL) | \
+	(((uint32_t)(*((in)+1)) << 8L) & 0x0000ff00L) | \
+	(((uint32_t)(*((in)+2)) << 16L) & 0x00ff0000L) | \
+	(((uint32_t)(*((in)+3)) << 24L) & 0xff000000L)
+
 
 static const uint32_t openssl_des_skb[8][64] = {
     {
@@ -477,16 +484,8 @@ void muggle_openssl_des_set_key_unchecked(unsigned char *key, struct muggle_des_
 	uint32_t c, d, t;
 
 	// openssl des c2l
-	c = 
-		((uint32_t)key[0] & 0x000000ffL) |
-		(((uint32_t)key[1] << 8L) & 0x0000ff00L) |
-		(((uint32_t)key[2] << 16L) & 0x00ff0000L) |
-		(((uint32_t)key[3] << 24L) & 0xff000000L);
-	d = 
-		((uint32_t)key[4] & 0x000000ffL) |
-		(((uint32_t)key[5] << 8L) & 0x0000ff00L) |
-		(((uint32_t)key[6] << 16L) & 0x00ff0000L) |
-		(((uint32_t)key[7] << 24L) & 0xff000000L);
+	MUGGLE_OPENSSL_C2L(key+0,c);
+	MUGGLE_OPENSSL_C2L(key+4,d);
 
 	// PC-1
 	MUGGLE_OPENSSL_DES_PERM_OP(d, c, t, 4, 0x0f0f0f0fL);
@@ -566,30 +565,13 @@ int muggle_openssl_des_set_key_checked(unsigned char *key, struct muggle_des_sub
 	return 0;
 }
 
-void muggle_openssl_des_gen_subkeys(
-	int op,
-	const muggle_64bit_block_t *key,
-	struct muggle_des_subkeys *subkeys)
-{
-	muggle_openssl_des_set_key_unchecked((unsigned char*)key->bytes, subkeys);
-	if (op == MUGGLE_DECRYPT)
-	{
-		unsigned char bytes[8];
-		for (int i = 0; i < 8; ++i)
-		{
-			memcpy(bytes, subkeys->sk[i].bytes, 8);
-			memcpy(subkeys->sk[i].bytes, subkeys->sk[15-i].bytes, 8);
-			memcpy(subkeys->sk[15-i].bytes, bytes, 8);
-		}
-	}
-}
-
-int muggle_openssl_des_crypt(
+void muggle_openssl_encrypt1(
 	const muggle_64bit_block_t *input,
 	const struct muggle_des_subkeys *ks,
 	muggle_64bit_block_t *output)
 {
 	uint32_t l, r;
+
 	l = input->u32.l;
 	r = input->u32.h;
 
@@ -623,6 +605,44 @@ int muggle_openssl_des_crypt(
 	MUGGLE_OPENSSL_DES_FP(r, l);
 	output->u32.l = l;
 	output->u32.h = r;
+}
+
+void muggle_openssl_des_gen_subkeys(
+	int op,
+	const muggle_64bit_block_t *key,
+	struct muggle_des_subkeys *subkeys)
+{
+	muggle_openssl_des_set_key_unchecked((unsigned char*)key->bytes, subkeys);
+	if (op == MUGGLE_DECRYPT)
+	{
+		unsigned char bytes[8];
+		for (int i = 0; i < 8; ++i)
+		{
+			memcpy(bytes, subkeys->sk[i].bytes, 8);
+			memcpy(subkeys->sk[i].bytes, subkeys->sk[15-i].bytes, 8);
+			memcpy(subkeys->sk[15-i].bytes, bytes, 8);
+		}
+	}
+}
+
+int muggle_openssl_des_crypt(
+	const muggle_64bit_block_t *input,
+	const struct muggle_des_subkeys *ks,
+	muggle_64bit_block_t *output)
+{
+	uint32_t l;
+	muggle_64bit_block_t input_block;
+
+	MUGGLE_OPENSSL_C2L(input->bytes, l);
+	input_block.u32.l = l;
+
+	MUGGLE_OPENSSL_C2L(input->bytes+4, l);
+	input_block.u32.h = l;
+
+	muggle_openssl_encrypt1(&input_block, ks, output);
+
+	l = output->u32.l;
+	// TODO: to be continued...
 
 	return 0;
 }
