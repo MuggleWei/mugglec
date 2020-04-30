@@ -11,6 +11,7 @@
 #include "muggle/c/base/utils.h"
 #include "muggle/c/log/log.h"
 #include "muggle/c/crypt/internal/internal_des.h"
+#include "muggle/c/crypt/openssl/openssl_des.h"
 
 fn_muggle_des_cipher s_fn_muggle_des[] = {
 	muggle_des_ecb,
@@ -25,6 +26,9 @@ void muggle_des_gen_subkeys(
 	const muggle_64bit_block_t *key,
 	muggle_des_subkeys_t *subkeys)
 {
+#if MUGGLE_CRYPT_USE_OPENSSL
+	muggle_openssl_des_gen_subkeys(op, key, subkeys);
+#else
 	muggle_64bit_block_t out;
 
 	// PC-1
@@ -66,6 +70,7 @@ void muggle_des_gen_subkeys(
 		}
 		muggle_des_pc2(&out, &subkeys->sk[idx]);
 	}
+#endif
 }
 
 
@@ -74,6 +79,9 @@ int muggle_des_crypt(
 	const muggle_des_subkeys_t *ks,
 	muggle_64bit_block_t *output)
 {
+#if MUGGLE_CRYPT_USE_OPENSSL
+	return muggle_openssl_des_crypt(input, ks, output);
+#else
 	muggle_64bit_block_t b64;
 	muggle_32bit_block_t b32;
 	uint32_t tmp;
@@ -115,6 +123,7 @@ int muggle_des_crypt(
 	muggle_des_fp(&b64, output);
 
 	return 0;
+#endif
 }
 
 int muggle_des_cipher(

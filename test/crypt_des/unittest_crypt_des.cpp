@@ -314,6 +314,7 @@ TEST(crypt_des, EncrypDecrypt)
 		{0x54, 0x68, 0x65, 0x20, 0x71, 0x75, 0x66, 0x63}
 	};
 
+	int ret = 0;
 	for (size_t i = 0; i < sizeof(keys) / sizeof(keys[0]); i++)
 	{
 		for (size_t j = 0; j < sizeof(plaintexts) / sizeof(plaintexts[0]); j++)
@@ -340,7 +341,7 @@ TEST(crypt_des, EncrypDecrypt)
 			// decrypt
 			muggle_des_crypt(&ciphertext, &ks, &decrypt_ret);
 
-			int ret = memcmp(plaintext.bytes, decrypt_ret.bytes, 8);
+			ret = memcmp(plaintext.bytes, decrypt_ret.bytes, 8);
 			ASSERT_EQ(ret, 0);
 
 #if MUGGLE_TEST_LINK_OPENSSL
