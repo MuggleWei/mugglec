@@ -14,8 +14,9 @@
 
 #include "openssl_des.h"
 #include <string.h>
-#include "muggle/c/crypt/des.h"
 #include "muggle/c/crypt/parity.h"
+#include "muggle/c/crypt/des.h"
+#include "muggle/c/crypt/internal/internal_des.h"
 
 /*
 
@@ -78,14 +79,10 @@
 		MUGGLE_OPENSSL_DES_PERM_OP(r,l,tt, 2,0x33333333L); \
 		MUGGLE_OPENSSL_DES_PERM_OP(l,r,tt, 8,0x00ff00ffL); \
 		MUGGLE_OPENSSL_DES_PERM_OP(r,l,tt, 1,0x55555555L); \
-		l=MUGGLE_OPENSSL_DES_ROTATE(l,29) & 0xffffffffL; \
-		r=MUGGLE_OPENSSL_DES_ROTATE(r,29) & 0xffffffffL; \
 	}
 
 #define MUGGLE_OPENSSL_DES_FP(l,r) \
 	{ \
- 		l=MUGGLE_OPENSSL_DES_ROTATE(l,3) & 0xffffffffL; \
- 		r=MUGGLE_OPENSSL_DES_ROTATE(r,3) & 0xffffffffL; \
 		register uint32_t tt; \
 		MUGGLE_OPENSSL_DES_PERM_OP(l,r,tt, 1,0x55555555L); \
 		MUGGLE_OPENSSL_DES_PERM_OP(r,l,tt, 8,0x00ff00ffL); \
@@ -109,13 +106,18 @@
 		openssl_des_sptrans[7][(t>>26L)&0x3f]; \
 }
 
-#define MUGGLE_OPENSSL_C2L(in, l) \
+#define MUGGLE_OPENSSL_C2L(c, l) \
 	l = \
-	(((uint32_t)(*((in)+0)) << 0L)& 0x000000ffL) | \
-	(((uint32_t)(*((in)+1)) << 8L) & 0x0000ff00L) | \
-	(((uint32_t)(*((in)+2)) << 16L) & 0x00ff0000L) | \
-	(((uint32_t)(*((in)+3)) << 24L) & 0xff000000L)
+		(((uint32_t)(*((c)+0)) << 0L)& 0x000000ffL) | \
+		(((uint32_t)(*((c)+1)) << 8L) & 0x0000ff00L) | \
+		(((uint32_t)(*((c)+2)) << 16L) & 0x00ff0000L) | \
+		(((uint32_t)(*((c)+3)) << 24L) & 0xff000000L)
 
+#define MUGGLE_OPENSSL_L2C(l, c) (\
+		*((c)+0)=(unsigned char)(((l)>>24L)&0xff), \
+		*((c)+1)=(unsigned char)(((l)>>16L)&0xff), \
+		*((c)+2)=(unsigned char)(((l)>>8L)&0xff), \
+		*((c)+3)=(unsigned char)(((l)>>0L)&0xff))
 
 static const uint32_t openssl_des_skb[8][64] = {
     {
@@ -572,15 +574,15 @@ void muggle_openssl_encrypt1(
 {
 	uint32_t l, r;
 
-	l = input->u32.l;
-	r = input->u32.h;
+	r = input->u32.l;
+	l = input->u32.h;
 
 	MUGGLE_OPENSSL_DES_IP(r, l);
 
 	r = MUGGLE_OPENSSL_DES_ROTATE(r, 29) & 0xffffffffL;
 	l = MUGGLE_OPENSSL_DES_ROTATE(l, 29) & 0xffffffffL;
 
-	const uint32_t *ks_u32 = (const uint32_t*)&ks->sk[0].bytes[0];
+	const uint32_t *ks_u32 = (const uint32_t*)&ks->sk[0];
 
 	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 0);     /* 1 */
 	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 2);     /* 2 */
@@ -603,6 +605,7 @@ void muggle_openssl_encrypt1(
 	r = MUGGLE_OPENSSL_DES_ROTATE(r, 3) & 0xffffffffL;
 
 	MUGGLE_OPENSSL_DES_FP(r, l);
+
 	output->u32.l = l;
 	output->u32.h = r;
 }
@@ -630,19 +633,6 @@ int muggle_openssl_des_crypt(
 	const struct muggle_des_subkeys *ks,
 	muggle_64bit_block_t *output)
 {
-	uint32_t l;
-	muggle_64bit_block_t input_block;
-
-	MUGGLE_OPENSSL_C2L(input->bytes, l);
-	input_block.u32.l = l;
-
-	MUGGLE_OPENSSL_C2L(input->bytes+4, l);
-	input_block.u32.h = l;
-
-	muggle_openssl_encrypt1(&input_block, ks, output);
-
-	l = output->u32.l;
-	// TODO: to be continued...
-
+	muggle_openssl_encrypt1(input, ks, output);
 	return 0;
 }

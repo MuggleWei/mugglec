@@ -57,6 +57,70 @@ void crypt_des_test(int block_cipher_mode)
 		}
 		ASSERT_EQ(ret, 0);
 		ASSERT_EQ(iv.u64, iv2.u64);
+
+#if MUGGLE_TEST_LINK_OPENSSL
+		const_DES_cblock *openssl_key = (const_DES_cblock*)&key;
+		DES_key_schedule openssl_ks;
+		DES_set_key_unchecked(openssl_key, &openssl_ks);
+
+		DES_cblock openssl_iv;
+		memcpy(openssl_iv, iv_save.bytes, 8);
+		unsigned char openssl_output[EXAMPLE_MESSAGE_LEN];
+
+		int do_compare = 1;
+		switch (block_cipher_mode)
+		{
+		case MUGGLE_BLOCK_CIPHER_MODE_CBC:
+			{
+				DES_ncbc_encrypt(input, openssl_output, num_bytes, &openssl_ks, &openssl_iv, DES_ENCRYPT);
+			}break;
+		case MUGGLE_BLOCK_CIPHER_MODE_CFB:
+			{
+				// TODO: numbit
+				// DES_cfb_encrypt(input, openssl_output, 0, num_bytes, &openssl_ks, &openssl_iv, DES_ENCRYPT);
+				do_compare = 0;
+			}break;
+		case MUGGLE_BLOCK_CIPHER_MODE_OFB:
+			{
+				// TODO: numbit
+				// DES_ofb_encrypt(input, openssl_output, 0, num_bytes, &openssl_ks, &openssl_iv, DES_ENCRYPT);
+				do_compare = 0;
+			}break;
+		case MUGGLE_BLOCK_CIPHER_MODE_CTR:
+			{
+				do_compare = 0;
+			}break;
+		default:
+			{
+				do_compare = 0;
+			}
+		}
+
+		if (do_compare == 0)
+		{
+			continue;
+		}
+
+		ret = memcmp(ciphertext, openssl_output, num_bytes);
+		if (ret != 0)
+		{
+			printf("muggle ciphertext: ");
+			muggle_output_hex(ciphertext, 8, 16);
+			printf("openssl ciphertext: ");
+			muggle_output_hex(openssl_output, 8, 16);
+		}
+		ASSERT_EQ(ret, 0);
+
+		ret = memcmp(iv.bytes, openssl_iv, 8);
+		if (ret != 0)
+		{
+			printf("muggle iv: ");
+			muggle_output_hex(iv.bytes, 8, 0);
+			printf("openssl iv: ");
+			muggle_output_hex(openssl_iv, 8, 0);
+		}
+		ASSERT_EQ(ret, 0);
+#endif
 	}
 }
 
@@ -331,11 +395,6 @@ TEST(crypt_des, EncrypDecrypt)
 
 			// encrypt genkey
 			muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key, &ks);
-			for (int k = 0; k < 16; k++)
-			{
-				printf("sub key[%d]: ", k);
-				muggle_output_hex(ks.sk[k].bytes, 8, 0);
-			}
 
 			// encrypt
 			muggle_des_crypt(&plaintext, &ks, &ciphertext);
@@ -371,7 +430,6 @@ TEST(crypt_des, EncrypDecrypt)
 	}
 }
 
-/*
 TEST(crypt_des, ecb)
 {
 	crypt_des_test(MUGGLE_BLOCK_CIPHER_MODE_ECB);
@@ -396,4 +454,3 @@ TEST(crypt_des, ctr)
 {
 	crypt_des_test(MUGGLE_BLOCK_CIPHER_MODE_CTR);
 }
-*/
