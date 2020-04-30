@@ -8,15 +8,116 @@
 /*
  * Compatibility with openssl
  *
- * this header file and the corresponding head file are
- * all copied and modified from openssl(Apache License v2.0)
+ * this file are copied and modified from openssl(Apache License v2.0)
  *
  * */
 
 #include "openssl_des.h"
 #include <string.h>
-#include "muggle/c/crypt/des.h"
 #include "muggle/c/crypt/parity.h"
+#include "muggle/c/crypt/des.h"
+#include "muggle/c/crypt/internal/internal_des.h"
+
+/*
+
+    permutation operation in openssl is very interesting, as comment in openssl 
+    said: "The problem is more of a geometric problem that random bit fiddling"
+
+    a simple case is 16 bit writen as 4x4 matrix:
+    
+    PERM_OP:
+        T = [(L >> n) ^ R] & m
+        R = R ^ T
+        l = L ^ (T << n)
+    
+    L = l00 l01 l02 l03  R = r00 r01 r02 r03  M = m00 m01 m02 m03
+        l04 l05 l06 l07      r04 r05 r06 r07      m04 m05 m06 m07
+        l08 l09 l10 l11      r08 r09 r10 r11      m08 m09 m10 m11
+        l12 l13 l14 l15      r12 r13 r14 r15      m12 m13 m14 m15
+    
+    e.g. shift 1 with mask 0x55(01010101)
+    T = (l01^r00) 0 (l03^r02) 0
+	    (l05^r04) 0 (l07^r06) 0
+	    (l09^r08) 0 (l11^r10) 0     
+	    (l13^r12) 0 (l15^r14) 0     
+
+    R = R ^ T = R = l01 r01 l03 r03 
+                    l05 r05 l07 r07 
+                    l09 r09 l11 r11 
+                    l13 r13 l15 r15 
+	
+	L = L ^ (T << 1) = l00 r00 l02 r02
+                       l04 r04 l06 r06
+                       l08 r08 l10 r10
+                       l12 r12 l14 r14
+	
+    easy to roll out other operations: 
+        shift 2 with mask 0x33... (00110011)
+        shift 4 with mask 0x0f... (00001111)
+        shift 8 with mask 0x00ff... (0000 0000 1111 1111)
+		shift 16 with mask 0x0000ffff... (0000 0000 0000 0000 1111 1111 1111 1111)
+
+*/
+
+#define MUGGLE_OPENSSL_DES_PERM_OP(a,b,t,n,m) \
+	((t)=((((a)>>(n))^(b))&(m)), \
+    (b)^=(t),\
+    (a)^=((t)<<(n)))
+
+#define MUGGLE_OPENSSL_DES_HPERM_OP(a,t,n,m) \
+	((t)=((((a)<<(16-(n)))^(a))&(m)), \
+	(a)=(a)^(t)^(t>>(16-(n))))\
+
+#define MUGGLE_OPENSSL_DES_ROTATE(v, n) \
+	((v)>>(n))+((v)<<(32-(n)))
+
+#define MUGGLE_OPENSSL_DES_IP(l,r) \
+	{ \
+		register uint32_t tt; \
+		MUGGLE_OPENSSL_DES_PERM_OP(r,l,tt, 4,0x0f0f0f0fL); \
+		MUGGLE_OPENSSL_DES_PERM_OP(l,r,tt,16,0x0000ffffL); \
+		MUGGLE_OPENSSL_DES_PERM_OP(r,l,tt, 2,0x33333333L); \
+		MUGGLE_OPENSSL_DES_PERM_OP(l,r,tt, 8,0x00ff00ffL); \
+		MUGGLE_OPENSSL_DES_PERM_OP(r,l,tt, 1,0x55555555L); \
+	}
+
+#define MUGGLE_OPENSSL_DES_FP(l,r) \
+	{ \
+		register uint32_t tt; \
+		MUGGLE_OPENSSL_DES_PERM_OP(l,r,tt, 1,0x55555555L); \
+		MUGGLE_OPENSSL_DES_PERM_OP(r,l,tt, 8,0x00ff00ffL); \
+		MUGGLE_OPENSSL_DES_PERM_OP(l,r,tt, 2,0x33333333L); \
+		MUGGLE_OPENSSL_DES_PERM_OP(r,l,tt,16,0x0000ffffL); \
+		MUGGLE_OPENSSL_DES_PERM_OP(l,r,tt, 4,0x0f0f0f0fL); \
+	}
+
+#define MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, idx) {\
+	uint32_t u = (r)^(ks_u32)[idx]; \
+	uint32_t t = r^(ks_u32)[idx+1]; \
+	t = MUGGLE_OPENSSL_DES_ROTATE(t, 4); \
+	(l) ^= \
+		openssl_des_sptrans[0][(u>> 2L)&0x3f]^ \
+		openssl_des_sptrans[2][(u>>10L)&0x3f]^ \
+		openssl_des_sptrans[4][(u>>18L)&0x3f]^ \
+		openssl_des_sptrans[6][(u>>26L)&0x3f]^ \
+		openssl_des_sptrans[1][(t>> 2L)&0x3f]^ \
+		openssl_des_sptrans[3][(t>>10L)&0x3f]^ \
+		openssl_des_sptrans[5][(t>>18L)&0x3f]^ \
+		openssl_des_sptrans[7][(t>>26L)&0x3f]; \
+}
+
+#define MUGGLE_OPENSSL_C2L(c, l) \
+	l = \
+		(((uint32_t)(*((c)+0)) << 0L)& 0x000000ffL) | \
+		(((uint32_t)(*((c)+1)) << 8L) & 0x0000ff00L) | \
+		(((uint32_t)(*((c)+2)) << 16L) & 0x00ff0000L) | \
+		(((uint32_t)(*((c)+3)) << 24L) & 0xff000000L)
+
+#define MUGGLE_OPENSSL_L2C(l, c) (\
+		*((c)+0)=(unsigned char)(((l)>>24L)&0xff), \
+		*((c)+1)=(unsigned char)(((l)>>16L)&0xff), \
+		*((c)+2)=(unsigned char)(((l)>>8L)&0xff), \
+		*((c)+3)=(unsigned char)(((l)>>0L)&0xff))
 
 static const uint32_t openssl_des_skb[8][64] = {
     {
@@ -376,36 +477,17 @@ static int openssl_des_is_weak_key(unsigned char *key)
 	return 0;
 }
 
-int muggle_openssl_des_set_key_checked(unsigned char *key, struct muggle_des_subkeys *ks)
-{
-	if (!openssl_des_check_key_parity(key))
-	{
-		return -1;
-	}
-	if (openssl_des_is_weak_key(key))
-	{
-		return -2;
-	}
-
-	muggle_openssl_des_set_key_unchecked(key, ks);
-	return 0;
-}
-
+/*
+ * equal to openssl - DES_set_key_unchecked
+ * @key: 64bit char array
+ * */
 void muggle_openssl_des_set_key_unchecked(unsigned char *key, struct muggle_des_subkeys *ks)
 {
 	uint32_t c, d, t;
 
 	// openssl des c2l
-	c = 
-		((uint32_t)key[0] & 0x000000ffL) |
-		(((uint32_t)key[1] << 8L) & 0x0000ff00L) |
-		(((uint32_t)key[2] << 16L) & 0x00ff0000L) |
-		(((uint32_t)key[3] << 24L) & 0xff000000L);
-	d = 
-		((uint32_t)key[4] & 0x000000ffL) |
-		(((uint32_t)key[5] << 8L) & 0x0000ff00L) |
-		(((uint32_t)key[6] << 16L) & 0x00ff0000L) |
-		(((uint32_t)key[7] << 24L) & 0xff000000L);
+	MUGGLE_OPENSSL_C2L(key+0,c);
+	MUGGLE_OPENSSL_C2L(key+4,d);
 
 	// PC-1
 	MUGGLE_OPENSSL_DES_PERM_OP(d, c, t, 4, 0x0f0f0f0fL);
@@ -453,25 +535,104 @@ void muggle_openssl_des_set_key_unchecked(unsigned char *key, struct muggle_des_
 
         /* table contained 0213 4657 */
         t2 = ((t << 16L) | (s & 0x0000ffffL)) & 0xffffffffL;
-		ks->subkey[i].u32.l = MUGGLE_OPENSSL_DES_ROTATE(t2, 30) & 0xffffffffL;
+		t2 = MUGGLE_OPENSSL_DES_ROTATE(t2, 30) & 0xffffffffL;
+		memcpy(&ks->sk[i].bytes[0], &t2, sizeof(t2));
 
         t2 = ((s >> 16L) | (t & 0xffff0000L));
-        ks->subkey[i].u32.h = MUGGLE_OPENSSL_DES_ROTATE(t2, 26) & 0xffffffffL;
+        t2 = MUGGLE_OPENSSL_DES_ROTATE(t2, 26) & 0xffffffffL;
+		memcpy(&ks->sk[i].bytes[4], &t2, sizeof(t2));
 	}
 }
 
-uint32_t muggle_openssl_des_sbox(muggle_64bit_block_t block)
+/*
+ * equal to openssl - DES_set_key_checked
+ * @key: 64bit char array
+ * RETURN:
+ * 	return 0 if key parity is odd (correct)
+ * 	return -1 if key parity error
+ * 	return -2 if illegal weak key
+ * */
+int muggle_openssl_des_set_key_checked(unsigned char *key, struct muggle_des_subkeys *ks)
 {
-	uint32_t u = block.u32.l;
-	uint32_t t = block.u32.h;
-	t = MUGGLE_OPENSSL_DES_ROTATE(t,4);
-	return 
-		openssl_des_sptrans[0][(u>> 2L)&0x3f]^
-		openssl_des_sptrans[2][(u>>10L)&0x3f]^
-		openssl_des_sptrans[4][(u>>18L)&0x3f]^
-		openssl_des_sptrans[6][(u>>26L)&0x3f]^
-		openssl_des_sptrans[1][(t>> 2L)&0x3f]^
-		openssl_des_sptrans[3][(t>>10L)&0x3f]^
-		openssl_des_sptrans[5][(t>>18L)&0x3f]^
-		openssl_des_sptrans[7][(t>>26L)&0x3f];
+	if (!openssl_des_check_key_parity(key))
+	{
+		return -1;
+	}
+	if (openssl_des_is_weak_key(key))
+	{
+		return -2;
+	}
+
+	muggle_openssl_des_set_key_unchecked(key, ks);
+	return 0;
+}
+
+void muggle_openssl_encrypt1(
+	const muggle_64bit_block_t *input,
+	const struct muggle_des_subkeys *ks,
+	muggle_64bit_block_t *output)
+{
+	uint32_t l, r;
+
+	r = input->u32.l;
+	l = input->u32.h;
+
+	MUGGLE_OPENSSL_DES_IP(r, l);
+
+	r = MUGGLE_OPENSSL_DES_ROTATE(r, 29) & 0xffffffffL;
+	l = MUGGLE_OPENSSL_DES_ROTATE(l, 29) & 0xffffffffL;
+
+	const uint32_t *ks_u32 = (const uint32_t*)&ks->sk[0];
+
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 0);     /* 1 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 2);     /* 2 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 4);     /* 3 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 6);     /* 4 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 8);     /* 5 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 10);    /* 6 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 12);    /* 7 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 14);    /* 8 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 16);    /* 9 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 18);    /* 10 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 20);    /* 11 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 22);    /* 12 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 24);    /* 13 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 26);    /* 14 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 28);    /* 15 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 30);    /* 16 */
+
+	l = MUGGLE_OPENSSL_DES_ROTATE(l, 3) & 0xffffffffL;
+	r = MUGGLE_OPENSSL_DES_ROTATE(r, 3) & 0xffffffffL;
+
+	MUGGLE_OPENSSL_DES_FP(r, l);
+
+	output->u32.l = l;
+	output->u32.h = r;
+}
+
+void muggle_openssl_des_gen_subkeys(
+	int op,
+	const muggle_64bit_block_t *key,
+	struct muggle_des_subkeys *subkeys)
+{
+	muggle_openssl_des_set_key_unchecked((unsigned char*)key->bytes, subkeys);
+	if (op == MUGGLE_DECRYPT)
+	{
+		unsigned char bytes[8];
+		for (int i = 0; i < 8; ++i)
+		{
+			memcpy(bytes, subkeys->sk[i].bytes, 8);
+			memcpy(subkeys->sk[i].bytes, subkeys->sk[15-i].bytes, 8);
+			memcpy(subkeys->sk[15-i].bytes, bytes, 8);
+		}
+	}
+}
+
+int muggle_openssl_des_crypt(
+	const muggle_64bit_block_t *input,
+	const struct muggle_des_subkeys *ks,
+	muggle_64bit_block_t *output)
+{
+	muggle_openssl_encrypt1(input, ks, output);
+	return 0;
 }

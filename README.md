@@ -13,11 +13,15 @@ cmake .. \
     -DMUGGLE_BUILD_EXAMPLE=ON \
     -DMUGGLE_BUILD_TESTING=OFF \
     -DMUGGLE_BUILD_BENCHMARK=OFF \
-    -DBUILD_TESTING=OFF
+    -DBUILD_TESTING=OFF \
+	-DMUGGLE_CRYPT_OPTIMIZATION=ON \
+	-DMUGGLE_CRYPT_COMPARE_OPENSSL=OFF
 ```
-* MUGGLE_BUILD_TRACE: just for debug, you will never switch it on   
-* MUGGLE_BUILD_SHARED_LIB: build shared lib or static lib   
-* MUGGLE_BUILD_EXAMPLE: build muggleCC examples   
-* MUGGLE_BUILD_TESTING: build muggleCC testings, if it's on, BUILD_TESTING will be set ON   
-* MUGGLE_BUILD_BENCHMARK: for performance test   
-* BUILD_TESTING: build gtest, if it's on, will download gtest in first time of cmake build, if you need gtest, don't download repeatedly   
+* MUGGLE_BUILD_TRACE: Just for debug, you will never switch it on   
+* MUGGLE_BUILD_SHARED_LIB: Build shared lib or static lib   
+* MUGGLE_BUILD_EXAMPLE: Build muggleCC examples   
+* MUGGLE_BUILD_TESTING: Build muggleCC unittest, if it's on, BUILD_TESTING will be set ON   
+* MUGGLE_BUILD_BENCHMARK: Build muggleCC performance test   
+* BUILD_TESTING: Build gtest, if it's on, will download gtest in first time of cmake build, if you need gtest, don't download repeatedly   
+* MUGGLE_CRYPT_OPTIMIZATION: For user, always switch it on. Crypt in muggleCC split two part, one part is easy to understand but inefficient, another part is extract from openssl, efficient but hard to read. if this option switch on, will use the part extract from openssl(recommended)
+* MUGGLE_CRYPT_COMPARE_OPENSSL: Compare result of cipher with openssl in unittest, if it's on, will try to link openssl to compare result of crypt

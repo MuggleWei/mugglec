@@ -35,16 +35,40 @@ option(MUGGLE_BUILD_EXAMPLE "Build muggleCC example" OFF)
 option(MUGGLE_BUILD_TESTING "Build muggleCC test" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build muggleCC benchmark" OFF)
 option(BUILD_TESTING "Buid testing" OFF)
+option(MUGGLE_CRYPT_OPTIMIZATION "Enable crypt optimization(use source codes extract from openssl)" ON)
+option(MUGGLE_CRYPT_COMPARE_OPENSSL "Link openssl in unittest for compare result" OFF)
 
-if (MUGGLE_BUILD_TESTING)
-	set(BUILD_TESTING ON)
-endif()
-
+# output options
+message("-- option MUGGLE_BUILD_TRACE ${MUGGLE_BUILD_TRACE}")
+message("-- option MUGGLE_BUILD_SHARED_LIB ${MUGGLE_BUILD_SHARED_LIB}")
+message("-- option MUGGLE_BUILD_EXAMPLE ${MUGGLE_BUILD_EXAMPLE}")
+message("-- option MUGGLE_BUILD_TESTING ${MUGGLE_BUILD_TESTING}")
+message("-- option MUGGLE_BUILD_BENCHMARK ${MUGGLE_BUILD_BENCHMARK}")
+message("-- option BUILD_TESTING ${BUILD_TESTING}")
+message("-- option MUGGLE_CRYPT_OPTIMIZATION ${MUGGLE_CRYPT_OPTIMIZATION}")
+message("-- option MUGGLE_CRYPT_COMPARE_OPENSSL ${MUGGLE_CRYPT_COMPARE_OPENSSL}")
 
 if (MUGGLE_BUILD_SHARED_LIB)
 	set(MUGGLE_LIB_TYPE SHARED)
 else()
 	set(MUGGLE_LIB_TYPE STATIC)
+endif()
+
+if (MUGGLE_BUILD_TESTING)
+	set(BUILD_TESTING ON)
+endif()
+
+set(MUGGLE_TEST_LINK_OPENSSL OFF)
+if (MUGGLE_CRYPT_COMPARE_OPENSSL)
+	find_package(OpenSSL QUIET)
+	if (OPENSSL_FOUND)
+		message("-- Find openssl - for compare crypt result in unittest")
+		message("-- Openssl include dir: ${OPENSSL_INCLUDE_DIR}")
+		message("-- Openssl libraries: ${OPENSSL_LIBRARIES}")
+		set(MUGGLE_TEST_LINK_OPENSSL ON)
+	else()
+		message("-- Can't find Openssl, option MUGGLE_CRYPT_COMPARE_OPENSSL OFF")
+	endif()
 endif()
 
 # include directories
@@ -111,6 +135,13 @@ if (MUGGLE_BUILD_SHARED_LIB)
 		PRIVATE MUGGLE_BENCHMARK_EXPORTS 
 	)
 endif()
+
+if (MUGGLE_CRYPT_OPTIMIZATION)
+	target_compile_definitions(${muggle_cc}
+		PUBLIC MUGGLE_CRYPT_USE_OPENSSL
+	)
+endif()
+
 
 # install
 install(TARGETS ${muggle_cc}
@@ -199,6 +230,23 @@ function(add_gtest name folder)
 		${muggle_cc}
 		gtest_main
 	)
+
+	# link openssl
+	if (MUGGLE_TEST_LINK_OPENSSL)
+		if (${name} MATCHES "^test_crypt*")
+			message("${name} link openssl")
+			target_link_libraries(${name}
+				${OPENSSL_LIBRARIES}
+			)
+			target_include_directories(${name} PUBLIC
+				${OPENSSL_INCLUDE_DIR}
+			)
+			target_compile_definitions(${name}
+				PUBLIC MUGGLE_TEST_LINK_OPENSSL
+			)
+		endif()
+	endif()
+
 	add_test(NAME ${name} COMMAND ${name})
 endfunction()
 

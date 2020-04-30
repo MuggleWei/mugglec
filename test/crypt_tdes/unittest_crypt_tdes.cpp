@@ -1,10 +1,12 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
+#define EXAMPLE_MESSAGE_LEN 512
+
 void gen_input_var(
-	muggle_des_key_block *key1,
-	muggle_des_key_block *key2,
-	muggle_des_key_block *key3,
+	muggle_64bit_block_t *key1,
+	muggle_64bit_block_t *key2,
+	muggle_64bit_block_t *key3,
 	muggle_64bit_block_t *iv,
 	unsigned char *input, unsigned int num_bytes)
 {
@@ -23,43 +25,43 @@ void gen_input_var(
 	}
 }
 
-void crypt_tdes_test(int mode)
+void crypt_tdes_test(int block_cipher_mode)
 {
 	int ret;
-	muggle_des_key_block key1, key2, key3;
+	muggle_64bit_block_t key1, key2, key3;
 	muggle_64bit_block_t iv, iv2, iv_save;
-	unsigned char input[64], ciphertext[64], plaintext[64];
-	for (int i = 0; i < 1024; ++i)
+	unsigned char input[EXAMPLE_MESSAGE_LEN], ciphertext[EXAMPLE_MESSAGE_LEN], plaintext[EXAMPLE_MESSAGE_LEN];
+	unsigned int num_bytes = (unsigned int)sizeof(input);
+
+	for (int i = 0; i < 16; ++i)
 	{
-		gen_input_var(&key1, &key2, &key3, &iv, input, sizeof(input));
+		gen_input_var(&key1, &key2, &key3, &iv, input, num_bytes);
 		iv_save.u64 = iv2.u64 = iv.u64;
 
-		ret = muggle_tdes_cipher(mode, MUGGLE_ENCRYPT, input, ciphertext, sizeof(input), key1, key2, key3, &iv, 1, NULL, NULL);
-		ASSERT_EQ(ret, 0);
+		muggle_tdes_cipher(block_cipher_mode, MUGGLE_ENCRYPT,
+			key1, key2, key3, input, num_bytes, &iv, 1, ciphertext);
+		muggle_tdes_cipher(block_cipher_mode, MUGGLE_DECRYPT,
+			key1, key2, key3, ciphertext, num_bytes, &iv2, 1, plaintext);
 
-		ret = muggle_tdes_cipher(mode, MUGGLE_DECRYPT, ciphertext, plaintext, sizeof(input), key1, key2, key3, &iv2, 1, NULL, NULL);
-		ASSERT_EQ(ret, 0);
-
-		ret = memcmp(input, plaintext, sizeof(input));
+		ret = memcmp(input, plaintext, EXAMPLE_MESSAGE_LEN);
 		if (ret != 0)
 		{
-			printf("key1: ");
-			muggle_output_hex((unsigned char*)key1.bytes, 8, 0);
-			printf("key2: ");
-			muggle_output_hex((unsigned char*)key2.bytes, 8, 0);
-			printf("key3: ");
-			muggle_output_hex((unsigned char*)key3.bytes, 8, 0);
+			printf("keys1: ");
+			muggle_output_hex(key1.bytes, 8, 0);
+			printf("keys2: ");
+			muggle_output_hex(key2.bytes, 8, 0);
+			printf("keys3: ");
+			muggle_output_hex(key3.bytes, 8, 0);
 			printf("iv: ");
 			muggle_output_hex((unsigned char*)iv_save.bytes, 8, 0);
 			printf("input: \n");
-			muggle_output_hex((unsigned char*)input, 64, 8);
+			muggle_output_hex(input, num_bytes, 16);
 			printf("ciphertext: \n");
-			muggle_output_hex((unsigned char*)ciphertext, 64, 8);
+			muggle_output_hex(ciphertext, num_bytes, 16);
 			printf("plaintext: \n");
-			muggle_output_hex((unsigned char*)plaintext, 64, 8);
+			muggle_output_hex(plaintext, num_bytes, 16);
 		}
 		ASSERT_EQ(ret, 0);
-
 		ASSERT_EQ(iv.u64, iv2.u64);
 	}
 }
