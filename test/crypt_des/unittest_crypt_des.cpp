@@ -105,9 +105,9 @@ void crypt_des_test(int block_cipher_mode)
 		if (ret != 0)
 		{
 			printf("muggle ciphertext: ");
-			muggle_output_hex(ciphertext, 8, 16);
+			muggle_output_hex(ciphertext, EXAMPLE_MESSAGE_LEN, 16);
 			printf("openssl ciphertext: ");
-			muggle_output_hex(openssl_output, 8, 16);
+			muggle_output_hex(openssl_output, EXAMPLE_MESSAGE_LEN, 16);
 		}
 		ASSERT_EQ(ret, 0);
 

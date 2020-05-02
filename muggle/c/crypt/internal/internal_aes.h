@@ -37,6 +37,18 @@ void muggle_aes_shift_rows(unsigned char *state);
  * */
 void muggle_aes_inv_shift_rows(unsigned char *state);
 
+/*
+ * AES Mix Column
+ * @param state a rectangular array of 16 bytes
+ * */
+void muggle_aes_mix_column(unsigned char *state);
+
+/*
+ * AES Inv Mix Column
+ * @param state a rectangular array of 16 bytes
+ * */
+void muggle_aes_inv_mix_column(unsigned char *state);
+
 EXTERN_C_END
 
 #endif

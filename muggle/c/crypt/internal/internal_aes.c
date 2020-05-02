@@ -1,4 +1,5 @@
 #include "internal_aes.h"
+#include <string.h>
 
 static const unsigned char s_muggle_aes_sbox[256] = {
 	0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -37,6 +38,58 @@ static const unsigned char s_muggle_aes_inv_sbox[256] = {
 	0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61,
 	0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
 };
+
+static const unsigned char s_muggle_aes_mix_column[16] = {
+	0x02, 0x03, 0x01, 0x01,
+	0x01, 0x02, 0x03, 0x01,
+	0x01, 0x01, 0x02, 0x03,
+	0x03, 0x01, 0x01, 0x02
+};
+
+static const unsigned char s_muggle_aes_inv_mix_column[16] = {
+	0x0e, 0x0b, 0x0d, 0x09,
+	0x09, 0x0e, 0x0b, 0x0d,
+	0x0d, 0x09, 0x0e, 0x0b,
+	0x0b, 0x0d, 0x09, 0x0e,
+};
+
+/* 
+ * From: https://en.wikipedia.org/wiki/Finite_field_arithmetic#Rijndael's_(AES)_finite_field
+ * Multiply two numbers in the GF(2^8) finite field defined 
+ * by the polynomial x^8 + x^4 + x^3 + x + 1 = 0
+ * using the Russian Peasant Multiplication algorithm
+ * (the other way being to do carry-less multiplication followed by a modular reduction)
+ *
+ * NOTE: 
+ * This example has cache, timing, and branch prediction side-channel leaks, and is not suitable for use in cryptography.
+ * This function only use for explain theory, the real project will use another part codes that generate project 
+ * with option MUGGLE_CRYPT_OPTIMIZATION 
+ *  
+ * */
+static unsigned char galois_mul(unsigned char a, unsigned char b)
+{
+	unsigned char p = 0;
+	while (a & b)
+	{
+		if (b & 1) // if b is odd, then add the corresponding a to p (final product = sum of all a's corresponding to odd b's)
+		{
+			p ^= a; // since we're in GF(2^m), addition is an XOR
+		}
+
+		if (a & 0x80) // GF modulo: if a >= 128, then it will overflow when shifted left, so reduce
+		{
+			// XOR with the primitive polynomial x^8 + x^4 + x^3 + x + 1 (0b1_0001_1011) – you can change it but it must be irreducible
+			a = (a << 1) ^ 0x11b;
+		}
+		else
+		{
+			a <<= 1; // equivalent to a*2
+		}
+		b >>= 1; // equivalent to b // 2
+	}
+
+	return p;
+}
 
 void muggle_aes_sub_bytes(unsigned char *state)
 {
@@ -107,4 +160,44 @@ void muggle_aes_inv_shift_rows(unsigned char *state)
 	state[13] = state[14];
 	state[14] = state[15];
 	state[15] = t;
+}
+
+void muggle_aes_mix_column(unsigned char *state)
+{
+	unsigned char arr[16];
+
+	memcpy(arr, state, 16);
+
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			int idx = (i << 2) | j;
+			state[idx] =
+				galois_mul(s_muggle_aes_mix_column[i*4 + 0], arr[0*4 + j]) ^
+				galois_mul(s_muggle_aes_mix_column[i*4 + 1], arr[1*4 + j]) ^
+				galois_mul(s_muggle_aes_mix_column[i*4 + 2], arr[2*4 + j]) ^
+				galois_mul(s_muggle_aes_mix_column[i*4 + 3], arr[3*4 + j]);
+		}
+	}
+}
+
+void muggle_aes_inv_mix_column(unsigned char *state)
+{
+	unsigned char arr[16];
+
+	memcpy(arr, state, 16);
+
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			int idx = (i << 2) | j;
+			state[idx] =
+				galois_mul(s_muggle_aes_inv_mix_column[i*4 + 0], arr[0*4 + j]) ^
+				galois_mul(s_muggle_aes_inv_mix_column[i*4 + 1], arr[1*4 + j]) ^
+				galois_mul(s_muggle_aes_inv_mix_column[i*4 + 2], arr[2*4 + j]) ^
+				galois_mul(s_muggle_aes_inv_mix_column[i*4 + 3], arr[3*4 + j]);
+		}
+	}
 }
