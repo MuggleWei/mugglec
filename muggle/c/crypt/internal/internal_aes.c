@@ -91,6 +91,14 @@ static unsigned char galois_mul(unsigned char a, unsigned char b)
 	return p;
 }
 
+void muggle_aes_add_round_key(uint32_t *state, uint32_t *rd_key)
+{
+	state[0] ^= rd_key[0];
+	state[1] ^= rd_key[1];
+	state[2] ^= rd_key[2];
+	state[3] ^= rd_key[3];
+}
+
 void muggle_aes_sub_bytes(unsigned char *state)
 {
 	for (int i = 0; i < 16; i++)
@@ -200,4 +208,30 @@ void muggle_aes_inv_mix_column(unsigned char *state)
 				galois_mul(s_muggle_aes_inv_mix_column[i*4 + 3], arr[3*4 + j]);
 		}
 	}
+}
+
+uint32_t muggle_aes_rot_word(uint32_t word)
+{
+	uint32_t ret = 0;
+	unsigned char *p_ret = (unsigned char*)&ret;
+	unsigned char *p_word = (unsigned char*)&word;
+	p_ret[0] = p_word[3];
+	p_ret[1] = p_word[0];
+	p_ret[2] = p_word[1];
+	p_ret[3] = p_word[2];
+	return ret;
+}
+
+uint32_t muggle_aes_sub_word(uint32_t word)
+{
+    uint32_t result;
+
+	unsigned char *p_ret = (unsigned char*)&result;
+	unsigned char *p_word = (unsigned char*)&word;
+	p_ret[0] = s_muggle_aes_sbox[p_word[0]];
+	p_ret[1] = s_muggle_aes_sbox[p_word[1]];
+	p_ret[2] = s_muggle_aes_sbox[p_word[2]];
+	p_ret[3] = s_muggle_aes_sbox[p_word[3]];
+
+    return result;
 }

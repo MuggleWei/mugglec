@@ -13,6 +13,13 @@
 
 EXTERN_C_BEGIN
 
+#define MUGGLE_CRYPT_AES_DEBUG 1
+
+/*
+ * AES Add Round Key
+ * */
+void muggle_aes_add_round_key(uint32_t *state, uint32_t *rd_key);
+
 /*
  * AES SubBytes Transformation
  * @param state a rectangular array of 16 bytes
@@ -48,6 +55,16 @@ void muggle_aes_mix_column(unsigned char *state);
  * @param state a rectangular array of 16 bytes
  * */
 void muggle_aes_inv_mix_column(unsigned char *state);
+
+/*
+ * AES RotWord
+ * */
+uint32_t muggle_aes_rot_word(uint32_t word);
+
+/*
+ * AES SubWord
+ * */
+uint32_t muggle_aes_sub_word(uint32_t word);
 
 EXTERN_C_END
 

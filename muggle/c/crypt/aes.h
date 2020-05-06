@@ -33,6 +33,22 @@ typedef struct muggle_aes_sub_keys
 MUGGLE_CC_EXPORT
 int muggle_aes_key_setup(const unsigned char *key, int bits, muggle_aes_sub_keys_t *sk);
 
+/*
+ * Encrypt/Decrypt a single block
+ * @param mode
+ * - MUGGLE_ENCRYPT encrypt
+ * - MUGGLE_DECRYPT decrypt
+ * @param input input single block
+ * @param sk key schedule
+ * @param output output single block
+ * */
+MUGGLE_CC_EXPORT
+int muggle_aes_crypt(
+	int mode,
+	const unsigned char *input,
+	muggle_aes_sub_keys_t *sk,
+	unsigned char *output);
+
 EXTERN_C_END
 
 #endif

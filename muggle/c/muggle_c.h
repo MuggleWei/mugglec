@@ -73,5 +73,6 @@
 #include "muggle/c/crypt/parity.h"
 #include "muggle/c/crypt/des.h"
 #include "muggle/c/crypt/tdes.h"
+#include "muggle/c/crypt/aes.h"
 
 #endif
