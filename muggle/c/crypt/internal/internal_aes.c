@@ -58,42 +58,63 @@ static const unsigned char s_muggle_aes_inv_mix_column[16] = {
 	0x0b, 0x0d, 0x09, 0x0e,
 };
 
-/* 
- * From: https://en.wikipedia.org/wiki/Finite_field_arithmetic#Rijndael's_(AES)_finite_field
- * Multiply two numbers in the GF(2^8) finite field defined 
- * by the polynomial x^8 + x^4 + x^3 + x + 1 = 0
- * using the Russian Peasant Multiplication algorithm
- * (the other way being to do carry-less multiplication followed by a modular reduction)
- *
- * NOTE: 
- * This example has cache, timing, and branch prediction side-channel leaks, and is not suitable for use in cryptography.
- * This function only use for explain theory, the real project will use another part codes that generate project 
- * with option MUGGLE_CRYPT_OPTIMIZATION 
- *  
- * */
+// incorrect result return from this function
+// /* 
+//  * From: https://en.wikipedia.org/wiki/Finite_field_arithmetic#Rijndael's_(AES)_finite_field
+//  * Multiply two numbers in the GF(2^8) finite field defined 
+//  * by the polynomial x^8 + x^4 + x^3 + x + 1 = 0
+//  * using the Russian Peasant Multiplication algorithm
+//  * (the other way being to do carry-less multiplication followed by a modular reduction)
+//  *
+//  * NOTE: 
+//  * This example has cache, timing, and branch prediction side-channel leaks, and is not suitable for use in cryptography.
+//  * This function only use for explain theory, the real project will use another part codes that generate project 
+//  * with option MUGGLE_CRYPT_OPTIMIZATION 
+//  *  
+//  * */
+// static unsigned char galois_mul(unsigned char a, unsigned char b)
+// {
+// 	unsigned char p = 0;
+// 	while (a & b)
+// 	{
+// 		if (b & 1) // if b is odd, then add the corresponding a to p (final product = sum of all a's corresponding to odd b's)
+// 		{
+// 			p ^= a; // since we're in GF(2^m), addition is an XOR
+// 		}
+// 
+// 		if (a & 0x80) // GF modulo: if a >= 128, then it will overflow when shifted left, so reduce
+// 		{
+// 			// XOR with the primitive polynomial x^8 + x^4 + x^3 + x + 1 (0b1_0001_1011) – you can change it but it must be irreducible
+// 			a = (a << 1) ^ 0x11b;
+// 		}
+// 		else
+// 		{
+// 			a <<= 1; // equivalent to a*2
+// 		}
+// 		b >>= 1; // equivalent to b // 2
+// 	}
+// 
+// 	return p;
+// }
+
 static unsigned char galois_mul(unsigned char a, unsigned char b)
 {
-	unsigned char p = 0;
-	while (a & b)
+	unsigned char r = 0, t = 0;
+	while (a != 0)
 	{
-		if (b & 1) // if b is odd, then add the corresponding a to p (final product = sum of all a's corresponding to odd b's)
+		if ((a & 0x01) != 0)
 		{
-			p ^= a; // since we're in GF(2^m), addition is an XOR
+			r = r ^ b;
 		}
-
-		if (a & 0x80) // GF modulo: if a >= 128, then it will overflow when shifted left, so reduce
+		t = b & 0x80;
+		b = b << 1;
+		if (t != 0)
 		{
-			// XOR with the primitive polynomial x^8 + x^4 + x^3 + x + 1 (0b1_0001_1011) – you can change it but it must be irreducible
-			a = (a << 1) ^ 0x11b;
+			b = b ^ 0x1b;
 		}
-		else
-		{
-			a <<= 1; // equivalent to a*2
-		}
-		b >>= 1; // equivalent to b // 2
+		a = a >> 1;
 	}
-
-	return p;
+	return r;
 }
 
 void muggle_aes_add_round_key(unsigned char *state, uint32_t *rd_key)

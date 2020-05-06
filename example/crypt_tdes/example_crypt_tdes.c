@@ -32,7 +32,7 @@ void example_tdes_block()
 
 	int ret;
 	muggle_64bit_block_t key1, key2, key3;
-	muggle_64bit_block_t iv, iv2, iv_save;
+	muggle_64bit_block_t iv;
 	unsigned char input[8];
 	unsigned int num_bytes = (unsigned int)sizeof(input);
 
