@@ -275,7 +275,22 @@ int muggle_aes_crypt(
 		}
 	}
 
-	memcpy(output, &state[0], 16);
+	output[0]  = state[0];
+	output[1]  = state[4];
+	output[2]  = state[8];
+	output[3]  = state[12];
+	output[4]  = state[1];
+	output[5]  = state[5];
+	output[6]  = state[9];
+	output[7]  = state[13];
+	output[8]  = state[2];
+	output[9]  = state[6];
+	output[10] = state[10];
+	output[11] = state[14];
+	output[12] = state[3];
+	output[13] = state[7];
+	output[14] = state[11];
+	output[15] = state[15];
 
 	return 0;
 }

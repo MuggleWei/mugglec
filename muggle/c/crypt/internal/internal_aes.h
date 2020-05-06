@@ -13,7 +13,7 @@
 
 EXTERN_C_BEGIN
 
-#define MUGGLE_CRYPT_AES_DEBUG 1
+#define MUGGLE_CRYPT_AES_DEBUG 0
 
 /*
  * AES Add Round Key

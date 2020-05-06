@@ -1,5 +1,8 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
+#if MUGGLE_TEST_LINK_OPENSSL
+#include "openssl/aes.h"
+#endif
 
 TEST(crypt_aes, expansion_key_128)
 {
@@ -140,12 +143,29 @@ TEST(crypt_aes, cipher_single_block)
 	};
 	unsigned char output[16];
 
-	unsigned char expect_output[16] = {
+	unsigned char expect_state[16] = {
 		0x39, 0x02, 0xdc, 0x19,
 		0x25, 0xdc, 0x11, 0x6a,
 		0x84, 0x09, 0x85, 0x0b,
 		0x1d, 0xfb, 0x97, 0x32
 	};
+	unsigned char expect_output[16];
+	expect_output[0]  = expect_state[0];
+	expect_output[1]  = expect_state[4];
+	expect_output[2]  = expect_state[8];
+	expect_output[3]  = expect_state[12];
+	expect_output[4]  = expect_state[1];
+	expect_output[5]  = expect_state[5];
+	expect_output[6]  = expect_state[9];
+	expect_output[7]  = expect_state[13];
+	expect_output[8]  = expect_state[2];
+	expect_output[9]  = expect_state[6];
+	expect_output[10] = expect_state[10];
+	expect_output[11] = expect_state[14];
+	expect_output[12] = expect_state[3];
+	expect_output[13] = expect_state[7];
+	expect_output[14] = expect_state[11];
+	expect_output[15] = expect_state[15];
 
 	int ret = 0;
 	muggle_aes_sub_keys_t sk;
@@ -164,4 +184,23 @@ TEST(crypt_aes, cipher_single_block)
 		muggle_output_hex(expect_output, 16, 4);
 	}
 	ASSERT_EQ(ret, 0);
+
+#if MUGGLE_TEST_LINK_OPENSSL
+	AES_KEY openssl_rk;
+	ret = AES_set_encrypt_key(key, 128, &openssl_rk);
+	ASSERT_EQ(ret, 0);
+
+	unsigned char openssl_output[16];
+	AES_encrypt(input, openssl_output, &openssl_rk);
+
+	ret = memcmp(output, openssl_output, 16);
+	if (ret != 0)
+	{
+		printf("output: \n");
+		muggle_output_hex(output, 16, 4);
+		printf("openssl output: \n");
+		muggle_output_hex(openssl_output, 16, 4);
+	}
+	ASSERT_EQ(ret, 0);
+#endif
 }
