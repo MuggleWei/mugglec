@@ -120,74 +120,110 @@ int muggle_aes_crypt(
 	unsigned char *output)
 {
 	unsigned char state[16] = {
-		input[0],  input[1],  input[2],  input[3],
-		input[4],  input[5],  input[6],  input[7],
-		input[8],  input[9],  input[10], input[11],
-		input[12], input[13], input[14], input[15]
+		input[0], input[4], input[8],  input[12],
+		input[1], input[5], input[9],  input[13],
+		input[2], input[6], input[10], input[14],
+		input[3], input[7], input[11], input[15]
 	};
 
-	muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[0]);
+#if MUGGLE_CRYPT_AES_DEBUG
+	printf("AES crypt[0]: Start of Round\n");
+	muggle_output_hex(state, 16, 4);
+	printf("AES crypt[0]: Round Key Value\n");
+	muggle_output_hex((unsigned char*)&sk->rd_key[0], 16, 4);
+#endif
+
+	muggle_aes_add_round_key(state, &sk->rd_key[0]);
 
 	// round 1
+#if MUGGLE_CRYPT_AES_DEBUG
+	printf("AES crypt[1]: Start of Round\n");
+	muggle_output_hex(state, 16, 4);
+#endif
+
 	muggle_aes_sub_bytes(state);
+
+#if MUGGLE_CRYPT_AES_DEBUG
+	printf("AES crypt[1]: After SubBytes\n");
+	muggle_output_hex(state, 16, 4);
+#endif
+
 	muggle_aes_shift_rows(state);
+
+#if MUGGLE_CRYPT_AES_DEBUG
+	printf("AES crypt[1]: After ShiftRows\n");
+	muggle_output_hex(state, 16, 4);
+#endif
+
 	muggle_aes_mix_column(state);
-	muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[4]);
+
+#if MUGGLE_CRYPT_AES_DEBUG
+	printf("AES crypt[1]: After MixColumns\n");
+	muggle_output_hex(state, 16, 4);
+#endif
+
+	muggle_aes_add_round_key(state, &sk->rd_key[4]);
+
+#if MUGGLE_CRYPT_AES_DEBUG
+	printf("AES crypt[1]: Round Key Value\n");
+	muggle_output_hex((unsigned char*)&sk->rd_key[4], 16, 4);
+#endif
+
 
 	// round 2 
 	muggle_aes_sub_bytes(state);
 	muggle_aes_shift_rows(state);
 	muggle_aes_mix_column(state);
-	muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[8]);
+	muggle_aes_add_round_key(state, &sk->rd_key[8]);
 
 	// round 3 
 	muggle_aes_sub_bytes(state);
 	muggle_aes_shift_rows(state);
 	muggle_aes_mix_column(state);
-	muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[12]);
+	muggle_aes_add_round_key(state, &sk->rd_key[12]);
 
 	// round 4 
 	muggle_aes_sub_bytes(state);
 	muggle_aes_shift_rows(state);
 	muggle_aes_mix_column(state);
-	muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[16]);
+	muggle_aes_add_round_key(state, &sk->rd_key[16]);
 
 	// round 5 
 	muggle_aes_sub_bytes(state);
 	muggle_aes_shift_rows(state);
 	muggle_aes_mix_column(state);
-	muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[20]);
+	muggle_aes_add_round_key(state, &sk->rd_key[20]);
 
 	// round 6 
 	muggle_aes_sub_bytes(state);
 	muggle_aes_shift_rows(state);
 	muggle_aes_mix_column(state);
-	muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[24]);
+	muggle_aes_add_round_key(state, &sk->rd_key[24]);
 
 	// round 7 
 	muggle_aes_sub_bytes(state);
 	muggle_aes_shift_rows(state);
 	muggle_aes_mix_column(state);
-	muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[28]);
+	muggle_aes_add_round_key(state, &sk->rd_key[28]);
 
 	// round 8 
 	muggle_aes_sub_bytes(state);
 	muggle_aes_shift_rows(state);
 	muggle_aes_mix_column(state);
-	muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[32]);
+	muggle_aes_add_round_key(state, &sk->rd_key[32]);
 
 	// round 9 
 	muggle_aes_sub_bytes(state);
 	muggle_aes_shift_rows(state);
 	muggle_aes_mix_column(state);
-	muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[36]);
+	muggle_aes_add_round_key(state, &sk->rd_key[36]);
 
 	if (sk->rounds == 10)
 	{
 		// round 10
 		muggle_aes_sub_bytes(state);
 		muggle_aes_shift_rows(state);
-		muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[40]);
+		muggle_aes_add_round_key(state, &sk->rd_key[40]);
 	}
 	else
 	{
@@ -195,20 +231,20 @@ int muggle_aes_crypt(
 		muggle_aes_sub_bytes(state);
 		muggle_aes_shift_rows(state);
 		muggle_aes_mix_column(state);
-		muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[40]);
+		muggle_aes_add_round_key(state, &sk->rd_key[40]);
 
 		// round 11
 		muggle_aes_sub_bytes(state);
 		muggle_aes_shift_rows(state);
 		muggle_aes_mix_column(state);
-		muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[44]);
+		muggle_aes_add_round_key(state, &sk->rd_key[44]);
 
 		if (sk->rounds == 12)
 		{
 			// round 12
 			muggle_aes_sub_bytes(state);
 			muggle_aes_shift_rows(state);
-			muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[48]);
+			muggle_aes_add_round_key(state, &sk->rd_key[48]);
 		}
 		else if (sk->rounds == 14)
 		{
@@ -216,18 +252,18 @@ int muggle_aes_crypt(
 			muggle_aes_sub_bytes(state);
 			muggle_aes_shift_rows(state);
 			muggle_aes_mix_column(state);
-			muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[48]);
+			muggle_aes_add_round_key(state, &sk->rd_key[48]);
 
 			// round 13
 			muggle_aes_sub_bytes(state);
 			muggle_aes_shift_rows(state);
 			muggle_aes_mix_column(state);
-			muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[52]);
+			muggle_aes_add_round_key(state, &sk->rd_key[52]);
 
 			// round 14
 			muggle_aes_sub_bytes(state);
 			muggle_aes_shift_rows(state);
-			muggle_aes_add_round_key((uint32_t*)state, &sk->rd_key[56]);
+			muggle_aes_add_round_key(state, &sk->rd_key[56]);
 		}
 		else
 		{

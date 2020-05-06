@@ -44,6 +44,11 @@ static const unsigned char s_muggle_aes_mix_column[16] = {
 	0x01, 0x02, 0x03, 0x01,
 	0x01, 0x01, 0x02, 0x03,
 	0x03, 0x01, 0x01, 0x02
+
+//	0x02, 0x01, 0x01, 0x03,
+//	0x03, 0x02, 0x01, 0x01,
+//	0x01, 0x03, 0x02, 0x01,
+//	0x01, 0x01, 0x03, 0x02
 };
 
 static const unsigned char s_muggle_aes_inv_mix_column[16] = {
@@ -91,12 +96,27 @@ static unsigned char galois_mul(unsigned char a, unsigned char b)
 	return p;
 }
 
-void muggle_aes_add_round_key(uint32_t *state, uint32_t *rd_key)
+void muggle_aes_add_round_key(unsigned char *state, uint32_t *rd_key)
 {
-	state[0] ^= rd_key[0];
-	state[1] ^= rd_key[1];
-	state[2] ^= rd_key[2];
-	state[3] ^= rd_key[3];
+	state[0] ^= ((rd_key[0] >> 24) & 0xff);
+	state[4] ^= ((rd_key[0] >> 16) & 0xff);
+	state[8] ^= ((rd_key[0] >> 8) & 0xff);
+	state[12] ^= ((rd_key[0]) & 0xff);
+
+	state[1] ^= ((rd_key[1] >> 24) & 0xff);
+	state[5] ^= ((rd_key[1] >> 16) & 0xff);
+	state[9] ^= ((rd_key[1] >> 8) & 0xff);
+	state[13] ^= ((rd_key[1]) & 0xff);
+
+	state[2] ^= ((rd_key[2] >> 24) & 0xff);
+	state[6] ^= ((rd_key[2] >> 16) & 0xff);
+	state[10] ^= ((rd_key[2] >> 8) & 0xff);
+	state[14] ^= ((rd_key[2]) & 0xff);
+
+	state[3] ^= ((rd_key[3] >> 24) & 0xff);
+	state[7] ^= ((rd_key[3] >> 16) & 0xff);
+	state[11] ^= ((rd_key[3] >> 8) & 0xff);
+	state[15] ^= ((rd_key[3]) & 0xff);
 }
 
 void muggle_aes_sub_bytes(unsigned char *state)
