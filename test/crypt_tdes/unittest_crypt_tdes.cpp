@@ -38,9 +38,9 @@ void crypt_tdes_test(int block_cipher_mode)
 		gen_input_var(&key1, &key2, &key3, &iv, input, num_bytes);
 		iv_save.u64 = iv2.u64 = iv.u64;
 
-		muggle_tdes_cipher(block_cipher_mode, MUGGLE_ENCRYPT,
+		muggle_tdes_cipher_bytes(MUGGLE_ENCRYPT, block_cipher_mode, 
 			key1, key2, key3, input, num_bytes, &iv, 1, ciphertext);
-		muggle_tdes_cipher(block_cipher_mode, MUGGLE_DECRYPT,
+		muggle_tdes_cipher_bytes(MUGGLE_DECRYPT, block_cipher_mode,
 			key1, key2, key3, ciphertext, num_bytes, &iv2, 1, plaintext);
 
 		ret = memcmp(input, plaintext, EXAMPLE_MESSAGE_LEN);

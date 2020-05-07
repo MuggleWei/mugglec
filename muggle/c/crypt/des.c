@@ -185,7 +185,7 @@ int muggle_des_cipher(
 
 	if (update_iv != 0 && iv == NULL)
 	{
-		MUGGLE_ASSERT_MSG(!(update_iv != 0 && iv == NULL), "Invalid! iv is null and wanna update iv");
+		MUGGLE_ASSERT_MSG(!(update_iv != 0 && iv == NULL), "DES cipher failed: iv is null and wanna update iv");
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
