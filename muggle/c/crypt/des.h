@@ -51,9 +51,11 @@ int muggle_des_crypt(
 	muggle_64bit_block_t *output);
 
 /*
- * DES encrypt/decrypt in mode
+ * DES encrypt/decrypt in specified block cipher mode
+ * @param op
+ *   - MUGGLE_DECRYPT encrypt
+ *   - MUGGLE_ENCRYPT decrypt
  * @param block_cipher_mode block cipher mode, use MUGGLE_BLOCK_CIPHER_MODE_*
- * @param op encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
  * @param key des input key
  * @param input input bytes, length must be multiple of 8
  * @param num_bytes length of input/output bytes
@@ -64,15 +66,50 @@ int muggle_des_crypt(
  *  ECB: doesn't make sense in ECB mode
  *  CTR: whether CTR need update counter values
  * @param output output bytes
- * @return return 0 on success, otherwise failed
+ * @return
+ *   - 0 success
+ *   - otherwise failed
+ *
+ * NOTE: Don't use ECB mode in product environment
+ * */
+MUGGLE_CC_EXPORT
+int muggle_des_cipher_bytes(
+	int op,
+	int block_cipher_mode,
+	muggle_64bit_block_t key,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	muggle_64bit_block_t *iv,
+	int update_iv,
+	unsigned char *output);
+
+/*
+ * DES encrypt/decrypt in specified block cipher mode
+ * @param op
+ *   - MUGGLE_DECRYPT encrypt
+ *   - MUGGLE_ENCRYPT decrypt
+ * @param block_cipher_mode block cipher mode, use MUGGLE_BLOCK_CIPHER_MODE_*
+ * @param ks sub key schedule
+ * @param input input bytes, length must be multiple of 8
+ * @param num_bytes length of input/output bytes
+ * @param iv initialization vector;
+ * 	 - ECB: doesn't make sense in ECB mode
+ * 	 - CTR: equal to init counter values
+ * @param update_iv 1 - update, 0 - don't update;
+ *   - ECB: doesn't make sense in ECB mode
+ *   - CTR: whether CTR need update counter values
+ * @param output output bytes
+ * @return
+ *   - 0 success
+ *   - otherwise failed
  *
  * NOTE: Don't use ECB mode in product environment
  * */
 MUGGLE_CC_EXPORT
 int muggle_des_cipher(
-	int block_cipher_mode,
 	int op,
-	muggle_64bit_block_t key,
+	int block_cipher_mode,
+	const muggle_des_subkeys_t *ks,
 	const unsigned char *input,
 	unsigned int num_bytes,
 	muggle_64bit_block_t *iv,

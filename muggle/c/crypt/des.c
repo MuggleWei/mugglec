@@ -10,6 +10,7 @@
 #include <string.h>
 #include "muggle/c/base/utils.h"
 #include "muggle/c/log/log.h"
+#include "muggle/c/base/err.h"
 #include "muggle/c/crypt/internal/internal_des.h"
 #include "muggle/c/crypt/openssl/openssl_des.h"
 
@@ -126,9 +127,9 @@ int muggle_des_crypt(
 #endif
 }
 
-int muggle_des_cipher(
-	int block_cipher_mode,
+int muggle_des_cipher_bytes(
 	int op,
+	int block_cipher_mode,
 	muggle_64bit_block_t key,
 	const unsigned char *input,
 	unsigned int num_bytes,
@@ -136,24 +137,57 @@ int muggle_des_cipher(
 	int update_iv,
 	unsigned char *output)
 {
-	if (block_cipher_mode < 0 || block_cipher_mode >= MAX_MUGGLE_BLOCK_CIPHER_MODE)
+	muggle_des_subkeys_t ks;
+	switch (block_cipher_mode)
 	{
-		MUGGLE_LOG_ERROR("DES cipher failed: invalid block cipher mode: %d", block_cipher_mode);
-		return -1;
+	case MUGGLE_BLOCK_CIPHER_MODE_ECB:
+	case MUGGLE_BLOCK_CIPHER_MODE_CBC:
+		{
+			muggle_des_gen_subkeys(op, &key, &ks);
+		}break;
+	case MUGGLE_BLOCK_CIPHER_MODE_CFB:
+	case MUGGLE_BLOCK_CIPHER_MODE_OFB:
+	case MUGGLE_BLOCK_CIPHER_MODE_CTR:
+		{
+			muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key, &ks);
+		}break;
+	default:
+		{
+			MUGGLE_ASSERT_MSG(block_cipher_mode >= 0 && block_cipher_mode < MAX_MUGGLE_BLOCK_CIPHER_MODE, "Invalid block cipher mode");
+			return MUGGLE_ERR_INVALID_PARAM;
+		};
 	}
 
+	return muggle_des_cipher(op, block_cipher_mode, &ks, input, num_bytes, iv, update_iv, output);
+}
+ 
+int muggle_des_cipher(
+	int op,
+	int block_cipher_mode,
+	const muggle_des_subkeys_t *ks,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	muggle_64bit_block_t *iv,
+	int update_iv,
+	unsigned char *output)
+{
 	if (input == NULL)
 	{
-		MUGGLE_LOG_ERROR("DES cipher failed: input is nullptr");
-		return -1;
+		MUGGLE_ASSERT_MSG(input != NULL, "DES cipher failed: input is nullptr");
+		return MUGGLE_ERR_NULL_PARAM;
 	}
 
 	if (ROUND_UP_POW_OF_2_MUL(num_bytes, 8) != num_bytes)
 	{
-		MUGGLE_LOG_ERROR("DES cipher failed: input bytes is not multiple of 8");
-		return -1;
+		MUGGLE_ASSERT_MSG(ROUND_UP_POW_OF_2_MUL(num_bytes, 8) == num_bytes, "DES cipher failed: input bytes is not multiple of 8");
+		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	return s_fn_muggle_des[block_cipher_mode](op, key, input, num_bytes, iv, update_iv, output);
+	if (update_iv != 0 && iv == NULL)
+	{
+		MUGGLE_ASSERT_MSG(!(update_iv != 0 && iv == NULL), "Invalid! iv is null and wanna update iv");
+		return MUGGLE_ERR_INVALID_PARAM;
+	}
+
+	return s_fn_muggle_des[block_cipher_mode](op, ks, input, num_bytes, iv, update_iv, output);
 }
- 

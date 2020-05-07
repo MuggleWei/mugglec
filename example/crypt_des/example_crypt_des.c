@@ -102,8 +102,8 @@ void example_des_cipher(int block_cipher_mode)
 		gen_input_var(&key, &iv, input, num_bytes);
 		iv_save.u64 = iv2.u64 = iv.u64;
 
-		muggle_des_cipher(block_cipher_mode, MUGGLE_ENCRYPT, key, input, num_bytes, &iv, 1, ciphertext);
-		muggle_des_cipher(block_cipher_mode, MUGGLE_DECRYPT, key, ciphertext, num_bytes, &iv2, 1, plaintext);
+		muggle_des_cipher_bytes(MUGGLE_ENCRYPT, block_cipher_mode, key, input, num_bytes, &iv, 1, ciphertext);
+		muggle_des_cipher_bytes(MUGGLE_DECRYPT, block_cipher_mode, key, ciphertext, num_bytes, &iv2, 1, plaintext);
 
 		printf("key: ");
 		muggle_output_hex((unsigned char*)key.bytes, 8, 0);

@@ -338,23 +338,19 @@ void muggle_des_pc2(muggle_64bit_block_t *k, muggle_des_subkey_t *sk)
 
 
 int muggle_des_ecb(
-	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, const muggle_des_subkeys_t *ks, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output)
 {
 	int ret = 0;
 	size_t len = num_bytes / 8, offset = 0;
 	muggle_64bit_block_t *input_block, *output_block;
 
-	// generate subkey
-	muggle_des_subkeys_t ks;
-	muggle_des_gen_subkeys(op, &key, &ks);
-
 	for (size_t i = 0; i < len; ++i)
 	{
 		input_block = (muggle_64bit_block_t*)(input + offset);
 		output_block = (muggle_64bit_block_t*)(output + offset);
 
-		ret = muggle_des_crypt(input_block, &ks, output_block);
+		ret = muggle_des_crypt(input_block, ks, output_block);
 		if (ret != 0)
 		{
 			MUGGLE_LOG_ERROR("DES ECB crypt failed");
@@ -367,7 +363,7 @@ int muggle_des_ecb(
 }
 
 int muggle_des_cbc(
-	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, const muggle_des_subkeys_t *ks, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output)
 {
 	int ret = 0;
@@ -375,10 +371,6 @@ int muggle_des_cbc(
 	muggle_64bit_block_t v;
 	v.u64 = iv->u64;
 	muggle_64bit_block_t *input_block, *output_block;
-
-	// generate subkey
-	muggle_des_subkeys_t ks;
-	muggle_des_gen_subkeys(op, &key, &ks);
 
 	for (size_t i = 0; i < len; ++i)
 	{
@@ -388,7 +380,7 @@ int muggle_des_cbc(
 		if (op == MUGGLE_ENCRYPT)
 		{
 			v.u64 ^= input_block->u64;
-			ret = muggle_des_crypt(&v, &ks, output_block);
+			ret = muggle_des_crypt(&v, ks, output_block);
 			if (ret != 0)
 			{
 				MUGGLE_LOG_ERROR("DES ECB encrypt failed");
@@ -399,7 +391,7 @@ int muggle_des_cbc(
 		}
 		else
 		{
-			ret = muggle_des_crypt(input_block, &ks, output_block);
+			ret = muggle_des_crypt(input_block, ks, output_block);
 			if (ret != 0)
 			{
 				MUGGLE_LOG_ERROR("DES ECB decrypt failed");
@@ -422,7 +414,7 @@ int muggle_des_cbc(
 }
 
 int muggle_des_cfb(
-	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, const muggle_des_subkeys_t *ks, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output)
 {
 	int ret = 0;
@@ -431,10 +423,6 @@ int muggle_des_cfb(
 	v.u64 = iv->u64;
 	muggle_64bit_block_t *input_block, *output_block;
 
-	// generate subkey
-	muggle_des_subkeys_t ks;
-	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key, &ks); // NOTE: CFB mode always use encrypt
-
 	for (size_t i = 0; i < len; ++i)
 	{
 		input_block = (muggle_64bit_block_t*)(input + offset);
@@ -442,7 +430,7 @@ int muggle_des_cfb(
 
 		if (op == MUGGLE_ENCRYPT)
 		{
-			ret = muggle_des_crypt(&v, &ks, output_block);
+			ret = muggle_des_crypt(&v, ks, output_block);
 			if (ret != 0)
 			{
 				MUGGLE_LOG_ERROR("DES CFB crypt failed");
@@ -453,7 +441,7 @@ int muggle_des_cfb(
 		}
 		else
 		{
-			ret = muggle_des_crypt(&v, &ks, output_block);
+			ret = muggle_des_crypt(&v, ks, output_block);
 			if (ret != 0)
 			{
 				MUGGLE_LOG_ERROR("DES CFB crypt failed");
@@ -475,7 +463,7 @@ int muggle_des_cfb(
 }
 
 int muggle_des_ofb(
-	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, const muggle_des_subkeys_t *ks, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output)
 {
 	int ret = 0;
@@ -484,16 +472,12 @@ int muggle_des_ofb(
 	v.u64 = iv->u64;
 	muggle_64bit_block_t *input_block, *output_block;
 
-	// generate subkey
-	muggle_des_subkeys_t ks;
-	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key, &ks); // NOTE: OFB mode always use encrypt
-
 	for (size_t i = 0; i < len; ++i)
 	{
 		input_block = (muggle_64bit_block_t*)(input + offset);
 		output_block = (muggle_64bit_block_t*)(output + offset);
 
-		ret = muggle_des_crypt(&v, &ks, output_block);
+		ret = muggle_des_crypt(&v, ks, output_block);
 		if (ret != 0)
 		{
 			MUGGLE_LOG_ERROR("DES OFB crypt failed");
@@ -514,7 +498,7 @@ int muggle_des_ofb(
 }
 
 int muggle_des_ctr(
-	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, const muggle_des_subkeys_t *ks, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output)
 {
 	int ret = 0;
@@ -523,16 +507,12 @@ int muggle_des_ctr(
 	v.u64 = iv->u64;
 	muggle_64bit_block_t *input_block, *output_block;
 
-	// generate subkey
-	muggle_des_subkeys_t ks;
-	muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key, &ks); // NOTE: CRT mode always use encrypt
-
 	for (size_t i = 0; i < len; ++i)
 	{
 		input_block = (muggle_64bit_block_t*)(input + offset);
 		output_block = (muggle_64bit_block_t*)(output + offset);
 
-		ret = muggle_des_crypt(&v, &ks, output_block);
+		ret = muggle_des_crypt(&v, ks, output_block);
 		if (ret != 0)
 		{
 			MUGGLE_LOG_ERROR("DES CTR crypt failed");

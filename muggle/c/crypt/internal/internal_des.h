@@ -28,7 +28,7 @@ EXTERN_C_BEGIN
 
 typedef int (*fn_muggle_des_cipher)(
 	int op,
-	muggle_64bit_block_t key,
+	const muggle_des_subkeys_t *ks,
 	const unsigned char *input,
 	unsigned int num_bytes,
 	muggle_64bit_block_t *iv,
@@ -42,7 +42,6 @@ typedef int (*fn_muggle_des_cipher)(
  * @in: input block
  * @out: output block
  * */
-MUGGLE_CC_EXPORT
 void muggle_des_ip(const muggle_64bit_block_t *in, muggle_64bit_block_t *out);
 
 /*
@@ -50,7 +49,6 @@ void muggle_des_ip(const muggle_64bit_block_t *in, muggle_64bit_block_t *out);
  * @in: input block
  * @out: output block
  * */
-MUGGLE_CC_EXPORT
 void muggle_des_fp(const muggle_64bit_block_t *in, muggle_64bit_block_t *out);
 
 /*
@@ -58,7 +56,6 @@ void muggle_des_fp(const muggle_64bit_block_t *in, muggle_64bit_block_t *out);
  * @in: input block
  * @out: 48bits in 8 bytes
  * */
-MUGGLE_CC_EXPORT
 void muggle_des_expand(const muggle_32bit_block_t *in, muggle_des_48bit_t *out);
 
 /*
@@ -66,7 +63,6 @@ void muggle_des_expand(const muggle_32bit_block_t *in, muggle_des_48bit_t *out);
  * @in: input 48bits
  * @out: 4bit x 8 output
  * */
-MUGGLE_CC_EXPORT
 void muggle_des_sbox(const muggle_des_subkey_t *in, muggle_des_48bit_t *out);
 
 /*
@@ -74,7 +70,6 @@ void muggle_des_sbox(const muggle_des_subkey_t *in, muggle_des_48bit_t *out);
  * @in: output of S-Box
  * @out: output block
  * */
-MUGGLE_CC_EXPORT
 void muggle_des_p(const muggle_32bit_block_t *in, muggle_32bit_block_t *out);
 
 /*
@@ -82,7 +77,6 @@ void muggle_des_p(const muggle_32bit_block_t *in, muggle_32bit_block_t *out);
  * @in: input block
  * @out: output block
  * */
-MUGGLE_CC_EXPORT
 void muggle_des_f(const muggle_32bit_block_t *in, const muggle_des_subkey_t *sk, muggle_32bit_block_t *out);
 
 /*
@@ -90,7 +84,6 @@ void muggle_des_f(const muggle_32bit_block_t *in, const muggle_des_subkey_t *sk,
  * @in: input block
  * @out: output block
  * */
-MUGGLE_CC_EXPORT
 void muggle_des_pc1(const muggle_64bit_block_t *in, muggle_64bit_block_t *out);
 
 /*
@@ -98,30 +91,29 @@ void muggle_des_pc1(const muggle_64bit_block_t *in, muggle_64bit_block_t *out);
  * @k: contain 28bit in k->u32.l and 28bit in k->u32.h
  * @sk: output smuggle_des_subkey_t ub key
  * */
-MUGGLE_CC_EXPORT
 void muggle_des_pc2(muggle_64bit_block_t *k, muggle_des_subkey_t *sk);
 
 /*
  * callbacks
  * */
 int muggle_des_ecb(
-	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, const muggle_des_subkeys_t *ks, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output);
 
 int muggle_des_cbc(
-	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, const muggle_des_subkeys_t *ks, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output);
 
 int muggle_des_cfb(
-	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, const muggle_des_subkeys_t *ks, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output);
 
 int muggle_des_ofb(
-	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, const muggle_des_subkeys_t *ks, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output);
 
 int muggle_des_ctr(
-	int op, muggle_64bit_block_t key, const unsigned char *input, unsigned int num_bytes,
+	int op, const muggle_des_subkeys_t *ks, const unsigned char *input, unsigned int num_bytes,
 	muggle_64bit_block_t *iv, int update_iv, unsigned char *output);
 
 
