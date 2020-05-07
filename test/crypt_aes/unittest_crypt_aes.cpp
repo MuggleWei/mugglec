@@ -127,8 +127,9 @@ TEST(crypt_aes, expansion_key_256)
 	}
 }
 
-TEST(crypt_aes, cipher_single_block)
+TEST(crypt_aes, cipher_example)
 {
+	// fips-197 APPENDIX B – CIPHER EXAMPLE
 	unsigned char input[] = {
 		0x32, 0x43, 0xf6, 0xa8,
 		0x88, 0x5a, 0x30, 0x8d,
@@ -141,7 +142,7 @@ TEST(crypt_aes, cipher_single_block)
 		0xab, 0xf7, 0x15, 0x88,
 		0x09, 0xcf, 0x4f, 0x3c
 	};
-	unsigned char output[16];
+	unsigned char output[16], ret_plaintext[16];
 
 	unsigned char expect_state[16] = {
 		0x39, 0x02, 0xdc, 0x19,
@@ -203,4 +204,17 @@ TEST(crypt_aes, cipher_single_block)
 	}
 	ASSERT_EQ(ret, 0);
 #endif
+
+	ret = muggle_aes_crypt(MUGGLE_DECRYPT, output, &sk, ret_plaintext);
+	ASSERT_EQ(ret, 0);
+
+	ret = memcmp(ret_plaintext, input, 16);
+	if (ret != 0)
+	{
+		printf("ret plaintext: \n");
+		muggle_output_hex(ret_plaintext, 16, 4);
+		printf("input: \n");
+		muggle_output_hex(input, 16, 4);
+	}
+	ASSERT_EQ(ret, 0);
 }

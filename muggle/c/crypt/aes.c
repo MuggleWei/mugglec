@@ -23,8 +23,15 @@ int muggle_aes_key_setup(const unsigned char *key, int bits, muggle_aes_sub_keys
 	// variable's name is consistent with fips-197
 	int Nb, Nr, Nk, i;
 
-	if (key == NULL || sk == NULL)
+	if (key == NULL)
 	{
+		MUGGLE_ASSERT_MSG(key != NULL, "AES key setup with null key");
+		return MUGGLE_ERR_NULL_PARAM;
+	}
+
+	if (sk == NULL)
+	{
+		MUGGLE_ASSERT_MSG(key != NULL, "AES key setup with null key schedule");
 		return MUGGLE_ERR_NULL_PARAM;
 	}
 
@@ -48,6 +55,9 @@ int muggle_aes_key_setup(const unsigned char *key, int bits, muggle_aes_sub_keys
 	}break;
 	default:
 	{
+		MUGGLE_ASSERT_MSG(
+			bits == 128 || bits == 192 || bits == 256,
+			"AES key setup only support bit size: 128/192/256");
 		return MUGGLE_ERR_CRYPT_KEY_SIZE;
 	}
 	}
@@ -113,23 +123,23 @@ int muggle_aes_key_setup(const unsigned char *key, int bits, muggle_aes_sub_keys
 	return 0;
 }
 
-int muggle_aes_crypt(
-	int mode,
-	const unsigned char *input,
-	muggle_aes_sub_keys_t *sk,
-	unsigned char *output)
+static int muggle_aes_encrypt(
+	unsigned char *state,
+	muggle_aes_sub_keys_t *sk)
 {
-	unsigned char state[16] = {
-		input[0], input[4], input[8],  input[12],
-		input[1], input[5], input[9],  input[13],
-		input[2], input[6], input[10], input[14],
-		input[3], input[7], input[11], input[15]
-	};
+	if (sk->rounds != 10 && sk->rounds != 12 && sk->rounds != 14)
+	{
+		MUGGLE_ASSERT_MSG(
+			(sk->rounds == 10 || sk->rounds == 12 || sk->rounds == 14),
+			"Invalid AES key schedule rounds"
+		);
+		return MUGGLE_ERR_INVALID_PARAM;
+	}
 
 #if MUGGLE_CRYPT_AES_DEBUG
-	printf("AES crypt[0]: Start of Round\n");
+	printf("AES encrypt[0]: Start of Round\n");
 	muggle_output_hex(state, 16, 4);
-	printf("AES crypt[0]: Round Key Value\n");
+	printf("AES encrypt[0]: Round Key Value\n");
 	muggle_output_hex((unsigned char*)&sk->rd_key[0], 16, 4);
 #endif
 
@@ -137,38 +147,37 @@ int muggle_aes_crypt(
 
 	// round 1
 #if MUGGLE_CRYPT_AES_DEBUG
-	printf("AES crypt[1]: Start of Round\n");
+	printf("AES encrypt[1]: Start of Round\n");
 	muggle_output_hex(state, 16, 4);
 #endif
 
 	muggle_aes_sub_bytes(state);
 
 #if MUGGLE_CRYPT_AES_DEBUG
-	printf("AES crypt[1]: After SubBytes\n");
+	printf("AES encrypt[1]: After SubBytes\n");
 	muggle_output_hex(state, 16, 4);
 #endif
 
 	muggle_aes_shift_rows(state);
 
 #if MUGGLE_CRYPT_AES_DEBUG
-	printf("AES crypt[1]: After ShiftRows\n");
+	printf("AES encrypt[1]: After ShiftRows\n");
 	muggle_output_hex(state, 16, 4);
 #endif
 
 	muggle_aes_mix_column(state);
 
 #if MUGGLE_CRYPT_AES_DEBUG
-	printf("AES crypt[1]: After MixColumns\n");
+	printf("AES encrypt[1]: After MixColumns\n");
 	muggle_output_hex(state, 16, 4);
 #endif
 
 	muggle_aes_add_round_key(state, &sk->rd_key[4]);
 
 #if MUGGLE_CRYPT_AES_DEBUG
-	printf("AES crypt[1]: Round Key Value\n");
+	printf("AES encrypt[1]: Round Key Value\n");
 	muggle_output_hex((unsigned char*)&sk->rd_key[4], 16, 4);
 #endif
-
 
 	// round 2 
 	muggle_aes_sub_bytes(state);
@@ -221,9 +230,33 @@ int muggle_aes_crypt(
 	if (sk->rounds == 10)
 	{
 		// round 10
+#if MUGGLE_CRYPT_AES_DEBUG
+		printf("AES encrypt[10]: Start of Round\n");
+		muggle_output_hex(state, 16, 4);
+#endif
+
 		muggle_aes_sub_bytes(state);
+
+#if MUGGLE_CRYPT_AES_DEBUG
+		printf("AES encrypt[10]: After SubBytes\n");
+		muggle_output_hex(state, 16, 4);
+#endif
+
 		muggle_aes_shift_rows(state);
+
+#if MUGGLE_CRYPT_AES_DEBUG
+		printf("AES encrypt[10]: After ShiftRows\n");
+		muggle_output_hex(state, 16, 4);
+		printf("AES encrypt[10]: Round Key Value\n");
+		muggle_output_hex((unsigned char*)&sk->rd_key[40], 16, 4);
+#endif
+
 		muggle_aes_add_round_key(state, &sk->rd_key[40]);
+
+#if MUGGLE_CRYPT_AES_DEBUG
+		printf("AES encrypt[10]: After AddRoundKey\n");
+		muggle_output_hex(state, 16, 4);
+#endif
 	}
 	else
 	{
@@ -265,14 +298,201 @@ int muggle_aes_crypt(
 			muggle_aes_shift_rows(state);
 			muggle_aes_add_round_key(state, &sk->rd_key[56]);
 		}
+	}
+
+	return 0;
+}
+
+static int muggle_aes_decrypt(
+	unsigned char *state,
+	muggle_aes_sub_keys_t *sk)
+{
+	if (sk->rounds != 10 && sk->rounds != 12 && sk->rounds != 14)
+	{
+		MUGGLE_ASSERT_MSG(
+			(sk->rounds == 10 || sk->rounds == 12 || sk->rounds == 14),
+			"Invalid AES key schedule rounds"
+		);
+		return MUGGLE_ERR_INVALID_PARAM;
+	}
+
+	if (sk->rounds > 10)
+	{
+		if (sk->rounds == 14)
+		{
+			// inv round 14
+			muggle_aes_add_round_key(state, &sk->rd_key[56]);
+			muggle_aes_inv_shift_rows(state);
+			muggle_aes_inv_sub_bytes(state);
+
+			// inv round 13
+			muggle_aes_add_round_key(state, &sk->rd_key[52]);
+			muggle_aes_inv_mix_column(state);
+			muggle_aes_inv_shift_rows(state);
+			muggle_aes_inv_sub_bytes(state);
+
+			// inv round 12
+			muggle_aes_add_round_key(state, &sk->rd_key[48]);
+			muggle_aes_inv_mix_column(state);
+			muggle_aes_inv_shift_rows(state);
+			muggle_aes_inv_sub_bytes(state);
+		}
 		else
 		{
-			MUGGLE_ASSERT_MSG(
-				(sk->rounds == 10 || sk->rounds == 12 || sk->rounds == 14),
-				"invalid key schedule rounds"
-			);
-			return MUGGLE_ERR_INVALID_PARAM;
+			// inv round 12
+			muggle_aes_add_round_key(state, &sk->rd_key[48]);
+			muggle_aes_inv_shift_rows(state);
+			muggle_aes_inv_sub_bytes(state);
 		}
+
+		// inv round 11
+		muggle_aes_add_round_key(state, &sk->rd_key[44]);
+		muggle_aes_inv_mix_column(state);
+		muggle_aes_inv_shift_rows(state);
+		muggle_aes_inv_sub_bytes(state);
+
+		// inv round 10
+		muggle_aes_add_round_key(state, &sk->rd_key[40]);
+		muggle_aes_inv_mix_column(state);
+		muggle_aes_inv_shift_rows(state);
+		muggle_aes_inv_sub_bytes(state);
+	}
+	else
+	{
+		// inv round 10
+#if MUGGLE_CRYPT_AES_DEBUG
+		printf("AES decrypt[inv 10]: Start of Round\n");
+		muggle_output_hex(state, 16, 4);
+		printf("AES decrypt[inv 10]: Round Key Value\n");
+		muggle_output_hex((unsigned char*)&sk->rd_key[40], 16, 4);
+#endif
+
+		muggle_aes_add_round_key(state, &sk->rd_key[40]);
+
+#if MUGGLE_CRYPT_AES_DEBUG
+		printf("AES decrypt[inv 10]: After AddRoundKey\n");
+		muggle_output_hex(state, 16, 4);
+#endif
+
+		muggle_aes_inv_shift_rows(state);
+
+#if MUGGLE_CRYPT_AES_DEBUG
+		printf("AES decrypt[inv 10]: After ShiftRows\n");
+		muggle_output_hex(state, 16, 4);
+#endif
+
+		muggle_aes_inv_sub_bytes(state);
+
+#if MUGGLE_CRYPT_AES_DEBUG
+		printf("AES encrypt[inv 10]: After SubBytes\n");
+		muggle_output_hex(state, 16, 4);
+#endif
+	}
+
+	// inv round 9
+	muggle_aes_add_round_key(state, &sk->rd_key[36]);
+	muggle_aes_inv_mix_column(state);
+	muggle_aes_inv_shift_rows(state);
+	muggle_aes_inv_sub_bytes(state);
+
+	// inv round 8
+	muggle_aes_add_round_key(state, &sk->rd_key[32]);
+	muggle_aes_inv_mix_column(state);
+	muggle_aes_inv_shift_rows(state);
+	muggle_aes_inv_sub_bytes(state);
+
+	// inv round 7
+	muggle_aes_add_round_key(state, &sk->rd_key[28]);
+	muggle_aes_inv_mix_column(state);
+	muggle_aes_inv_shift_rows(state);
+	muggle_aes_inv_sub_bytes(state);
+
+	// inv round 6
+	muggle_aes_add_round_key(state, &sk->rd_key[24]);
+	muggle_aes_inv_mix_column(state);
+	muggle_aes_inv_shift_rows(state);
+	muggle_aes_inv_sub_bytes(state);
+
+	// inv round 5
+	muggle_aes_add_round_key(state, &sk->rd_key[20]);
+	muggle_aes_inv_mix_column(state);
+	muggle_aes_inv_shift_rows(state);
+	muggle_aes_inv_sub_bytes(state);
+
+	// inv round 4
+	muggle_aes_add_round_key(state, &sk->rd_key[16]);
+	muggle_aes_inv_mix_column(state);
+	muggle_aes_inv_shift_rows(state);
+	muggle_aes_inv_sub_bytes(state);
+
+	// inv round 3
+	muggle_aes_add_round_key(state, &sk->rd_key[12]);
+	muggle_aes_inv_mix_column(state);
+	muggle_aes_inv_shift_rows(state);
+	muggle_aes_inv_sub_bytes(state);
+
+	// inv round 2
+	muggle_aes_add_round_key(state, &sk->rd_key[8]);
+	muggle_aes_inv_mix_column(state);
+	muggle_aes_inv_shift_rows(state);
+	muggle_aes_inv_sub_bytes(state);
+
+	// inv round 1
+	muggle_aes_add_round_key(state, &sk->rd_key[4]);
+	muggle_aes_inv_mix_column(state);
+	muggle_aes_inv_shift_rows(state);
+	muggle_aes_inv_sub_bytes(state);
+
+	// inv round 0
+	muggle_aes_add_round_key(state, &sk->rd_key[0]);
+
+	return 0;
+}
+
+int muggle_aes_crypt(
+	int mode,
+	const unsigned char *input,
+	muggle_aes_sub_keys_t *sk,
+	unsigned char *output)
+{
+	if (input == NULL)
+	{
+		MUGGLE_ASSERT_MSG(input != NULL, "AES crypt input plaintext is null");
+		return MUGGLE_ERR_NULL_PARAM;
+	}
+
+	if (sk == NULL)
+	{
+		MUGGLE_ASSERT_MSG(sk != NULL, "AES crypt input key schedule null");
+		return MUGGLE_ERR_NULL_PARAM;
+	}
+
+	if (output == NULL)
+	{
+		MUGGLE_ASSERT_MSG(sk != NULL, "AES crypt output ciphertext is null");
+		return MUGGLE_ERR_NULL_PARAM;
+	}
+
+	int ret = 0;
+	unsigned char state[16] = {
+		input[0], input[4], input[8],  input[12],
+		input[1], input[5], input[9],  input[13],
+		input[2], input[6], input[10], input[14],
+		input[3], input[7], input[11], input[15]
+	};
+
+	if (mode == MUGGLE_ENCRYPT)
+	{
+		ret = muggle_aes_encrypt(state, sk);
+	}
+	else if (mode == MUGGLE_DECRYPT)
+	{
+		ret = muggle_aes_decrypt(state, sk);
+	}
+	else
+	{
+		MUGGLE_ASSERT_MSG(mode == MUGGLE_ENCRYPT || mode == MUGGLE_DECRYPT, "Invalid AES crypt mode");
+		ret = MUGGLE_ERR_INVALID_PARAM;
 	}
 
 	output[0]  = state[0];
@@ -292,5 +512,5 @@ int muggle_aes_crypt(
 	output[14] = state[11];
 	output[15] = state[15];
 
-	return 0;
+	return ret;
 }
