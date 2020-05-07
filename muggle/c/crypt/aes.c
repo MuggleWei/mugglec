@@ -450,7 +450,7 @@ static int muggle_aes_decrypt(
 }
 
 int muggle_aes_crypt(
-	int mode,
+	int op,
 	const unsigned char *input,
 	muggle_aes_sub_keys_t *sk,
 	unsigned char *output)
@@ -481,17 +481,17 @@ int muggle_aes_crypt(
 		input[3], input[7], input[11], input[15]
 	};
 
-	if (mode == MUGGLE_ENCRYPT)
+	if (op == MUGGLE_ENCRYPT)
 	{
 		ret = muggle_aes_encrypt(state, sk);
 	}
-	else if (mode == MUGGLE_DECRYPT)
+	else if (op == MUGGLE_DECRYPT)
 	{
 		ret = muggle_aes_decrypt(state, sk);
 	}
 	else
 	{
-		MUGGLE_ASSERT_MSG(mode == MUGGLE_ENCRYPT || mode == MUGGLE_DECRYPT, "Invalid AES crypt mode");
+		MUGGLE_ASSERT_MSG(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, "Invalid AES crypt mode");
 		ret = MUGGLE_ERR_INVALID_PARAM;
 	}
 

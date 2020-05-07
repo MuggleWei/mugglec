@@ -39,7 +39,7 @@ int muggle_aes_key_setup(
 
 /*
  * Encrypt/Decrypt a single block
- * @param mode
+ * @param op
  * - MUGGLE_ENCRYPT encrypt
  * - MUGGLE_DECRYPT decrypt
  * @param input input single block
@@ -52,7 +52,7 @@ int muggle_aes_key_setup(
  * */
 MUGGLE_CC_EXPORT
 int muggle_aes_crypt(
-	int mode,
+	int op,
 	const unsigned char *input,
 	muggle_aes_sub_keys_t *sk,
 	unsigned char *output);

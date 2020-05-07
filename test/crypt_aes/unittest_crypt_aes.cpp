@@ -211,10 +211,87 @@ TEST(crypt_aes, cipher_example)
 	ret = memcmp(ret_plaintext, input, 16);
 	if (ret != 0)
 	{
-		printf("ret plaintext: \n");
-		muggle_output_hex(ret_plaintext, 16, 4);
 		printf("input: \n");
 		muggle_output_hex(input, 16, 4);
+		printf("ret plaintext: \n");
+		muggle_output_hex(ret_plaintext, 16, 4);
 	}
 	ASSERT_EQ(ret, 0);
+}
+
+TEST(crypt_aes, crypt_single_block)
+{
+	unsigned char input[16], ret_plaintext[16];
+	unsigned char key[32];
+	unsigned char output[16];
+	int bit_sizes[] = {128, 192, 256};
+	int ret, byte_cnt;
+
+	srand(time(NULL));
+	for (int i = 0; i < 3; i++)
+	{
+		for (int cnt = 0; cnt < 10; ++cnt)
+		{
+			for (int j = 0; j < 16; j++)
+			{
+				input[j] = (unsigned char)(rand() % 256);
+			}
+
+			byte_cnt = bit_sizes[i] / 8;
+			for (int j = 0; j < byte_cnt; j++)
+			{
+				key[j] = (unsigned char)(rand() % 256);
+			}
+
+			muggle_aes_sub_keys_t sk;
+			ret = muggle_aes_key_setup(key, bit_sizes[i], &sk);
+			ASSERT_EQ(ret, 0);
+
+			ret = muggle_aes_crypt(MUGGLE_ENCRYPT, input, &sk, output);
+			ASSERT_EQ(ret, 0);
+
+#if MUGGLE_TEST_LINK_OPENSSL
+			AES_KEY openssl_rk;
+			ret = AES_set_encrypt_key(key, bit_sizes[i], &openssl_rk);
+			ASSERT_EQ(ret, 0);
+
+			unsigned char openssl_output[16];
+			AES_encrypt(input, openssl_output, &openssl_rk);
+
+			ret = memcmp(output, openssl_output, 16);
+			if (ret != 0)
+			{
+				printf("input: \n");
+				muggle_output_hex(input, 16, 4);
+
+				printf("key: \n");
+				muggle_output_hex(input, byte_cnt, 4);
+
+				printf("output: \n");
+				muggle_output_hex(output, 16, 4);
+
+				printf("openssl output: \n");
+				muggle_output_hex(openssl_output, 16, 4);
+			}
+			ASSERT_EQ(ret, 0);
+#endif
+
+			ret = muggle_aes_crypt(MUGGLE_DECRYPT, output, &sk, ret_plaintext);
+			ASSERT_EQ(ret, 0);
+
+			ret = memcmp(ret_plaintext, input, 16);
+			if (ret != 0)
+			{
+				printf("input: \n");
+				muggle_output_hex(input, 16, 4);
+
+				printf("key: \n");
+				muggle_output_hex(input, byte_cnt, 4);
+
+				printf("ret plaintext: \n");
+				muggle_output_hex(ret_plaintext, 16, 4);
+			}
+			ASSERT_EQ(ret, 0);
+		}
+	}
 }
