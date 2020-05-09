@@ -10,11 +10,19 @@
 
 #include "muggle/c/base/macro.h"
 #include <stdint.h>
+#include "muggle/c/log/log.h"
 
 EXTERN_C_BEGIN
 
 #define IS_POW_OF_2(x)             (!((x)&((x)-1)))
 #define ROUND_UP_POW_OF_2_MUL(x,n) (((x)+(n)-1)&~((n)-1))
+
+#define MUGGLE_CHECK_RET(x, err_enum) \
+	if (!(x)) \
+	{ \
+		MUGGLE_ASSERT(x); \
+		return err_enum; \
+	}
 
 MUGGLE_CC_EXPORT
 uint64_t next_pow_of_2(uint64_t x);

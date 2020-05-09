@@ -628,11 +628,10 @@ void muggle_openssl_des_gen_subkeys(
 	}
 }
 
-int muggle_openssl_des_crypt(
+void muggle_openssl_des_crypt(
 	const muggle_64bit_block_t *input,
 	const struct muggle_des_subkeys *ks,
 	muggle_64bit_block_t *output)
 {
 	muggle_openssl_encrypt1(input, ks, output);
-	return 0;
 }

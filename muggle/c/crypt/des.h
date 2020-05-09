@@ -11,6 +11,8 @@
 #include "muggle/c/base/macro.h"
 #include "muggle/c/crypt/crypt_utils.h"
 
+#define MUGGLE_DES_BLOCK_SIZE 8
+
 EXTERN_C_BEGIN
 
 typedef struct muggle_des_48bit
@@ -24,96 +26,148 @@ typedef struct muggle_des_subkeys
 	muggle_des_subkey_t sk[16];
 }muggle_des_subkeys_t;
 
+typedef struct muggle_des_context
+{
+	int                  op; // encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
+	muggle_des_subkeys_t sk; // DES subkeys
+}muggle_des_context_t;
+
 /**
- * DES key schedule
- * @param op encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
- * @param key des input key
- * @param subkeys output subkeys
- * */
-MUGGLE_CC_EXPORT
-void muggle_des_gen_subkeys(
-	int op,
-	const muggle_64bit_block_t *key,
-	muggle_des_subkeys_t *subkeys);
-
-
-/*
- * DES encrypt/decrypt a single 64bit block
- * @param input input block
- * @param ks sub key schedule
- * @param output output block
- * @return 0 represents success, otherwise failed
- * */
-MUGGLE_CC_EXPORT
-int muggle_des_crypt(
-	const muggle_64bit_block_t *input,
-	const muggle_des_subkeys_t *ks,
-	muggle_64bit_block_t *output);
-
-/*
- * DES encrypt/decrypt in specified block cipher mode
- * @param op
+ * DES setup key schedule
+ * @param op crypt operator
  *   - MUGGLE_DECRYPT encrypt
  *   - MUGGLE_ENCRYPT decrypt
- * @param block_cipher_mode block cipher mode, use MUGGLE_BLOCK_CIPHER_MODE_*
  * @param key des input key
+ * @param ctx DES context
+ * @return
+ *   - 0 success
+ *   - otherwise failed, see MUGGLE_ERR_*
+ * */
+MUGGLE_CC_EXPORT
+int muggle_des_set_key(
+	int op,
+	const unsigned char key[MUGGLE_DES_BLOCK_SIZE],
+	muggle_des_context_t *ctx);
+
+/**
+ * DES setup key schedule for mode
+ * @param op crypt operator
+ *   - MUGGLE_DECRYPT encrypt
+ *   - MUGGLE_ENCRYPT decrypt
+ * @param mode block cipher mode, see MUGGLE_BLOCK_CIPHER_MODE_*
+ * @param key des input key
+ * @param ctx DES context
+ * @return
+ *   - 0 success
+ *   - otherwise failed, see MUGGLE_ERR_*
+ * */
+MUGGLE_CC_EXPORT
+int muggle_des_set_key_with_mode(
+	int op,
+	int mode,
+	const unsigned char key[MUGGLE_DES_BLOCK_SIZE],
+	muggle_des_context_t *ctx);
+
+/**
+ * DES crypt with ECB mode
+ * @param ctx DES context
  * @param input input bytes, length must be multiple of 8
  * @param num_bytes length of input/output bytes
- * @param iv initialization vector;
- * 	ECB: doesn't make sense in ECB mode
- * 	CTR: equal to init counter values
- * @param update_iv 1 - update, 0 - don't update;
- *  ECB: doesn't make sense in ECB mode
- *  CTR: whether CTR need update counter values
  * @param output output bytes
  * @return
  *   - 0 success
- *   - otherwise failed
- *
- * NOTE: Don't use ECB mode in product environment
+ *   - otherwise failed, return MUGGLE_ERR_*
  * */
 MUGGLE_CC_EXPORT
-int muggle_des_cipher_bytes(
-	int op,
-	int block_cipher_mode,
-	muggle_64bit_block_t key,
+int muggle_des_ecb(
+	const muggle_des_context_t *ctx,
 	const unsigned char *input,
 	unsigned int num_bytes,
-	muggle_64bit_block_t *iv,
-	int update_iv,
 	unsigned char *output);
 
-/*
- * DES encrypt/decrypt in specified block cipher mode
- * @param op
- *   - MUGGLE_DECRYPT encrypt
- *   - MUGGLE_ENCRYPT decrypt
- * @param block_cipher_mode block cipher mode, use MUGGLE_BLOCK_CIPHER_MODE_*
- * @param ks sub key schedule
+/**
+ * DES crypt with CBC mode
+ * @param ctx DES context
  * @param input input bytes, length must be multiple of 8
  * @param num_bytes length of input/output bytes
- * @param iv initialization vector;
- * 	 - ECB: doesn't make sense in ECB mode
- * 	 - CTR: equal to init counter values
- * @param update_iv 1 - update, 0 - don't update;
- *   - ECB: doesn't make sense in ECB mode
- *   - CTR: whether CTR need update counter values
+ * @param iv initialization vector
+ * @param iv_offset offset bytes in iv
  * @param output output bytes
  * @return
  *   - 0 success
- *   - otherwise failed
- *
- * NOTE: Don't use ECB mode in product environment
+ *   - otherwise failed, return MUGGLE_ERR_*
  * */
 MUGGLE_CC_EXPORT
-int muggle_des_cipher(
-	int op,
-	int block_cipher_mode,
-	const muggle_des_subkeys_t *ks,
+int muggle_des_cbc(
+	const muggle_des_context_t *ctx,
 	const unsigned char *input,
 	unsigned int num_bytes,
-	muggle_64bit_block_t *iv,
-	int update_iv,
+	unsigned char iv[MUGGLE_DES_BLOCK_SIZE],
+	unsigned char *output);
+
+/**
+ * DES crypt with CFB mode
+ * @param ctx DES context
+ * @param input input bytes, length must be multiple of 8
+ * @param num_bytes length of input/output bytes
+ * @param iv initialization vector
+ * @param iv_offset offset bytes in iv
+ * @param output output bytes
+ * @return
+ *   - 0 success
+ *   - otherwise failed, return MUGGLE_ERR_*
+ * */
+MUGGLE_CC_EXPORT
+int muggle_des_cfb(
+	const muggle_des_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	unsigned char iv[MUGGLE_DES_BLOCK_SIZE],
+	unsigned int *iv_offset,
+	unsigned char *output);
+
+/**
+ * DES crypt with OFB mode
+ * @param ctx DES context
+ * @param input input bytes, length must be multiple of 8
+ * @param num_bytes length of input/output bytes
+ * @param iv initialization vector
+ * @param iv_offset offset bytes in iv
+ * @param output output bytes
+ * @return
+ *   - 0 success
+ *   - otherwise failed, return MUGGLE_ERR_*
+ * */
+MUGGLE_CC_EXPORT
+int muggle_des_ofb(
+	const muggle_des_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	unsigned char iv[MUGGLE_DES_BLOCK_SIZE],
+	unsigned int *iv_offset,
+	unsigned char *output);
+
+/**
+ * DES crypt with CTR mode
+ * @param ctx DES context
+ * @param input input bytes, length must be multiple of 8
+ * @param num_bytes length of input/output bytes
+ * @param nonce
+ * @param nonce_offset offset bytes in nonce
+ * @param output output bytes
+ * @param stream_block ciphertext of nonce
+ * @return
+ *   - 0 success
+ *   - otherwise failed, return MUGGLE_ERR_*
+ * */
+MUGGLE_CC_EXPORT
+int muggle_des_ctr(
+	const muggle_des_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	uint64_t *nonce,
+	unsigned int *nonce_offset,
+	unsigned char stream_block[MUGGLE_DES_BLOCK_SIZE],
 	unsigned char *output);
 
 EXTERN_C_END

@@ -41,7 +41,7 @@ void muggle_openssl_des_gen_subkeys(
  * @param output output block
  * @return 0 represents success, otherwise failed
  * */
-int muggle_openssl_des_crypt(
+void muggle_openssl_des_crypt(
 	const muggle_64bit_block_t *input,
 	const struct muggle_des_subkeys *ks,
 	muggle_64bit_block_t *output);

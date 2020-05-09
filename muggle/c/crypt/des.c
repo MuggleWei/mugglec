@@ -14,19 +14,72 @@
 #include "muggle/c/crypt/internal/internal_des.h"
 #include "muggle/c/crypt/openssl/openssl_des.h"
 
-fn_muggle_des_cipher s_fn_muggle_des[] = {
-	muggle_des_ecb,
-	muggle_des_cbc,
-	muggle_des_cfb,
-	muggle_des_ofb,
-	muggle_des_ctr,
-};
-
-void muggle_des_gen_subkeys(
-	int op,
-	const muggle_64bit_block_t *key,
-	muggle_des_subkeys_t *subkeys)
+/*
+ * DES crypt single 64bits block
+ * */
+static void muggle_des_crypt(
+	const muggle_des_subkeys_t *ks,
+	const muggle_64bit_block_t *input,
+	muggle_64bit_block_t *output)
 {
+#if MUGGLE_CRYPT_USE_OPENSSL
+	muggle_openssl_des_crypt(input, ks, output);
+#else
+	muggle_64bit_block_t b64;
+	muggle_32bit_block_t b32;
+	uint32_t tmp;
+
+	// IP
+	muggle_des_ip(input, &b64);
+
+#if MUGGLE_CRYPT_DES_DEBUG
+	printf("IP: ");
+	muggle_output_hex(b64.bytes, 8, 0);
+	muggle_output_bin(b64.bytes, 8, 8);
+#endif
+
+	// Feistel, 16 rounds
+	for (int i = 0; i < 16; ++i)
+	{
+#if MUGGLE_CRYPT_DES_DEBUG
+		printf("feistel[%d]: ", i);
+		muggle_output_hex(b64.bytes, 8, 0);
+#endif
+
+		muggle_32bit_block_t *r = (muggle_32bit_block_t*)&b64.u32.h;
+		muggle_des_f(r, &ks->sk[i], &b32);
+		tmp = b64.u32.l ^ b32.u32;
+		b64.u32.l = b64.u32.h;
+		b64.u32.h = tmp;
+	}
+
+#if MUGGLE_CRYPT_DES_DEBUG
+	printf("feistel[16]: ");
+	muggle_output_hex(b64.bytes, 8, 0);
+#endif
+
+	// FP
+	tmp = b64.u32.l;
+	b64.u32.l = b64.u32.h;
+	b64.u32.h = tmp;
+
+	muggle_des_fp(&b64, output);
+#endif
+}
+
+int muggle_des_set_key(
+	int op,
+	const unsigned char key_bytes[MUGGLE_DES_BLOCK_SIZE],
+	muggle_des_context_t *ctx)
+{
+	MUGGLE_CHECK_RET(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(key_bytes != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
+
+	const muggle_64bit_block_t *key = (const muggle_64bit_block_t*)key_bytes;
+	ctx->op = op;
+	muggle_des_subkeys_t *subkeys = &ctx->sk;
+
 #if MUGGLE_CRYPT_USE_OPENSSL
 	muggle_openssl_des_gen_subkeys(op, key, subkeys);
 #else
@@ -72,122 +125,236 @@ void muggle_des_gen_subkeys(
 		muggle_des_pc2(&out, &subkeys->sk[idx]);
 	}
 #endif
-}
-
-
-int muggle_des_crypt(
-	const muggle_64bit_block_t *input,
-	const muggle_des_subkeys_t *ks,
-	muggle_64bit_block_t *output)
-{
-#if MUGGLE_CRYPT_USE_OPENSSL
-	return muggle_openssl_des_crypt(input, ks, output);
-#else
-	muggle_64bit_block_t b64;
-	muggle_32bit_block_t b32;
-	uint32_t tmp;
-
-	// IP
-	muggle_des_ip(input, &b64);
-
-#if MUGGLE_CRYPT_DES_DEBUG
-	printf("IP: ");
-	muggle_output_hex(b64.bytes, 8, 0);
-	muggle_output_bin(b64.bytes, 8, 8);
-#endif
-
-	// Feistel, 16 rounds
-	for (int i = 0; i < 16; ++i)
-	{
-#if MUGGLE_CRYPT_DES_DEBUG
-		printf("feistel[%d]: ", i);
-		muggle_output_hex(b64.bytes, 8, 0);
-#endif
-
-		muggle_32bit_block_t *r = (muggle_32bit_block_t*)&b64.u32.h;
-		muggle_des_f(r, &ks->sk[i], &b32);
-		tmp = b64.u32.l ^ b32.u32;
-		b64.u32.l = b64.u32.h;
-		b64.u32.h = tmp;
-	}
-
-#if MUGGLE_CRYPT_DES_DEBUG
-	printf("feistel[16]: ");
-	muggle_output_hex(b64.bytes, 8, 0);
-#endif
-
-	// FP
-	tmp = b64.u32.l;
-	b64.u32.l = b64.u32.h;
-	b64.u32.h = tmp;
-
-	muggle_des_fp(&b64, output);
 
 	return 0;
-#endif
 }
 
-int muggle_des_cipher_bytes(
+int muggle_des_set_key_with_mode(
 	int op,
-	int block_cipher_mode,
-	muggle_64bit_block_t key,
-	const unsigned char *input,
-	unsigned int num_bytes,
-	muggle_64bit_block_t *iv,
-	int update_iv,
-	unsigned char *output)
+	int mode,
+	const unsigned char key[MUGGLE_DES_BLOCK_SIZE],
+	muggle_des_context_t *ctx)
 {
-	muggle_des_subkeys_t ks;
-	switch (block_cipher_mode)
-	{
-	case MUGGLE_BLOCK_CIPHER_MODE_ECB:
-	case MUGGLE_BLOCK_CIPHER_MODE_CBC:
-		{
-			muggle_des_gen_subkeys(op, &key, &ks);
-		}break;
-	case MUGGLE_BLOCK_CIPHER_MODE_CFB:
-	case MUGGLE_BLOCK_CIPHER_MODE_OFB:
-	case MUGGLE_BLOCK_CIPHER_MODE_CTR:
-		{
-			muggle_des_gen_subkeys(MUGGLE_ENCRYPT, &key, &ks);
-		}break;
-	default:
-		{
-			MUGGLE_ASSERT_MSG(block_cipher_mode >= 0 && block_cipher_mode < MAX_MUGGLE_BLOCK_CIPHER_MODE, "Invalid block cipher mode");
+	int ret = 0;
+ 	switch (mode)
+ 	{
+ 	case MUGGLE_BLOCK_CIPHER_MODE_ECB:
+ 	case MUGGLE_BLOCK_CIPHER_MODE_CBC:
+ 		{
+ 			ret = muggle_des_set_key(op, key, ctx);
+ 		}break;
+ 	case MUGGLE_BLOCK_CIPHER_MODE_CFB:
+ 	case MUGGLE_BLOCK_CIPHER_MODE_OFB:
+ 	case MUGGLE_BLOCK_CIPHER_MODE_CTR:
+ 		{
+ 			ret = muggle_des_set_key(MUGGLE_ENCRYPT, key, ctx);
+ 		}break;
+ 	default:
+ 		{
+ 			MUGGLE_ASSERT_MSG(mode >= 0 && mode < MAX_MUGGLE_BLOCK_CIPHER_MODE, "Invalid block cipher mode");
 			return MUGGLE_ERR_INVALID_PARAM;
-		};
-	}
+ 		};
+ 	}
 
-	return muggle_des_cipher(op, block_cipher_mode, &ks, input, num_bytes, iv, update_iv, output);
+	return ret;
 }
- 
-int muggle_des_cipher(
-	int op,
-	int block_cipher_mode,
-	const muggle_des_subkeys_t *ks,
+
+int muggle_des_ecb(
+	const muggle_des_context_t *ctx,
 	const unsigned char *input,
 	unsigned int num_bytes,
-	muggle_64bit_block_t *iv,
-	int update_iv,
 	unsigned char *output)
 {
-	if (input == NULL)
+	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(input != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ROUND_UP_POW_OF_2_MUL(num_bytes, MUGGLE_DES_BLOCK_SIZE) == num_bytes, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
+
+	size_t len = num_bytes / 8, offset = 0;
+	muggle_64bit_block_t *input_block, *output_block;
+	const muggle_des_subkeys_t *ks = &ctx->sk;
+
+	for (size_t i = 0; i < len; ++i)
 	{
-		MUGGLE_ASSERT_MSG(input != NULL, "DES cipher failed: input is nullptr");
-		return MUGGLE_ERR_NULL_PARAM;
+		input_block = (muggle_64bit_block_t*)(input + offset);
+		output_block = (muggle_64bit_block_t*)(output + offset);
+
+		muggle_des_crypt(ks, input_block, output_block);
+		offset += 8;
 	}
 
-	if (ROUND_UP_POW_OF_2_MUL(num_bytes, 8) != num_bytes)
+	return 0;
+}
+
+int muggle_des_cbc(
+	const muggle_des_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	unsigned char iv_bytes[MUGGLE_DES_BLOCK_SIZE],
+	unsigned char *output)
+{
+	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(input != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ROUND_UP_POW_OF_2_MUL(num_bytes, MUGGLE_DES_BLOCK_SIZE) == num_bytes, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(iv_bytes != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
+
+	muggle_64bit_block_t *iv = (muggle_64bit_block_t*)iv_bytes;
+
+	unsigned int len = num_bytes / 8, offset = 0;
+	muggle_64bit_block_t v;
+	v.u64 = iv->u64;
+	muggle_64bit_block_t *input_block, *output_block;
+
+	int op = ctx->op;
+	const muggle_des_subkeys_t *ks = &ctx->sk;
+
+	for (unsigned int i = 0; i < len; ++i)
 	{
-		MUGGLE_ASSERT_MSG(ROUND_UP_POW_OF_2_MUL(num_bytes, 8) == num_bytes, "DES cipher failed: input bytes is not multiple of 8");
-		return MUGGLE_ERR_INVALID_PARAM;
+		input_block = (muggle_64bit_block_t*)(input + offset);
+		output_block = (muggle_64bit_block_t*)(output + offset);
+
+		if (op == MUGGLE_ENCRYPT)
+		{
+			v.u64 ^= input_block->u64;
+			muggle_des_crypt(ks, &v, output_block);
+			v.u64 = output_block->u64;
+		}
+		else
+		{
+			muggle_des_crypt(ks, input_block, output_block);
+			output_block->u64 ^= v.u64;
+			v.u64 = input_block->u64;
+		}
+
+		offset += 8;
 	}
 
-	if (update_iv != 0 && iv == NULL)
+	iv->u64 = v.u64;
+
+	return 0;
+}
+
+int muggle_des_cfb(
+	const muggle_des_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	unsigned char iv[MUGGLE_DES_BLOCK_SIZE],
+	unsigned int *iv_offset,
+	unsigned char *output)
+{
+	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(input != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ROUND_UP_POW_OF_2_MUL(num_bytes, MUGGLE_DES_BLOCK_SIZE) == num_bytes, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(iv != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(iv_offset != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(*iv_offset < MUGGLE_DES_BLOCK_SIZE, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
+
+	int op = ctx->op;
+	const muggle_des_subkeys_t *ks = &ctx->sk;
+
+	unsigned int offset = *iv_offset;
+	muggle_64bit_block_t cipher_block;
+
+	for (unsigned int i = 0; i < num_bytes; ++i)
 	{
-		MUGGLE_ASSERT_MSG(!(update_iv != 0 && iv == NULL), "DES cipher failed: iv is null and wanna update iv");
-		return MUGGLE_ERR_INVALID_PARAM;
+		if (offset == 0)
+		{
+			muggle_des_crypt(ks, (muggle_64bit_block_t*)iv, &cipher_block);
+			memcpy(iv, cipher_block.bytes, 8);
+		}
+		output[i] = input[i] ^ iv[offset];
+
+		if (op == MUGGLE_ENCRYPT)
+		{
+			iv[offset] = output[i];
+		}
+		else
+		{
+			iv[offset] = input[i];
+		}
+
+		offset = (offset + 1) & MUGGLE_DES_BLOCK_SIZE;
 	}
 
-	return s_fn_muggle_des[block_cipher_mode](op, ks, input, num_bytes, iv, update_iv, output);
+	*iv_offset = offset;
+
+	return 0;
+}
+
+int muggle_des_ofb(
+	const muggle_des_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	unsigned char iv[MUGGLE_DES_BLOCK_SIZE],
+	unsigned int *iv_offset,
+	unsigned char *output)
+{
+	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(input != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ROUND_UP_POW_OF_2_MUL(num_bytes, MUGGLE_DES_BLOCK_SIZE) == num_bytes, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(iv != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(iv_offset != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(*iv_offset < MUGGLE_DES_BLOCK_SIZE, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
+
+	const muggle_des_subkeys_t *ks = &ctx->sk;
+
+	unsigned int offset = *iv_offset;
+	muggle_64bit_block_t cipher_block;
+
+	for (unsigned int i = 0; i < num_bytes; ++i)
+	{
+		if (offset == 0)
+		{
+			muggle_des_crypt(ks, (muggle_64bit_block_t*)iv, &cipher_block);
+			memcpy(iv, cipher_block.bytes, 8);
+		}
+
+		output[i] = input[i] ^ iv[offset];
+		offset = (offset + 1) & MUGGLE_DES_BLOCK_SIZE;
+	}
+
+	*iv_offset = offset;
+
+	return 0;
+}
+
+int muggle_des_ctr(
+	const muggle_des_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	uint64_t *nonce,
+	unsigned int *nonce_offset,
+	unsigned char stream_block[MUGGLE_DES_BLOCK_SIZE],
+	unsigned char *output)
+{
+	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(input != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ROUND_UP_POW_OF_2_MUL(num_bytes, MUGGLE_DES_BLOCK_SIZE) == num_bytes, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(nonce != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(nonce_offset != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(*nonce_offset < MUGGLE_DES_BLOCK_SIZE, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(stream_block != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
+
+	const muggle_des_subkeys_t *ks = &ctx->sk;
+	unsigned int offset = *nonce_offset;
+
+	for (unsigned int i = 0; i < num_bytes; ++i)
+	{
+		if (offset == 0)
+		{
+			*nonce += 1;
+			muggle_des_crypt(ks, (muggle_64bit_block_t*)nonce, (muggle_64bit_block_t*)stream_block);
+		}
+
+		output[i] = input[i] ^ stream_block[offset];
+		offset = (offset + 1) & MUGGLE_DES_BLOCK_SIZE;
+	}
+
+	*nonce_offset = offset;
+
+	return 0;
 }
