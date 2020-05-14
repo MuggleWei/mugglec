@@ -108,7 +108,7 @@ int muggle_des_cbc(
 /**
  * DES crypt with CFB mode
  * @param ctx DES context
- * @param input input bytes, length must be multiple of 8
+ * @param input input bytes
  * @param num_bytes length of input/output bytes
  * @param iv initialization vector
  * @param iv_offset offset bytes in iv
@@ -129,7 +129,7 @@ int muggle_des_cfb(
 /**
  * DES crypt with OFB mode
  * @param ctx DES context
- * @param input input bytes, length must be multiple of 8
+ * @param input input bytes
  * @param num_bytes length of input/output bytes
  * @param iv initialization vector
  * @param iv_offset offset bytes in iv
@@ -150,7 +150,7 @@ int muggle_des_ofb(
 /**
  * DES crypt with CTR mode
  * @param ctx DES context
- * @param input input bytes, length must be multiple of 8
+ * @param input input bytes
  * @param num_bytes length of input/output bytes
  * @param nonce
  * @param nonce_offset offset bytes in nonce

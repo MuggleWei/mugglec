@@ -13,10 +13,12 @@
  * */
 
 #include "openssl_des.h"
+#include <stdio.h>
 #include <string.h>
 #include "muggle/c/crypt/parity.h"
 #include "muggle/c/crypt/des.h"
 #include "muggle/c/crypt/internal/internal_des.h"
+#include "muggle/c/crypt/crypt_utils.h"
 
 /*
 
@@ -610,6 +612,45 @@ void muggle_openssl_encrypt1(
 	output->u32.h = r;
 }
 
+void muggle_openssl_encrypt2(
+	const muggle_64bit_block_t *input,
+	const struct muggle_des_subkeys *ks,
+	muggle_64bit_block_t *output)
+{
+	uint32_t l, r;
+
+	r = input->u32.l;
+	l = input->u32.h;
+
+	r = MUGGLE_OPENSSL_DES_ROTATE(r, 29) & 0xffffffffL;
+	l = MUGGLE_OPENSSL_DES_ROTATE(l, 29) & 0xffffffffL;
+
+	const uint32_t *ks_u32 = (const uint32_t*)&ks->sk[0];
+
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 0);     /* 1 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 2);     /* 2 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 4);     /* 3 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 6);     /* 4 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 8);     /* 5 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 10);    /* 6 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 12);    /* 7 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 14);    /* 8 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 16);    /* 9 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 18);    /* 10 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 20);    /* 11 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 22);    /* 12 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 24);    /* 13 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 26);    /* 14 */
+	MUGGLE_OPENSSL_D_ENCRYPT(l, r, ks_u32, 28);    /* 15 */
+	MUGGLE_OPENSSL_D_ENCRYPT(r, l, ks_u32, 30);    /* 16 */
+
+	l = MUGGLE_OPENSSL_DES_ROTATE(l, 3) & 0xffffffffL;
+	r = MUGGLE_OPENSSL_DES_ROTATE(r, 3) & 0xffffffffL;
+
+	output->u32.l = l;
+	output->u32.h = r;
+}
+
 void muggle_openssl_des_gen_subkeys(
 	int op,
 	const muggle_64bit_block_t *key,
@@ -634,4 +675,40 @@ void muggle_openssl_des_crypt(
 	muggle_64bit_block_t *output)
 {
 	muggle_openssl_encrypt1(input, ks, output);
+}
+
+void muggle_openssl_tdes_crypt(
+	const muggle_64bit_block_t *input,
+	const struct muggle_des_subkeys *ks1,
+	const struct muggle_des_subkeys *ks2,
+	const struct muggle_des_subkeys *ks3,
+	muggle_64bit_block_t *output)
+{
+	uint32_t l, r;
+
+	muggle_64bit_block_t input_block;
+	MUGGLE_OPENSSL_C2L(&input->u32.l, input_block.u32.l);
+	MUGGLE_OPENSSL_C2L(&input->u32.h, input_block.u32.h);
+
+	l = input->u32.l;
+	r = input->u32.h;
+
+	MUGGLE_OPENSSL_DES_IP(l, r);
+
+	input_block.u32.l = l;
+	input_block.u32.h = r;
+
+	muggle_openssl_encrypt2(&input_block, ks1, output);
+	input_block.u64 = output->u64;
+
+	muggle_openssl_encrypt2(&input_block, ks2, output);
+	input_block.u64 = output->u64;
+
+	muggle_openssl_encrypt2(&input_block, ks3, output);
+
+	l = output->u32.l;
+	r = output->u32.h;
+	MUGGLE_OPENSSL_DES_FP(r, l);
+	output->u32.l = l;
+	output->u32.h = r;
 }

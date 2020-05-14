@@ -20,7 +20,6 @@ EXTERN_C_BEGIN
 #define MUGGLE_CHECK_RET(x, err_enum) \
 	if (!(x)) \
 	{ \
-		MUGGLE_ASSERT(x); \
 		return err_enum; \
 	}
 

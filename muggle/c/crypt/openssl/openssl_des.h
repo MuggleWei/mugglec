@@ -24,6 +24,23 @@ EXTERN_C_BEGIN
 struct muggle_des_subkeys;
 
 /**
+ * openssl DES_encrypt1
+ * */
+void muggle_openssl_encrypt1(
+	const muggle_64bit_block_t *input,
+	const struct muggle_des_subkeys *ks,
+	muggle_64bit_block_t *output);
+
+/**
+ * openssl DES_encrypt2
+ * */
+void muggle_openssl_encrypt2(
+	const muggle_64bit_block_t *input,
+	const struct muggle_des_subkeys *ks,
+	muggle_64bit_block_t *output);
+
+
+/**
  * DES key schedule
  * @param op encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
  * @param key des input key
@@ -44,6 +61,20 @@ void muggle_openssl_des_gen_subkeys(
 void muggle_openssl_des_crypt(
 	const muggle_64bit_block_t *input,
 	const struct muggle_des_subkeys *ks,
+	muggle_64bit_block_t *output);
+
+/*
+ * TDES encrypt/decrypt a single 64bit block
+ * @param input input block
+ * @param ks sub key schedule
+ * @param output output block
+ * @return 0 represents success, otherwise failed
+ * */
+void muggle_openssl_tdes_crypt(
+	const muggle_64bit_block_t *input,
+	const struct muggle_des_subkeys *ks1,
+	const struct muggle_des_subkeys *ks2,
+	const struct muggle_des_subkeys *ks3,
 	muggle_64bit_block_t *output);
 
 EXTERN_C_END
