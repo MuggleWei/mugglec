@@ -218,6 +218,7 @@ int muggle_des_cbc(
 	muggle_64bit_block_t *input_block, *output_block;
 
 	int op = ctx->op;
+	MUGGLE_CHECK_RET(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
 	const muggle_des_subkeys_t *ks = &ctx->sk;
 
 	for (unsigned int i = 0; i < len; ++i)
@@ -262,6 +263,7 @@ int muggle_des_cfb(
 	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
 
 	int op = ctx->op;
+	MUGGLE_CHECK_RET(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
 	const muggle_des_subkeys_t *ks = &ctx->sk;
 
 	unsigned int offset = *iv_offset;
