@@ -22,25 +22,6 @@ typedef struct muggle_tdes_context
 }muggle_tdes_context_t;
 
 /**
- * TDES setup key schedule
- * @param op crypt operator
- *   - MUGGLE_DECRYPT encrypt
- *   - MUGGLE_ENCRYPT decrypt
- * @param key tdes input key
- * @param ctx TDES context
- * @return
- *   - 0 success
- *   - otherwise failed, see MUGGLE_ERR_*
- * */
-MUGGLE_CC_EXPORT
-int muggle_tdes_set_key(
-	int op1, int op2, int op3,
-	const unsigned char key1[MUGGLE_DES_BLOCK_SIZE],
-	const unsigned char key2[MUGGLE_DES_BLOCK_SIZE],
-	const unsigned char key3[MUGGLE_DES_BLOCK_SIZE],
-	muggle_tdes_context_t *ctx);
-
-/**
  * TDES setup key schedule for mode
  * @param op crypt operator
  *   - MUGGLE_DECRYPT encrypt
@@ -53,7 +34,7 @@ int muggle_tdes_set_key(
  *   - otherwise failed, see MUGGLE_ERR_*
  * */
 MUGGLE_CC_EXPORT
-int muggle_tdes_set_key_with_mode(
+int muggle_tdes_set_key(
 	int op,
 	int mode,
 	const unsigned char key1[MUGGLE_DES_BLOCK_SIZE],

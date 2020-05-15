@@ -15,6 +15,74 @@
 #include "muggle/c/crypt/openssl/openssl_des.h"
 
 /*
+ * DES set key
+ * @param op crypt operator
+ *   - MUGGLE_DECRYPT encrypt
+ *   - MUGGLE_ENCRYPT decrypt
+ * @param key des input key
+ * @param ctx DES context
+ * @return
+ *   - 0 success
+ *   - otherwise failed, see MUGGLE_ERR_*
+ * */
+static int muggle_des_set_key_inner(
+	int op,
+	const unsigned char key_bytes[MUGGLE_DES_BLOCK_SIZE],
+	muggle_des_subkeys_t *subkeys)
+{
+	const muggle_64bit_block_t *key = (const muggle_64bit_block_t*)key_bytes;
+
+#if MUGGLE_CRYPT_USE_OPENSSL
+	muggle_openssl_des_gen_subkeys(op, key, subkeys);
+#else
+	muggle_64bit_block_t out;
+
+	// PC-1
+	muggle_des_pc1(key, &out);
+
+#if MUGGLE_CRYPT_DES_DEBUG
+	printf("PC-1 C:");
+	muggle_output_hex(&out.bytes[0], 4, 0);
+	muggle_output_bin(&out.bytes[0], 4, 8);
+	printf("PC-1 D:");
+	muggle_output_hex(&out.bytes[4], 4, 0);
+	muggle_output_bin(&out.bytes[4], 4, 8);
+#endif
+
+	const int key_round_shift[16] = {
+		1, 1, 2, 2,
+		2, 2, 2, 2,
+		1, 2, 2, 2,
+		2, 2, 2, 1
+	};
+	const int key_round_mask[16] = {
+		0x01, 0x01, 0x03, 0x03,
+		0x03, 0x03, 0x03, 0x03,
+		0x01, 0x03, 0x03, 0x03,
+		0x03, 0x03, 0x03, 0x01
+	};
+
+	for (int i = 0; i < 16; i++)
+	{
+		// shift
+		out.u32.l = MUGGLE_DES_KEY_SHIFT(out.u32.l, key_round_shift[i], key_round_mask[i]);
+		out.u32.h = MUGGLE_DES_KEY_SHIFT(out.u32.h, key_round_shift[i], key_round_mask[i]);
+
+		// PC-2
+		int idx = i;
+		if (op == MUGGLE_DECRYPT)
+		{
+			idx = 15 - i;
+		}
+		muggle_des_pc2(&out, &subkeys->sk[idx]);
+	}
+#endif
+
+	return 0;
+}
+
+
+/*
  * DES crypt single 64bits block
  * */
 static void muggle_des_crypt(
@@ -69,85 +137,28 @@ static void muggle_des_crypt(
 
 int muggle_des_set_key(
 	int op,
-	const unsigned char key_bytes[MUGGLE_DES_BLOCK_SIZE],
-	muggle_des_context_t *ctx)
-{
-	MUGGLE_CHECK_RET(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
-	MUGGLE_CHECK_RET(key_bytes != NULL, MUGGLE_ERR_NULL_PARAM);
-	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
-
-	const muggle_64bit_block_t *key = (const muggle_64bit_block_t*)key_bytes;
-	ctx->op = op;
-	muggle_des_subkeys_t *subkeys = &ctx->sk;
-
-#if MUGGLE_CRYPT_USE_OPENSSL
-	muggle_openssl_des_gen_subkeys(op, key, subkeys);
-#else
-	muggle_64bit_block_t out;
-
-	// PC-1
-	muggle_des_pc1(key, &out);
-
-#if MUGGLE_CRYPT_DES_DEBUG
-	printf("PC-1 C:");
-	muggle_output_hex(&out.bytes[0], 4, 0);
-	muggle_output_bin(&out.bytes[0], 4, 8);
-	printf("PC-1 D:");
-	muggle_output_hex(&out.bytes[4], 4, 0);
-	muggle_output_bin(&out.bytes[4], 4, 8);
-#endif
-
-	const int key_round_shift[16] = {
-		1, 1, 2, 2,
-		2, 2, 2, 2,
-		1, 2, 2, 2,
-		2, 2, 2, 1
-	};
-	const int key_round_mask[16] = {
-		0x01, 0x01, 0x03, 0x03,
-		0x03, 0x03, 0x03, 0x03,
-		0x01, 0x03, 0x03, 0x03,
-		0x03, 0x03, 0x03, 0x01
-	};
-
-	for (int i = 0; i < 16; i++)
-	{
-		// shift
-		out.u32.l = MUGGLE_DES_KEY_SHIFT(out.u32.l, key_round_shift[i], key_round_mask[i]);
-		out.u32.h = MUGGLE_DES_KEY_SHIFT(out.u32.h, key_round_shift[i], key_round_mask[i]);
-
-		// PC-2
-		int idx = i;
-		if (op == MUGGLE_DECRYPT)
-		{
-			idx = 15 - i;
-		}
-		muggle_des_pc2(&out, &subkeys->sk[idx]);
-	}
-#endif
-
-	return 0;
-}
-
-int muggle_des_set_key_with_mode(
-	int op,
 	int mode,
 	const unsigned char key[MUGGLE_DES_BLOCK_SIZE],
 	muggle_des_context_t *ctx)
 {
+	MUGGLE_CHECK_RET(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(key != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
 	int ret = 0;
+
+	ctx->op = op;
  	switch (mode)
  	{
  	case MUGGLE_BLOCK_CIPHER_MODE_ECB:
  	case MUGGLE_BLOCK_CIPHER_MODE_CBC:
  		{
- 			ret = muggle_des_set_key(op, key, ctx);
+ 			ret = muggle_des_set_key_inner(op, key, &ctx->sk);
  		}break;
  	case MUGGLE_BLOCK_CIPHER_MODE_CFB:
  	case MUGGLE_BLOCK_CIPHER_MODE_OFB:
  	case MUGGLE_BLOCK_CIPHER_MODE_CTR:
  		{
- 			ret = muggle_des_set_key(MUGGLE_ENCRYPT, key, ctx);
+ 			ret = muggle_des_set_key_inner(MUGGLE_ENCRYPT, key, &ctx->sk);
  		}break;
  	default:
  		{
@@ -274,7 +285,7 @@ int muggle_des_cfb(
 			iv[offset] = input[i];
 		}
 
-		offset = (offset + 1) & MUGGLE_DES_BLOCK_SIZE;
+		offset = (offset + 1) & 0x07;
 	}
 
 	*iv_offset = offset;
@@ -311,7 +322,7 @@ int muggle_des_ofb(
 		}
 
 		output[i] = input[i] ^ iv[offset];
-		offset = (offset + 1) & MUGGLE_DES_BLOCK_SIZE;
+		offset = (offset + 1) & 0x07;
 	}
 
 	*iv_offset = offset;
@@ -348,7 +359,7 @@ int muggle_des_ctr(
 		}
 
 		output[i] = input[i] ^ stream_block[offset];
-		offset = (offset + 1) & MUGGLE_DES_BLOCK_SIZE;
+		offset = (offset + 1) & 0x07;
 	}
 
 	*nonce_offset = offset;

@@ -33,23 +33,6 @@ typedef struct muggle_des_context
 }muggle_des_context_t;
 
 /**
- * DES setup key schedule
- * @param op crypt operator
- *   - MUGGLE_DECRYPT encrypt
- *   - MUGGLE_ENCRYPT decrypt
- * @param key des input key
- * @param ctx DES context
- * @return
- *   - 0 success
- *   - otherwise failed, see MUGGLE_ERR_*
- * */
-MUGGLE_CC_EXPORT
-int muggle_des_set_key(
-	int op,
-	const unsigned char key[MUGGLE_DES_BLOCK_SIZE],
-	muggle_des_context_t *ctx);
-
-/**
  * DES setup key schedule for mode
  * @param op crypt operator
  *   - MUGGLE_DECRYPT encrypt
@@ -62,7 +45,7 @@ int muggle_des_set_key(
  *   - otherwise failed, see MUGGLE_ERR_*
  * */
 MUGGLE_CC_EXPORT
-int muggle_des_set_key_with_mode(
+int muggle_des_set_key(
 	int op,
 	int mode,
 	const unsigned char key[MUGGLE_DES_BLOCK_SIZE],

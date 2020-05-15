@@ -43,7 +43,7 @@ TEST(crypt_tdes, EncrypDecrypt)
 
 		// gen encrypt subkey
 		muggle_tdes_context_t ctx;
-		ret = muggle_tdes_set_key_with_mode(
+		ret = muggle_tdes_set_key(
 			MUGGLE_ENCRYPT, MUGGLE_BLOCK_CIPHER_MODE_ECB, key1.bytes, key2.bytes, key3.bytes, &ctx);
 		ASSERT_EQ(ret, 0);
 
@@ -52,7 +52,7 @@ TEST(crypt_tdes, EncrypDecrypt)
 		ASSERT_EQ(ret, 0);
 
 		// gen decrypt subkey
-		ret = muggle_tdes_set_key_with_mode(
+		ret = muggle_tdes_set_key(
 			MUGGLE_DECRYPT, MUGGLE_BLOCK_CIPHER_MODE_ECB, key1.bytes, key2.bytes, key3.bytes, &ctx);
 		ASSERT_EQ(ret, 0);
 

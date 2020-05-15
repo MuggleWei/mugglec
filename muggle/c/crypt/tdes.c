@@ -66,34 +66,6 @@ static void muggle_tdes_crypt(
 }
 
 int muggle_tdes_set_key(
-	int op1, int op2, int op3,
-	const unsigned char key1[MUGGLE_DES_BLOCK_SIZE],
-	const unsigned char key2[MUGGLE_DES_BLOCK_SIZE],
-	const unsigned char key3[MUGGLE_DES_BLOCK_SIZE],
-	muggle_tdes_context_t *ctx)
-{
-	MUGGLE_CHECK_RET(op1 == MUGGLE_ENCRYPT || op1 == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
-	MUGGLE_CHECK_RET(op2 == MUGGLE_ENCRYPT || op2 == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
-	MUGGLE_CHECK_RET(op3 == MUGGLE_ENCRYPT || op3 == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
-	MUGGLE_CHECK_RET(key1 != NULL, MUGGLE_ERR_NULL_PARAM);
-	MUGGLE_CHECK_RET(key2 != NULL, MUGGLE_ERR_NULL_PARAM);
-	MUGGLE_CHECK_RET(key3 != NULL, MUGGLE_ERR_NULL_PARAM);
-	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
-
-	int ret = 0;
-	ret = muggle_des_set_key(op1, key1, &ctx->ctx1);
-	MUGGLE_CHECK_RET(ret == 0, ret);
-
-	ret = muggle_des_set_key(op2, key2, &ctx->ctx2);
-	MUGGLE_CHECK_RET(ret == 0, ret);
-
-	ret = muggle_des_set_key(op3, key3, &ctx->ctx3);
-	MUGGLE_CHECK_RET(ret == 0, ret);
-
-	return 0;
-}
-
-int muggle_tdes_set_key_with_mode(
 	int op,
 	int mode,
 	const unsigned char key1[MUGGLE_DES_BLOCK_SIZE],
@@ -102,35 +74,22 @@ int muggle_tdes_set_key_with_mode(
 	muggle_tdes_context_t *ctx)
 {
 	MUGGLE_CHECK_RET(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(key1 != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(key2 != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(key3 != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
 	int inv_op = op == MUGGLE_ENCRYPT ? MUGGLE_DECRYPT : MUGGLE_ENCRYPT;
 
 	int ret = 0;
- 	switch (mode)
- 	{
- 	case MUGGLE_BLOCK_CIPHER_MODE_ECB:
- 	case MUGGLE_BLOCK_CIPHER_MODE_CBC:
- 		{
-			if (op == MUGGLE_ENCRYPT)
-			{
-				ret = muggle_tdes_set_key(op, inv_op, op, key1, key2, key3, ctx);
-			}
-			else
-			{
-				ret = muggle_tdes_set_key(op, inv_op, op, key3, key2, key1, ctx);
-			}
- 		}break;
- 	case MUGGLE_BLOCK_CIPHER_MODE_CFB:
- 	case MUGGLE_BLOCK_CIPHER_MODE_OFB:
- 	case MUGGLE_BLOCK_CIPHER_MODE_CTR:
- 		{
-			ret = muggle_tdes_set_key(MUGGLE_ENCRYPT, MUGGLE_ENCRYPT, MUGGLE_ENCRYPT, key1, key2, key3, ctx);
- 		}break;
- 	default:
- 		{
- 			MUGGLE_ASSERT_MSG(mode >= 0 && mode < MAX_MUGGLE_BLOCK_CIPHER_MODE, "Invalid block cipher mode");
-			return MUGGLE_ERR_INVALID_PARAM;
- 		};
- 	}
+
+	ret = muggle_des_set_key(op, mode, key1, &ctx->ctx1);
+	MUGGLE_CHECK_RET(ret == 0, ret);
+
+	ret = muggle_des_set_key(inv_op, mode, key2, &ctx->ctx2);
+	MUGGLE_CHECK_RET(ret == 0, ret);
+
+	ret = muggle_des_set_key(inv_op, mode, key3, &ctx->ctx3);
+	MUGGLE_CHECK_RET(ret == 0, ret);
 
 	return ret;
 }
