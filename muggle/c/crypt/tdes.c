@@ -82,29 +82,53 @@ int muggle_tdes_set_key(
 
 	int ret = 0;
 
-	if (op == MUGGLE_ENCRYPT)
+	switch (mode)
 	{
-		ret = muggle_des_set_key(op, mode, key1, &ctx->ctx1);
-		MUGGLE_CHECK_RET(ret == 0, ret);
+	case MUGGLE_BLOCK_CIPHER_MODE_ECB:
+	case MUGGLE_BLOCK_CIPHER_MODE_CBC:
+		{
+			if (op == MUGGLE_ENCRYPT)
+			{
+				ret = muggle_des_set_key(op, mode, key1, &ctx->ctx1);
+				MUGGLE_CHECK_RET(ret == 0, ret);
 
-		ret = muggle_des_set_key(inv_op, mode, key2, &ctx->ctx2);
-		MUGGLE_CHECK_RET(ret == 0, ret);
+				ret = muggle_des_set_key(inv_op, mode, key2, &ctx->ctx2);
+				MUGGLE_CHECK_RET(ret == 0, ret);
 
-		ret = muggle_des_set_key(op, mode, key3, &ctx->ctx3);
-		MUGGLE_CHECK_RET(ret == 0, ret);
-	}
-	else
-	{
-		ret = muggle_des_set_key(op, mode, key3, &ctx->ctx1);
-		MUGGLE_CHECK_RET(ret == 0, ret);
+				ret = muggle_des_set_key(op, mode, key3, &ctx->ctx3);
+				MUGGLE_CHECK_RET(ret == 0, ret);
+			}
+			else
+			{
+				ret = muggle_des_set_key(op, mode, key3, &ctx->ctx1);
+				MUGGLE_CHECK_RET(ret == 0, ret);
 
-		ret = muggle_des_set_key(inv_op, mode, key2, &ctx->ctx2);
-		MUGGLE_CHECK_RET(ret == 0, ret);
+				ret = muggle_des_set_key(inv_op, mode, key2, &ctx->ctx2);
+				MUGGLE_CHECK_RET(ret == 0, ret);
 
-		ret = muggle_des_set_key(op, mode, key1, &ctx->ctx3);
-		MUGGLE_CHECK_RET(ret == 0, ret);
-	}
+				ret = muggle_des_set_key(op, mode, key1, &ctx->ctx3);
+				MUGGLE_CHECK_RET(ret == 0, ret);
+			}
+		}break;
+	case MUGGLE_BLOCK_CIPHER_MODE_CFB:
+	case MUGGLE_BLOCK_CIPHER_MODE_OFB:
+	case MUGGLE_BLOCK_CIPHER_MODE_CTR:
+		{
+			ret = muggle_des_set_key(op, mode, key1, &ctx->ctx1);
+			MUGGLE_CHECK_RET(ret == 0, ret);
 
+			ret = muggle_des_set_key(inv_op, mode, key2, &ctx->ctx2);
+			MUGGLE_CHECK_RET(ret == 0, ret);
+
+			ret = muggle_des_set_key(op, mode, key3, &ctx->ctx3);
+			MUGGLE_CHECK_RET(ret == 0, ret);
+		}break;
+	default:
+		{
+			MUGGLE_ASSERT_MSG(mode >= 0 && mode < MAX_MUGGLE_BLOCK_CIPHER_MODE, "Invalid block cipher mode");
+			return MUGGLE_ERR_INVALID_PARAM;
+		};
+ 	}
 	return ret;
 }
 
@@ -219,6 +243,7 @@ int muggle_tdes_cfb(
 			muggle_tdes_crypt(ks1, ks2, ks3, (muggle_64bit_block_t*)iv, &cipher_block);
 			memcpy(iv, cipher_block.bytes, 8);
 		}
+
 		output[i] = input[i] ^ iv[offset];
 
 		if (op == MUGGLE_ENCRYPT)
