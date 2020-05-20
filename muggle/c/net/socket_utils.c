@@ -9,7 +9,7 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 	case AF_INET:
 		{
 			const struct sockaddr_in *sin = (struct sockaddr_in*)sa;
-			if (inet_ntop(AF_INET, &sin->sin_addr, buf, (socklen_t)bufsize) == NULL)
+			if (inet_ntop(AF_INET, (void*)&sin->sin_addr, buf, (socklen_t)bufsize) == NULL)
 			{
 				char err_msg[1024] = {0};
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
@@ -33,7 +33,7 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 	case AF_INET6:
 		{
 			const struct sockaddr_in6 *sin6 = (struct sockaddr_in6*)sa;
-			if (inet_ntop(AF_INET6, &sin6->sin6_addr, buf, (socklen_t)bufsize) == NULL)
+			if (inet_ntop(AF_INET6, (void*)&sin6->sin6_addr, buf, (socklen_t)bufsize) == NULL)
 			{
 				char err_msg[1024] = {0};
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));

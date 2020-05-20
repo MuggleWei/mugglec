@@ -227,7 +227,7 @@ TEST(crypt_aes, crypt_single_block)
 	int bit_sizes[] = {128, 192, 256};
 	int ret, byte_cnt;
 
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 	for (int i = 0; i < 3; i++)
 	{
 		for (int cnt = 0; cnt < 10; ++cnt)

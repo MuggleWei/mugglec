@@ -267,23 +267,49 @@ TEST(crypt_tdes, cfb)
 	unsigned char iv[MUGGLE_DES_BLOCK_SIZE], iv2[MUGGLE_DES_BLOCK_SIZE], iv3[MUGGLE_DES_BLOCK_SIZE];
 	unsigned int iv_off = 0, iv_off2 = 0;
 	unsigned char plaintext_arr[TEST_SPACE_SIZE], ciphertext_arr[TEST_SPACE_SIZE], ret_plaintext_arr[TEST_SPACE_SIZE];
-	unsigned char openssl_ciphertext_arr[TEST_SPACE_SIZE];
-	unsigned char *plaintext, *ciphertext, *ret_plaintext, *openssl_ciphertext;
+	unsigned char *plaintext, *ciphertext, *ret_plaintext;
+	muggle_tdes_context_t encrypt_ctx, decrypt_ctx;
 	unsigned int num_bytes =0, remain_bytes = 0;
 	int iv_off3 = 0;
 	unsigned int offset = 0;
+#if MUGGLE_TEST_LINK_OPENSSL
+	unsigned char openssl_ciphertext_arr[TEST_SPACE_SIZE];
+	unsigned char *openssl_ciphertext;
+	DES_key_schedule openssl_ks1, openssl_ks2, openssl_ks3;
+	const_DES_cblock *openssl_key1 = (const_DES_cblock*)&key1;
+	const_DES_cblock *openssl_key2 = (const_DES_cblock*)&key2;
+	const_DES_cblock *openssl_key3 = (const_DES_cblock*)&key3;
+#endif
 
 	for (int i = 0; i < 16; ++i)
 	{
 		memset(plaintext_arr, 0, sizeof(plaintext_arr));
 		memset(ciphertext_arr, 0, sizeof(plaintext_arr));
 
-		gen_input_var(key1, key2, key3, iv, plaintext, num_bytes);
+		gen_input_var(key1, key2, key3, iv, plaintext_arr, TEST_SPACE_SIZE);
 		memcpy(iv2, iv, MUGGLE_DES_BLOCK_SIZE);
 		memcpy(iv3, iv, MUGGLE_DES_BLOCK_SIZE);
 		iv_off = iv_off2 = 0;
 		iv_off3 = 0;
 		offset = 0;
+
+		// gen encrypt subkey
+		ret = muggle_tdes_set_key(
+			MUGGLE_ENCRYPT, MUGGLE_BLOCK_CIPHER_MODE_CFB,
+			key1, key2, key3, &encrypt_ctx);
+		ASSERT_EQ(ret, 0);
+
+		// gen decrypt subkey
+		ret = muggle_tdes_set_key(
+			MUGGLE_DECRYPT, MUGGLE_BLOCK_CIPHER_MODE_CFB,
+			key1, key2, key3, &decrypt_ctx);
+		ASSERT_EQ(ret, 0);
+
+#if MUGGLE_TEST_LINK_OPENSSL
+		DES_set_key_unchecked(openssl_key1, &openssl_ks1);
+		DES_set_key_unchecked(openssl_key2, &openssl_ks2);
+		DES_set_key_unchecked(openssl_key3, &openssl_ks3);
+#endif
 
 		remain_bytes = TEST_SPACE_SIZE;
 		while (remain_bytes > 0)
@@ -296,25 +322,12 @@ TEST(crypt_tdes, cfb)
 			ciphertext = (unsigned char*)ciphertext_arr + offset;
 			ret_plaintext = (unsigned char*)ret_plaintext_arr + offset;
 
-			// gen encrypt subkey
-			muggle_tdes_context_t ctx;
-			ret = muggle_tdes_set_key(
-				MUGGLE_ENCRYPT, MUGGLE_BLOCK_CIPHER_MODE_CFB,
-				key1, key2, key3, &ctx);
-			ASSERT_EQ(ret, 0);
-
 			// encrypt
-			ret = muggle_tdes_cfb(&ctx, plaintext, num_bytes, iv, &iv_off, ciphertext);
-			ASSERT_EQ(ret, 0);
-
-			// gen decrypt subkey
-			ret = muggle_tdes_set_key(
-				MUGGLE_DECRYPT, MUGGLE_BLOCK_CIPHER_MODE_CFB,
-				key1, key2, key3, &ctx);
+			ret = muggle_tdes_cfb(&encrypt_ctx, plaintext, num_bytes, iv, &iv_off, ciphertext);
 			ASSERT_EQ(ret, 0);
 
 			// decrypt
-			ret = muggle_tdes_cfb(&ctx, ciphertext, num_bytes, iv2, &iv_off2, ret_plaintext);
+			ret = muggle_tdes_cfb(&decrypt_ctx, ciphertext, num_bytes, iv2, &iv_off2, ret_plaintext);
 			ASSERT_EQ(ret, 0);
 
 			ret = memcmp(plaintext, ret_plaintext, num_bytes);
@@ -324,14 +337,6 @@ TEST(crypt_tdes, cfb)
 			ASSERT_EQ(ret, 0);
 
 #if MUGGLE_TEST_LINK_OPENSSL
-			DES_key_schedule openssl_ks1, openssl_ks2, openssl_ks3;
-			const_DES_cblock *openssl_key1 = (const_DES_cblock*)&key1;
-			const_DES_cblock *openssl_key2 = (const_DES_cblock*)&key2;
-			const_DES_cblock *openssl_key3 = (const_DES_cblock*)&key3;
-			DES_set_key_unchecked(openssl_key1, &openssl_ks1);
-			DES_set_key_unchecked(openssl_key2, &openssl_ks2);
-			DES_set_key_unchecked(openssl_key3, &openssl_ks3);
-
 			openssl_ciphertext = (unsigned char*)openssl_ciphertext_arr + offset;
 			DES_ede3_cfb64_encrypt(
 					plaintext, openssl_ciphertext, (long)num_bytes,
