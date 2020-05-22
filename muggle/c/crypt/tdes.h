@@ -16,6 +16,7 @@ EXTERN_C_BEGIN
 
 typedef struct muggle_tdes_context
 {
+	int                  op; // encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
 	muggle_des_context_t ctx1; // DES subkeys
 	muggle_des_context_t ctx2; // DES subkeys
 	muggle_des_context_t ctx3; // DES subkeys
@@ -80,7 +81,7 @@ int muggle_tdes_cbc(
 	unsigned char *output);
 
 /**
- * TDES crypt with CFB mode
+ * TDES crypt with CFB 64bit iv mode
  * @param ctx TDES context
  * @param input input bytes
  * @param num_bytes length of input/output bytes
@@ -92,7 +93,7 @@ int muggle_tdes_cbc(
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
 MUGGLE_CC_EXPORT
-int muggle_tdes_cfb(
+int muggle_tdes_cfb64(
 	const muggle_tdes_context_t *ctx,
 	const unsigned char *input,
 	unsigned int num_bytes,
@@ -101,7 +102,7 @@ int muggle_tdes_cfb(
 	unsigned char *output);
 
 /**
- * TDES crypt with OFB mode
+ * TDES crypt with OFB 64bit iv mode
  * @param ctx TDES context
  * @param input input bytes
  * @param num_bytes length of input/output bytes
@@ -113,7 +114,7 @@ int muggle_tdes_cfb(
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
 MUGGLE_CC_EXPORT
-int muggle_tdes_ofb(
+int muggle_tdes_ofb64(
 	const muggle_tdes_context_t *ctx,
 	const unsigned char *input,
 	unsigned int num_bytes,

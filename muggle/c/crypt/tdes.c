@@ -82,11 +82,13 @@ int muggle_tdes_set_key(
 
 	int ret = 0;
 
+	ctx->op = op;
 	switch (mode)
 	{
 	case MUGGLE_BLOCK_CIPHER_MODE_ECB:
 	case MUGGLE_BLOCK_CIPHER_MODE_CBC:
 		{
+			mode = MUGGLE_BLOCK_CIPHER_MODE_ECB;
 			if (op == MUGGLE_ENCRYPT)
 			{
 				ret = muggle_des_set_key(op, mode, key1, &ctx->ctx1);
@@ -114,13 +116,15 @@ int muggle_tdes_set_key(
 	case MUGGLE_BLOCK_CIPHER_MODE_OFB:
 	case MUGGLE_BLOCK_CIPHER_MODE_CTR:
 		{
-			ret = muggle_des_set_key(op, mode, key1, &ctx->ctx1);
+			mode = MUGGLE_BLOCK_CIPHER_MODE_ECB;
+
+			ret = muggle_des_set_key(MUGGLE_ENCRYPT, mode, key1, &ctx->ctx1);
 			MUGGLE_CHECK_RET(ret == 0, ret);
 
-			ret = muggle_des_set_key(inv_op, mode, key2, &ctx->ctx2);
+			ret = muggle_des_set_key(MUGGLE_DECRYPT, mode, key2, &ctx->ctx2);
 			MUGGLE_CHECK_RET(ret == 0, ret);
 
-			ret = muggle_des_set_key(op, mode, key3, &ctx->ctx3);
+			ret = muggle_des_set_key(MUGGLE_ENCRYPT, mode, key3, &ctx->ctx3);
 			MUGGLE_CHECK_RET(ret == 0, ret);
 		}break;
 	default:
@@ -129,6 +133,7 @@ int muggle_tdes_set_key(
 			return MUGGLE_ERR_INVALID_PARAM;
 		};
  	}
+
 	return ret;
 }
 
@@ -184,7 +189,7 @@ int muggle_tdes_cbc(
 	const muggle_des_subkeys_t *ks2 = &ctx->ctx2.sk;
 	const muggle_des_subkeys_t *ks3 = &ctx->ctx3.sk;
 
-	int op = ctx->ctx1.op;
+	int op = ctx->op;
 	MUGGLE_CHECK_RET(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
 	for (size_t i = 0; i < len; ++i)
 	{
@@ -212,7 +217,7 @@ int muggle_tdes_cbc(
 	return 0;
 }
 
-int muggle_tdes_cfb(
+int muggle_tdes_cfb64(
 	const muggle_tdes_context_t *ctx,
 	const unsigned char *input,
 	unsigned int num_bytes,
@@ -227,7 +232,7 @@ int muggle_tdes_cfb(
 	MUGGLE_CHECK_RET(*iv_offset < MUGGLE_DES_BLOCK_SIZE, MUGGLE_ERR_INVALID_PARAM);
 	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
 
-	int op = ctx->ctx1.op;
+	int op = ctx->op;
 	MUGGLE_CHECK_RET(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
 	const muggle_des_subkeys_t *ks1 = &ctx->ctx1.sk;
 	const muggle_des_subkeys_t *ks2 = &ctx->ctx2.sk;
@@ -263,7 +268,7 @@ int muggle_tdes_cfb(
 	return 0;
 }
 
-int muggle_tdes_ofb(
+int muggle_tdes_ofb64(
 	const muggle_tdes_context_t *ctx,
 	const unsigned char *input,
 	unsigned int num_bytes,

@@ -239,7 +239,7 @@ TEST(crypt_des, cbc)
 	}
 }
 
-TEST(crypt_des, cfb)
+TEST(crypt_des, cfb64)
 {
 	int ret;
 	unsigned char key[MUGGLE_DES_BLOCK_SIZE];
@@ -296,11 +296,11 @@ TEST(crypt_des, cfb)
 			ret_plaintext = (unsigned char*)ret_plaintext_arr + offset;
 
 			// encrypt
-			ret = muggle_des_cfb(&encrypt_ctx, plaintext, num_bytes, iv, &iv_off, ciphertext);
+			ret = muggle_des_cfb64(&encrypt_ctx, plaintext, num_bytes, iv, &iv_off, ciphertext);
 			ASSERT_EQ(ret, 0);
 
 			// decrypt
-			ret = muggle_des_cfb(&decrypt_ctx, ciphertext, num_bytes, iv2, &iv_off2, ret_plaintext);
+			ret = muggle_des_cfb64(&decrypt_ctx, ciphertext, num_bytes, iv2, &iv_off2, ret_plaintext);
 			ASSERT_EQ(ret, 0);
 
 			ret = memcmp(plaintext, ret_plaintext, num_bytes);
@@ -338,7 +338,7 @@ TEST(crypt_des, cfb)
 	}
 }
 
-TEST(crypt_des, ofb)
+TEST(crypt_des, ofb64)
 {
 	int ret;
 	unsigned char key[MUGGLE_DES_BLOCK_SIZE];
@@ -395,11 +395,11 @@ TEST(crypt_des, ofb)
 			ret_plaintext = (unsigned char*)ret_plaintext_arr + offset;
 
 			// encrypt
-			ret = muggle_des_ofb(&encrypt_ctx, plaintext, num_bytes, iv, &iv_off, ciphertext);
+			ret = muggle_des_ofb64(&encrypt_ctx, plaintext, num_bytes, iv, &iv_off, ciphertext);
 			ASSERT_EQ(ret, 0);
 
 			// decrypt
-			ret = muggle_des_ofb(&decrypt_ctx, ciphertext, num_bytes, iv2, &iv_off2, ret_plaintext);
+			ret = muggle_des_ofb64(&decrypt_ctx, ciphertext, num_bytes, iv2, &iv_off2, ret_plaintext);
 			ASSERT_EQ(ret, 0);
 
 			ret = memcmp(plaintext, ret_plaintext, num_bytes);

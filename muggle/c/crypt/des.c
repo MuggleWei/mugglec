@@ -247,7 +247,7 @@ int muggle_des_cbc(
 	return 0;
 }
 
-int muggle_des_cfb(
+int muggle_des_cfb64(
 	const muggle_des_context_t *ctx,
 	const unsigned char *input,
 	unsigned int num_bytes,
@@ -295,7 +295,7 @@ int muggle_des_cfb(
 	return 0;
 }
 
-int muggle_des_ofb(
+int muggle_des_ofb64(
 	const muggle_des_context_t *ctx,
 	const unsigned char *input,
 	unsigned int num_bytes,

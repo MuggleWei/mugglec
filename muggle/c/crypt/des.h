@@ -89,7 +89,7 @@ int muggle_des_cbc(
 	unsigned char *output);
 
 /**
- * DES crypt with CFB mode
+ * DES crypt with CFB 64bit iv mode
  * @param ctx DES context
  * @param input input bytes
  * @param num_bytes length of input/output bytes
@@ -101,7 +101,7 @@ int muggle_des_cbc(
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
 MUGGLE_CC_EXPORT
-int muggle_des_cfb(
+int muggle_des_cfb64(
 	const muggle_des_context_t *ctx,
 	const unsigned char *input,
 	unsigned int num_bytes,
@@ -110,7 +110,7 @@ int muggle_des_cfb(
 	unsigned char *output);
 
 /**
- * DES crypt with OFB mode
+ * DES crypt with OFB 64bit iv mode
  * @param ctx DES context
  * @param input input bytes
  * @param num_bytes length of input/output bytes
@@ -122,7 +122,7 @@ int muggle_des_cfb(
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
 MUGGLE_CC_EXPORT
-int muggle_des_ofb(
+int muggle_des_ofb64(
 	const muggle_des_context_t *ctx,
 	const unsigned char *input,
 	unsigned int num_bytes,

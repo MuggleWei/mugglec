@@ -260,7 +260,7 @@ TEST(crypt_tdes, cbc)
 	}
 }
 
-TEST(crypt_tdes, cfb)
+TEST(crypt_tdes, cfb64)
 {
 	int ret;
 	unsigned char key1[MUGGLE_DES_BLOCK_SIZE], key2[MUGGLE_DES_BLOCK_SIZE], key3[MUGGLE_DES_BLOCK_SIZE];
@@ -323,11 +323,11 @@ TEST(crypt_tdes, cfb)
 			ret_plaintext = (unsigned char*)ret_plaintext_arr + offset;
 
 			// encrypt
-			ret = muggle_tdes_cfb(&encrypt_ctx, plaintext, num_bytes, iv, &iv_off, ciphertext);
+			ret = muggle_tdes_cfb64(&encrypt_ctx, plaintext, num_bytes, iv, &iv_off, ciphertext);
 			ASSERT_EQ(ret, 0);
 
 			// decrypt
-			ret = muggle_tdes_cfb(&decrypt_ctx, ciphertext, num_bytes, iv2, &iv_off2, ret_plaintext);
+			ret = muggle_tdes_cfb64(&decrypt_ctx, ciphertext, num_bytes, iv2, &iv_off2, ret_plaintext);
 			ASSERT_EQ(ret, 0);
 
 			ret = memcmp(plaintext, ret_plaintext, num_bytes);
