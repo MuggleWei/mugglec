@@ -183,7 +183,7 @@ int muggle_des_ecb(
 	MUGGLE_CHECK_RET(ROUND_UP_POW_OF_2_MUL(num_bytes, MUGGLE_DES_BLOCK_SIZE) == num_bytes, MUGGLE_ERR_INVALID_PARAM);
 	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
 
-	unsigned int len = num_bytes / 8, offset = 0;
+	unsigned int len = num_bytes / MUGGLE_DES_BLOCK_SIZE, offset = 0;
 	muggle_64bit_block_t *input_block, *output_block;
 	const muggle_des_subkeys_t *ks = &ctx->sk;
 
@@ -193,7 +193,7 @@ int muggle_des_ecb(
 		output_block = (muggle_64bit_block_t*)(output + offset);
 
 		muggle_des_crypt(ks, input_block, output_block);
-		offset += 8;
+		offset += MUGGLE_DES_BLOCK_SIZE;
 	}
 
 	return 0;
@@ -215,7 +215,7 @@ int muggle_des_cbc(
 
 	muggle_64bit_block_t *iv = (muggle_64bit_block_t*)iv_bytes;
 
-	unsigned int len = num_bytes / 8, offset = 0;
+	unsigned int len = num_bytes / MUGGLE_DES_BLOCK_SIZE, offset = 0;
 	muggle_64bit_block_t v;
 	v.u64 = iv->u64;
 	muggle_64bit_block_t *input_block, *output_block;
@@ -242,7 +242,7 @@ int muggle_des_cbc(
 			v.u64 = input_block->u64;
 		}
 
-		offset += 8;
+		offset += MUGGLE_DES_BLOCK_SIZE;
 	}
 
 	iv->u64 = v.u64;
@@ -278,7 +278,7 @@ int muggle_des_cfb64(
 		if (offset == 0)
 		{
 			muggle_des_crypt(ks, (muggle_64bit_block_t*)iv, &cipher_block);
-			memcpy(iv, cipher_block.bytes, 8);
+			memcpy(iv, cipher_block.bytes, MUGGLE_DES_BLOCK_SIZE);
 		}
 		output[i] = input[i] ^ iv[offset];
 
@@ -325,7 +325,7 @@ int muggle_des_ofb64(
 		if (offset == 0)
 		{
 			muggle_des_crypt(ks, (muggle_64bit_block_t*)iv, &cipher_block);
-			memcpy(iv, cipher_block.bytes, 8);
+			memcpy(iv, cipher_block.bytes, MUGGLE_DES_BLOCK_SIZE);
 		}
 
 		output[i] = input[i] ^ iv[offset];

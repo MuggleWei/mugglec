@@ -75,7 +75,6 @@ int muggle_des_ecb(
  * @param input input bytes, length must be multiple of 8
  * @param num_bytes length of input/output bytes
  * @param iv initialization vector
- * @param iv_offset offset bytes in iv
  * @param output output bytes
  * @return
  *   - 0 success

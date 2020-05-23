@@ -514,7 +514,7 @@ int muggle_aes_ecb(
 
 	const unsigned char *input_block;
 	unsigned char *output_block;
-	unsigned int len = num_bytes / 16, offset = 0;
+	unsigned int len = num_bytes / MUGGLE_AES_BLOCK_SIZE, offset = 0;
 	int op = ctx->op;
 	const muggle_aes_subkeys_t *sk = &ctx->sk;
 	for (unsigned int i = 0; i < len; ++i)
@@ -523,9 +523,104 @@ int muggle_aes_ecb(
 		output_block = output + offset;
 
 		muggle_aes_crypt(op, input_block, sk, output_block);
-		offset += 16;
+		offset += MUGGLE_AES_BLOCK_SIZE;
 	}
 
 	return 0;
 }
 
+static void aes_128bit_xor(uint64_t *v1, uint64_t *v2)
+{
+	v1[0] ^= v2[0];
+	v1[1] ^= v2[1];
+}
+
+int muggle_aes_cbc(
+	const muggle_aes_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	unsigned char iv[MUGGLE_AES_BLOCK_SIZE],
+	unsigned char *output)
+{
+	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ctx->mode == MUGGLE_BLOCK_CIPHER_MODE_CBC, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(input != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ROUND_UP_POW_OF_2_MUL(num_bytes, MUGGLE_AES_BLOCK_SIZE) == num_bytes, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(iv != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
+
+	const unsigned char *input_block;
+	unsigned char *output_block;
+	unsigned int len = num_bytes / MUGGLE_AES_BLOCK_SIZE, offset = 0;
+	int op = ctx->op;
+	MUGGLE_CHECK_RET(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
+	const muggle_aes_subkeys_t *sk = &ctx->sk;
+
+	for (unsigned int i = 0; i < len; ++i)
+	{
+		input_block = input + offset;
+		output_block = output + offset;
+
+		if (op == MUGGLE_ENCRYPT)
+		{
+			aes_128bit_xor((uint64_t*)iv, (uint64_t*)input_block);
+			muggle_aes_crypt(op, iv, sk, output_block);
+			memcpy(iv, output_block, MUGGLE_AES_BLOCK_SIZE);
+		}
+		else
+		{
+			muggle_aes_crypt(op, input_block, sk, output_block);
+			aes_128bit_xor((uint64_t*)output_block, (uint64_t*)iv);
+			memcpy(iv, input_block, MUGGLE_AES_BLOCK_SIZE);
+		}
+
+		offset += MUGGLE_AES_BLOCK_SIZE;
+	}
+
+	return 0;
+}
+
+int muggle_aes_cfb128(
+	const muggle_aes_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	unsigned char iv[MUGGLE_AES_BLOCK_SIZE],
+	unsigned int *iv_offset,
+	unsigned char *output)
+{
+	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ctx->mode == MUGGLE_BLOCK_CIPHER_MODE_CFB, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(input != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(iv != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(*iv_offset < MUGGLE_AES_BLOCK_SIZE, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
+
+	int op = ctx->op;
+	MUGGLE_CHECK_RET(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
+	const muggle_aes_subkeys_t *sk = &ctx->sk;
+	unsigned int offset = *iv_offset;
+
+	for (unsigned int i = 0; i < num_bytes; ++i)
+	{
+		if (offset == 0)
+		{
+			muggle_aes_crypt(MUGGLE_ENCRYPT, iv, sk, iv);
+		}
+		output[i] = input[i] ^ iv[offset];
+
+		if (op == MUGGLE_ENCRYPT)
+		{
+			iv[offset] = output[i];
+		}
+		else
+		{
+			iv[offset] = input[i];
+		}
+
+		offset = (offset + 1) & 0x0f;
+	}
+
+	*iv_offset = offset;
+
+	return 0;
+}

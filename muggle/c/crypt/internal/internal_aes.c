@@ -79,7 +79,7 @@ static const unsigned char s_muggle_aes_inv_mix_column[16] = {
 // 
 // 		if (a & 0x80) // GF modulo: if a >= 128, then it will overflow when shifted left, so reduce
 // 		{
-// 			// XOR with the primitive polynomial x^8 + x^4 + x^3 + x + 1 (0b1_0001_1011) – you can change it but it must be irreducible
+// 			// XOR with the primitive polynomial x^8 + x^4 + x^3 + x + 1 (0b1_0001_1011) - you can change it but it must be irreducible
 // 			a = (a << 1) ^ 0x11b;
 // 		}
 // 		else
