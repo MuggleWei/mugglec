@@ -16,7 +16,8 @@ EXTERN_C_BEGIN
 
 typedef struct muggle_tdes_context
 {
-	int                  op; // encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
+	int                  op;   // encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
+	int                  mode; // cipher block mode, use MUGGLE_BLOCK_CIPHER_MODE_*
 	muggle_des_context_t ctx1; // DES subkeys
 	muggle_des_context_t ctx2; // DES subkeys
 	muggle_des_context_t ctx3; // DES subkeys

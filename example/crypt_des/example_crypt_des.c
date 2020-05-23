@@ -2,31 +2,37 @@
 
 #define EXAMPLE_MESSAGE_LEN 512
 
-const char *block_cipher_mode_names[] = {
-	"ECB", "CBC", "CFB", "OFB", "CTR"
+struct example_data
+{
+	unsigned char key[MUGGLE_DES_BLOCK_SIZE];
+	union
+	{
+		unsigned char iv[MUGGLE_DES_BLOCK_SIZE];
+		uint64_t      nonce;
+	};
+	unsigned char input[EXAMPLE_MESSAGE_LEN];
 };
 
-void gen_input_var(
-	unsigned char key[MUGGLE_DES_BLOCK_SIZE],
-	unsigned char iv[MUGGLE_DES_BLOCK_SIZE],
-	unsigned char *input,
-	unsigned int num_bytes)
+void gen_example_data(struct example_data *data)
 {
+	memset(data, 0, sizeof(struct example_data));
+
 	srand((unsigned int)time(NULL));
 	uint32_t r = 0;
 
 	r = (uint32_t)rand();
-	memcpy(&key[0], &r, 4);
+	memcpy(&data->key[0], &r, 4);
 	r = (uint32_t)rand();
-	memcpy(&key[4], &r, 4);
+	memcpy(&data->key[4], &r, 4);
 
 	r = (uint32_t)rand();
-	memcpy(&iv[0], &r, 4);
+	memcpy(&data->iv[0], &r, 4);
 	r = (uint32_t)rand();
-	memcpy(&iv[4], &r, 4);
-	for (unsigned int i = 0; i < num_bytes; ++i)
+	memcpy(&data->iv[4], &r, 4);
+
+	for (unsigned int i = 0; i < EXAMPLE_MESSAGE_LEN; ++i)
 	{
-		input[i] = (unsigned char)(rand() % 256);
+		data->input[i] = (unsigned char)(rand() % 256);
 	}
 }
 
@@ -70,9 +76,9 @@ void example_des_single_block()
 		{
 			muggle_des_context_t encrypt_ctx, decrypt_ctx;
 			unsigned char ciphertext[MUGGLE_DES_BLOCK_SIZE], ret_plaintext[MUGGLE_DES_BLOCK_SIZE];
-			int mode = MUGGLE_BLOCK_CIPHER_MODE_ECB;
 
 			// set encrypt/decrypt key
+			int mode = MUGGLE_BLOCK_CIPHER_MODE_ECB;
 			muggle_des_set_key(MUGGLE_ENCRYPT, mode, keys[i], &encrypt_ctx);
 			muggle_des_set_key(MUGGLE_DECRYPT, mode, keys[i], &decrypt_ctx);
 
@@ -101,26 +107,26 @@ void example_des_single_block()
 	}
 }
 
-void example_des_ecb()
+void example_des_ecb(struct example_data *data)
 {
 	printf("==========================\n");
 	printf("DES encrypt/decrypt with ECB mode\n");
 
 	unsigned char key[MUGGLE_DES_BLOCK_SIZE];
-	unsigned char iv[MUGGLE_DES_BLOCK_SIZE];
 	unsigned char plaintext[EXAMPLE_MESSAGE_LEN], ciphertext[EXAMPLE_MESSAGE_LEN], ret_plaintext[EXAMPLE_MESSAGE_LEN];
 	unsigned int num_bytes = EXAMPLE_MESSAGE_LEN;
 	muggle_des_context_t encrypt_ctx, decrypt_ctx;
-	int mode = MUGGLE_BLOCK_CIPHER_MODE_ECB;
 	int ret = 0;
 
 	memset(plaintext, 0, sizeof(plaintext));
 	memset(ciphertext, 0, sizeof(ciphertext));
 	memset(ret_plaintext, 0, sizeof(ret_plaintext));
 
-	gen_input_var(key, iv, plaintext, num_bytes);
+	memcpy(key, data->key, MUGGLE_DES_BLOCK_SIZE);
+	memcpy(plaintext, data->input, EXAMPLE_MESSAGE_LEN);
 
 	// set encrypt/decrypt key
+	int mode = MUGGLE_BLOCK_CIPHER_MODE_ECB;
 	muggle_des_set_key(MUGGLE_ENCRYPT, mode, key, &encrypt_ctx);
 	muggle_des_set_key(MUGGLE_DECRYPT, mode, key, &decrypt_ctx);
 
@@ -155,7 +161,7 @@ void example_des_ecb()
 	MUGGLE_ASSERT(memcmp(plaintext, ret_plaintext, num_bytes) == 0);
 }
 
-void example_des_cbc()
+void example_des_cbc(struct example_data *data)
 {
 	printf("==========================\n");
 	printf("DES encrypt/decrypt with CBC mode\n");
@@ -165,17 +171,19 @@ void example_des_cbc()
 	unsigned char plaintext[EXAMPLE_MESSAGE_LEN], ciphertext[EXAMPLE_MESSAGE_LEN], ret_plaintext[EXAMPLE_MESSAGE_LEN];
 	unsigned int num_bytes = EXAMPLE_MESSAGE_LEN;
 	muggle_des_context_t encrypt_ctx, decrypt_ctx;
-	int mode = MUGGLE_BLOCK_CIPHER_MODE_CBC;
 	int ret = 0;
 
 	memset(plaintext, 0, sizeof(plaintext));
 	memset(ciphertext, 0, sizeof(ciphertext));
 	memset(ret_plaintext, 0, sizeof(ret_plaintext));
 
-	gen_input_var(key, iv, plaintext, num_bytes);
+	memcpy(key, data->key, MUGGLE_DES_BLOCK_SIZE);
+	memcpy(plaintext, data->input, EXAMPLE_MESSAGE_LEN);
+	memcpy(iv, data->iv, MUGGLE_DES_BLOCK_SIZE);
 	memcpy(iv2, iv, MUGGLE_DES_BLOCK_SIZE);
 
 	// set encrypt/decrypt key
+	int mode = MUGGLE_BLOCK_CIPHER_MODE_CBC;
 	muggle_des_set_key(MUGGLE_ENCRYPT, mode, key, &encrypt_ctx);
 	muggle_des_set_key(MUGGLE_DECRYPT, mode, key, &decrypt_ctx);
 
@@ -201,6 +209,9 @@ void example_des_cbc()
 	printf("plaintext: \n");
 	muggle_output_hex(plaintext, num_bytes, 32);
 
+	printf("iv: \n");
+	muggle_output_hex(data->iv, num_bytes, 32);
+
 	printf("ciphertext: \n");
 	muggle_output_hex(ciphertext, num_bytes, 32);
 
@@ -210,7 +221,7 @@ void example_des_cbc()
 	MUGGLE_ASSERT(memcmp(plaintext, ret_plaintext, num_bytes) == 0);
 }
 
-void example_des_cfb64()
+void example_des_cfb64(struct example_data *data)
 {
 	printf("==========================\n");
 	printf("DES encrypt/decrypt with CFB 64bit iv mode\n");
@@ -221,7 +232,6 @@ void example_des_cfb64()
 	unsigned char plaintext[EXAMPLE_MESSAGE_LEN], ciphertext[EXAMPLE_MESSAGE_LEN], ret_plaintext[EXAMPLE_MESSAGE_LEN];
 	unsigned int num_bytes = 0;
 	muggle_des_context_t encrypt_ctx, decrypt_ctx;
-	int mode = MUGGLE_BLOCK_CIPHER_MODE_CFB;
 	int ret = 0;
 	unsigned int step = rand() % 128 + 1;
 	unsigned int remain = EXAMPLE_MESSAGE_LEN;
@@ -232,10 +242,13 @@ void example_des_cfb64()
 	memset(ciphertext, 0, sizeof(ciphertext));
 	memset(ret_plaintext, 0, sizeof(ret_plaintext));
 
-	gen_input_var(key, iv, plaintext, total_msg_len);
+	memcpy(key, data->key, MUGGLE_DES_BLOCK_SIZE);
+	memcpy(plaintext, data->input, EXAMPLE_MESSAGE_LEN);
+	memcpy(iv, data->iv, MUGGLE_DES_BLOCK_SIZE);
 	memcpy(iv2, iv, MUGGLE_DES_BLOCK_SIZE);
 
 	// set encrypt/decrypt key
+	int mode = MUGGLE_BLOCK_CIPHER_MODE_CFB;
 	muggle_des_set_key(MUGGLE_ENCRYPT, mode, key, &encrypt_ctx);
 	muggle_des_set_key(MUGGLE_DECRYPT, mode, key, &decrypt_ctx);
 
@@ -244,6 +257,9 @@ void example_des_cfb64()
 
 	printf("plaintext: \n");
 	muggle_output_hex(plaintext, total_msg_len, 32);
+
+	printf("iv: \n");
+	muggle_output_hex(data->iv, MUGGLE_DES_BLOCK_SIZE, 32);
 
 	while (remain > 0)
 	{
@@ -290,7 +306,7 @@ void example_des_cfb64()
 	MUGGLE_ASSERT(memcmp(plaintext, ret_plaintext, total_msg_len) == 0);
 }
 
-void example_des_ofb64()
+void example_des_ofb64(struct example_data *data)
 {
 	printf("==========================\n");
 	printf("DES encrypt/decrypt with OFB 64bit iv mode\n");
@@ -301,7 +317,6 @@ void example_des_ofb64()
 	unsigned char plaintext[EXAMPLE_MESSAGE_LEN], ciphertext[EXAMPLE_MESSAGE_LEN], ret_plaintext[EXAMPLE_MESSAGE_LEN];
 	unsigned int num_bytes = 0;
 	muggle_des_context_t encrypt_ctx, decrypt_ctx;
-	int mode = MUGGLE_BLOCK_CIPHER_MODE_OFB;
 	int ret = 0;
 	unsigned int step = rand() % 128 + 1;
 	unsigned int remain = EXAMPLE_MESSAGE_LEN;
@@ -312,10 +327,13 @@ void example_des_ofb64()
 	memset(ciphertext, 0, sizeof(ciphertext));
 	memset(ret_plaintext, 0, sizeof(ret_plaintext));
 
-	gen_input_var(key, iv, plaintext, total_msg_len);
+	memcpy(key, data->key, MUGGLE_DES_BLOCK_SIZE);
+	memcpy(plaintext, data->input, EXAMPLE_MESSAGE_LEN);
+	memcpy(iv, data->iv, MUGGLE_DES_BLOCK_SIZE);
 	memcpy(iv2, iv, MUGGLE_DES_BLOCK_SIZE);
 
 	// set encrypt/decrypt key
+	int mode = MUGGLE_BLOCK_CIPHER_MODE_OFB;
 	muggle_des_set_key(MUGGLE_ENCRYPT, mode, key, &encrypt_ctx);
 	muggle_des_set_key(MUGGLE_DECRYPT, mode, key, &decrypt_ctx);
 
@@ -370,7 +388,7 @@ void example_des_ofb64()
 	MUGGLE_ASSERT(memcmp(plaintext, ret_plaintext, total_msg_len) == 0);
 }
 
-void example_des_ctr()
+void example_des_ctr(struct example_data *data)
 {
 	printf("==========================\n");
 	printf("DES encrypt/decrypt with CTR iv mode\n");
@@ -382,7 +400,6 @@ void example_des_ctr()
 	unsigned char stream_block[MUGGLE_DES_BLOCK_SIZE], stream_block2[MUGGLE_DES_BLOCK_SIZE];
 	unsigned int num_bytes = 0;
 	muggle_des_context_t encrypt_ctx, decrypt_ctx;
-	int mode = MUGGLE_BLOCK_CIPHER_MODE_OFB;
 	int ret = 0;
 	unsigned int step = rand() % 128 + 1;
 	unsigned int remain = EXAMPLE_MESSAGE_LEN;
@@ -393,11 +410,14 @@ void example_des_ctr()
 	memset(ciphertext, 0, sizeof(ciphertext));
 	memset(ret_plaintext, 0, sizeof(ret_plaintext));
 
-	gen_input_var(key, (unsigned char*)&nonce, plaintext, total_msg_len);
+	memcpy(key, data->key, MUGGLE_DES_BLOCK_SIZE);
+	memcpy(plaintext, data->input, EXAMPLE_MESSAGE_LEN);
+	nonce = data->nonce;
 	nonce2 = nonce;
 	nonce_off = nonce_off2 = 0;
 
 	// set encrypt/decrypt key
+	int mode = MUGGLE_BLOCK_CIPHER_MODE_CTR;
 	muggle_des_set_key(MUGGLE_ENCRYPT, mode, key, &encrypt_ctx);
 	muggle_des_set_key(MUGGLE_DECRYPT, mode, key, &decrypt_ctx);
 
@@ -444,7 +464,6 @@ void example_des_ctr()
 		MUGGLE_ASSERT(memcmp(plaintext, ret_plaintext, offset) == 0);
 	}
 
-
 	MUGGLE_ASSERT(memcmp(plaintext, ret_plaintext, total_msg_len) == 0);
 }
 
@@ -457,25 +476,26 @@ int main()
  		exit(EXIT_FAILURE);
  	}
 
-	srand((unsigned int)time(NULL));
+	struct example_data data;
+	gen_example_data(&data);
 
 	// des crypt single block
 	example_des_single_block();
 
 	// des ecb mode
-	example_des_ecb();
+	example_des_ecb(&data);
 
 	// des cbc mode
-	example_des_cbc();
+	example_des_cbc(&data);
 
 	// des cfb64 mode
-	example_des_cfb64();
+	example_des_cfb64(&data);
 
 	// des ofb64 mode
-	example_des_ofb64();
+	example_des_ofb64(&data);
 
 	// des ctr mode
-	example_des_ctr();
+	example_des_ctr(&data);
 
 	return 0;
 }

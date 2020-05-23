@@ -462,12 +462,12 @@ TEST(crypt_des, ctr)
 
 		// gen encrypt subkey
 		ret = muggle_des_set_key(
-			MUGGLE_ENCRYPT, MUGGLE_BLOCK_CIPHER_MODE_OFB, key, &encrypt_ctx);
+			MUGGLE_ENCRYPT, MUGGLE_BLOCK_CIPHER_MODE_CTR, key, &encrypt_ctx);
 		ASSERT_EQ(ret, 0);
 
 		// gen decrypt subkey
 		ret = muggle_des_set_key(
-			MUGGLE_DECRYPT, MUGGLE_BLOCK_CIPHER_MODE_OFB, key, &decrypt_ctx);
+			MUGGLE_DECRYPT, MUGGLE_BLOCK_CIPHER_MODE_CTR, key, &decrypt_ctx);
 		ASSERT_EQ(ret, 0);
 
 		remain_bytes = TEST_SPACE_SIZE;

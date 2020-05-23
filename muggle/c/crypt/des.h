@@ -28,8 +28,9 @@ typedef struct muggle_des_subkeys
 
 typedef struct muggle_des_context
 {
-	int                  op; // encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
-	muggle_des_subkeys_t sk; // DES subkeys
+	int                  op;   // encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
+	int                  mode; // cipher block mode, use MUGGLE_BLOCK_CIPHER_MODE_*
+	muggle_des_subkeys_t sk;   // DES subkeys
 }muggle_des_context_t;
 
 /**
