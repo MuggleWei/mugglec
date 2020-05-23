@@ -11,6 +11,8 @@
 #include "muggle/c/base/macro.h"
 #include "muggle/c/crypt/crypt_utils.h"
 
+#define MUGGLE_AES_BLOCK_SIZE 16
+
 EXTERN_C_BEGIN
 
 #define MUGGLE_AES_MAX_NUM_ROUND 14
@@ -19,42 +21,51 @@ typedef struct muggle_aes_sub_keys
 {
 	uint32_t rd_key[4 * (MUGGLE_AES_MAX_NUM_ROUND + 1)];
 	int rounds;
-}muggle_aes_sub_keys_t;
+}muggle_aes_subkeys_t;
+
+typedef struct muggle_aes_context
+{
+	int                  op;   // encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
+	int                  mode; // cipher block mode, use MUGGLE_BLOCK_CIPHER_MODE_*
+	muggle_aes_subkeys_t sk;   // AES subkeys
+}muggle_aes_context_t;
 
 /*
- * generate AES round keys
- * @param mode
- * - MUGGLE_ENCRYPT encrypt
- * - MUGGLE_DECRYPT decrypt
- * @param key user input key
- * @param bits number of bit of key (128|192|256)
- * @param sk output AES round keys
- * @return
- *   - 0 success
- *   - MUGGLE_ERR_CRYPT_KEY_SIZE invalid key size
- * */
-MUGGLE_CC_EXPORT
-int muggle_aes_key_setup(
-	const unsigned char *key, int bits, muggle_aes_sub_keys_t *sk);
-
-/*
- * Encrypt/Decrypt a single block
+ * AES setup round keys for mode
  * @param op
  * - MUGGLE_ENCRYPT encrypt
  * - MUGGLE_DECRYPT decrypt
- * @param input input single block
- * @param sk key schedule
- * @param output output single block
+ * @param mode block cipher mode, see MUGGLE_BLOCK_CIPHER_MODE_*
+ * @param key user input key
+ * @param bits number bits of key (128|192|256)
+ * @param ctx AES context
  * @return
  *   - 0 success
- *   - MUGGLE_ERR_INVALID_PARAM invalid input param, e.g. incorrect mode or sk
- *   - MUGGLE_ERR_NULL_PARAM input param is null pointer
+ *   - otherwise failed, see MUGGLE_ERR_*
  * */
 MUGGLE_CC_EXPORT
-int muggle_aes_crypt(
+int muggle_aes_set_key(
 	int op,
+	int mode,
+	const unsigned char *key,
+	int bits,
+	muggle_aes_context_t *ctx);
+
+/**
+ * AES crypt with ECB mode
+ * @param ctx AES context
+ * @param input input bytes, length must be multiple of 16
+ * @param num_bytes length of input/output bytes
+ * @param output output bytes
+ * @return
+ *   - 0 success
+ *   - otherwise failed, return MUGGLE_ERR_*
+ * */
+MUGGLE_CC_EXPORT
+int muggle_aes_ecb(
+	const muggle_aes_context_t *ctx,
 	const unsigned char *input,
-	muggle_aes_sub_keys_t *sk,
+	unsigned int num_bytes,
 	unsigned char *output);
 
 EXTERN_C_END

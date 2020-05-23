@@ -183,11 +183,11 @@ int muggle_des_ecb(
 	MUGGLE_CHECK_RET(ROUND_UP_POW_OF_2_MUL(num_bytes, MUGGLE_DES_BLOCK_SIZE) == num_bytes, MUGGLE_ERR_INVALID_PARAM);
 	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
 
-	size_t len = num_bytes / 8, offset = 0;
+	unsigned int len = num_bytes / 8, offset = 0;
 	muggle_64bit_block_t *input_block, *output_block;
 	const muggle_des_subkeys_t *ks = &ctx->sk;
 
-	for (size_t i = 0; i < len; ++i)
+	for (unsigned int i = 0; i < len; ++i)
 	{
 		input_block = (muggle_64bit_block_t*)(input + offset);
 		output_block = (muggle_64bit_block_t*)(output + offset);

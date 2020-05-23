@@ -112,7 +112,7 @@ static unsigned char galois_mul(unsigned char a, unsigned char b)
 	return r;
 }
 
-void muggle_aes_add_round_key(unsigned char *state, uint32_t *rd_key)
+void muggle_aes_add_round_key(unsigned char *state, const uint32_t *rd_key)
 {
 	state[0] ^= ((rd_key[0] >> 24) & 0xff);
 	state[4] ^= ((rd_key[0] >> 16) & 0xff);

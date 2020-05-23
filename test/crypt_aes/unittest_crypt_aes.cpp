@@ -4,12 +4,37 @@
 #include "openssl/aes.h"
 #endif
 
+void gen_input_var(
+	unsigned char key[32], // 256bit
+	unsigned char iv[32], // 256bit
+	unsigned char *input,
+	unsigned int num_bytes)
+{
+	srand((unsigned int)time(NULL));
+
+	for (int i = 0; i < 32; ++i)
+	{
+		key[i] = (unsigned char)(rand() % 256);
+	}
+
+	for (int i = 0; i < 32; ++i)
+	{
+		iv[i] = (unsigned char)(rand() % 256);
+	}
+
+	for (unsigned int i = 0; i < num_bytes; ++i)
+	{
+		input[i] = (unsigned char)(rand() % 256);
+	}
+}
+
+
 TEST(crypt_aes, expansion_key_128)
 {
 	// fips-197 Appendix A - Key Expansion Examples
 	// A.1 Expansion of a 128-bit Cipher Key
 	int ret = 0;
-	muggle_aes_sub_keys_t sk;
+	muggle_aes_context_t ctx;
 
 	unsigned char key[16] = {
 		0x2b, 0x7e, 0x15, 0x16,
@@ -31,16 +56,16 @@ TEST(crypt_aes, expansion_key_128)
 		0xd014f9a8, 0xc9ee2589, 0xe13f0cc8, 0xb6630ca6
 	};
 
-	ret = muggle_aes_key_setup(key, 128, &sk);
+	ret = muggle_aes_set_key(MUGGLE_ENCRYPT, MUGGLE_BLOCK_CIPHER_MODE_ECB, key, 128, &ctx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(sk.rounds, 10);
+	ASSERT_EQ(ctx.sk.rounds, 10);
 	for (int i = 0; i < 44; i++)
 	{
-		if (sk.rd_key[i] != rk_word[i])
+		if (ctx.sk.rd_key[i] != rk_word[i])
 		{
-			printf("i=%d, rd_key=%x, word=%x\n", i, sk.rd_key[i], rk_word[i]);
+			printf("i=%d, rd_key=%x, word=%x\n", i, ctx.sk.rd_key[i], rk_word[i]);
 		}
-		ASSERT_EQ(sk.rd_key[i], rk_word[i]);
+		ASSERT_EQ(ctx.sk.rd_key[i], rk_word[i]);
 	}
 }
 
@@ -49,7 +74,7 @@ TEST(crypt_aes, expansion_key_192)
 	// fips-197 Appendix A - Key Expansion Examples
 	// A.2 Expansion of a 192-bit Cipher Key
 	int ret = 0;
-	muggle_aes_sub_keys_t sk;
+	muggle_aes_context_t ctx;
 
 	unsigned char key[24] = {
 		0x8e, 0x73, 0xb0, 0xf7,
@@ -72,16 +97,16 @@ TEST(crypt_aes, expansion_key_192)
 		0xe98ba06f, 0x448c773c, 0x8ecc7204, 0x01002202,
 	};
 
-	ret = muggle_aes_key_setup(key, 192, &sk);
+	ret = muggle_aes_set_key(MUGGLE_ENCRYPT, MUGGLE_BLOCK_CIPHER_MODE_ECB, key, 192, &ctx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(sk.rounds, 12);
+	ASSERT_EQ(ctx.sk.rounds, 12);
 	for (int i = 0; i < 52; i++)
 	{
-		if (sk.rd_key[i] != rk_word[i])
+		if (ctx.sk.rd_key[i] != rk_word[i])
 		{
-			printf("i=%d, rd_key=%x, word=%x\n", i, sk.rd_key[i], rk_word[i]);
+			printf("i=%d, rd_key=%x, word=%x\n", i, ctx.sk.rd_key[i], rk_word[i]);
 		}
-		ASSERT_EQ(sk.rd_key[i], rk_word[i]);
+		ASSERT_EQ(ctx.sk.rd_key[i], rk_word[i]);
 	}
 }
 
@@ -90,7 +115,7 @@ TEST(crypt_aes, expansion_key_256)
 	// fips-197 Appendix A - Key Expansion Examples
 	// Expansion of a 192-bit Cipher Key
 	int ret = 0;
-	muggle_aes_sub_keys_t sk;
+	muggle_aes_context_t ctx;
 
 	unsigned char key[32] = {
 		0x60, 0x3d, 0xeb, 0x10,
@@ -114,16 +139,16 @@ TEST(crypt_aes, expansion_key_256)
 		0xfe4890d1, 0xe6188d0b, 0x046df344, 0x706c631e, 
 	};
 
-	ret = muggle_aes_key_setup(key, 256, &sk);
+	ret = muggle_aes_set_key(MUGGLE_ENCRYPT, MUGGLE_BLOCK_CIPHER_MODE_ECB, key, 256, &ctx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(sk.rounds, 14);
+	ASSERT_EQ(ctx.sk.rounds, 14);
 	for (int i = 0; i < 60; i++)
 	{
-		if (sk.rd_key[i] != rk_word[i])
+		if (ctx.sk.rd_key[i] != rk_word[i])
 		{
-			printf("i=%d, rd_key=%x, word=%x\n", i, sk.rd_key[i], rk_word[i]);
+			printf("i=%d, rd_key=%x, word=%x\n", i, ctx.sk.rd_key[i], rk_word[i]);
 		}
-		ASSERT_EQ(sk.rd_key[i], rk_word[i]);
+		ASSERT_EQ(ctx.sk.rd_key[i], rk_word[i]);
 	}
 }
 
@@ -169,11 +194,13 @@ TEST(crypt_aes, cipher_example)
 	expect_output[15] = expect_state[15];
 
 	int ret = 0;
-	muggle_aes_sub_keys_t sk;
-	ret = muggle_aes_key_setup(key, 128, &sk);
+	int mode = MUGGLE_BLOCK_CIPHER_MODE_ECB;
+
+	muggle_aes_context_t encrypt_ctx;
+	ret = muggle_aes_set_key(MUGGLE_ENCRYPT, mode, key, 128, &encrypt_ctx);
 	ASSERT_EQ(ret, 0);
 
-	ret = muggle_aes_crypt(MUGGLE_ENCRYPT, input, &sk, output);
+	ret = muggle_aes_ecb(&encrypt_ctx, input, 16, output);
 	ASSERT_EQ(ret, 0);
 
 	ret = memcmp(output, expect_output, 16);
@@ -205,7 +232,11 @@ TEST(crypt_aes, cipher_example)
 	ASSERT_EQ(ret, 0);
 #endif
 
-	ret = muggle_aes_crypt(MUGGLE_DECRYPT, output, &sk, ret_plaintext);
+	muggle_aes_context_t decrypt_ctx;
+	ret = muggle_aes_set_key(MUGGLE_DECRYPT, mode, key, 128, &decrypt_ctx);
+	ASSERT_EQ(ret, 0);
+
+	ret = muggle_aes_ecb(&decrypt_ctx, output, 16, ret_plaintext);
 	ASSERT_EQ(ret, 0);
 
 	ret = memcmp(ret_plaintext, input, 16);
@@ -221,77 +252,73 @@ TEST(crypt_aes, cipher_example)
 
 TEST(crypt_aes, crypt_single_block)
 {
-	unsigned char input[16], ret_plaintext[16];
+	unsigned char plaintext[16], ret_plaintext[16];
 	unsigned char key[32];
-	unsigned char output[16];
+	unsigned char iv[32];
+	unsigned char ciphertext[16];
 	int bit_sizes[] = {128, 192, 256};
-	int ret, byte_cnt;
+	int mode = MUGGLE_BLOCK_CIPHER_MODE_ECB;
+	muggle_aes_context_t encrypt_ctx, decrypt_ctx;
+	int ret = 0;
 
 	srand((unsigned int)time(NULL));
 	for (int i = 0; i < 3; i++)
 	{
-		for (int cnt = 0; cnt < 10; ++cnt)
-		{
-			for (int j = 0; j < 16; j++)
-			{
-				input[j] = (unsigned char)(rand() % 256);
-			}
+		gen_input_var(key, iv, plaintext, sizeof(plaintext));
 
-			byte_cnt = bit_sizes[i] / 8;
-			for (int j = 0; j < byte_cnt; j++)
-			{
-				key[j] = (unsigned char)(rand() % 256);
-			}
+		ret = muggle_aes_set_key(MUGGLE_ENCRYPT, mode, key, bit_sizes[i], &encrypt_ctx);
+		ASSERT_EQ(ret, 0);
 
-			muggle_aes_sub_keys_t sk;
-			ret = muggle_aes_key_setup(key, bit_sizes[i], &sk);
-			ASSERT_EQ(ret, 0);
-
-			ret = muggle_aes_crypt(MUGGLE_ENCRYPT, input, &sk, output);
-			ASSERT_EQ(ret, 0);
+		ret = muggle_aes_ecb(&encrypt_ctx, plaintext, sizeof(plaintext), ciphertext);
+		ASSERT_EQ(ret, 0);
 
 #if MUGGLE_TEST_LINK_OPENSSL
-			AES_KEY openssl_rk;
-			ret = AES_set_encrypt_key(key, bit_sizes[i], &openssl_rk);
-			ASSERT_EQ(ret, 0);
+		AES_KEY openssl_rk;
+		ret = AES_set_encrypt_key(key, bit_sizes[i], &openssl_rk);
+		ASSERT_EQ(ret, 0);
 
-			unsigned char openssl_output[16];
-			AES_encrypt(input, openssl_output, &openssl_rk);
+		unsigned char openssl_ciphertext[16];
+		AES_encrypt(plaintext, openssl_ciphertext, &openssl_rk);
 
-			ret = memcmp(output, openssl_output, 16);
-			if (ret != 0)
-			{
-				printf("input: \n");
-				muggle_output_hex(input, 16, 4);
+		ret = memcmp(ciphertext, openssl_ciphertext, 16);
+		if (ret != 0)
+		{
+			printf("key: \n");
+			muggle_output_hex(key, bit_sizes[i] / 8, 0);
 
-				printf("key: \n");
-				muggle_output_hex(input, byte_cnt, 4);
+			printf("plaintext: \n");
+			muggle_output_hex(plaintext, 16, 0);
 
-				printf("output: \n");
-				muggle_output_hex(output, 16, 4);
+			printf("ciphertext: \n");
+			muggle_output_hex(ciphertext, 16, 0);
 
-				printf("openssl output: \n");
-				muggle_output_hex(openssl_output, 16, 4);
-			}
-			ASSERT_EQ(ret, 0);
+			printf("openssl output: \n");
+			muggle_output_hex(openssl_ciphertext, 16, 0);
+		}
+		ASSERT_EQ(ret, 0);
 #endif
 
-			ret = muggle_aes_crypt(MUGGLE_DECRYPT, output, &sk, ret_plaintext);
-			ASSERT_EQ(ret, 0);
+		ret = muggle_aes_set_key(MUGGLE_DECRYPT, mode, key, bit_sizes[i], &decrypt_ctx);
+		ASSERT_EQ(ret, 0);
 
-			ret = memcmp(ret_plaintext, input, 16);
-			if (ret != 0)
-			{
-				printf("input: \n");
-				muggle_output_hex(input, 16, 4);
+		ret = muggle_aes_ecb(&decrypt_ctx, ciphertext, sizeof(ciphertext), ret_plaintext);
+		ASSERT_EQ(ret, 0);
 
-				printf("key: \n");
-				muggle_output_hex(input, byte_cnt, 4);
+		ret = memcmp(ret_plaintext, plaintext, 16);
+		if (ret != 0)
+		{
+			printf("plaintext: \n");
+			muggle_output_hex(plaintext, 16, 0);
 
-				printf("ret plaintext: \n");
-				muggle_output_hex(ret_plaintext, 16, 4);
-			}
-			ASSERT_EQ(ret, 0);
+			printf("ciphertext: \n");
+			muggle_output_hex(ciphertext, 16, 0);
+
+			printf("key: \n");
+			muggle_output_hex(key, bit_sizes[i] / 8, 0);
+
+			printf("ret plaintext: \n");
+			muggle_output_hex(ret_plaintext, 16, 0);
 		}
+		ASSERT_EQ(ret, 0);
 	}
 }

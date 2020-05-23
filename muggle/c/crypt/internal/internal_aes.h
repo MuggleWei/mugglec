@@ -18,7 +18,7 @@ EXTERN_C_BEGIN
 /*
  * AES Add Round Key
  * */
-void muggle_aes_add_round_key(unsigned char *state, uint32_t *rd_key);
+void muggle_aes_add_round_key(unsigned char *state, const uint32_t *rd_key);
 
 /*
  * AES SubBytes Transformation
