@@ -624,3 +624,80 @@ int muggle_aes_cfb128(
 
 	return 0;
 }
+
+int muggle_aes_ofb128(
+	const muggle_aes_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	unsigned char iv[MUGGLE_AES_BLOCK_SIZE],
+	unsigned int *iv_offset,
+	unsigned char *output)
+{
+	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ctx->mode == MUGGLE_BLOCK_CIPHER_MODE_OFB, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(input != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(iv != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(*iv_offset < MUGGLE_AES_BLOCK_SIZE, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
+
+	int op = ctx->op;
+	MUGGLE_CHECK_RET(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
+	const muggle_aes_subkeys_t *sk = &ctx->sk;
+	unsigned int offset = *iv_offset;
+
+	for (unsigned int i = 0; i < num_bytes; ++i)
+	{
+		if (offset == 0)
+		{
+			muggle_aes_crypt(MUGGLE_ENCRYPT, iv, sk, iv);
+		}
+		output[i] = input[i] ^ iv[offset];
+		offset = (offset + 1) & 0x0f;
+	}
+
+	*iv_offset = offset;
+
+	return 0;
+}
+
+int muggle_aes_ctr(
+	const muggle_aes_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	uint64_t nonce[2],
+	unsigned int *nonce_offset,
+	unsigned char stream_block[MUGGLE_AES_BLOCK_SIZE],
+	unsigned char *output)
+{
+	MUGGLE_CHECK_RET(ctx != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(ctx->mode == MUGGLE_BLOCK_CIPHER_MODE_CTR, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(input != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(nonce_offset != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(*nonce_offset < MUGGLE_AES_BLOCK_SIZE, MUGGLE_ERR_INVALID_PARAM);
+	MUGGLE_CHECK_RET(stream_block != NULL, MUGGLE_ERR_NULL_PARAM);
+	MUGGLE_CHECK_RET(output != NULL, MUGGLE_ERR_NULL_PARAM);
+
+	int op = ctx->op;
+	MUGGLE_CHECK_RET(op == MUGGLE_ENCRYPT || op == MUGGLE_DECRYPT, MUGGLE_ERR_INVALID_PARAM);
+	const muggle_aes_subkeys_t *sk = &ctx->sk;
+	unsigned int offset = *nonce_offset;
+
+	for (unsigned int i = 0; i < num_bytes; ++i)
+	{
+		if (offset == 0)
+		{
+			nonce[0] += 1;
+			if (nonce[0] == 0)
+			{
+				nonce[1] += 1;
+			}
+			muggle_aes_crypt(MUGGLE_ENCRYPT, (unsigned char*)nonce, sk, stream_block);
+		}
+		output[i] = input[i] ^ stream_block[offset];
+		offset = (offset + 1) & 0x0f;
+	}
+
+	*nonce_offset = offset;
+
+	return 0;
+}

@@ -107,6 +107,50 @@ int muggle_aes_cfb128(
 	unsigned int *iv_offset,
 	unsigned char *output);
 
+/**
+ * AES crypt with OFB128 mode
+ * @param ctx AES context
+ * @param input input bytes, length must be multiple of 16
+ * @param num_bytes length of input/output bytes
+ * @param iv initialization vector
+ * @param iv_offset offset bytes in iv
+ * @param output output bytes
+ * @return
+ *   - 0 success
+ *   - otherwise failed, return MUGGLE_ERR_*
+ * */
+MUGGLE_CC_EXPORT
+int muggle_aes_ofb128(
+	const muggle_aes_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	unsigned char iv[MUGGLE_AES_BLOCK_SIZE],
+	unsigned int *iv_offset,
+	unsigned char *output);
+
+/**
+ * AES crypt with CTR mode
+ * @param ctx AES context
+ * @param input input bytes, length must be multiple of 16
+ * @param num_bytes length of input/output bytes
+ * @param nonce
+ * @param nonce_offset offset bytes in nonce
+ * @param output output bytes
+ * @param stream_block ciphertext of nonce
+ * @return
+ *   - 0 success
+ *   - otherwise failed, return MUGGLE_ERR_*
+ * */
+MUGGLE_CC_EXPORT
+int muggle_aes_ctr(
+	const muggle_aes_context_t *ctx,
+	const unsigned char *input,
+	unsigned int num_bytes,
+	uint64_t nonce[2],
+	unsigned int *nonce_offset,
+	unsigned char stream_block[MUGGLE_AES_BLOCK_SIZE],
+	unsigned char *output);
+
 EXTERN_C_END
 
 #endif

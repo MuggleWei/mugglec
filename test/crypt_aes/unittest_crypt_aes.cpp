@@ -480,7 +480,7 @@ TEST(crypt_aes, cfb128)
 			ret = memcmp(plaintext, ret_plaintext, num_bytes);
 			ASSERT_EQ(ret, 0);
 
-			ret = memcmp(iv, iv2, MUGGLE_DES_BLOCK_SIZE);
+			ret = memcmp(iv, iv2, MUGGLE_AES_BLOCK_SIZE);
 			ASSERT_EQ(ret, 0);
 
 			ASSERT_EQ(iv_off, iv_off2);
@@ -506,6 +506,178 @@ TEST(crypt_aes, cfb128)
 			}
 			ASSERT_EQ(ret, 0);
 #endif
+
+			offset += num_bytes;
+		}
+	}
+}
+
+TEST(crypt_aes, ofb128)
+{
+	unsigned char key[32];
+	unsigned char iv_save[MUGGLE_AES_BLOCK_SIZE], iv[MUGGLE_AES_BLOCK_SIZE], iv2[MUGGLE_AES_BLOCK_SIZE], iv3[MUGGLE_AES_BLOCK_SIZE];
+	unsigned int iv_off = 0, iv_off2 = 0;
+	unsigned char plaintext_arr[TEST_SPACE_SIZE], ciphertext_arr[TEST_SPACE_SIZE], ret_plaintext_arr[TEST_SPACE_SIZE];
+	unsigned char *plaintext, *ciphertext, *ret_plaintext;
+	muggle_aes_context_t encrypt_ctx, decrypt_ctx;
+	unsigned int num_bytes = 0, remain_bytes = 0;
+	int iv_off3 = 0;
+	unsigned int offset = 0;
+#if MUGGLE_TEST_LINK_OPENSSL
+	unsigned char openssl_ciphertext_arr[TEST_SPACE_SIZE];
+	unsigned char *openssl_ciphertext;
+#endif
+
+	int bit_sizes[] = {128, 192, 256};
+	int ret = 0;
+
+	memset(plaintext_arr, 0, sizeof(plaintext_arr));
+	gen_input_var(key, iv_save, plaintext_arr, TEST_SPACE_SIZE);
+	for (int i = 0; i < 3; i++)
+	{
+		memset(ciphertext_arr, 0, sizeof(ciphertext_arr));
+
+		memcpy(iv, iv_save, sizeof(iv_save));
+		memcpy(iv2, iv, sizeof(iv));
+		memcpy(iv3, iv, sizeof(iv));
+
+		iv_off = iv_off2 = 0;
+		iv_off3 = 0;
+
+		// gen round key
+		int mode = MUGGLE_BLOCK_CIPHER_MODE_OFB;
+		ret = muggle_aes_set_key(MUGGLE_ENCRYPT, mode, key, bit_sizes[i], &encrypt_ctx);
+		ASSERT_EQ(ret, 0);
+		ret = muggle_aes_set_key(MUGGLE_DECRYPT, mode, key, bit_sizes[i], &decrypt_ctx);
+		ASSERT_EQ(ret, 0);
+
+#if MUGGLE_TEST_LINK_OPENSSL
+		AES_KEY openssl_rk;
+		ret = AES_set_encrypt_key(key, bit_sizes[i], &openssl_rk);
+		ASSERT_EQ(ret, 0);
+		memset(openssl_ciphertext_arr, 0, sizeof(openssl_ciphertext_arr));
+#endif
+
+		remain_bytes = TEST_SPACE_SIZE;
+		offset = 0;
+		while (remain_bytes > 0)
+		{
+			num_bytes = rand() % 16 + 1;
+			num_bytes = num_bytes > remain_bytes ? remain_bytes : num_bytes;
+			remain_bytes -= num_bytes;
+
+			plaintext = (unsigned char*)plaintext_arr + offset;
+			ciphertext = (unsigned char*)ciphertext_arr + offset;
+			ret_plaintext = (unsigned char*)ret_plaintext_arr + offset;
+
+			// encrypt
+			ret = muggle_aes_ofb128(&encrypt_ctx, plaintext, num_bytes, iv, &iv_off, ciphertext);
+			ASSERT_EQ(ret, 0);
+
+			// decrypt
+			ret = muggle_aes_ofb128(&decrypt_ctx, ciphertext, num_bytes, iv2, &iv_off2, ret_plaintext);
+			ASSERT_EQ(ret, 0);
+
+			ret = memcmp(plaintext, ret_plaintext, num_bytes);
+			ASSERT_EQ(ret, 0);
+
+			ret = memcmp(iv, iv2, MUGGLE_AES_BLOCK_SIZE);
+			ASSERT_EQ(ret, 0);
+
+			ASSERT_EQ(iv_off, iv_off2);
+
+#if MUGGLE_TEST_LINK_OPENSSL
+			openssl_ciphertext = (unsigned char*)openssl_ciphertext_arr + offset;
+			AES_ofb128_encrypt(plaintext, openssl_ciphertext, num_bytes, &openssl_rk, iv3, &iv_off3);
+
+			ret = memcmp(ciphertext, openssl_ciphertext, num_bytes);
+			if (ret != 0)
+			{
+				printf("key: \n");
+				muggle_output_hex(key, bit_sizes[i] / 8, 0);
+
+				printf("plaintext: \n");
+				muggle_output_hex(plaintext, num_bytes, 32);
+
+				printf("ciphertext: \n");
+				muggle_output_hex(ciphertext, num_bytes, 32);
+
+				printf("openssl output: \n");
+				muggle_output_hex(openssl_ciphertext, num_bytes, 32);
+			}
+			ASSERT_EQ(ret, 0);
+#endif
+
+			offset += num_bytes;
+		}
+	}
+}
+
+TEST(crypt_aes, ctr)
+{
+	unsigned char key[32];
+	uint64_t nonce_save[2], nonce[2], nonce2[2];
+	unsigned int nonce_off = 0, nonce_off2 = 0;
+	unsigned char plaintext_arr[TEST_SPACE_SIZE], ciphertext_arr[TEST_SPACE_SIZE], ret_plaintext_arr[TEST_SPACE_SIZE];
+	unsigned char *plaintext, *ciphertext, *ret_plaintext;
+	unsigned char stream_block[MUGGLE_AES_BLOCK_SIZE], stream_block2[MUGGLE_AES_BLOCK_SIZE];
+	muggle_aes_context_t encrypt_ctx, decrypt_ctx;
+	unsigned int num_bytes = 0, remain_bytes = 0;
+	unsigned int offset = 0;
+
+	int bit_sizes[] = {128, 192, 256};
+	int ret = 0;
+
+	memset(plaintext_arr, 0, sizeof(plaintext_arr));
+	gen_input_var(key, (unsigned char*)nonce_save, plaintext_arr, TEST_SPACE_SIZE);
+	for (int i = 0; i < 3; i++)
+	{
+		memset(ciphertext_arr, 0, sizeof(ciphertext_arr));
+		memset(ret_plaintext_arr, 0, sizeof(ret_plaintext_arr));
+
+		memcpy(nonce, nonce_save, MUGGLE_AES_BLOCK_SIZE);
+		memcpy(nonce2, nonce_save, MUGGLE_AES_BLOCK_SIZE);
+
+		nonce_off = 0;
+		nonce_off2 = 0;
+
+		// gen round key
+		int mode = MUGGLE_BLOCK_CIPHER_MODE_CTR;
+		ret = muggle_aes_set_key(MUGGLE_ENCRYPT, mode, key, bit_sizes[i], &encrypt_ctx);
+		ASSERT_EQ(ret, 0);
+		ret = muggle_aes_set_key(MUGGLE_DECRYPT, mode, key, bit_sizes[i], &decrypt_ctx);
+		ASSERT_EQ(ret, 0);
+
+		remain_bytes = TEST_SPACE_SIZE;
+		offset = 0;
+		while (remain_bytes > 0)
+		{
+			num_bytes = rand() % 16 + 1;
+			num_bytes = num_bytes > remain_bytes ? remain_bytes : num_bytes;
+			remain_bytes -= num_bytes;
+
+			plaintext = (unsigned char*)plaintext_arr + offset;
+			ciphertext = (unsigned char*)ciphertext_arr + offset;
+			ret_plaintext = (unsigned char*)ret_plaintext_arr + offset;
+
+			// encrypt
+			ret = muggle_aes_ctr(&encrypt_ctx, plaintext, num_bytes, nonce, &nonce_off, stream_block, ciphertext);
+			ASSERT_EQ(ret, 0);
+
+			// decrypt
+			ret = muggle_aes_ctr(&decrypt_ctx, ciphertext, num_bytes, nonce2, &nonce_off2, stream_block2, ret_plaintext);
+			ASSERT_EQ(ret, 0);
+
+			ret = memcmp(plaintext, ret_plaintext, num_bytes);
+			ASSERT_EQ(ret, 0);
+
+			ret = memcmp(nonce, nonce2, MUGGLE_AES_BLOCK_SIZE);
+			ASSERT_EQ(ret, 0);
+
+			ASSERT_EQ(nonce_off, nonce_off2);
+
+			ret = memcmp(stream_block, stream_block2, MUGGLE_AES_BLOCK_SIZE);
+			ASSERT_EQ(ret, 0);
 
 			offset += num_bytes;
 		}
