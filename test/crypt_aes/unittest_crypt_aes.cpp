@@ -634,6 +634,8 @@ TEST(crypt_aes, ctr)
 	{
 		memset(ciphertext_arr, 0, sizeof(ciphertext_arr));
 		memset(ret_plaintext_arr, 0, sizeof(ret_plaintext_arr));
+		memset(stream_block, 0, sizeof(stream_block));
+		memset(stream_block2, 0, sizeof(stream_block2));
 
 		memcpy(nonce, nonce_save, MUGGLE_AES_BLOCK_SIZE);
 		memcpy(nonce2, nonce_save, MUGGLE_AES_BLOCK_SIZE);
