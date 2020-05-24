@@ -35,8 +35,10 @@ option(MUGGLE_BUILD_EXAMPLE "Build muggleCC example" OFF)
 option(MUGGLE_BUILD_TESTING "Build muggleCC test" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build muggleCC benchmark" OFF)
 option(BUILD_TESTING "Buid testing" OFF)
-option(MUGGLE_CRYPT_OPTIMIZATION "Enable crypt optimization(use source codes extract from openssl)" ON)
-option(MUGGLE_CRYPT_COMPARE_OPENSSL "Link openssl in unittest for compare result" OFF)
+# option(MUGGLE_CRYPT_OPTIMIZATION "Enable crypt optimization(use source codes extract from openssl)" ON)
+set(MUGGLE_CRYPT_OPTIMIZATION ON)
+# option(MUGGLE_CRYPT_COMPARE_OPENSSL "Link openssl in unittest for compare result" OFF)
+set(MUGGLE_CRYPT_COMPARE_OPENSSL ON)
 
 # output options
 message("-- option MUGGLE_BUILD_TRACE ${MUGGLE_BUILD_TRACE}")
@@ -138,7 +140,7 @@ endif()
 
 if (MUGGLE_CRYPT_OPTIMIZATION)
 	target_compile_definitions(${muggle_cc}
-		PUBLIC MUGGLE_CRYPT_USE_OPENSSL
+		PUBLIC MUGGLE_CRYPT_OPTIMIZATION
 	)
 endif()
 

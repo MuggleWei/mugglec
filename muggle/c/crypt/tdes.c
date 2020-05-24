@@ -17,7 +17,7 @@ static void muggle_tdes_crypt(
 	const muggle_64bit_block_t *input,
 	muggle_64bit_block_t *output)
 {
-#if MUGGLE_CRYPT_USE_OPENSSL
+#if MUGGLE_CRYPT_OPTIMIZATION
 	muggle_openssl_tdes_crypt(input, ks1, ks2, ks3, output);
 #else
 	muggle_64bit_block_t b64;
