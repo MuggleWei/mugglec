@@ -30,6 +30,7 @@ void gen_input_var(
 	}
 }
 
+#if !MUGGLE_CRYPT_OPTIMIZATION
 
 TEST(crypt_aes, expansion_key_128)
 {
@@ -153,6 +154,8 @@ TEST(crypt_aes, expansion_key_256)
 		ASSERT_EQ(ctx.sk.rd_key[i], rk_word[i]);
 	}
 }
+
+#endif
 
 TEST(crypt_aes, cipher_example)
 {

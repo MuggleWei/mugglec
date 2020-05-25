@@ -15,6 +15,9 @@ EXTERN_C_BEGIN
 
 #define MUGGLE_CRYPT_AES_DEBUG 0
 
+struct muggle_aes_sub_keys;
+
+
 /*
  * AES Add Round Key
  * */
@@ -65,6 +68,21 @@ uint32_t muggle_aes_rot_word(uint32_t word);
  * AES SubWord
  * */
 uint32_t muggle_aes_sub_word(uint32_t word);
+
+/*
+ * AES encrypt
+ * */
+int muggle_aes_encrypt(
+	unsigned char *state,
+	const struct muggle_aes_sub_keys *sk);
+
+/*
+ * AES decrypt
+ * */
+int muggle_aes_decrypt(
+	unsigned char *state,
+	const struct muggle_aes_sub_keys *sk);
+
 
 EXTERN_C_END
 
