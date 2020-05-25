@@ -63,11 +63,11 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 					break;
 				}
 
-				return -1;
+				return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
 			}
 			else
 			{
-				return -1;
+				return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
 			}
 		}
 	}
@@ -90,7 +90,7 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 				if (!muggle_bytes_buffer_writer_move(bytes_buf, n))
 				{
 					MUGGLE_LOG_ERROR("bytes buffer inner error!");
-					return -1;
+					return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
 				}
 
 				if (n < bufsize)
@@ -109,11 +109,11 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 					break;
 				}
 
-				return -1;
+				return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
 			}
 			else
 			{
-				return -1;
+				return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
 			}
 		}
 
@@ -153,7 +153,7 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 				if (!muggle_bytes_buffer_reader_move(bytes_buf, pkg_size))
 				{
 					MUGGLE_LOG_ERROR("failed buffer reader move");
-					return -1;
+					return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
 				}
 			}
 			else
@@ -162,7 +162,7 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 				if (!muggle_bytes_buffer_read(bytes_buf, pkg_size, buf))
 				{
 					MUGGLE_LOG_ERROR("failed buffer read");
-					return -1;
+					return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
 				}
 				on_timestr(ev, peer, buf + 4);
 			}
