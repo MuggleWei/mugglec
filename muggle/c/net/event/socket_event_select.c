@@ -156,7 +156,7 @@ static int muggle_socket_event_select_listen(
 			}
 			else
 			{
-				if (ret == -1)
+				if (ret == MUGGLE_SOCKET_EV_CLOSE_SOCKET)
 				{
 					muggle_socket_close(new_node->peer.fd);
 				}

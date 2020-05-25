@@ -25,13 +25,16 @@ enum
 	MUGGLE_SOCKET_EVENT_LOOP_TYPE_MAX,
 };
 
+#define MUGGLE_SOCKET_EV_CLOSE_SOCKET   -1 // muggle_socket_event close socket and free peer
+#define MUGGLE_SOCKET_USER_CLOSE_SOCKET 1  // user responsible to close socket and muggle_socket_event free peer
+
 struct muggle_socket_peer;
 struct muggle_socket_event;
 
 /*
  * return 0, everything is ok
- * return -1, muggle_socket_event will close socket and free peer
- * return 1, user will close socket and muggle_socket_event will free peer
+ * return MUGGLE_SOCKET_EV_CLOSE_SOCKET, muggle_socket_event will close socket and free peer
+ * return MUGGLE_SOCKET_USER_CLOSE_SOCKET, user responsible to close socket and muggle_socket_event will free peer
  * */
 typedef int (*muggle_socket_event_connect)(
 	struct muggle_socket_event *ev, struct muggle_socket_peer *listen_peer, struct muggle_socket_peer *peer);
@@ -46,8 +49,8 @@ typedef int (*muggle_socket_event_error)(struct muggle_socket_event *ev, struct 
 
 /*
  * return 0, everything is ok
- * return -1, muggle_socket_event will close socket and free peer
- * return 1, user will close socket and muggle_socket_event will free peer
+ * return MUGGLE_SOCKET_EV_CLOSE_SOCKET, muggle_socket_event will close socket and free peer
+ * return MUGGLE_SOCKET_USER_CLOSE_SOCKET, user responsible to close socket and muggle_socket_event will free peer
  * */
 typedef int (*muggle_socket_event_message)(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
 

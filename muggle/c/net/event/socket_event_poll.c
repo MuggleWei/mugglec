@@ -139,7 +139,7 @@ static int muggle_socket_event_poll_listen(
 			}
 			else
 			{
-				if (ret == -1)
+				if (ret == MUGGLE_SOCKET_EV_CLOSE_SOCKET)
 				{
 					muggle_socket_close(peer->fd);
 				}
@@ -241,7 +241,7 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 							muggle_socket_close(p_peers[i]->fd);
 						}
 					}
-					need_close = 1;
+					need_close = MUGGLE_SOCKET_USER_CLOSE_SOCKET;
 					--n;
 				}
 

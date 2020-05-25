@@ -26,11 +26,11 @@ int muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer
 		}
 		else
 		{
-			if (ret == -1)
+			if (ret == MUGGLE_SOCKET_EV_CLOSE_SOCKET)
 			{
 				muggle_socket_event_on_message_error(ev, peer);
 			}
-			return 1;
+			return MUGGLE_SOCKET_USER_CLOSE_SOCKET;
 		}
 	}
 	else
@@ -56,12 +56,12 @@ int muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer
 				}
 
 				muggle_socket_event_on_message_error(ev, peer);
-				return 1;
+				return MUGGLE_SOCKET_USER_CLOSE_SOCKET;
 			}
 			else
 			{
 				muggle_socket_event_on_message_error(ev, peer);
-				return 1;
+				return MUGGLE_SOCKET_USER_CLOSE_SOCKET;
 			}
 		}
 	}
