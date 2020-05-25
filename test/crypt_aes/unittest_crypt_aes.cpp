@@ -159,7 +159,7 @@ TEST(crypt_aes, expansion_key_256)
 
 TEST(crypt_aes, cipher_example)
 {
-	// fips-197 APPENDIX B – CIPHER EXAMPLE
+	// fips-197 APPENDIX B - CIPHER EXAMPLE
 	unsigned char input[] = {
 		0x32, 0x43, 0xf6, 0xa8,
 		0x88, 0x5a, 0x30, 0x8d,
