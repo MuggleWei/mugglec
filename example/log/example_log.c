@@ -204,6 +204,10 @@ void example_default()
 {
 	init_log();
 
+	char ver[64];
+	mugglecc_version_info(ver, sizeof(ver));
+	MUGGLE_LOG_WARNING("mugglecc version: %s", ver);
+
 	muggle_thread_t threads[8];
 	for (int i = 0; i < 8; ++i)
 	{

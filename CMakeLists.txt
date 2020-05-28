@@ -40,7 +40,16 @@ set(MUGGLE_CRYPT_OPTIMIZATION ON)
 # option(MUGGLE_CRYPT_COMPARE_OPENSSL "Link openssl in unittest for compare result" OFF)
 set(MUGGLE_CRYPT_COMPARE_OPENSSL ON)
 
+# version
+set(MUGGLE_CC_VER_MAJOR 0)
+set(MUGGLE_CC_VER_MINOR 0)
+set(MUGGLE_CC_VER_BUILD 0)
+
+set(MUGGLE_CC_VERSION "${MUGGLE_CC_VER_MAJOR}.${MUGGLE_CC_VER_MINOR}.${MUGGLE_CC_VER_BUILD}")
+set(MUGGLE_CC_SOVERSION "${MUGGLE_CC_VER_MAJOR}")
+
 # output options
+message("-- version ${MUGGLE_CC_VERSION}")
 message("-- option MUGGLE_BUILD_TRACE ${MUGGLE_BUILD_TRACE}")
 message("-- option MUGGLE_BUILD_SHARED_LIB ${MUGGLE_BUILD_SHARED_LIB}")
 message("-- option MUGGLE_BUILD_EXAMPLE ${MUGGLE_BUILD_EXAMPLE}")
@@ -86,12 +95,19 @@ if (${MUGGLE_BUILD_ONLY_C})
 	# set(muggle_cc muggleC) 
 	# target_compile_definitions(${muggle_cc}	PUBLIC MUGGLE_BUILD_C_ONLY)
 
-	set(muggle_cc muggleCC)
+	set(muggle_cc mugglecc)
 	muggle_add_project(${muggle_cc} ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
 	set_target_properties(${muggle_cc} PROPERTIES 
 		LINKER_LANGUAGE C
+		VERSION ${MUGGLE_CC_VERSION}
+		SOVERSION ${MUGGLE_CC_SOVERSION}
 	)
 	target_compile_definitions(${muggle_cc}	PUBLIC MUGGLE_BUILD_C_ONLY)
+	target_compile_definitions(${muggle_cc}	PUBLIC
+		MUGGLE_CC_VERSION_MAJOR=${MUGGLE_CC_VER_MAJOR}
+		MUGGLE_CC_VERSION_MINOR=${MUGGLE_CC_VER_MINOR}
+		MUGGLE_CC_VERSION_BUILD=${MUGGLE_CC_VER_BUILD}
+	)
 else()
 	# deprecated all cpp sources
 	# muggle_add_project(muggleCC ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
@@ -105,6 +121,10 @@ endif()
 
 # muggle benchmark
 muggle_add_project(muggle_benchmark ${CMAKE_CURRENT_LIST_DIR}/muggle_benchmark ${MUGGLE_LIB_TYPE})
+set_target_properties(muggle_benchmark PROPERTIES 
+	VERSION ${MUGGLE_CC_VERSION}
+	SOVERSION ${MUGGLE_CC_SOVERSION}
+)
 target_link_libraries(muggle_benchmark ${muggle_cc})
 add_dependencies(muggle_benchmark ${muggle_cc})
 

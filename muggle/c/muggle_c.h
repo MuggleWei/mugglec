@@ -75,4 +75,7 @@
 #include "muggle/c/crypt/tdes.h"
 #include "muggle/c/crypt/aes.h"
 
+// version
+#include "muggle/c/version/version.h"
+
 #endif
