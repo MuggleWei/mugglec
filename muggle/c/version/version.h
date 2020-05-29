@@ -13,7 +13,10 @@
 EXTERN_C_BEGIN
 
 MUGGLE_CC_EXPORT
-void mugglecc_version_info(char *buf, unsigned int bufsize);
+void mugglecc_version(char *buf, unsigned int bufsize);
+
+MUGGLE_CC_EXPORT
+void mugglecc_compile_time(char *buf, unsigned int bufsize);
 
 EXTERN_C_END
 
