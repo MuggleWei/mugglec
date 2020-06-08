@@ -128,6 +128,12 @@ set_target_properties(muggle_benchmark PROPERTIES
 target_link_libraries(muggle_benchmark ${muggle_cc})
 add_dependencies(muggle_benchmark ${muggle_cc})
 
+# set debug postfix
+set_target_properties(${muggle_cc} muggle_benchmark
+	PROPERTIES 
+	DEBUG_POSTFIX d
+)
+
 # link thread and dll lib
 find_package(Threads)
 if (WIN32)
