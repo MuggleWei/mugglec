@@ -63,6 +63,33 @@ int muggle_socket_peer_release(muggle_socket_peer_t *peer);
 MUGGLE_CC_EXPORT
 int muggle_socket_peer_close(muggle_socket_peer_t *peer);
 
+/*
+ * receive messages from a socket peer
+ * */
+MUGGLE_CC_EXPORT
+int muggle_socket_peer_recvfrom(
+	muggle_socket_peer_t *peer, void *buf, size_t len, int flags,
+	struct sockaddr *addr, muggle_socklen_t *addrlen);
+
+/*
+ * receive messages from a socket peer
+ * */
+MUGGLE_CC_EXPORT
+int muggle_socket_peer_recv(muggle_socket_peer_t *peer, void *buf, size_t len, int flags);
+
+/*
+ * transmit a message to another socket
+ * */
+MUGGLE_CC_EXPORT
+int muggle_socket_peer_sendto(muggle_socket_peer_t *peer, const void *buf, size_t len, int flags,
+	const struct sockaddr *dest_addr, socklen_t addrlen);
+
+/*
+ * transmit a message to another socket
+ * */
+MUGGLE_CC_EXPORT
+int muggle_socket_peer_send(muggle_socket_peer_t *peer, const void *buf, size_t len, int flags);
+
 EXTERN_C_END
 
 #endif

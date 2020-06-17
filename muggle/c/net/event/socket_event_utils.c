@@ -30,35 +30,14 @@ void muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_pee
 		int n;
 		while (1)
 		{
-			n = recv(peer->fd, buf, sizeof(buf), 0);
-			if (n > 0)
+			n = muggle_socket_peer_recv(peer, buf, sizeof(buf), 0);
+			if (n <= 0)
 			{
-				continue;
-			}
-			else if (n < 0)
-			{
-				if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
-				{
-					continue;
-				}
-				else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
-				{
-					break;
-				}
-
-				muggle_socket_peer_close(peer);
 				if (handle_error)
 				{
 					muggle_socket_event_check_error(ev, peer);
 				}
-			}
-			else
-			{
-				muggle_socket_peer_close(peer);
-				if (handle_error)
-				{
-					muggle_socket_event_check_error(ev, peer);
-				}
+				break;
 			}
 		}
 	}
