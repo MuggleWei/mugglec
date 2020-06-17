@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
 			{
 				MUGGLE_LOG_ERROR("failed leave multicast group");
 			}
+			muggle_socket_close(fd);
 		}
 	}
 

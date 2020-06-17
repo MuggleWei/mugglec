@@ -76,7 +76,8 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 				{
 					MUGGLE_LOG_WARNING("send buffer full");
 				}
-				ret = MUGGLE_SOCKET_EV_CLOSE_SOCKET;
+				
+				muggle_socket_peer_close(peer);
 				break;
 			}
 		}
@@ -97,12 +98,13 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
 				MUGGLE_LOG_INFO("failed recv from %s - %s", (char*)peer->data, (char*)peer->data);
 			}
-			ret = MUGGLE_SOCKET_EV_CLOSE_SOCKET;
+			
+			muggle_socket_peer_close(peer);
 			break;
 		}
 		else
 		{
-			ret = MUGGLE_SOCKET_EV_CLOSE_SOCKET;
+			muggle_socket_peer_close(peer);
 			break;
 		}
 	}

@@ -41,7 +41,7 @@ static void muggle_ev_poll_debug_print(
 
 #endif
 
-static int muggle_socket_event_poll_listen(
+static void muggle_socket_event_poll_listen(
 	muggle_socket_event_t *ev,
 	muggle_socket_peer_t *listen_peer,
 	struct pollfd *fds,
@@ -51,7 +51,7 @@ static int muggle_socket_event_poll_listen(
 {
 	while (1)
 	{
-		// get new connection
+		// get new peer
 		muggle_socket_peer_t tmp_peer;
 		muggle_socket_peer_t *peer;
 		if (*cnt_fd == capacity)
@@ -64,37 +64,19 @@ static int muggle_socket_event_poll_listen(
 		}
 		memset(peer, 0, sizeof(muggle_socket_peer_t));
 
-		peer->addr_len = sizeof(peer->addr);
-		peer->fd = accept(listen_peer->fd, (struct sockaddr*)&peer->addr, &peer->addr_len);
-		if (peer->fd == MUGGLE_INVALID_SOCKET)
+		// accept new connection
+		int ret = muggle_socket_event_accept(ev, listen_peer, peer);
+		if (ret != MUGGLE_SOCKET_EVENT_ACCEPT_RET_PEER)
 		{
-			if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+			if (ret == MUGGLE_SOCKET_EVENT_ACCEPT_RET_INTR)
 			{
 				continue;
 			}
-			else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
+			else if (ret == MUGGLE_SOCKET_EVENT_ACCEPT_RET_WBLOCK ||
+				ret == MUGGLE_SOCKET_EVENT_ACCEPT_RET_CLOSED)
 			{
-				return 0;
+				return;
 			}
-
-			char err_msg[1024];
-			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_LOG_ERROR("failed accept - %s", err_msg);
-
-			// close listen socket
-			if (ev->on_error != NULL)
-			{
-				if (ev->on_error(ev, listen_peer) == 0)
-				{
-					muggle_socket_close(listen_peer->fd);
-				}
-			}
-			else
-			{
-				muggle_socket_close(listen_peer->fd);
-			}
-
-			return 1;
 		}
 
 		if (peer == &tmp_peer)
@@ -116,33 +98,23 @@ static int muggle_socket_event_poll_listen(
 			// set socket nonblock
 			muggle_socket_set_nonblock(peer->fd, 1);
 
-			int ret = 0;
-			if (ev->on_connect)
-			{
-				ret = ev->on_connect(ev, listen_peer, peer);
-			}
-
-			if (ret == 0)
-			{
-				// add new connection socket peer
-				fds[*cnt_fd].fd = peer->fd;
-				fds[*cnt_fd].events = POLLIN;
-				++(*cnt_fd);
+			// add new connection socket peer into fds
+			fds[*cnt_fd].fd = peer->fd;
+			fds[*cnt_fd].events = POLLIN;
+			++(*cnt_fd);
 
 #if MUGGLE_ENABLE_TRACE
-				char debug_buf[4096];
-				int debug_offset = 0;
-				debug_offset = snprintf(debug_buf, sizeof(debug_buf) - debug_offset, "new connection |");
-				muggle_ev_poll_debug_print(
-					debug_buf, debug_offset, sizeof(debug_buf), p_peers, *cnt_fd);
+			char debug_buf[4096];
+			int debug_offset = 0;
+			debug_offset = snprintf(debug_buf, sizeof(debug_buf) - debug_offset, "new connection |");
+			muggle_ev_poll_debug_print(
+				debug_buf, debug_offset, sizeof(debug_buf), p_peers, *cnt_fd);
 #endif
-			}
-			else
+
+			// notify user
+			if (ev->on_connect)
 			{
-				if (ret == MUGGLE_SOCKET_EV_CLOSE_SOCKET)
-				{
-					muggle_socket_close(peer->fd);
-				}
+				ev->on_connect(ev, listen_peer, peer);
 			}
 		}
 	}
@@ -209,20 +181,19 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 		{
 			for (int i = cnt_fd - 1; i >= 0; --i)
 			{
-				int need_close = 0;
+				muggle_socket_peer_t *peer = p_peers[i];
 				if (fds[i].revents & POLLIN)
 				{
-					muggle_socket_peer_t *peer = p_peers[i];
 					switch (peer->peer_type)
 					{
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN:
 						{
-							need_close = muggle_socket_event_poll_listen(ev, peer, fds, peers, p_peers, capacity, &cnt_fd);
+							muggle_socket_event_poll_listen(ev, peer, fds, peers, p_peers, capacity, &cnt_fd);
 						}break;
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_PEER:
 					case MUGGLE_SOCKET_PEER_TYPE_UDP_PEER:
 						{
-							need_close = muggle_socket_event_on_message(ev, peer);
+							muggle_socket_event_on_message(ev, peer, 0);
 						}break;
 					default:
 						{
@@ -236,16 +207,22 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 				{
 					if (ev->on_error != NULL)
 					{
-						if (ev->on_error(ev, p_peers[i]) == 0)
-						{
-							muggle_socket_close(p_peers[i]->fd);
-						}
+						ev->on_error(ev, peer);
 					}
-					need_close = MUGGLE_SOCKET_USER_CLOSE_SOCKET;
+					else
+					{
+						muggle_socket_peer_close(peer);
+					}
+
+					if (peer->ref_cnt == 0)
+					{
+						peer->status = MUGGLE_SOCKET_PEER_STATUS_CLOSED;
+					}
+
 					--n;
 				}
 
-				if (need_close)
+				if (peer->ref_cnt == 0)
 				{
 					if (i != cnt_fd - 1)
 					{

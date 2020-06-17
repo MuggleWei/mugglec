@@ -175,6 +175,7 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 	// set peer
 	if (peer)
 	{
+		peer->ref_cnt = 1;
 		peer->fd = listen_socket;
 		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN;
 		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
@@ -264,6 +265,7 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
 	// set peer
 	if (peer)
 	{
+		peer->ref_cnt = 1;
 		peer->fd = client;
 		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_TCP_PEER;
 		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
@@ -427,6 +429,7 @@ muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socke
 	// set peer
 	if (peer)
 	{
+		peer->ref_cnt = 1;
 		peer->fd = udp_socket;
 		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
 		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
@@ -491,6 +494,7 @@ muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_so
 	// set peer
 	if (peer)
 	{
+		peer->ref_cnt = 1;
 		peer->fd = udp_socket;
 		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
 		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
@@ -756,6 +760,7 @@ muggle_socket_t muggle_mcast_join(
 	// set peer
 	if (peer)
 	{
+		peer->ref_cnt = 1;
 		peer->fd = fd;
 		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
 		memcpy(&peer->addr, bind_addrinfo->ai_addr, bind_addrinfo->ai_addrlen);

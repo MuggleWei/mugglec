@@ -1,36 +1,27 @@
 #include "socket_event_utils.h"
+#include "muggle/c/log/log.h"
 
-static inline void muggle_socket_event_on_message_error(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
+static inline void muggle_socket_event_check_error(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
 {
-	if (ev->on_error)
+	if (peer->ref_cnt == 0)
 	{
-		if (ev->on_error(ev, peer) == 0)
+		if (ev->on_error)
 		{
-			muggle_socket_close(peer->fd);
+			ev->on_error(ev, peer);
 		}
-	}
-	else
-	{
-		muggle_socket_close(peer->fd);
+		peer->status = MUGGLE_SOCKET_PEER_STATUS_CLOSED;
 	}
 }
 
-int muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
+void muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer_t *peer, int handle_error)
 {
 	if (ev->on_message)
 	{
-		int ret = ev->on_message(ev, peer);
-		if (ret == 0)
+		ev->on_message(ev, peer);
+
+		if (handle_error)
 		{
-			return 0;
-		}
-		else
-		{
-			if (ret == MUGGLE_SOCKET_EV_CLOSE_SOCKET)
-			{
-				muggle_socket_event_on_message_error(ev, peer);
-			}
-			return MUGGLE_SOCKET_USER_CLOSE_SOCKET;
+			muggle_socket_event_check_error(ev, peer);
 		}
 	}
 	else
@@ -55,18 +46,22 @@ int muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer
 					break;
 				}
 
-				muggle_socket_event_on_message_error(ev, peer);
-				return MUGGLE_SOCKET_USER_CLOSE_SOCKET;
+				muggle_socket_peer_close(peer);
+				if (handle_error)
+				{
+					muggle_socket_event_check_error(ev, peer);
+				}
 			}
 			else
 			{
-				muggle_socket_event_on_message_error(ev, peer);
-				return MUGGLE_SOCKET_USER_CLOSE_SOCKET;
+				muggle_socket_peer_close(peer);
+				if (handle_error)
+				{
+					muggle_socket_event_check_error(ev, peer);
+				}
 			}
 		}
 	}
-
-	return 0;
 }
 
 void muggle_socket_event_timer_handle(muggle_socket_event_t *ev, struct timespec *t1, struct timespec *t2)
@@ -84,4 +79,38 @@ void muggle_socket_event_timer_handle(muggle_socket_event_t *ev, struct timespec
 		t1->tv_sec = t2->tv_sec;
 		t1->tv_nsec = t2->tv_nsec;
 	}
+}
+
+int muggle_socket_event_accept(muggle_socket_event_t *ev, muggle_socket_peer_t *listen_peer, muggle_socket_peer_t *peer)
+{
+	peer->ref_cnt = 1;
+	peer->addr_len = sizeof(peer->addr);
+	peer->fd = accept(listen_peer->fd, (struct sockaddr*)&peer->addr, &peer->addr_len);
+	if (peer->fd == MUGGLE_INVALID_SOCKET)
+	{
+		if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+		{
+			return MUGGLE_SOCKET_EVENT_ACCEPT_RET_INTR;
+		}
+		else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
+		{
+			return MUGGLE_SOCKET_EVENT_ACCEPT_RET_WBLOCK;
+		}
+
+		char err_msg[1024];
+		muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+		MUGGLE_LOG_TRACE("failed accept - %s", err_msg);
+
+		// close listen socket
+		muggle_socket_peer_close(listen_peer);
+		if (ev->on_error != NULL)
+		{
+			ev->on_error(ev, listen_peer);
+		}
+		listen_peer->status = MUGGLE_SOCKET_PEER_STATUS_CLOSED;
+
+		return MUGGLE_SOCKET_EVENT_ACCEPT_RET_CLOSED;
+	}
+
+	return MUGGLE_SOCKET_EVENT_ACCEPT_RET_PEER;
 }

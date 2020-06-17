@@ -7,7 +7,7 @@ static inline void on_timestr(struct muggle_socket_event *ev, struct muggle_sock
 	MUGGLE_LOG_INFO("recv timestamp string: %s", msg);
 }
 
-int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
+void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 {
 	// output disconnection address string
 	char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
@@ -22,11 +22,9 @@ int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 
 	// exit event loop
 	muggle_socket_event_loop_exit(ev);
-
-	return 0;
 }
 
-int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
+void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 {
 	int bufsize = UDP_MESSAGE_MAX_SIZE;
 	char buf[UDP_MESSAGE_MAX_SIZE];
@@ -40,14 +38,14 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 				if (n < 4)
 				{
 					MUGGLE_LOG_ERROR("invalid message with number of bytes < 4");
-					return 0;
+					return;
 				}
 
 				uint32_t len = ntohl(*(uint32_t*)buf);
 				if (len > UDP_MESSAGE_MAX_SIZE - 4)
 				{
 					MUGGLE_LOG_ERROR("length field in message too long");
-					return 0;
+					return;
 				}
 
 				on_timestr(ev, peer, buf + 4);
@@ -63,11 +61,13 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 					break;
 				}
 
-				return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
+				muggle_socket_peer_close(peer);
+				return;
 			}
 			else
 			{
-				return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
+				muggle_socket_peer_close(peer);
+				return;
 			}
 		}
 	}
@@ -81,7 +81,7 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 			if (ptr == NULL)
 			{
 				MUGGLE_LOG_ERROR("bytes buffer full!");
-				return -1;
+				return;
 			}
 
 			int n = recv(peer->fd, ptr, bufsize, 0);
@@ -90,7 +90,8 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 				if (!muggle_bytes_buffer_writer_move(bytes_buf, n))
 				{
 					MUGGLE_LOG_ERROR("bytes buffer inner error!");
-					return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
+					muggle_socket_peer_close(peer);
+					return;
 				}
 
 				if (n < bufsize)
@@ -109,11 +110,13 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 					break;
 				}
 
-				return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
+				muggle_socket_peer_close(peer);
+				return;
 			}
 			else
 			{
-				return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
+				muggle_socket_peer_close(peer);
+				return;
 			}
 		}
 
@@ -133,7 +136,7 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 				MUGGLE_LOG_ERROR("time string too long, must something wrong");
 				// shutdown and return 0, or only return -1 both is ok
 				muggle_socket_shutdown(peer->fd, MUGGLE_SOCKET_SHUT_RDWR);
-				return 0;
+				return;
 			}
 
 			// get readable number of bytes
@@ -153,7 +156,8 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 				if (!muggle_bytes_buffer_reader_move(bytes_buf, pkg_size))
 				{
 					MUGGLE_LOG_ERROR("failed buffer reader move");
-					return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
+					muggle_socket_peer_close(peer);
+					return;
 				}
 			}
 			else
@@ -162,12 +166,11 @@ int on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 				if (!muggle_bytes_buffer_read(bytes_buf, pkg_size, buf))
 				{
 					MUGGLE_LOG_ERROR("failed buffer read");
-					return MUGGLE_SOCKET_EV_CLOSE_SOCKET;
+					muggle_socket_peer_close(peer);
+					return;
 				}
 				on_timestr(ev, peer, buf + 4);
 			}
 		}
 	}
-
-	return 0;
 }

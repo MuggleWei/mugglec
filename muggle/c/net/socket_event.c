@@ -37,7 +37,8 @@ static int muggle_get_event_loop_type(int event_loop_type)
 		// event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_IOCP;
 		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT;
 #elif MUGGLE_PLATFORM_FREEBSD
-		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE;
+		// event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE;
+		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT;
 #else
 		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT;
 #endif
