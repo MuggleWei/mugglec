@@ -1,6 +1,6 @@
 #include "async_serv_handle.h"
 
-static muggle_atomic_int s_task_id = 0;
+static muggle_atomic_int s_task_id = 1;
 
 struct async_args
 {
@@ -46,7 +46,7 @@ void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 {
 	char str_addr[128];
 	muggle_socket_ntop((struct sockaddr*)&peer->addr, str_addr, sizeof(str_addr), 0);
-	MUGGLE_LOG_INFO("peer[%s] closed", str_addr);
+	MUGGLE_LOG_INFO("peer[%s] error", str_addr);
 }
 
 void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)

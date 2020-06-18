@@ -1,3 +1,10 @@
+/*
+ *	author: muggle wei <mugglewei@gmail.com>
+ *
+ *	Use of this source code is governed by the MIT license that can be
+ *	found in the LICENSE file.
+ */
+
 #include "socket_peer.h"
 #include "muggle/c/log/log.h"
 
@@ -10,7 +17,7 @@ void muggle_socket_peer_init(
 	peer->ref_cnt = 1;
 	peer->fd = fd;
 	peer->peer_type = peer_type;
-	peer->status = MUGGLE_SOCKET_PEER_STATUS_ALIVE;
+	peer->status = MUGGLE_SOCKET_PEER_STATUS_ACTIVE;
 	if (addr)
 	{
 		memcpy(&peer->addr, addr, addr_len);
@@ -56,6 +63,19 @@ int muggle_socket_peer_release(muggle_socket_peer_t *peer)
 
 	if (desired == 0)
 	{
+#if MUGGLE_ENABLE_TRACE
+		char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
+		if (peer->addr_len == 0 ||
+			muggle_socket_ntop((struct sockaddr*)&peer->addr, straddr, MUGGLE_SOCKET_ADDR_STRLEN, 0) == NULL)
+		{
+			snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "?:?");
+		}
+#if MUGGLE_PLATFORM_WINDOWS
+		MUGGLE_DEBUG_INFO("close socket [%s]", straddr);
+#else
+		MUGGLE_DEBUG_INFO("close socket %d[%s]", peer->fd, straddr);
+#endif
+#endif
 		muggle_socket_close(peer->fd);
 		peer->fd = 0;
 	}

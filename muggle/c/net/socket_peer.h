@@ -1,3 +1,10 @@
+/*
+ *	author: muggle wei <mugglewei@gmail.com>
+ *
+ *	Use of this source code is governed by the MIT license that can be
+ *	found in the LICENSE file.
+ */
+
 #ifndef MUGGLE_C_SOCKET_PEER_H_
 #define MUGGLE_C_SOCKET_PEER_H_
 
@@ -17,7 +24,7 @@ enum
 
 enum
 {
-	MUGGLE_SOCKET_PEER_STATUS_ALIVE = 0,
+	MUGGLE_SOCKET_PEER_STATUS_ACTIVE = 0,
 	MUGGLE_SOCKET_PEER_STATUS_CLOSED = 1,
 };
 

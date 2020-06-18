@@ -1,3 +1,10 @@
+/*
+ *	author: muggle wei <mugglewei@gmail.com>
+ *
+ *	Use of this source code is governed by the MIT license that can be
+ *	found in the LICENSE file.
+ */
+
 #include "socket_event.h"
 #include <string.h>
 #include "muggle/c/log/log.h"
@@ -45,15 +52,6 @@ static int muggle_get_event_loop_type(int event_loop_type)
 	}
 
 	return event_loop_type;
-}
-
-/* 
- * event loop type is valid
- * RETURN: 0 - success, otherwise failed
- * */
-static int muggle_event_loop_type_valid(int event_loop_type)
-{
-	
 }
 
 /*

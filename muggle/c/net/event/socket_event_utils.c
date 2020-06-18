@@ -1,3 +1,10 @@
+/*
+ *	author: muggle wei <mugglewei@gmail.com>
+ *
+ *	Use of this source code is governed by the MIT license that can be
+ *	found in the LICENSE file.
+ */
+
 #include "socket_event_utils.h"
 #include "muggle/c/log/log.h"
 
@@ -39,31 +46,79 @@ void muggle_socket_event_timer_handle(muggle_socket_event_t *ev, struct timespec
 	}
 }
 
-int muggle_socket_event_accept(muggle_socket_event_t *ev, muggle_socket_peer_t *listen_peer, muggle_socket_peer_t *peer)
+void muggle_socket_event_accept(muggle_socket_peer_t *listen_peer, muggle_socket_peer_t *peer)
 {
-	peer->ref_cnt = 1;
-	peer->addr_len = sizeof(peer->addr);
-	peer->fd = accept(listen_peer->fd, (struct sockaddr*)&peer->addr, &peer->addr_len);
-	if (peer->fd == MUGGLE_INVALID_SOCKET)
+	while (1)
 	{
-		if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+		peer->addr_len = sizeof(peer->addr);
+		peer->fd = accept(listen_peer->fd, (struct sockaddr*)&peer->addr, &peer->addr_len);
+		if (peer->fd == MUGGLE_INVALID_SOCKET)
 		{
-			return MUGGLE_SOCKET_EVENT_ACCEPT_RET_INTR;
+			if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+			{
+				continue;
+			}
+			else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
+			{
+				break;
+			}
+			else
+			{
+				char err_msg[1024];
+				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+				MUGGLE_LOG_TRACE("failed accept - %s", err_msg);
+
+				// close listen socket
+				muggle_socket_peer_close(listen_peer);
+				break;
+			}
 		}
-		else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
-		{
-			return MUGGLE_SOCKET_EVENT_ACCEPT_RET_WBLOCK;
-		}
 
-		char err_msg[1024];
-		muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-		MUGGLE_LOG_TRACE("failed accept - %s", err_msg);
+		peer->ref_cnt = 1;
+		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_TCP_PEER;
+		peer->status = MUGGLE_SOCKET_PEER_STATUS_ACTIVE;
 
-		// close listen socket
-		muggle_socket_peer_close(listen_peer);
+		// set socket nonblock
+		muggle_socket_set_nonblock(peer->fd, 1);
 
-		return MUGGLE_SOCKET_EVENT_ACCEPT_RET_CLOSED;
+		break;
 	}
+}
 
-	return MUGGLE_SOCKET_EVENT_ACCEPT_RET_PEER;
+void muggle_socket_event_refuse_accept(muggle_socket_peer_t *listen_peer)
+{
+	struct sockaddr_storage addr;
+	muggle_socklen_t addr_len;
+	while (1)
+	{
+		addr_len = sizeof(addr);
+		muggle_socket_t fd = accept(listen_peer->fd, (struct sockaddr*)&addr, &addr_len);
+		if (fd == MUGGLE_INVALID_SOCKET)
+		{
+			if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+			{
+				continue;
+			}
+			else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
+			{
+				return;
+			}
+
+			char err_msg[1024];
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_LOG_TRACE("failed accept - %s", err_msg);
+
+			muggle_socket_peer_close(listen_peer);
+		}
+		else
+		{
+			char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
+			if (muggle_socket_ntop((struct sockaddr*)&addr, straddr, sizeof(straddr), 0) == NULL)
+			{
+				snprintf(straddr, sizeof(straddr), "unknown:unknown");
+			}
+			MUGGLE_LOG_WARNING("refuse connection %s - number of connection reached the upper limit", straddr);
+			muggle_socket_close(fd);
+		}
+	}
 }
