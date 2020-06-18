@@ -7,6 +7,7 @@
 
 #include "socket_peer.h"
 #include "muggle/c/log/log.h"
+#include "socket_utils.h"
 
 void muggle_socket_peer_init(
 	muggle_socket_peer_t *peer, muggle_socket_t fd,
@@ -50,6 +51,13 @@ int muggle_socket_peer_release(muggle_socket_peer_t *peer)
 	muggle_atomic_int ref_cnt = 0, desired = 0;
 	do {
 		MUGGLE_ASSERT(peer->ref_cnt >= 0);
+
+		// consider single thread optimize, the last holder of this socket peer don't need to use CAS
+		if (peer->ref_cnt == 1)
+		{
+			peer->ref_cnt = 0;
+			break;
+		}
 
 		ref_cnt = peer->ref_cnt;
 		if (ref_cnt == 0)
