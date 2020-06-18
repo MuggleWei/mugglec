@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
 #endif
 
 		muggle_socket_ev_arg_t ev_arg;
+		memset(&ev_arg, 0, sizeof(ev_arg));
 		ev_arg.ev_loop_type = event_loop_type;
 		ev_arg.hints_max_peer = 1024;
 		ev_arg.cnt_peer = 1;

@@ -18,14 +18,8 @@ enum
  * on socket event message
  * @ev: socket event
  * @peer: socket peer
- * @handle_error:
- *     some event loop(like select), don't distinguish message and error happend, need handle error
- *     in the same function of on message;
- *     other event loop(like poll, epoll), don't need handle error in on message
- *     0 - do not handle on error
- *     1 - handle on error
  * */
-void muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer_t *peer, int handle_error);
+void muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer_t *peer);
 
 void muggle_socket_event_timer_handle(muggle_socket_event_t *ev, struct timespec *t1, struct timespec *t2);
 

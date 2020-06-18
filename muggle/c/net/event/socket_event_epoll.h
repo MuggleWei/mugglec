@@ -14,7 +14,6 @@
 
 EXTERN_C_BEGIN
 
-MUGGLE_CC_EXPORT
 void muggle_socket_event_epoll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t *ev_arg);
 
 EXTERN_C_END

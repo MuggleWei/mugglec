@@ -141,23 +141,6 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 {
 	MUGGLE_LOG_TRACE("socket event select run...");
 
-	// set fd capacity
-	int capacity = ev_arg->hints_max_peer;
-	if (capacity <= 0 || capacity > FD_SETSIZE)
-	{
-		capacity = FD_SETSIZE;
-	}
-
-	if (capacity < ev_arg->cnt_peer)
-	{
-		MUGGLE_LOG_WARNING("capacity space not enough for all peers");
-		for (int i = 0; i < ev_arg->cnt_peer; ++i)
-		{
-			muggle_socket_close(ev_arg[i].peers->fd);
-		}
-		return;
-	}
-
 	// set timeout
 	struct timeval timeout, save_timeout;
 	struct timeval *p_timeout = &timeout;
@@ -175,10 +158,10 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 
 	// fixed size pool for peers
 	muggle_memory_pool_t pool;
-	if (!muggle_memory_pool_init(&pool, capacity, sizeof(struct muggle_peer_list_node)))
+	if (!muggle_memory_pool_init(&pool, ev->capacity, sizeof(struct muggle_peer_list_node)))
 	{
 		MUGGLE_LOG_ERROR("failed init memory pool for capacity: %d, unit size: %d",
-			capacity, sizeof(struct muggle_peer_list_node));
+			ev->capacity, sizeof(struct muggle_peer_list_node));
 		for (int i = 0; i < ev_arg->cnt_peer; ++i)
 		{
 			muggle_socket_close(ev_arg[i].peers->fd);
@@ -186,8 +169,11 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 		return;
 	}
 	muggle_memory_pool_set_flag(&pool, MUGGLE_MEMORY_POOL_CONSTANT_SIZE);
-	struct muggle_peer_list_node head;
+
+	// peer alive node list and recycle node list
+	struct muggle_peer_list_node head, recycle_head;
 	head.next = NULL;
+	recycle_head.next = NULL;
 
 	// convert sockets into peer
 	for (int i = 0; i < ev_arg->cnt_peer; i++)
@@ -201,7 +187,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 		muggle_socket_set_nonblock(node->peer.fd, 1);
 	}
 
-	// select
+	// select fds
 	int nfds = 0;
 	fd_set rset, allset;
 	FD_ZERO(&allset);
@@ -225,13 +211,17 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 	{
 		timespec_get(&t1, TIME_UTC);
 	}
+
 	while (1)
 	{
-		rset = allset;
+		// select need reset timeout
 		if (p_timeout)
 		{
 			memcpy(&timeout, &save_timeout, sizeof(struct timeval));
 		}
+
+		// select loop
+		rset = allset;
 		int n = select(nfds + 1, &rset, NULL, NULL, p_timeout);
 		if (n > 0)
 		{
@@ -250,7 +240,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_PEER:
 					case MUGGLE_SOCKET_PEER_TYPE_UDP_PEER:
 						{
-							muggle_socket_event_on_message(ev, &node->peer, 1);
+							muggle_socket_event_on_message(ev, &node->peer);
 						}break;
 					default:
 						{
@@ -260,10 +250,24 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 					
 					if (node->peer.status == MUGGLE_SOCKET_PEER_STATUS_CLOSED)
 					{
+						if (ev->on_error)
+						{
+							ev->on_error(ev, &node->peer);
+						}
+
 						FD_CLR(node->peer.fd, &allset);
 
 						prev_node->next = node->next;
-						muggle_memory_pool_free(&pool, node);
+						int ref_cnt = muggle_socket_peer_release(&node->peer);
+						if (ref_cnt == 0)
+						{
+							muggle_memory_pool_free(&pool, node);
+						}
+						else
+						{
+							node->next = recycle_head.next;
+							recycle_head.next = node;
+						}
 						node = prev_node->next;
 
 #if MUGGLE_ENABLE_TRACE
@@ -328,6 +332,23 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_
 				node = node->next;
 			}
 			break;
+		}
+
+		// recycle node
+		struct muggle_peer_list_node *recycle_node = recycle_head.next, *recycle_next = NULL, *recycle_prev = &recycle_head;
+		while (recycle_node)
+		{
+			if (recycle_node->peer.ref_cnt == 0)
+			{
+				recycle_prev->next = recycle_node->next;
+				muggle_memory_pool_free(&pool, recycle_node);
+				recycle_node = recycle_prev->next;
+			}
+			else
+			{
+				recycle_prev = recycle_node;
+				recycle_node = recycle_node->next;
+			}
 		}
 	}
 

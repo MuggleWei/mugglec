@@ -1,6 +1,24 @@
 #include "socket_peer.h"
 #include "muggle/c/log/log.h"
 
+void muggle_socket_peer_init(
+	muggle_socket_peer_t *peer, muggle_socket_t fd,
+	int peer_type, const struct sockaddr *addr, muggle_socklen_t addr_len)
+{
+	memset(peer, 0, sizeof(muggle_socket_peer_t));
+
+	peer->ref_cnt = 1;
+	peer->fd = fd;
+	peer->peer_type = peer_type;
+	peer->status = MUGGLE_SOCKET_PEER_STATUS_ALIVE;
+	if (addr)
+	{
+		memcpy(&peer->addr, addr, addr_len);
+		peer->addr_len = addr_len;
+	}
+	peer->data = NULL;
+}
+
 int muggle_socket_peer_retain(muggle_socket_peer_t *peer)
 {
 	muggle_atomic_int ref_cnt = 0, desired = 0;
@@ -10,6 +28,8 @@ int muggle_socket_peer_retain(muggle_socket_peer_t *peer)
 		ref_cnt = peer->ref_cnt;
 		if (ref_cnt == 0)
 		{
+			// try to retain released peer
+			MUGGLE_ASSERT(ref_cnt != 0);
 			return ref_cnt;
 		}
 		desired = ref_cnt + 1;
@@ -27,6 +47,8 @@ int muggle_socket_peer_release(muggle_socket_peer_t *peer)
 		ref_cnt = peer->ref_cnt;
 		if (ref_cnt == 0)
 		{
+			// repeated release error
+			MUGGLE_ASSERT(ref_cnt != 0);
 			return ref_cnt;
 		}
 		desired = ref_cnt - 1;
@@ -35,14 +57,16 @@ int muggle_socket_peer_release(muggle_socket_peer_t *peer)
 	if (desired == 0)
 	{
 		muggle_socket_close(peer->fd);
+		peer->fd = 0;
 	}
 
 	return desired;
 }
 
-int muggle_socket_peer_close(muggle_socket_peer_t *peer)
+void muggle_socket_peer_close(muggle_socket_peer_t *peer)
 {
-	return muggle_socket_peer_release(peer);
+	peer->status = MUGGLE_SOCKET_PEER_STATUS_CLOSED;
+	muggle_socket_shutdown(peer->fd, MUGGLE_SOCKET_SHUT_RDWR);
 }
 
 int muggle_socket_peer_recvfrom(
@@ -74,6 +98,7 @@ int muggle_socket_peer_recvfrom(
 					break;
 				}
 			}
+
 			muggle_socket_peer_close(peer);
 			break;
 		}
@@ -109,6 +134,7 @@ int muggle_socket_peer_recv(muggle_socket_peer_t *peer, void *buf, size_t len, i
 					break;
 				}
 			}
+
 			muggle_socket_peer_close(peer);
 			break;
 		}

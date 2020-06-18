@@ -47,70 +47,146 @@ static int muggle_get_event_loop_type(int event_loop_type)
 	return event_loop_type;
 }
 
-void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
+/* 
+ * event loop type is valid
+ * RETURN: 0 - success, otherwise failed
+ * */
+static int muggle_event_loop_type_valid(int event_loop_type)
 {
-	muggle_socket_event_t ev;
-	memset(&ev, 0, sizeof(ev));
-	ev.ev_loop_type = muggle_get_event_loop_type(ev_arg->ev_loop_type);
-	if (ev_arg->timeout_ms < 0)
+	
+}
+
+/*
+ * init socket event input arguments
+ * RETURN: 0 - success, otherwise failed
+ * */
+static int muggle_socket_ev_arg_init(muggle_socket_event_t *ev, muggle_socket_ev_arg_t *ev_arg)
+{
+	memset(ev, 0, sizeof(ev));
+
+	// set event loop type
+	ev->ev_loop_type = muggle_get_event_loop_type(ev_arg->ev_loop_type);
+
+	// set capacity
+	int capacity = ev_arg->hints_max_peer;
+	if (ev->ev_loop_type == MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT)
 	{
-		ev.timeout_ms = -1;
+		if (capacity <= 0 || capacity > FD_SETSIZE)
+		{
+			capacity = FD_SETSIZE;
+		}
 	}
 	else
 	{
-		ev.timeout_ms = ev_arg->timeout_ms;
+		if (capacity <= 0)
+		{
+			capacity = 1024;
+		}
 	}
-	ev.to_exit = 0;
-	ev.datas = ev_arg->datas;
+	if (capacity < ev_arg->cnt_peer)
+	{
+		MUGGLE_LOG_ERROR("capacity space not enough for all peers");
+		for (int i = 0; i < ev_arg->cnt_peer; ++i)
+		{
+			muggle_socket_close(ev_arg[i].peers->fd);
+		}
+		return -1;
+	}
+	ev->capacity = capacity;
 
-	ev.on_connect = ev_arg->on_connect;
-	ev.on_error = ev_arg->on_error;
-	ev.on_message = ev_arg->on_message;
-	ev.on_timer = ev_arg->on_timer;
+	// set timeout
+	if (ev_arg->timeout_ms < 0)
+	{
+		ev->timeout_ms = -1;
+	}
+	else
+	{
+		ev->timeout_ms = ev_arg->timeout_ms;
+	}
 
-	switch (ev.ev_loop_type)
+	ev->to_exit = 0;
+	ev->datas = ev_arg->datas;
+
+	// set callbacks
+	ev->on_connect = ev_arg->on_connect;
+	ev->on_error = ev_arg->on_error;
+	ev->on_message = ev_arg->on_message;
+	ev->on_timer = ev_arg->on_timer;
+
+	return 0;
+}
+
+/*
+ * event loop run
+ * */
+static int muggle_socket_event_loop_run(muggle_socket_event_t *ev, muggle_socket_ev_arg_t *ev_arg)
+{
+	int ret = 0;
+	switch (ev->ev_loop_type)
 	{
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_MULTHREAD:
-		{
-			MUGGLE_LOG_ERROR("unimplemented event loop type: multhread, to be continued...");
-		}break;
+	{
+		MUGGLE_LOG_ERROR("unimplemented event loop type: multhread, to be continued...");
+		ret = -1;
+	}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT:
-		{
-			muggle_socket_event_select(&ev, ev_arg);
-		}break;
+	{
+		muggle_socket_event_select(ev, ev_arg);
+	}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_POLL:
-		{
-			muggle_socket_event_poll(&ev, ev_arg);
-		}break;
+	{
+		muggle_socket_event_poll(ev, ev_arg);
+	}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL:
-		{
+	{
 #if MUGGLE_PLATFORM_LINUX
-			muggle_socket_event_epoll(&ev, ev_arg);
+		muggle_socket_event_epoll(ev, ev_arg);
 #else
-			MUGGLE_LOG_ERROR("epoll event loop support linux only");
+		MUGGLE_LOG_ERROR("epoll event loop support linux only");
+		ret = -1;
 #endif
-		}break;
+	}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_IOCP:
-		{
+	{
 #if MUGGLE_PLATFORM_WINDOWS
-			MUGGLE_LOG_ERROR("unimplemented event loop type: iocp, to be continued...");
+		MUGGLE_LOG_ERROR("unimplemented event loop type: iocp, to be continued...");
+		ret = -1;
 #else
-			MUGGLE_LOG_ERROR("iocp event loop support windows only");
+		MUGGLE_LOG_ERROR("iocp event loop support windows only");
+		ret = -1;
 #endif
-		}break;
+	}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE:
-		{
+	{
 #if MUGGLE_PLATFORM_FREEBSD
-			MUGGLE_LOG_ERROR("unimplemented event loop type: kqueue, to be continued...");
+		MUGGLE_LOG_ERROR("unimplemented event loop type: kqueue, to be continued...");
+		ret = -1;
 #else
-			MUGGLE_LOG_ERROR("kqueue event loop support FreeBSD only");
+		MUGGLE_LOG_ERROR("kqueue event loop support FreeBSD only");
+		ret = -1;
 #endif
-		}break;
+	}break;
 	default:
-		{
-			MUGGLE_LOG_ERROR("unsupport event loop type: %d", ev.ev_loop_type);
-		}break;
+	{
+		MUGGLE_LOG_ERROR("unsupport event loop type: %d", ev->ev_loop_type);
+		ret = -1;
+	}break;
 	}
+
+	return ret;
+}
+
+int muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
+{
+	muggle_socket_event_t ev;
+	int ret = muggle_socket_ev_arg_init(&ev, ev_arg);
+	if (ret != 0)
+	{
+		MUGGLE_LOG_ERROR("failed init socket event loop");
+		return ret;
+	}
+
+	return muggle_socket_event_loop_run(&ev, ev_arg);
 }
 
 void muggle_socket_event_loop_exit(muggle_socket_event_t *ev)

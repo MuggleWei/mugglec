@@ -38,6 +38,7 @@ typedef void (*muggle_socket_event_timer)(struct muggle_socket_event *ev);
 typedef struct muggle_socket_event
 {
 	int  ev_loop_type;
+	int  capacity;
 	int  timeout_ms;
 	int  to_exit;
 	void *datas;
@@ -68,9 +69,10 @@ typedef struct muggle_socket_ev_arg
 /*
  * monitor multiple socket descriptiors, waiting util one or
  * more of the descriptors become "ready"
+ * RETURN: 0 - exit normally, otherwise failed init
  * */
 MUGGLE_CC_EXPORT
-void muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg);
+int muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg);
 
 /*
  * exit event loop 

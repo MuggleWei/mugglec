@@ -124,30 +124,13 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 {
 	MUGGLE_LOG_TRACE("socket event poll run...");
 
-	// set fd capacity
-	int capacity = ev_arg->hints_max_peer;
-	if (capacity <= 0)
-	{
-		capacity = 1024;
-	}
-
-	if (capacity < ev_arg->cnt_peer)
-	{
-		MUGGLE_LOG_ERROR("capacity space not enough for all peers");
-		for (int i = 0; i < ev_arg->cnt_peer; ++i)
-		{
-			muggle_socket_close(ev_arg[i].peers->fd);
-		}
-		return;
-	}
-
 	// timer
 	int timeout = ev_arg->timeout_ms;
 
-	struct pollfd *fds = (struct pollfd*)malloc(capacity * sizeof(struct pollfd));
-	muggle_socket_peer_t *peers = (muggle_socket_peer_t*)malloc(capacity * sizeof(muggle_socket_peer_t));
-	muggle_socket_peer_t **p_peers = (muggle_socket_peer_t**)malloc(capacity * sizeof(muggle_socket_peer_t*));
-	for (int i = 0; i < capacity; ++i)
+	struct pollfd *fds = (struct pollfd*)malloc(ev->capacity * sizeof(struct pollfd));
+	muggle_socket_peer_t *peers = (muggle_socket_peer_t*)malloc(ev->capacity * sizeof(muggle_socket_peer_t));
+	muggle_socket_peer_t **p_peers = (muggle_socket_peer_t**)malloc(ev->capacity * sizeof(muggle_socket_peer_t*));
+	for (int i = 0; i < ev->capacity; ++i)
 	{
 		p_peers[i] = &peers[i];
 	}
@@ -188,12 +171,12 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 					{
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN:
 						{
-							muggle_socket_event_poll_listen(ev, peer, fds, peers, p_peers, capacity, &cnt_fd);
+							muggle_socket_event_poll_listen(ev, peer, fds, peers, p_peers, ev->capacity, &cnt_fd);
 						}break;
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_PEER:
 					case MUGGLE_SOCKET_PEER_TYPE_UDP_PEER:
 						{
-							muggle_socket_event_on_message(ev, peer, 0);
+							muggle_socket_event_on_message(ev, peer);
 						}break;
 					default:
 						{
@@ -205,25 +188,18 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 				}
 				else if (fds[i].revents & (POLLHUP | POLLERR))
 				{
-					if (ev->on_error != NULL)
-					{
-						ev->on_error(ev, peer);
-					}
-					else
-					{
-						muggle_socket_peer_close(peer);
-					}
-
-					if (peer->ref_cnt == 0)
-					{
-						peer->status = MUGGLE_SOCKET_PEER_STATUS_CLOSED;
-					}
+					muggle_socket_peer_close(peer);
 
 					--n;
 				}
 
-				if (peer->ref_cnt == 0)
+				if (peer->status == MUGGLE_SOCKET_PEER_STATUS_CLOSED)
 				{
+					if (ev->on_error)
+					{
+						ev->on_error(ev, peer);
+					}
+
 					if (i != cnt_fd - 1)
 					{
 						muggle_socket_peer_t *p_tmp;

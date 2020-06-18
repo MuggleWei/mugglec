@@ -1,28 +1,11 @@
 #include "socket_event_utils.h"
 #include "muggle/c/log/log.h"
 
-static inline void muggle_socket_event_check_error(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
-{
-	if (peer->ref_cnt == 0)
-	{
-		if (ev->on_error)
-		{
-			ev->on_error(ev, peer);
-		}
-		peer->status = MUGGLE_SOCKET_PEER_STATUS_CLOSED;
-	}
-}
-
-void muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer_t *peer, int handle_error)
+void muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
 {
 	if (ev->on_message)
 	{
 		ev->on_message(ev, peer);
-
-		if (handle_error)
-		{
-			muggle_socket_event_check_error(ev, peer);
-		}
 	}
 	else
 	{
@@ -33,10 +16,6 @@ void muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_pee
 			n = muggle_socket_peer_recv(peer, buf, sizeof(buf), 0);
 			if (n <= 0)
 			{
-				if (handle_error)
-				{
-					muggle_socket_event_check_error(ev, peer);
-				}
 				break;
 			}
 		}
@@ -82,11 +61,6 @@ int muggle_socket_event_accept(muggle_socket_event_t *ev, muggle_socket_peer_t *
 
 		// close listen socket
 		muggle_socket_peer_close(listen_peer);
-		if (ev->on_error != NULL)
-		{
-			ev->on_error(ev, listen_peer);
-		}
-		listen_peer->status = MUGGLE_SOCKET_PEER_STATUS_CLOSED;
 
 		return MUGGLE_SOCKET_EVENT_ACCEPT_RET_CLOSED;
 	}

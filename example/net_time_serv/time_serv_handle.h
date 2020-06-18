@@ -11,10 +11,10 @@ struct peer_container
 	muggle_socket_peer_t **peers;
 };
 
-int on_connect(
+void on_connect(
 	struct muggle_socket_event *ev, struct muggle_socket_peer *listen_peer, struct muggle_socket_peer *peer);
 
-int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
+void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
 
 void on_timer(struct muggle_socket_event *ev);
 

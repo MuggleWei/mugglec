@@ -33,13 +33,21 @@ enum
 typedef struct muggle_socket_peer
 {
 	muggle_atomic_int       ref_cnt;
-	int                     status;    // MUGGLE_SOCKET_PEER_STATUS_*
 	muggle_socket_t         fd;
 	int                     peer_type; // MUGGLE_SOCKET_PEER_TYPE_*
+	int                     status;    // MUGGLE_SOCKET_PEER_STATUS_*
 	struct sockaddr_storage addr;
 	muggle_socklen_t        addr_len;
 	void                    *data;
 }muggle_socket_peer_t;
+
+/*
+ * init socket peer
+ * */
+MUGGLE_CC_EXPORT
+void muggle_socket_peer_init(
+	muggle_socket_peer_t *peer, muggle_socket_t fd,
+	int peer_type, const struct sockaddr *addr, muggle_socklen_t addr_len);
 
 /*
  * increases the reference count of peer
@@ -58,10 +66,9 @@ int muggle_socket_peer_release(muggle_socket_peer_t *peer);
 
 /*
  * try to close socket peer
- * RETURN: refence count of peer after this call
  * */
 MUGGLE_CC_EXPORT
-int muggle_socket_peer_close(muggle_socket_peer_t *peer);
+void muggle_socket_peer_close(muggle_socket_peer_t *peer);
 
 /*
  * receive messages from a socket peer
