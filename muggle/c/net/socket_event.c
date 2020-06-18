@@ -183,6 +183,10 @@ int muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
 	if (ret != 0)
 	{
 		MUGGLE_LOG_ERROR("failed init socket event loop");
+		for (int i = 0; i < ev_arg->cnt_peer; ++i)
+		{
+			muggle_socket_close(ev_arg->peers[i].fd);
+		}
 		return ret;
 	}
 
