@@ -178,11 +178,6 @@ int main(int argc, char *argv[])
 	// initialize socket library
 	muggle_socket_lib_init();
 
-#if !MUGGLE_PLATFORM_WINDOWS
-	// ignore PIPE
-	signal(SIGPIPE, SIG_IGN);
-#endif
-
 	muggle_socket_peer_t peer;
 	if (strcmp(argv[3], "tcp") == 0)
 	{

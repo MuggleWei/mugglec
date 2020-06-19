@@ -31,7 +31,7 @@ void trace_output_peers(struct peer_container *container)
 
 #endif
 
-int on_connect(
+void on_connect(
 	struct muggle_socket_event *ev, struct muggle_socket_peer *listen_peer, struct muggle_socket_peer *peer)
 {
 	// output connection address string
@@ -51,11 +51,9 @@ int on_connect(
 #if defined(MUGGLE_BUILD_TRACE)
 	trace_output_peers(container);
 #endif
-
-	return 0;
 }
 
-int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
+void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 {
 	// output disconnection address string
 	char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
@@ -75,11 +73,12 @@ int on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 	}
 	--container->cnt_peer;
 
+	// close peer
+	muggle_socket_peer_close(peer);
+
 #if defined(MUGGLE_BUILD_TRACE)
 	trace_output_peers(container);
 #endif
-
-	return 0;
 }
 
 void on_timer(struct muggle_socket_event *ev)

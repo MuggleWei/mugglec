@@ -18,11 +18,6 @@ int main(int argc, char *argv[])
 	// initialize socket library
 	muggle_socket_lib_init();
 
-#if !MUGGLE_PLATFORM_WINDOWS
-	// ignore PIPE
-	signal(SIGPIPE, SIG_IGN);
-#endif
-
 	// reconnect 3 times
 	int tcp_contiguous_failed = 0;
 	while (1)
@@ -89,20 +84,21 @@ int main(int argc, char *argv[])
 		int event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT;
 #endif
 
-		muggle_socket_ev_arg_t ev_arg;
-		ev_arg.ev_loop_type = event_loop_type;
-		ev_arg.hints_max_peer = 1024;
-		ev_arg.cnt_peer = 1;
-		ev_arg.peers = &peer;
-		ev_arg.timeout_ms = -1;
-		ev_arg.datas = NULL;
-		ev_arg.on_connect = NULL;
-		ev_arg.on_error = on_error;
-		ev_arg.on_message = on_message;
-		ev_arg.on_timer = NULL;
+		muggle_socket_event_init_arg_t ev_init_arg;
+		memset(&ev_init_arg, 0, sizeof(ev_init_arg));
+		ev_init_arg.ev_loop_type = event_loop_type;
+		ev_init_arg.hints_max_peer = 1024;
+		ev_init_arg.cnt_peer = 1;
+		ev_init_arg.peers = &peer;
+		ev_init_arg.timeout_ms = -1;
+		ev_init_arg.datas = NULL;
+		ev_init_arg.on_connect = NULL;
+		ev_init_arg.on_error = on_error;
+		ev_init_arg.on_message = on_message;
+		ev_init_arg.on_timer = NULL;
 
 		// event loop
-		muggle_socket_event_loop(&ev_arg);
+		muggle_socket_event_loop(&ev_init_arg);
 	}
 
 	return 0;

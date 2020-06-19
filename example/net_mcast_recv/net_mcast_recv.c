@@ -20,11 +20,6 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-#if !MUGGLE_PLATFORM_WINDOWS
-	// ignore PIPE
-	signal(SIGPIPE, SIG_IGN);
-#endif
-
 	const char *grp_host = argv[1];
 	const char *grp_serv = argv[2];
 	const char *iface = NULL;
@@ -69,6 +64,7 @@ int main(int argc, char *argv[])
 			{
 				MUGGLE_LOG_ERROR("failed leave multicast group");
 			}
+			muggle_socket_close(fd);
 		}
 	}
 

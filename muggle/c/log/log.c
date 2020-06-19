@@ -1,6 +1,9 @@
 #include "log.h"
 #include <stdlib.h>
 #include <stdarg.h>
+#if MUGGLE_DEBUG
+#include "muggle/c/os/stacktrace.h"
+#endif
 
 muggle_log_category_t g_log_default_category = {
 	{NULL}, 0, MUGGLE_LOG_LEVEL_FATAL + 1
@@ -39,6 +42,7 @@ void muggle_log_function(
 #if MUGGLE_DEBUG
 	if (arg->level >= MUGGLE_LOG_LEVEL_FATAL)
 	{
+		muggle_print_stacktrace();
 #if MUGGLE_PLATFORM_WINDOWS
 		__debugbreak();
 #endif

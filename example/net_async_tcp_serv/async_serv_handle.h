@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_TIME_CLIENT_HANDLE_H_
-#define EXAMPLE_TIME_CLIENT_HANDLE_H_
+#ifndef EXAMPLE_ASYNC_TCP_SERV_HANDLE_H_
+#define EXAMPLE_ASYNC_TCP_SERV_HANDLE_H_
 
 #include "muggle/c/muggle_c.h"
 

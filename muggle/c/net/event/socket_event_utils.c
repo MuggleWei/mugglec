@@ -1,37 +1,18 @@
+/*
+ *	author: muggle wei <mugglewei@gmail.com>
+ *
+ *	Use of this source code is governed by the MIT license that can be
+ *	found in the LICENSE file.
+ */
+
 #include "socket_event_utils.h"
+#include "muggle/c/log/log.h"
 
-static inline void muggle_socket_event_on_message_error(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
-{
-	if (ev->on_error)
-	{
-		if (ev->on_error(ev, peer) == 0)
-		{
-			muggle_socket_close(peer->fd);
-		}
-	}
-	else
-	{
-		muggle_socket_close(peer->fd);
-	}
-}
-
-int muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
+void muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
 {
 	if (ev->on_message)
 	{
-		int ret = ev->on_message(ev, peer);
-		if (ret == 0)
-		{
-			return 0;
-		}
-		else
-		{
-			if (ret == MUGGLE_SOCKET_EV_CLOSE_SOCKET)
-			{
-				muggle_socket_event_on_message_error(ev, peer);
-			}
-			return MUGGLE_SOCKET_USER_CLOSE_SOCKET;
-		}
+		ev->on_message(ev, peer);
 	}
 	else
 	{
@@ -39,34 +20,13 @@ int muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer
 		int n;
 		while (1)
 		{
-			n = recv(peer->fd, buf, sizeof(buf), 0);
-			if (n > 0)
+			n = muggle_socket_peer_recv(peer, buf, sizeof(buf), 0);
+			if (n <= 0)
 			{
-				continue;
-			}
-			else if (n < 0)
-			{
-				if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
-				{
-					continue;
-				}
-				else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
-				{
-					break;
-				}
-
-				muggle_socket_event_on_message_error(ev, peer);
-				return MUGGLE_SOCKET_USER_CLOSE_SOCKET;
-			}
-			else
-			{
-				muggle_socket_event_on_message_error(ev, peer);
-				return MUGGLE_SOCKET_USER_CLOSE_SOCKET;
+				break;
 			}
 		}
 	}
-
-	return 0;
 }
 
 void muggle_socket_event_timer_handle(muggle_socket_event_t *ev, struct timespec *t1, struct timespec *t2)
@@ -83,5 +43,82 @@ void muggle_socket_event_timer_handle(muggle_socket_event_t *ev, struct timespec
 		}
 		t1->tv_sec = t2->tv_sec;
 		t1->tv_nsec = t2->tv_nsec;
+	}
+}
+
+void muggle_socket_event_accept(muggle_socket_peer_t *listen_peer, muggle_socket_peer_t *peer)
+{
+	while (1)
+	{
+		peer->addr_len = sizeof(peer->addr);
+		peer->fd = accept(listen_peer->fd, (struct sockaddr*)&peer->addr, &peer->addr_len);
+		if (peer->fd == MUGGLE_INVALID_SOCKET)
+		{
+			if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+			{
+				continue;
+			}
+			else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
+			{
+				break;
+			}
+			else
+			{
+				char err_msg[1024];
+				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+				MUGGLE_LOG_TRACE("failed accept - %s", err_msg);
+
+				// close listen socket
+				muggle_socket_peer_close(listen_peer);
+				break;
+			}
+		}
+
+		peer->ref_cnt = 1;
+		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_TCP_PEER;
+		peer->status = MUGGLE_SOCKET_PEER_STATUS_ACTIVE;
+
+		// set socket nonblock
+		muggle_socket_set_nonblock(peer->fd, 1);
+
+		break;
+	}
+}
+
+void muggle_socket_event_refuse_accept(muggle_socket_peer_t *listen_peer)
+{
+	struct sockaddr_storage addr;
+	muggle_socklen_t addr_len;
+	while (1)
+	{
+		addr_len = sizeof(addr);
+		muggle_socket_t fd = accept(listen_peer->fd, (struct sockaddr*)&addr, &addr_len);
+		if (fd == MUGGLE_INVALID_SOCKET)
+		{
+			if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+			{
+				continue;
+			}
+			else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
+			{
+				return;
+			}
+
+			char err_msg[1024];
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_LOG_TRACE("failed accept - %s", err_msg);
+
+			muggle_socket_peer_close(listen_peer);
+		}
+		else
+		{
+			char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
+			if (muggle_socket_ntop((struct sockaddr*)&addr, straddr, sizeof(straddr), 0) == NULL)
+			{
+				snprintf(straddr, sizeof(straddr), "unknown:unknown");
+			}
+			MUGGLE_LOG_WARNING("refuse connection %s - number of connection reached the upper limit", straddr);
+			muggle_socket_close(fd);
+		}
 	}
 }

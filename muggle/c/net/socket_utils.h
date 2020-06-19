@@ -9,27 +9,9 @@
 #define MUGGLE_C_SOCKET_UTILS_H_
 
 #include "muggle/c/net/socket.h"
+#include "muggle/c/net/socket_peer.h"
 
 EXTERN_C_BEGIN
-
-enum
-{
-	MUGGLE_SOCKET_PEER_TYPE_NULL = 0,
-	MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN,
-	MUGGLE_SOCKET_PEER_TYPE_TCP_PEER,
-	MUGGLE_SOCKET_PEER_TYPE_UDP_PEER,
-	MUGGLE_SOCKET_PEER_TYPE_MAX,
-};
-
-// socket peer
-typedef struct muggle_socket_peer
-{
-	muggle_socket_t         fd;
-	int                     peer_type; // MUGGLE_SOCKET_PEER_TYPE_*
-	struct sockaddr_storage addr;
-	muggle_socklen_t        addr_len;
-	void                    *data;
-}muggle_socket_peer_t;
 
 /*
  * convert sockaddr to presentation string

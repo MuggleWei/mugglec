@@ -1,3 +1,10 @@
+/*
+ *	author: muggle wei <mugglewei@gmail.com>
+ *
+ *	Use of this source code is governed by the MIT license that can be
+ *	found in the LICENSE file.
+ */
+
 #include "socket_utils.h"
 #include <string.h>
 #include "muggle/c/log/log.h"
@@ -175,10 +182,9 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 	// set peer
 	if (peer)
 	{
-		peer->fd = listen_socket;
-		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN;
-		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
-		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
+		muggle_socket_peer_init(
+			peer, listen_socket, MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN, 
+			res->ai_addr, (muggle_socklen_t)res->ai_addrlen);
 	}
 
 	freeaddrinfo(ressave);
@@ -264,10 +270,9 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
 	// set peer
 	if (peer)
 	{
-		peer->fd = client;
-		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_TCP_PEER;
-		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
-		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
+		muggle_socket_peer_init(
+			peer, client, MUGGLE_SOCKET_PEER_TYPE_TCP_PEER,
+			res->ai_addr, (muggle_socklen_t)res->ai_addrlen);
 	}
 
     freeaddrinfo(ressave);
@@ -427,10 +432,9 @@ muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socke
 	// set peer
 	if (peer)
 	{
-		peer->fd = udp_socket;
-		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
-		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
-		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
+		muggle_socket_peer_init(
+			peer, udp_socket, MUGGLE_SOCKET_PEER_TYPE_UDP_PEER,
+			res->ai_addr, (muggle_socklen_t)res->ai_addrlen);
 	}
 
 	freeaddrinfo(ressave);
@@ -491,10 +495,9 @@ muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_so
 	// set peer
 	if (peer)
 	{
-		peer->fd = udp_socket;
-		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
-		memcpy(&peer->addr, res->ai_addr, res->ai_addrlen);
-		peer->addr_len = (muggle_socklen_t)res->ai_addrlen;
+		muggle_socket_peer_init(
+			peer, udp_socket, MUGGLE_SOCKET_PEER_TYPE_UDP_PEER,
+			res->ai_addr, (muggle_socklen_t)res->ai_addrlen);
 	}
 
 	freeaddrinfo(ressave);
@@ -756,10 +759,9 @@ muggle_socket_t muggle_mcast_join(
 	// set peer
 	if (peer)
 	{
-		peer->fd = fd;
-		peer->peer_type = MUGGLE_SOCKET_PEER_TYPE_UDP_PEER;
-		memcpy(&peer->addr, bind_addrinfo->ai_addr, bind_addrinfo->ai_addrlen);
-		peer->addr_len = (muggle_socklen_t)bind_addrinfo->ai_addrlen;
+		muggle_socket_peer_init(
+			peer, fd, MUGGLE_SOCKET_PEER_TYPE_UDP_PEER,
+			bind_addrinfo->ai_addr, (muggle_socklen_t)bind_addrinfo->ai_addrlen);
 	}
 
 	return fd;

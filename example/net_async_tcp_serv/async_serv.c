@@ -1,4 +1,4 @@
-#include "echo_serv_handle.h"
+#include "async_serv_handle.h"
 
 int get_event_loop_type(const char *str_loop_type)
 {
@@ -60,23 +60,12 @@ int main(int argc, char *argv[])
 	const char *host = argv[1];
 	const char *serv = argv[2];
 
-	// peers
-	int cnt_peer = 2;
-	muggle_socket_peer_t peers[2];
-
 	// create tcp listen socket
-	peers[0].fd = muggle_tcp_listen(host, serv, 512, &peers[0]);
-	if (peers[0].fd == MUGGLE_INVALID_SOCKET)
+	muggle_socket_peer_t peer;
+	peer.fd = muggle_tcp_listen(host, serv, 512, &peer);
+	if (peer.fd == MUGGLE_INVALID_SOCKET)
 	{
 		MUGGLE_LOG_ERROR("failed create tcp listen for %s:%s", host, serv);
-		exit(EXIT_FAILURE);
-	}
-
-	// create udp bind socket
-	peers[1].fd = muggle_udp_bind(host, serv, &peers[1]);
-	if (peers[1].fd == MUGGLE_INVALID_SOCKET)
-	{
-		MUGGLE_LOG_ERROR("failed create udp bind for %s:%s", host, serv);
 		exit(EXIT_FAILURE);
 	}
 
@@ -88,19 +77,15 @@ int main(int argc, char *argv[])
 	}
 
 	// fill up event loop input arguments
-	const char *hello = "hello echo service";
 	muggle_socket_event_init_arg_t ev_init_arg;
 	memset(&ev_init_arg, 0, sizeof(ev_init_arg));
 	ev_init_arg.ev_loop_type = event_loop_type;
 	ev_init_arg.hints_max_peer = 1024;
-	ev_init_arg.cnt_peer = cnt_peer;
-	ev_init_arg.peers = peers;
-	ev_init_arg.timeout_ms = 5000;
-	ev_init_arg.datas = (void*)hello;
-	ev_init_arg.on_connect = on_connect;
-	ev_init_arg.on_error = on_error;
+	ev_init_arg.cnt_peer = 1;
+	ev_init_arg.peers = &peer;
+	ev_init_arg.timeout_ms = -1;
+	ev_init_arg.datas = NULL;
 	ev_init_arg.on_message = on_message;
-	ev_init_arg.on_timer = on_timer;
 
 	// event loop
 	muggle_socket_event_loop(&ev_init_arg);

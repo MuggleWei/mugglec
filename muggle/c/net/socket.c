@@ -1,3 +1,10 @@
+/*
+ *	author: muggle wei <mugglewei@gmail.com>
+ *
+ *	Use of this source code is governed by the MIT license that can be
+ *	found in the LICENSE file.
+ */
+
 #include "socket.h"
 #include <string.h>
 
@@ -7,6 +14,8 @@ int muggle_socket_lib_init()
 	WSADATA wsaData;
 	return WSAStartup(MAKEWORD(2, 2), &wsaData);
 #else
+	// ignore PIPE
+	signal(SIGPIPE, SIG_IGN);
 	return 0;
 #endif
 }
