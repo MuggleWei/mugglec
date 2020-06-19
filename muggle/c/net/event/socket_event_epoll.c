@@ -60,7 +60,24 @@ static void muggle_socket_event_epoll_listen(
 			muggle_socket_event_memmgr_recycle(mem_mgr, node);
 			continue;
 		}
+		++(*cnt_fd);
 
+		// notify user
+		if (ev->on_connect)
+		{
+			ev->on_connect(ev, listen_peer, &node->peer);
+		}
+
+#if MUGGLE_ENABLE_TRACE
+		char debug_buf[4096];
+		int debug_offset = 0;
+		debug_offset = snprintf(debug_buf, sizeof(debug_buf) - debug_offset, "active list | ");
+		muggle_socket_event_memmgr_debug_print(mem_mgr->active_head.next, debug_buf, debug_offset, sizeof(debug_buf));
+
+		debug_offset = 0;
+		debug_offset = snprintf(debug_buf, sizeof(debug_buf) - debug_offset, "recycle list | ");
+		muggle_socket_event_memmgr_debug_print(mem_mgr->recycle_head.next, debug_buf, debug_offset, sizeof(debug_buf));
+#endif
 	}
 }
 

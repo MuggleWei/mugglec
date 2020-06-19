@@ -51,7 +51,6 @@ static void muggle_socket_event_select_listen(
 			ev->on_connect(ev, listen_peer, &node->peer);
 		}
 
-
 #if MUGGLE_ENABLE_TRACE
 		char debug_buf[4096];
 		int debug_offset = 0;

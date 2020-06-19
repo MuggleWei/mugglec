@@ -52,7 +52,6 @@ static void muggle_socket_event_poll_listen(
 		fds[*cnt_fd].events = POLLIN;
 		++(*cnt_fd);
 
-
 		// notify user
 		if (ev->on_connect)
 		{
