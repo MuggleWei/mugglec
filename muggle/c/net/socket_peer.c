@@ -6,6 +6,7 @@
  */
 
 #include "socket_peer.h"
+#include <string.h>
 #include "muggle/c/log/log.h"
 #include "socket_utils.h"
 

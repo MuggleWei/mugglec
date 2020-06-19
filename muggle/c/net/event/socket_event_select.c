@@ -41,7 +41,7 @@ static void muggle_socket_event_select_listen(
 #if !MUGGLE_PLATFORM_WINDOWS
 		if (node->peer.fd > *nfds)
 		{
-			*nfds = new_node->peer.fd;
+			*nfds = node->peer.fd;
 		}
 #endif
 

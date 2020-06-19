@@ -47,6 +47,7 @@ static void muggle_socket_event_poll_listen(
 
 		// add new connection socket into nodes
 		p_nodes[*cnt_fd] = node;
+		memset(&fds[*cnt_fd], 0, sizeof(struct pollfd));
 		fds[*cnt_fd].fd = node->peer.fd;
 		fds[*cnt_fd].events = POLLIN;
 		++(*cnt_fd);
