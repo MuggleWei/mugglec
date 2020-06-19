@@ -57,11 +57,6 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-#if !MUGGLE_PLATFORM_WINDOWS
-	// ignore PIPE
-	signal(SIGPIPE, SIG_IGN);
-#endif
-
 	const char *host = argv[1];
 	const char *serv = argv[2];
 
@@ -94,21 +89,21 @@ int main(int argc, char *argv[])
 
 	// fill up event loop input arguments
 	const char *hello = "hello echo service";
-	muggle_socket_ev_arg_t ev_arg;
-	memset(&ev_arg, 0, sizeof(ev_arg));
-	ev_arg.ev_loop_type = event_loop_type;
-	ev_arg.hints_max_peer = 1024;
-	ev_arg.cnt_peer = cnt_peer;
-	ev_arg.peers = peers;
-	ev_arg.timeout_ms = 5000;
-	ev_arg.datas = (void*)hello;
-	ev_arg.on_connect = on_connect;
-	ev_arg.on_error = on_error;
-	ev_arg.on_message = on_message;
-	ev_arg.on_timer = on_timer;
+	muggle_socket_event_init_arg_t ev_init_arg;
+	memset(&ev_init_arg, 0, sizeof(ev_init_arg));
+	ev_init_arg.ev_loop_type = event_loop_type;
+	ev_init_arg.hints_max_peer = 1024;
+	ev_init_arg.cnt_peer = cnt_peer;
+	ev_init_arg.peers = peers;
+	ev_init_arg.timeout_ms = 5000;
+	ev_init_arg.datas = (void*)hello;
+	ev_init_arg.on_connect = on_connect;
+	ev_init_arg.on_error = on_error;
+	ev_init_arg.on_message = on_message;
+	ev_init_arg.on_timer = on_timer;
 
 	// event loop
-	muggle_socket_event_loop(&ev_arg);
+	muggle_socket_event_loop(&ev_init_arg);
 
 	return 0;
 }

@@ -69,16 +69,16 @@ void muggle_socket_event_memmgr_remove_node(muggle_socket_peer_list_node_t *node
 }
 
 int muggle_socket_event_memmgr_init(
-	muggle_socket_event_t *ev, muggle_socket_ev_arg_t *ev_arg, muggle_socket_event_memmgr_t *mgr)
+	muggle_socket_event_t *ev, muggle_socket_event_init_arg_t *ev_init_arg, muggle_socket_event_memmgr_t *mgr)
 {
 	// fixed size pool for peers
 	if (!muggle_memory_pool_init(&mgr->peer_pool, ev->capacity, sizeof(muggle_socket_peer_list_node_t)))
 	{
 		MUGGLE_LOG_ERROR("failed init memory pool for capacity: %d, unit size: %d",
 			ev->capacity, sizeof(muggle_socket_peer_list_node_t));
-		for (int i = 0; i < ev_arg->cnt_peer; ++i)
+		for (int i = 0; i < ev_init_arg->cnt_peer; ++i)
 		{
-			muggle_socket_close(ev_arg[i].peers->fd);
+			muggle_socket_close(ev_init_arg[i].peers->fd);
 		}
 		return -1;
 	}
@@ -91,21 +91,21 @@ int muggle_socket_event_memmgr_init(
 	mgr->recycle_head.next = NULL;
 
 	// put input peers into active list
-	for (int i = 0; i < ev_arg->cnt_peer; ++i)
+	for (int i = 0; i < ev_init_arg->cnt_peer; ++i)
 	{
 		muggle_socket_peer_list_node_t* node = (muggle_socket_peer_list_node_t*)muggle_memory_pool_alloc(&mgr->peer_pool);
 		if (node == NULL)
 		{
 			MUGGLE_ASSERT(node != NULL);
 			muggle_memory_pool_destroy(&mgr->peer_pool);
-			for (int j = 0; j < ev_arg->cnt_peer; ++j)
+			for (int j = 0; j < ev_init_arg->cnt_peer; ++j)
 			{
-				muggle_socket_close(ev_arg[j].peers->fd);
+				muggle_socket_close(ev_init_arg[j].peers->fd);
 			}
 			return -1;
 		}
 
-		memcpy(&node->peer, &ev_arg->peers[i], sizeof(muggle_socket_peer_t));
+		memcpy(&node->peer, &ev_init_arg->peers[i], sizeof(muggle_socket_peer_t));
 		muggle_socket_set_nonblock(node->peer.fd, 1);
 		node->peer.status = MUGGLE_SOCKET_PEER_STATUS_ACTIVE;
 

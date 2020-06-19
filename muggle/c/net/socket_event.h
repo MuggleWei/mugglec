@@ -50,7 +50,7 @@ typedef struct muggle_socket_event
 }muggle_socket_event_t;
 
 // socket event loop input arguments
-typedef struct muggle_socket_ev_arg
+typedef struct muggle_socket_event_init_arg
 {
 	int                  ev_loop_type;   // event loop type, MUGGLE_SOCKET_EVENT_LOOP_TYPE_*
 	int                  hints_max_peer; // hints max peer in the event loop
@@ -64,7 +64,7 @@ typedef struct muggle_socket_ev_arg
 	muggle_socket_event_error   on_error;
 	muggle_socket_event_message on_message;
 	muggle_socket_event_timer   on_timer;
-}muggle_socket_ev_arg_t;
+}muggle_socket_event_init_arg_t;
 
 /*
  * monitor multiple socket descriptiors, waiting util one or
@@ -72,7 +72,7 @@ typedef struct muggle_socket_ev_arg
  * RETURN: 0 - exit normally, otherwise failed init
  * */
 MUGGLE_CC_EXPORT
-int muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg);
+int muggle_socket_event_loop(muggle_socket_event_init_arg_t *ev_init_arg);
 
 /*
  * exit event loop 

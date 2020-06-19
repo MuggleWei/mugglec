@@ -71,13 +71,13 @@ static void muggle_socket_event_poll_listen(
 	}
 }
 
-void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t *ev_arg)
+void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_event_init_arg_t *ev_init_arg)
 {
 	MUGGLE_LOG_TRACE("socket event poll run...");
 
 	// init memory manager
 	muggle_socket_event_memmgr_t mem_mgr;
-	if (muggle_socket_event_memmgr_init(ev, ev_arg, &mem_mgr) != 0)
+	if (muggle_socket_event_memmgr_init(ev, ev_init_arg, &mem_mgr) != 0)
 	{
 		return;
 	}
@@ -120,7 +120,7 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_ev_arg_t 
 	}
 
 	// set timeout
-	int timeout = ev_arg->timeout_ms;
+	int timeout = ev_init_arg->timeout_ms;
 
 	struct timespec t1, t2;
 	if (ev->timeout_ms > 0)

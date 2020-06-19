@@ -45,7 +45,7 @@ void muggle_socket_event_memmgr_remove_node(muggle_socket_peer_list_node_t *node
  * RETURN: 0 - success, otherwise failed init
  * */
 int muggle_socket_event_memmgr_init(
-	muggle_socket_event_t *ev, muggle_socket_ev_arg_t *ev_arg, muggle_socket_event_memmgr_t *mgr);
+	muggle_socket_event_t *ev, muggle_socket_event_init_arg_t *ev_init_arg, muggle_socket_event_memmgr_t *mgr);
 
 /*
  * allocate socket peer list node

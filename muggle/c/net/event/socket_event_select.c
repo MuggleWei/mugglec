@@ -64,13 +64,13 @@ static void muggle_socket_event_select_listen(
 	}
 }
 
-void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_ev_arg_t *ev_arg)
+void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_event_init_arg_t *ev_init_arg)
 {
 	MUGGLE_LOG_TRACE("socket event select run...");
 
 	// init memory manager
 	muggle_socket_event_memmgr_t mem_mgr;
-	if (muggle_socket_event_memmgr_init(ev, ev_arg, &mem_mgr) != 0)
+	if (muggle_socket_event_memmgr_init(ev, ev_init_arg, &mem_mgr) != 0)
 	{
 		return;
 	}

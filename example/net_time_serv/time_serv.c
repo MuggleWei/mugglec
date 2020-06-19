@@ -20,11 +20,6 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-#if !MUGGLE_PLATFORM_WINDOWS
-	// ignore PIPE
-	signal(SIGPIPE, SIG_IGN);
-#endif
-
 	const char *host = argv[1];
 	const char *serv = argv[2];
 	const char *multicast_host = NULL;
@@ -63,28 +58,22 @@ int main(int argc, char *argv[])
 	container.max_peer = max_peer;
 	container.cnt_peer = 0;
 
-	// fill up event loop input arguments
-#if MUGGLE_PLATFORM_LINUX
-	int event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL;
-#else
-	int event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT;
-#endif
-
-	muggle_socket_ev_arg_t ev_arg;
-	memset(&ev_arg, 0, sizeof(ev_arg));
-	ev_arg.ev_loop_type = event_loop_type;
-	ev_arg.hints_max_peer = max_peer;
-	ev_arg.cnt_peer = 1;
-	ev_arg.peers = &listen_peer;
-	ev_arg.timeout_ms = 1000;
-	ev_arg.datas = (void*)&container;
-	ev_arg.on_connect = on_connect;
-	ev_arg.on_error = on_error;
-	ev_arg.on_message = NULL;
-	ev_arg.on_timer = on_timer;
+	// event init arguments
+	muggle_socket_event_init_arg_t ev_init_arg;
+	memset(&ev_init_arg, 0, sizeof(ev_init_arg));
+	ev_init_arg.ev_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_NULL;
+	ev_init_arg.hints_max_peer = max_peer;
+	ev_init_arg.cnt_peer = 1;
+	ev_init_arg.peers = &listen_peer;
+	ev_init_arg.timeout_ms = 1000;
+	ev_init_arg.datas = (void*)&container;
+	ev_init_arg.on_connect = on_connect;
+	ev_init_arg.on_error = on_error;
+	ev_init_arg.on_message = NULL;
+	ev_init_arg.on_timer = on_timer;
 
 	// event loop
-	muggle_socket_event_loop(&ev_arg);
+	muggle_socket_event_loop(&ev_init_arg);
 
 	// clear
 	if (p_udp_peer)

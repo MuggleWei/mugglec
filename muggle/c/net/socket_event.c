@@ -58,15 +58,15 @@ static int muggle_get_event_loop_type(int event_loop_type)
  * init socket event input arguments
  * RETURN: 0 - success, otherwise failed
  * */
-static int muggle_socket_ev_arg_init(muggle_socket_event_t *ev, muggle_socket_ev_arg_t *ev_arg)
+static int muggle_socket_ev_arg_init(muggle_socket_event_t *ev, muggle_socket_event_init_arg_t *ev_init_arg)
 {
 	memset(ev, 0, sizeof(ev));
 
 	// set event loop type
-	ev->ev_loop_type = muggle_get_event_loop_type(ev_arg->ev_loop_type);
+	ev->ev_loop_type = muggle_get_event_loop_type(ev_init_arg->ev_loop_type);
 
 	// set capacity
-	int capacity = ev_arg->hints_max_peer;
+	int capacity = ev_init_arg->hints_max_peer;
 	if (ev->ev_loop_type == MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT)
 	{
 		if (capacity <= 0 || capacity > FD_SETSIZE)
@@ -81,35 +81,35 @@ static int muggle_socket_ev_arg_init(muggle_socket_event_t *ev, muggle_socket_ev
 			capacity = 1024;
 		}
 	}
-	if (capacity < ev_arg->cnt_peer)
+	if (capacity < ev_init_arg->cnt_peer)
 	{
 		MUGGLE_LOG_ERROR("capacity space not enough for all peers");
-		for (int i = 0; i < ev_arg->cnt_peer; ++i)
+		for (int i = 0; i < ev_init_arg->cnt_peer; ++i)
 		{
-			muggle_socket_close(ev_arg[i].peers->fd);
+			muggle_socket_close(ev_init_arg[i].peers->fd);
 		}
 		return -1;
 	}
 	ev->capacity = capacity;
 
 	// set timeout
-	if (ev_arg->timeout_ms < 0)
+	if (ev_init_arg->timeout_ms < 0)
 	{
 		ev->timeout_ms = -1;
 	}
 	else
 	{
-		ev->timeout_ms = ev_arg->timeout_ms;
+		ev->timeout_ms = ev_init_arg->timeout_ms;
 	}
 
 	ev->to_exit = 0;
-	ev->datas = ev_arg->datas;
+	ev->datas = ev_init_arg->datas;
 
 	// set callbacks
-	ev->on_connect = ev_arg->on_connect;
-	ev->on_error = ev_arg->on_error;
-	ev->on_message = ev_arg->on_message;
-	ev->on_timer = ev_arg->on_timer;
+	ev->on_connect = ev_init_arg->on_connect;
+	ev->on_error = ev_init_arg->on_error;
+	ev->on_message = ev_init_arg->on_message;
+	ev->on_timer = ev_init_arg->on_timer;
 
 	return 0;
 }
@@ -117,7 +117,7 @@ static int muggle_socket_ev_arg_init(muggle_socket_event_t *ev, muggle_socket_ev
 /*
  * event loop run
  * */
-static int muggle_socket_event_loop_run(muggle_socket_event_t *ev, muggle_socket_ev_arg_t *ev_arg)
+static int muggle_socket_event_loop_run(muggle_socket_event_t *ev, muggle_socket_event_init_arg_t *ev_init_arg)
 {
 	int ret = 0;
 	switch (ev->ev_loop_type)
@@ -129,16 +129,16 @@ static int muggle_socket_event_loop_run(muggle_socket_event_t *ev, muggle_socket
 	}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT:
 	{
-		muggle_socket_event_select(ev, ev_arg);
+		muggle_socket_event_select(ev, ev_init_arg);
 	}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_POLL:
 	{
-		muggle_socket_event_poll(ev, ev_arg);
+		muggle_socket_event_poll(ev, ev_init_arg);
 	}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL:
 	{
 #if MUGGLE_PLATFORM_LINUX
-		muggle_socket_event_epoll(ev, ev_arg);
+		muggle_socket_event_epoll(ev, ev_init_arg);
 #else
 		MUGGLE_LOG_ERROR("epoll event loop support linux only");
 		ret = -1;
@@ -174,21 +174,21 @@ static int muggle_socket_event_loop_run(muggle_socket_event_t *ev, muggle_socket
 	return ret;
 }
 
-int muggle_socket_event_loop(muggle_socket_ev_arg_t *ev_arg)
+int muggle_socket_event_loop(muggle_socket_event_init_arg_t *ev_init_arg)
 {
 	muggle_socket_event_t ev;
-	int ret = muggle_socket_ev_arg_init(&ev, ev_arg);
+	int ret = muggle_socket_ev_arg_init(&ev, ev_init_arg);
 	if (ret != 0)
 	{
 		MUGGLE_LOG_ERROR("failed init socket event loop");
-		for (int i = 0; i < ev_arg->cnt_peer; ++i)
+		for (int i = 0; i < ev_init_arg->cnt_peer; ++i)
 		{
-			muggle_socket_close(ev_arg->peers[i].fd);
+			muggle_socket_close(ev_init_arg->peers[i].fd);
 		}
 		return ret;
 	}
 
-	return muggle_socket_event_loop_run(&ev, ev_arg);
+	return muggle_socket_event_loop_run(&ev, ev_init_arg);
 }
 
 void muggle_socket_event_loop_exit(muggle_socket_event_t *ev)

@@ -14,6 +14,8 @@ int muggle_socket_lib_init()
 	WSADATA wsaData;
 	return WSAStartup(MAKEWORD(2, 2), &wsaData);
 #else
+	// ignore PIPE
+	signal(SIGPIPE, SIG_IGN);
 	return 0;
 #endif
 }
