@@ -8,6 +8,8 @@ void on_connect(
 
 void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
 
+void on_close(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
+
 void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
 
 void on_timer(struct muggle_socket_event *ev);

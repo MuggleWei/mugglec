@@ -18,7 +18,13 @@ void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 	if (peer->data)
 	{
 		MUGGLE_LOG_INFO("disconnect - %s", (char*)peer->data);
+	}
+}
 
+void on_close(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
+{
+	if (peer->data)
+	{
 		free(peer->data);
 		peer->data = NULL;
 	}

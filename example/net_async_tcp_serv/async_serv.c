@@ -85,6 +85,8 @@ int main(int argc, char *argv[])
 	ev_init_arg.peers = &peer;
 	ev_init_arg.timeout_ms = -1;
 	ev_init_arg.datas = NULL;
+	ev_init_arg.on_error = on_error;
+	ev_init_arg.on_close = on_close;
 	ev_init_arg.on_message = on_message;
 
 	// event loop

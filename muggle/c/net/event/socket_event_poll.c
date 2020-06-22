@@ -53,6 +53,7 @@ static void muggle_socket_event_poll_listen(
 		++(*cnt_fd);
 
 		// notify user
+		node->peer.ev = ev;
 		if (ev->on_connect)
 		{
 			ev->on_connect(ev, listen_peer, &node->peer);

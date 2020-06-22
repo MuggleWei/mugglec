@@ -46,6 +46,7 @@ static void muggle_socket_event_select_listen(
 #endif
 
 		// notify user
+		node->peer.ev = ev;
 		if (ev->on_connect)
 		{
 			ev->on_connect(ev, listen_peer, &node->peer);

@@ -28,6 +28,8 @@ enum
 	MUGGLE_SOCKET_PEER_STATUS_CLOSED = 1,
 };
 
+struct muggle_socket_event;
+
 /*
  * socket peer
  * usage tip:
@@ -46,6 +48,7 @@ typedef struct muggle_socket_peer
 	struct sockaddr_storage addr;
 	muggle_socklen_t        addr_len;
 	void                    *data;
+	struct muggle_socket_event *ev;
 }muggle_socket_peer_t;
 
 /*

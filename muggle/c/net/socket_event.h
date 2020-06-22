@@ -33,6 +33,7 @@ typedef void (*muggle_socket_event_connect)(struct muggle_socket_event *ev, stru
 typedef void (*muggle_socket_event_error)(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
 typedef void (*muggle_socket_event_message)(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
 typedef void (*muggle_socket_event_timer)(struct muggle_socket_event *ev);
+typedef void (*muggle_socket_event_close)(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
 
 // socket event loop handle
 typedef struct muggle_socket_event
@@ -45,6 +46,7 @@ typedef struct muggle_socket_event
 
 	muggle_socket_event_connect on_connect;
 	muggle_socket_event_error   on_error;
+	muggle_socket_event_close   on_close;
 	muggle_socket_event_message on_message;
 	muggle_socket_event_timer   on_timer;
 }muggle_socket_event_t;
@@ -60,10 +62,11 @@ typedef struct muggle_socket_event_init_arg
 	void                 *datas;         // user custom data
 
 	// event callbacks
-	muggle_socket_event_connect on_connect;
-	muggle_socket_event_error   on_error;
-	muggle_socket_event_message on_message;
-	muggle_socket_event_timer   on_timer;
+	muggle_socket_event_connect on_connect; // on socket peer connect
+	muggle_socket_event_error   on_error;   // on socket disconnect
+	muggle_socket_event_close   on_close;   // free peer soon, safe to free peer->data
+	muggle_socket_event_message on_message; // on peer message
+	muggle_socket_event_timer   on_timer;   // on timer
 }muggle_socket_event_init_arg_t;
 
 /*

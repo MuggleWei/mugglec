@@ -99,6 +99,7 @@ int main(int argc, char *argv[])
 	ev_init_arg.datas = (void*)hello;
 	ev_init_arg.on_connect = on_connect;
 	ev_init_arg.on_error = on_error;
+	ev_init_arg.on_close = on_close;
 	ev_init_arg.on_message = on_message;
 	ev_init_arg.on_timer = on_timer;
 

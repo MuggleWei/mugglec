@@ -9,6 +9,7 @@
 #include <string.h>
 #include "muggle/c/log/log.h"
 #include "socket_utils.h"
+#include "socket_event.h"
 
 void muggle_socket_peer_init(
 	muggle_socket_peer_t *peer, muggle_socket_t fd,
@@ -26,6 +27,7 @@ void muggle_socket_peer_init(
 		peer->addr_len = addr_len;
 	}
 	peer->data = NULL;
+	peer->ev = NULL;
 }
 
 int muggle_socket_peer_retain(muggle_socket_peer_t *peer)
@@ -85,8 +87,13 @@ int muggle_socket_peer_release(muggle_socket_peer_t *peer)
 		MUGGLE_DEBUG_INFO("close socket %d[%s]", peer->fd, straddr);
 #endif
 #endif
+		if (peer->ev)
+		{
+			peer->ev->on_close(peer->ev, peer);
+		}
+
 		muggle_socket_close(peer->fd);
-		peer->fd = 0;
+		peer->fd = MUGGLE_INVALID_SOCKET;
 	}
 
 	return desired;

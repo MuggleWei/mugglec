@@ -108,6 +108,7 @@ static int muggle_socket_ev_arg_init(muggle_socket_event_t *ev, muggle_socket_ev
 	// set callbacks
 	ev->on_connect = ev_init_arg->on_connect;
 	ev->on_error = ev_init_arg->on_error;
+	ev->on_close = ev_init_arg->on_close;
 	ev->on_message = ev_init_arg->on_message;
 	ev->on_timer = ev_init_arg->on_timer;
 
