@@ -125,17 +125,26 @@ int muggle_socket_peer_recvfrom(
 		{
 			if (n < 0)
 			{
-				if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+				int last_errno = MUGGLE_SOCKET_LAST_ERRNO;
+				if (last_errno == MUGGLE_SYS_ERRNO_INTR)
 				{
 					continue;
 				}
-				else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
+				else if (last_errno == MUGGLE_SYS_ERRNO_WOULDBLOCK)
 				{
 					break;
 				}
+
+				muggle_socket_peer_close(peer);
+			}
+			else if (n == 0)
+			{
+				if (peer->peer_type == MUGGLE_SOCKET_PEER_TYPE_TCP_PEER)
+				{
+					muggle_socket_peer_close(peer);
+				}
 			}
 
-			muggle_socket_peer_close(peer);
 			break;
 		}
 	}
