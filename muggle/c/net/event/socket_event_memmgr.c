@@ -76,10 +76,6 @@ int muggle_socket_event_memmgr_init(
 	{
 		MUGGLE_LOG_ERROR("failed init memory pool for capacity: %d, unit size: %d",
 			ev->capacity, sizeof(muggle_socket_peer_list_node_t));
-		for (int i = 0; i < ev_init_arg->cnt_peer; ++i)
-		{
-			muggle_socket_close(ev_init_arg[i].peers->fd);
-		}
 		return -1;
 	}
 	muggle_memory_pool_set_flag(&mgr->peer_pool, MUGGLE_MEMORY_POOL_CONSTANT_SIZE);
@@ -98,18 +94,21 @@ int muggle_socket_event_memmgr_init(
 		{
 			MUGGLE_ASSERT(node != NULL);
 			muggle_memory_pool_destroy(&mgr->peer_pool);
-			for (int j = 0; j < ev_init_arg->cnt_peer; ++j)
-			{
-				muggle_socket_close(ev_init_arg[j].peers->fd);
-			}
 			return -1;
 		}
 
 		memcpy(&node->peer, &ev_init_arg->peers[i], sizeof(muggle_socket_peer_t));
+		node->peer.ref_cnt = 1;
 		muggle_socket_set_nonblock(node->peer.fd, 1);
 		node->peer.status = MUGGLE_SOCKET_PEER_STATUS_ACTIVE;
 
 		muggle_socket_event_memmgr_insert_node(&mgr->active_head, node);
+
+		// return peers holds by ev
+		if (ev_init_arg->p_peers)
+		{
+			ev_init_arg->p_peers[i] = &node->peer;
+		}
 	}
 
 	return 0;

@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
 	ev_init_arg.hints_max_peer = max_peer;
 	ev_init_arg.cnt_peer = 1;
 	ev_init_arg.peers = &listen_peer;
+	ev_init_arg.p_peers = NULL;
 	ev_init_arg.timeout_ms = 1000;
 	ev_init_arg.datas = (void*)&container;
 	ev_init_arg.on_connect = on_connect;
@@ -73,7 +74,13 @@ int main(int argc, char *argv[])
 	ev_init_arg.on_timer = on_timer;
 
 	// event loop
-	muggle_socket_event_loop(&ev_init_arg);
+	muggle_socket_event_t ev;
+	if (muggle_socket_event_init(&ev_init_arg, &ev) != 0)
+	{
+		MUGGLE_LOG_ERROR("failed init socket event");
+		exit(EXIT_FAILURE);
+	}
+	muggle_socket_event_loop(&ev);
 
 	// clear
 	if (p_udp_peer)

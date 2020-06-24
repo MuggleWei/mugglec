@@ -65,16 +65,12 @@ static void muggle_socket_event_select_listen(
 	}
 }
 
-void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_event_init_arg_t *ev_init_arg)
+void muggle_socket_event_select(muggle_socket_event_t *ev)
 {
 	MUGGLE_LOG_TRACE("socket event select run...");
 
-	// init memory manager
-	muggle_socket_event_memmgr_t mem_mgr;
-	if (muggle_socket_event_memmgr_init(ev, ev_init_arg, &mem_mgr) != 0)
-	{
-		return;
-	}
+	// get memory manager
+	muggle_socket_event_memmgr_t *p_mem_mgr = (muggle_socket_event_memmgr_t*)ev->mem_mgr;
 
 	// set timeout
 	struct timeval timeout, save_timeout;
@@ -103,7 +99,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_event_i
 	FD_ZERO(&allset);
 	muggle_socket_peer_list_node_t *node = NULL;
 
-	node = muggle_socket_event_memmgr_get_node(&mem_mgr);
+	node = muggle_socket_event_memmgr_get_node(p_mem_mgr);
 	while (node)
 	{
 #if !MUGGLE_PLATFORM_WINDOWS
@@ -129,7 +125,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_event_i
 		int n = select(nfds + 1, &rset, NULL, NULL, p_timeout);
 		if (n > 0)
 		{
-			node = muggle_socket_event_memmgr_get_node(&mem_mgr);
+			node = muggle_socket_event_memmgr_get_node(p_mem_mgr);
 			while (node)
 			{
 				if (FD_ISSET(node->peer.fd, &rset))
@@ -138,7 +134,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_event_i
 					{
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN:
 						{
-							muggle_socket_event_select_listen(ev, &node->peer, &mem_mgr, &allset, &nfds);
+							muggle_socket_event_select_listen(ev, &node->peer, p_mem_mgr, &allset, &nfds);
 						}break;
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_PEER:
 					case MUGGLE_SOCKET_PEER_TYPE_UDP_PEER:
@@ -161,7 +157,7 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_event_i
 						FD_CLR(node->peer.fd, &allset);
 
 						muggle_socket_peer_list_node_t *next_node = node->next;
-						muggle_socket_event_memmgr_recycle(&mem_mgr, node);
+						muggle_socket_event_memmgr_recycle(p_mem_mgr, node);
 						node = next_node;
 					}
 					else
@@ -213,9 +209,6 @@ void muggle_socket_event_select(muggle_socket_event_t *ev, muggle_socket_event_i
 		}
 
 		// recycle node
-		muggle_socket_event_memmgr_clear(&mem_mgr);
+		muggle_socket_event_memmgr_clear(p_mem_mgr);
 	}
-
-	// destroy memory manager
-	muggle_socket_event_memmgr_destroy(&mem_mgr);
 }

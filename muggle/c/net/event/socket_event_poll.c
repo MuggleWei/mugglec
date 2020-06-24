@@ -72,16 +72,12 @@ static void muggle_socket_event_poll_listen(
 	}
 }
 
-void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_event_init_arg_t *ev_init_arg)
+void muggle_socket_event_poll(muggle_socket_event_t *ev)
 {
 	MUGGLE_LOG_TRACE("socket event poll run...");
 
-	// init memory manager
-	muggle_socket_event_memmgr_t mem_mgr;
-	if (muggle_socket_event_memmgr_init(ev, ev_init_arg, &mem_mgr) != 0)
-	{
-		return;
-	}
+	// get memory manager
+	muggle_socket_event_memmgr_t *p_mem_mgr = (muggle_socket_event_memmgr_t*)ev->mem_mgr;
 
 	struct pollfd *fds = (struct pollfd*)malloc(ev->capacity * sizeof(struct pollfd));
 	muggle_socket_peer_list_node_t **p_nodes =
@@ -98,7 +94,7 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_event_ini
 			free(p_nodes);
 		}
 
-		muggle_socket_event_memmgr_destroy(&mem_mgr);
+		muggle_socket_event_memmgr_destroy(p_mem_mgr);
 		return;
 	}
 
@@ -109,7 +105,7 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_event_ini
 	}
 
 	int cnt_fd = 0;
-	muggle_socket_peer_list_node_t *node = muggle_socket_event_memmgr_get_node(&mem_mgr);
+	muggle_socket_peer_list_node_t *node = muggle_socket_event_memmgr_get_node(p_mem_mgr);
 	while (node)
 	{
 		p_nodes[cnt_fd] = node;
@@ -121,7 +117,7 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_event_ini
 	}
 
 	// set timeout
-	int timeout = ev_init_arg->timeout_ms;
+	int timeout = ev->timeout_ms;
 
 	struct timespec t1, t2;
 	if (ev->timeout_ms > 0)
@@ -147,7 +143,7 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_event_ini
 					{
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN:
 						{
-							muggle_socket_event_poll_listen(ev, peer, &mem_mgr, fds, p_nodes, ev->capacity, &cnt_fd);
+							muggle_socket_event_poll_listen(ev, peer, p_mem_mgr, fds, p_nodes, ev->capacity, &cnt_fd);
 						}break;
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_PEER:
 					case MUGGLE_SOCKET_PEER_TYPE_UDP_PEER:
@@ -186,7 +182,7 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_event_ini
 						memcpy(&fds[i], &fds[cnt_fd - 1], sizeof(struct pollfd));
 					}
 
-					muggle_socket_event_memmgr_recycle(&mem_mgr, p_nodes[cnt_fd - 1]);
+					muggle_socket_event_memmgr_recycle(p_mem_mgr, p_nodes[cnt_fd - 1]);
 					p_nodes[cnt_fd - 1] = NULL;
 
 					--cnt_fd;
@@ -231,13 +227,10 @@ void muggle_socket_event_poll(muggle_socket_event_t *ev, muggle_socket_event_ini
 		}
 
 		// recycle node
-		muggle_socket_event_memmgr_clear(&mem_mgr);
+		muggle_socket_event_memmgr_clear(p_mem_mgr);
 	}
 
 	// free memory
 	free(fds);
 	free(p_nodes);
-
-	// destroy memory manager
-	muggle_socket_event_memmgr_destroy(&mem_mgr);
 }

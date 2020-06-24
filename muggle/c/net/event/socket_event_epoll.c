@@ -82,21 +82,17 @@ static void muggle_socket_event_epoll_listen(
 	}
 }
 
-void muggle_socket_event_epoll(muggle_socket_event_t *ev, muggle_socket_event_init_arg_t *ev_init_arg)
+void muggle_socket_event_epoll(muggle_socket_event_t *ev)
 {
 	MUGGLE_LOG_TRACE("socket event epoll run...");
 
-	// init memory manager
-	muggle_socket_event_memmgr_t mem_mgr;
-	if (muggle_socket_event_memmgr_init(ev, ev_init_arg, &mem_mgr) != 0)
-	{
-		return;
-	}
+	// get memory manager
+	muggle_socket_event_memmgr_t *p_mem_mgr = (muggle_socket_event_memmgr_t*)ev->mem_mgr;
 
 	struct epoll_event *ret_epevs = (struct epoll_event*)malloc(ev->capacity * sizeof(struct epoll_event));
 	if (ret_epevs == NULL)
 	{
-		muggle_socket_event_memmgr_destroy(&mem_mgr);
+		muggle_socket_event_memmgr_destroy(p_mem_mgr);
 		return;
 	}
 
@@ -113,13 +109,13 @@ void muggle_socket_event_epoll(muggle_socket_event_t *ev, muggle_socket_event_in
         MUGGLE_LOG_ERROR("failed epoll_create - %s", err_msg);
 
 		free(ret_epevs);
-		muggle_socket_event_memmgr_destroy(&mem_mgr);
+		muggle_socket_event_memmgr_destroy(p_mem_mgr);
 		return;
 	}
 
 	int cnt_fd;
 	struct epoll_event epev;
-	muggle_socket_peer_list_node_t *node = muggle_socket_event_memmgr_get_node(&mem_mgr);
+	muggle_socket_peer_list_node_t *node = muggle_socket_event_memmgr_get_node(p_mem_mgr);
 	while (node)
 	{
 		memset(&epev, 0, sizeof(epev));
@@ -133,7 +129,7 @@ void muggle_socket_event_epoll(muggle_socket_event_t *ev, muggle_socket_event_in
 			MUGGLE_LOG_ERROR("failed epoll_ctl EPOLL_CTL_ADD - %s", err_msg);
 
 			muggle_socket_peer_list_node_t *next_node = node->next;
-			muggle_socket_event_memmgr_recycle(&mem_mgr, node);
+			muggle_socket_event_memmgr_recycle(p_mem_mgr, node);
 			node = next_node;
 			continue;
 		}
@@ -143,7 +139,7 @@ void muggle_socket_event_epoll(muggle_socket_event_t *ev, muggle_socket_event_in
 	}
 
 	// timer
-	int timeout = ev_init_arg->timeout_ms;
+	int timeout = ev->timeout_ms;
 
 	struct timespec t1, t2;
 	if (ev->timeout_ms > 0)
@@ -167,7 +163,7 @@ void muggle_socket_event_epoll(muggle_socket_event_t *ev, muggle_socket_event_in
 					{
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN:
 						{
-							muggle_socket_event_epoll_listen(ev, peer, &mem_mgr, &epfd, ev->capacity, &cnt_fd);
+							muggle_socket_event_epoll_listen(ev, peer, p_mem_mgr, &epfd, ev->capacity, &cnt_fd);
 						}break;
 					case MUGGLE_SOCKET_PEER_TYPE_TCP_PEER:
 					case MUGGLE_SOCKET_PEER_TYPE_UDP_PEER:
@@ -194,7 +190,7 @@ void muggle_socket_event_epoll(muggle_socket_event_t *ev, muggle_socket_event_in
 
 					epoll_ctl(epfd, EPOLL_CTL_DEL, peer->fd, &ret_epevs[i]);
 
-					muggle_socket_event_memmgr_recycle(&mem_mgr, node);
+					muggle_socket_event_memmgr_recycle(p_mem_mgr, node);
 					--cnt_fd;
 				}
 			}
@@ -232,14 +228,11 @@ void muggle_socket_event_epoll(muggle_socket_event_t *ev, muggle_socket_event_in
 		}
 
 		// recycle node
-		muggle_socket_event_memmgr_clear(&mem_mgr);
+		muggle_socket_event_memmgr_clear(p_mem_mgr);
 	}
 
 	// free memory
 	free(ret_epevs);
-
-	// destroy memory manager
-	muggle_socket_event_memmgr_destroy(&mem_mgr);
 }
 
 #endif

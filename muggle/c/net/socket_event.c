@@ -6,8 +6,10 @@
  */
 
 #include "socket_event.h"
+#include <stdlib.h>
 #include <string.h>
 #include "muggle/c/log/log.h"
+#include "event/socket_event_memmgr.h"
 #include "event/socket_event_select.h"
 #include "event/socket_event_poll.h"
 #include "event/socket_event_epoll.h"
@@ -58,7 +60,7 @@ static int muggle_get_event_loop_type(int event_loop_type)
  * init socket event input arguments
  * RETURN: 0 - success, otherwise failed
  * */
-static int muggle_socket_ev_arg_init(muggle_socket_event_t *ev, muggle_socket_event_init_arg_t *ev_init_arg)
+static int muggle_socket_ev_arg_init(muggle_socket_event_init_arg_t *ev_init_arg, muggle_socket_event_t *ev)
 {
 	memset(ev, 0, sizeof(ev));
 
@@ -83,12 +85,7 @@ static int muggle_socket_ev_arg_init(muggle_socket_event_t *ev, muggle_socket_ev
 	}
 	if (capacity < ev_init_arg->cnt_peer)
 	{
-		MUGGLE_LOG_ERROR("capacity space not enough for all peers");
-		for (int i = 0; i < ev_init_arg->cnt_peer; ++i)
-		{
-			muggle_socket_close(ev_init_arg[i].peers->fd);
-		}
-		return -1;
+		capacity = ev_init_arg->cnt_peer * 2;
 	}
 	ev->capacity = capacity;
 
@@ -112,13 +109,30 @@ static int muggle_socket_ev_arg_init(muggle_socket_event_t *ev, muggle_socket_ev
 	ev->on_message = ev_init_arg->on_message;
 	ev->on_timer = ev_init_arg->on_timer;
 
+	// init memory manager
+	muggle_socket_event_memmgr_t *mem_mgr = (muggle_socket_event_memmgr_t*)malloc(sizeof(muggle_socket_event_memmgr_t));
+	if (mem_mgr == NULL)
+	{
+		MUGGLE_LOG_ERROR("failed allocate space for socket event memory manager");
+		return -1;
+	}
+
+	if (muggle_socket_event_memmgr_init(ev, ev_init_arg, mem_mgr) != 0)
+	{
+		MUGGLE_LOG_ERROR("failed init socket event memory manager");
+		free(mem_mgr);
+		return -1;
+	}
+
+	ev->mem_mgr = mem_mgr;
+
 	return 0;
 }
 
 /*
  * event loop run
  * */
-static int muggle_socket_event_loop_run(muggle_socket_event_t *ev, muggle_socket_event_init_arg_t *ev_init_arg)
+static int muggle_socket_event_loop_run(muggle_socket_event_t *ev)
 {
 	int ret = 0;
 	switch (ev->ev_loop_type)
@@ -130,16 +144,16 @@ static int muggle_socket_event_loop_run(muggle_socket_event_t *ev, muggle_socket
 	}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT:
 	{
-		muggle_socket_event_select(ev, ev_init_arg);
+		muggle_socket_event_select(ev);
 	}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_POLL:
 	{
-		muggle_socket_event_poll(ev, ev_init_arg);
+		muggle_socket_event_poll(ev);
 	}break;
 	case MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL:
 	{
 #if MUGGLE_PLATFORM_LINUX
-		muggle_socket_event_epoll(ev, ev_init_arg);
+		muggle_socket_event_epoll(ev);
 #else
 		MUGGLE_LOG_ERROR("epoll event loop support linux only");
 		ret = -1;
@@ -175,21 +189,48 @@ static int muggle_socket_event_loop_run(muggle_socket_event_t *ev, muggle_socket
 	return ret;
 }
 
-int muggle_socket_event_loop(muggle_socket_event_init_arg_t *ev_init_arg)
+int muggle_socket_event_init(muggle_socket_event_init_arg_t *ev_init_arg, muggle_socket_event_t *ev)
 {
-	muggle_socket_event_t ev;
-	int ret = muggle_socket_ev_arg_init(&ev, ev_init_arg);
+	if (ev_init_arg == NULL || ev == NULL)
+	{
+		MUGGLE_LOG_ERROR("failed init socket event, input parameter is null");
+		return -1;
+	}
+
+	// init socket event from init arguments
+	int ret = muggle_socket_ev_arg_init(ev_init_arg, ev);
 	if (ret != 0)
 	{
-		MUGGLE_LOG_ERROR("failed init socket event loop");
 		for (int i = 0; i < ev_init_arg->cnt_peer; ++i)
 		{
-			muggle_socket_close(ev_init_arg->peers[i].fd);
+			muggle_socket_peer_t *peer = &ev_init_arg->peers[i];
+			if (peer)
+			{
+				muggle_socket_close(peer->fd);
+			}
 		}
 		return ret;
 	}
 
-	return muggle_socket_event_loop_run(&ev, ev_init_arg);
+	return 0;
+}
+
+int muggle_socket_event_loop(muggle_socket_event_t *ev)
+{
+	if (ev == NULL || ev->mem_mgr == NULL)
+	{
+		MUGGLE_LOG_ERROR("failed socket event loop, input parameter is null");
+		return -1;
+	}
+
+	int ret = muggle_socket_event_loop_run(ev);
+
+	// destroy and free memory manager
+	muggle_socket_event_memmgr_destroy((muggle_socket_event_memmgr_t*)ev->mem_mgr);
+	free(ev->mem_mgr);
+	ev->mem_mgr = NULL;
+
+	return ret;
 }
 
 void muggle_socket_event_loop_exit(muggle_socket_event_t *ev)

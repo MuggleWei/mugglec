@@ -26,15 +26,15 @@ int main(int argc, char *argv[])
 		muggle_socket_peer_t peer;
 		if (strcmp(argv[3], "tcp") == 0)
 		{
-			peer.fd = muggle_tcp_connect(argv[1], argv[2], 3, &peer);
+			muggle_tcp_connect(argv[1], argv[2], 3, &peer);
 		}
 		else if (strcmp(argv[3], "udp") == 0)
 		{
-			peer.fd = muggle_udp_bind(argv[1], argv[2], &peer);
+			muggle_udp_bind(argv[1], argv[2], &peer);
 		}
 		else if (strcmp(argv[3], "mcast") == 0)
 		{
-			peer.fd = muggle_mcast_join(argv[1], argv[2], NULL, NULL, &peer);
+			muggle_mcast_join(argv[1], argv[2], NULL, NULL, &peer);
 		}
 		else
 		{
@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
 		int event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT;
 #endif
 
+		// fill up event loop input arguments
 		muggle_socket_event_init_arg_t ev_init_arg;
 		memset(&ev_init_arg, 0, sizeof(ev_init_arg));
 		ev_init_arg.ev_loop_type = event_loop_type;
@@ -98,7 +99,16 @@ int main(int argc, char *argv[])
 		ev_init_arg.on_timer = NULL;
 
 		// event loop
-		muggle_socket_event_loop(&ev_init_arg);
+		muggle_socket_event_t ev;
+		if (muggle_socket_event_init(&ev_init_arg, &ev) != 0)
+		{
+			MUGGLE_LOG_ERROR("failed init socket event");
+			exit(EXIT_FAILURE);
+		}
+		muggle_socket_event_loop(&ev);
+
+		// free bytes buffer
+		muggle_bytes_buffer_destroy(&bytes_buf);
 	}
 
 	return 0;

@@ -65,16 +65,14 @@ int main(int argc, char *argv[])
 	muggle_socket_peer_t peers[2];
 
 	// create tcp listen socket
-	peers[0].fd = muggle_tcp_listen(host, serv, 512, &peers[0]);
-	if (peers[0].fd == MUGGLE_INVALID_SOCKET)
+	if (muggle_tcp_listen(host, serv, 512, &peers[0]) == MUGGLE_INVALID_SOCKET)
 	{
 		MUGGLE_LOG_ERROR("failed create tcp listen for %s:%s", host, serv);
 		exit(EXIT_FAILURE);
 	}
 
 	// create udp bind socket
-	peers[1].fd = muggle_udp_bind(host, serv, &peers[1]);
-	if (peers[1].fd == MUGGLE_INVALID_SOCKET)
+	if (muggle_udp_bind(host, serv, &peers[1]) == MUGGLE_INVALID_SOCKET)
 	{
 		MUGGLE_LOG_ERROR("failed create udp bind for %s:%s", host, serv);
 		exit(EXIT_FAILURE);
@@ -95,6 +93,7 @@ int main(int argc, char *argv[])
 	ev_init_arg.hints_max_peer = 1024;
 	ev_init_arg.cnt_peer = cnt_peer;
 	ev_init_arg.peers = peers;
+	ev_init_arg.p_peers = NULL;
 	ev_init_arg.timeout_ms = 5000;
 	ev_init_arg.datas = (void*)hello;
 	ev_init_arg.on_connect = on_connect;
@@ -104,7 +103,13 @@ int main(int argc, char *argv[])
 	ev_init_arg.on_timer = on_timer;
 
 	// event loop
-	muggle_socket_event_loop(&ev_init_arg);
+	muggle_socket_event_t ev;
+	if (muggle_socket_event_init(&ev_init_arg, &ev) != 0)
+	{
+		MUGGLE_LOG_ERROR("failed init socket event");
+		exit(EXIT_FAILURE);
+	}
+	muggle_socket_event_loop(&ev);
 
 	return 0;
 }

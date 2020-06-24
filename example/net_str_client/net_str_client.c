@@ -1,164 +1,96 @@
-#include "muggle/c/muggle_c.h"
+#include "net_str_client_msg.h"
+#include "net_str_client_console.h"
+#include "net_str_client_handle.h"
 
-#define SND_RCV_BUF_SIZE 4096
-
-#if MUGGLE_PLATFORM_WINDOWS
-
-struct thread_args
+void str_client(struct client_thread_arg *th_arg)
 {
-	FILE *fp;
-	muggle_socket_t client;
-};
+	// create ring buffer as message queue
+	muggle_ring_buffer_t ring;
+	int capacity = 1024;
+	int flag =
+		MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK |
+		MUGGLE_RING_BUFFER_FLAG_SINGLE_READER;
+	muggle_ring_buffer_init(&ring, capacity, flag);
 
-muggle_thread_ret_t thread_get_console_input(void *arg)
-{
-	struct thread_args *parg = (struct thread_args*)arg;
-	FILE *fp = parg->fp;
-	muggle_socket_t client = parg->client;
+	// create console input thread
+	muggle_thread_t console_input_thread;
+	muggle_thread_create(&console_input_thread, thread_get_console_input, (void*)&ring);
+	muggle_thread_detach(&console_input_thread);
 
-	char sendbuf[SND_RCV_BUF_SIZE + 1];
-	while (fgets(sendbuf, SND_RCV_BUF_SIZE, fp) != NULL)
+	// create socket client thread
+	th_arg->ring = &ring;
+	muggle_thread_t socket_client_thread;
+	muggle_thread_create(&socket_client_thread, thread_socket_event, (void*)th_arg);
+	muggle_thread_detach(&socket_client_thread);
+
+	// run message queue loop
+	muggle_socket_peer_t *cur_peer = NULL;
+	muggle_atomic_int pos = 0;
+	while (1)
 	{
-		int n = (int)strlen(sendbuf);
-		int num_bytes = send(client, sendbuf, n, 0);
-
-		if (num_bytes != n)
+		struct message_block *block = (struct message_block*)muggle_ring_buffer_read(&ring, pos++);
+		if (block == NULL)
 		{
-			if (num_bytes == MUGGLE_SOCKET_ERROR)
+			MUGGLE_LOG_INFO("bye bye");
+			exit(0);
+		}
+		
+		switch (block->msg_type)
+		{
+		case MSG_TYPE_CONSOLE_INPUT:
+		{
+			struct message_text *msg_text = (struct message_text*)block;
+			if (cur_peer)
 			{
-				char err_msg[1024] = { 0 };
-				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_LOG_WARNING("failed send msg - %s", err_msg);
+				muggle_socket_peer_send(cur_peer, msg_text->buf, strlen(msg_text->buf), 0);
+			}
+		}break;
+		case MSG_TYPE_PEER_RECV:
+		{
+			struct message_text *msg_text = (struct message_text*)block;
+			MUGGLE_LOG_INFO("recv: %s", msg_text->buf);
+		}break;
+		case MSG_TYPE_PEER_CONNECT:
+		{
+			struct message_peer_event *msg_peer_event = (struct message_peer_event*)block;
+			MUGGLE_ASSERT(cur_peer == NULL);
+			MUGGLE_ASSERT(msg_peer_event->peer != NULL);
+			if (cur_peer != NULL)
+			{
+				MUGGLE_LOG_ERROR("cur_peer is not null!");
+				if (msg_peer_event->peer)
+				{
+					muggle_socket_peer_release(msg_peer_event->peer);
+				}
+			}
+			cur_peer = msg_peer_event->peer;
+
+			char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
+			if (muggle_socket_ntop((struct sockaddr*)&cur_peer->addr, straddr, MUGGLE_SOCKET_ADDR_STRLEN, 0) == NULL)
+			{
+				snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "unknown:unknown");
+			}
+			MUGGLE_LOG_INFO("%s connect %s", th_arg->socket_type, straddr);
+		}break;
+		case MSG_TYPE_PEER_DISCONNECT:
+		{
+			struct message_peer_event *msg_peer_event = (struct message_peer_event*)block;
+			MUGGLE_ASSERT(cur_peer == msg_peer_event->peer);
+			if (cur_peer && cur_peer == msg_peer_event->peer)
+			{
+				muggle_socket_peer_release(cur_peer);
+				cur_peer = NULL;
 			}
 			else
 			{
-				MUGGLE_LOG_WARNING("send buffer full");
+				MUGGLE_LOG_ERROR("cur_peer not equal input peer");
 			}
-			return 0;
-		}
-	}
-
-	muggle_socket_close(client);
-	return 0;
-}
-
-void str_client_windows(FILE *fp, muggle_socket_t client)
-{
-	struct thread_args arg = { fp, client };
-
-	muggle_thread_t thread;
-	muggle_thread_create(&thread, thread_get_console_input, &arg);
-	muggle_thread_detach(&thread);
-
-	char recvbuf[SND_RCV_BUF_SIZE + 1];
-	while (1)
-	{
-		int num_bytes = recv(client, recvbuf, SND_RCV_BUF_SIZE, 0);
-		if (num_bytes == 0)
-		{
-			MUGGLE_LOG_INFO("disconnect");
-			return;
-		}
-		else if (num_bytes == MUGGLE_SOCKET_ERROR)
-		{
-			if (MUGGLE_SOCKET_LAST_ERRNO == WSAEINTR)
-			{
-				continue;
-			}
-
-			char err_msg[1024] = { 0 };
-			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_LOG_ERROR("failed recv - %s", err_msg);
-			break;
+		}break;
 		}
 
-		recvbuf[num_bytes] = '\0';
-		MUGGLE_LOG_INFO(recvbuf);
+		muggle_sowr_memory_pool_free(block);
 	}
 }
-
-#else
-void str_client_posix(FILE *fp, muggle_socket_t client)
-{
-	char sendbuf[SND_RCV_BUF_SIZE + 1], recvbuf[SND_RCV_BUF_SIZE + 1];
-
-	fd_set rset;
-	FD_ZERO(&rset);
-	while (1)
-	{
-		int nfds = 0;
-
-		nfds = MUGGLE_FILENO(fp) > client ? MUGGLE_FILENO(fp) : client;
-		nfds += 1;
-
-		FD_SET(MUGGLE_FILENO(fp), &rset);
-		FD_SET(client, &rset);
-		int n = select(nfds, &rset, NULL, NULL, NULL);
-		if (n == MUGGLE_SOCKET_ERROR)
-		{
-			char err_msg[1024] = { 0 };
-			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-			MUGGLE_LOG_ERROR("failed select - %s", err_msg);
-			break;
-		}
-		else if (n == 0)
-		{
-			// timeout
-		}
-
-		if (FD_ISSET(client, &rset)) // socket is readable
-		{
-			int num_bytes = recv(client, recvbuf, SND_RCV_BUF_SIZE, 0);
-			if (num_bytes == 0)
-			{
-				MUGGLE_LOG_INFO("disconnect");
-				break;
-			}
-			else if (num_bytes == MUGGLE_SOCKET_ERROR)
-			{
-				if (MUGGLE_SOCKET_LAST_ERRNO == EINTR)
-				{
-					continue;
-				}
-
-				char err_msg[1024] = {0};
-				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-				MUGGLE_LOG_ERROR("failed recv - %s", err_msg);
-				break;
-			}
-
-			recvbuf[num_bytes] = '\0';
-			MUGGLE_LOG_INFO(recvbuf);
-		}
-
-		if (FD_ISSET(MUGGLE_FILENO(fp), &rset))
-		{
-			if (fgets(sendbuf, SND_RCV_BUF_SIZE, fp) == NULL)
-			{
-				break;
-			}
-
-			int n = (int)strlen(sendbuf);
-			int num_bytes = send(client, sendbuf, n, 0);
-
-			if (num_bytes != n)
-			{
-				if (num_bytes == MUGGLE_SOCKET_ERROR)
-				{
-					char err_msg[1024] = { 0 };
-					muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-					MUGGLE_LOG_WARNING("failed send msg - %s", err_msg);
-				}
-				else
-				{
-					MUGGLE_LOG_WARNING("send buffer full");
-				}
-				break;
-			}
-		}
-	}
-}
-#endif
 
 int main(int argc, char *argv[])
 {
@@ -178,42 +110,14 @@ int main(int argc, char *argv[])
 	// initialize socket library
 	muggle_socket_lib_init();
 
-	muggle_socket_peer_t peer;
-	if (strcmp(argv[3], "tcp") == 0)
-	{
-		peer.fd = muggle_tcp_connect(argv[1], argv[2], 3, &peer);
-	}
-	else if (strcmp(argv[3], "udp") == 0)
-	{
-		peer.fd = muggle_udp_connect(argv[1], argv[2], &peer);
-	}
-	else
-	{
-		MUGGLE_LOG_ERROR("invalid socket peer type: %s", argv[3]);
-		exit(EXIT_FAILURE);
-	}
+	// connect to server
+	struct client_thread_arg th_arg;
+	th_arg.host = argv[1];
+	th_arg.serv = argv[2];
+	th_arg.socket_type = argv[3];
 
-	if (peer.fd == MUGGLE_INVALID_SOCKET)
-	{
-		MUGGLE_LOG_ERROR("%s failed connect: %s:%s", argv[3], argv[1], argv[2]);
-		exit(EXIT_FAILURE);
-	}
-
-	char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
-	if (muggle_socket_ntop((struct sockaddr*)&peer.addr, straddr, MUGGLE_SOCKET_ADDR_STRLEN, 0) == NULL)
-	{
-		snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "unknown:unknown");
-	}
-
-	MUGGLE_LOG_INFO("%s connect %s", argv[3], straddr);
-
-#if MUGGLE_PLATFORM_WINDOWS
-	str_client_windows(stdin, peer.fd);
-#else
-	str_client_posix(stdin, peer.fd); // use select
-#endif
-
-	muggle_socket_close(peer.fd);
+	// str client
+	str_client(&th_arg);
 
 	return 0;
 }

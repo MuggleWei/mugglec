@@ -62,8 +62,7 @@ int main(int argc, char *argv[])
 
 	// create tcp listen socket
 	muggle_socket_peer_t peer;
-	peer.fd = muggle_tcp_listen(host, serv, 512, &peer);
-	if (peer.fd == MUGGLE_INVALID_SOCKET)
+	if (muggle_tcp_listen(host, serv, 512, &peer) == MUGGLE_INVALID_SOCKET)
 	{
 		MUGGLE_LOG_ERROR("failed create tcp listen for %s:%s", host, serv);
 		exit(EXIT_FAILURE);
@@ -83,6 +82,7 @@ int main(int argc, char *argv[])
 	ev_init_arg.hints_max_peer = 1024;
 	ev_init_arg.cnt_peer = 1;
 	ev_init_arg.peers = &peer;
+	ev_init_arg.p_peers = NULL;
 	ev_init_arg.timeout_ms = -1;
 	ev_init_arg.datas = NULL;
 	ev_init_arg.on_error = on_error;
@@ -90,7 +90,13 @@ int main(int argc, char *argv[])
 	ev_init_arg.on_message = on_message;
 
 	// event loop
-	muggle_socket_event_loop(&ev_init_arg);
+	muggle_socket_event_t ev;
+	if (muggle_socket_event_init(&ev_init_arg, &ev) != 0)
+	{
+		MUGGLE_LOG_ERROR("failed init socket event");
+		exit(EXIT_FAILURE);
+	}
+	muggle_socket_event_loop(&ev);
 
 	return 0;
 }

@@ -42,6 +42,7 @@ typedef struct muggle_socket_event
 	int  capacity;
 	int  timeout_ms;
 	int  to_exit;
+	void *mem_mgr;
 	void *datas;
 
 	muggle_socket_event_connect on_connect;
@@ -57,7 +58,8 @@ typedef struct muggle_socket_event_init_arg
 	int                  ev_loop_type;   // event loop type, MUGGLE_SOCKET_EVENT_LOOP_TYPE_*
 	int                  hints_max_peer; // hints max peer in the event loop
 	int                  cnt_peer;       // the number of socket descriptor in this arguments
-	muggle_socket_peer_t *peers;         // socket peer array, number is cnt_peer
+	muggle_socket_peer_t *peers;         // socket peer array, size is cnt_peer
+	muggle_socket_peer_t **p_peers;      // return peers holds by ev, if wanna use it in other thread, remember call retain function
 	int                  timeout_ms;     // event loop timer in millisec, -1, 0 or any positive number, the same as epoll timeout
 	void                 *datas;         // user custom data
 
@@ -70,12 +72,19 @@ typedef struct muggle_socket_event_init_arg
 }muggle_socket_event_init_arg_t;
 
 /*
+ * init muggle socket event
+ * RETURN: 0 - success, otherwise failed init event
+ * */
+MUGGLE_CC_EXPORT
+int muggle_socket_event_init(muggle_socket_event_init_arg_t *ev_init_arg, muggle_socket_event_t *ev);
+
+/*
  * monitor multiple socket descriptiors, waiting util one or
  * more of the descriptors become "ready"
  * RETURN: 0 - exit normally, otherwise failed init
  * */
 MUGGLE_CC_EXPORT
-int muggle_socket_event_loop(muggle_socket_event_init_arg_t *ev_init_arg);
+int muggle_socket_event_loop(muggle_socket_event_t *ev);
 
 /*
  * exit event loop 
