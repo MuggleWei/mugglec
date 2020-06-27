@@ -68,13 +68,14 @@ muggle_thread_ret_t thread_socket_event(void *arg)
 	{
 		// create socket
 		muggle_socket_peer_t peer;
+		muggle_socket_t ret_fd;
 		if (strcmp(th_arg->socket_type, "tcp") == 0)
 		{
-			muggle_tcp_connect(th_arg->host, th_arg->serv, 3, &peer);
+			ret_fd = muggle_tcp_connect(th_arg->host, th_arg->serv, 3, &peer);
 		}
 		else if (strcmp(th_arg->socket_type, "udp") == 0)
 		{
-			muggle_udp_connect(th_arg->host, th_arg->serv, &peer);
+			ret_fd = muggle_udp_connect(th_arg->host, th_arg->serv, &peer);
 		}
 		else
 		{
@@ -82,7 +83,7 @@ muggle_thread_ret_t thread_socket_event(void *arg)
 			exit(EXIT_FAILURE);
 		}
 
-		if (peer.fd == MUGGLE_INVALID_SOCKET)
+		if (ret_fd == MUGGLE_INVALID_SOCKET)
 		{
 			MUGGLE_LOG_ERROR("%s failed connect: %s:%s", th_arg->socket_type, th_arg->host, th_arg->serv);
 			muggle_msleep(3000);
