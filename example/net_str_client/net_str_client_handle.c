@@ -15,6 +15,8 @@ void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 	msg->msg_type = MSG_TYPE_PEER_DISCONNECT;
 	msg->peer = peer;
 	muggle_ring_buffer_write(ring, msg);
+
+	muggle_socket_event_loop_exit(ev);
 }
 void on_close(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 {

@@ -62,7 +62,7 @@ static int muggle_get_event_loop_type(int event_loop_type)
  * */
 static int muggle_socket_ev_arg_init(muggle_socket_event_init_arg_t *ev_init_arg, muggle_socket_event_t *ev)
 {
-	memset(ev, 0, sizeof(ev));
+	memset(ev, 0, sizeof(muggle_socket_event_t));
 
 	// set event loop type
 	ev->ev_loop_type = muggle_get_event_loop_type(ev_init_arg->ev_loop_type);
