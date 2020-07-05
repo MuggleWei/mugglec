@@ -31,19 +31,24 @@ void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 {
 	struct client_event_data *ev_data = ev->datas;
 	muggle_ring_buffer_t *ring = (muggle_ring_buffer_t*)ev_data->ring;
-	struct message_text *msg = (struct message_text*)muggle_sowr_memory_pool_alloc(ev_data->text_sowr_pool);
-	msg->msg_type = MSG_TYPE_PEER_RECV;
-	int n = muggle_socket_peer_recv(peer, msg->buf, sizeof(msg->buf), 0);
-	if (n > 0)
+
+	while (1)
 	{
-		msg->buf[n] = '\0';
-		muggle_ring_buffer_write(ring, msg);
+		struct message_text *msg = (struct message_text*)muggle_sowr_memory_pool_alloc(ev_data->text_sowr_pool);
+		msg->msg_type = MSG_TYPE_PEER_RECV;
+		int n = muggle_socket_peer_recv(peer, msg->buf, sizeof(msg->buf) - 1, 0);
+		if (n > 0)
+		{
+			msg->buf[n] = '\0';
+			muggle_ring_buffer_write(ring, msg);
+		}
+		else
+		{
+			// don't free message in this thread, let message override automatically
+			// muggle_sowr_memory_pool_free(msg);
+			break;
+		}
 	}
-	// don't free message in this thread, let message override automic
-	// else
-	// {
-	// 	muggle_sowr_memory_pool_free(msg);
-	// }
 }
 
 muggle_thread_ret_t thread_socket_event(void *arg)

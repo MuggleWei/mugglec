@@ -59,7 +59,7 @@ void on_close(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 {
 	char buf[4096];
-	if (muggle_socket_peer_recv(peer, buf, sizeof(buf), 0) > 0)
+	while (muggle_socket_peer_recv(peer, buf, sizeof(buf), 0) > 0)
 	{
 		// retain socket peer
 		int ref_cnt = muggle_socket_peer_retain(peer);
