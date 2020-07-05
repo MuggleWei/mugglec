@@ -80,19 +80,6 @@ int muggle_bytes_buffer_jump_writable(muggle_bytes_buffer_t *bytes_buf)
 }
 
 static inline
-int muggle_bytes_buffer_contiguous_readable(muggle_bytes_buffer_t *bytes_buf)
-{
-	if (bytes_buf->w >= bytes_buf->r)
-	{
-		return bytes_buf->w - bytes_buf->r;
-	}
-	else
-	{
-		return bytes_buf->t - bytes_buf->r;
-	}
-}
-
-static inline
 int muggle_bytes_buffer_jump_readable(muggle_bytes_buffer_t *bytes_buf)
 {
 	if (bytes_buf->w >= bytes_buf->r)
@@ -151,6 +138,18 @@ int muggle_bytes_buffer_readable(muggle_bytes_buffer_t *bytes_buf)
 	int cr = muggle_bytes_buffer_contiguous_readable(bytes_buf);
 	int jr = muggle_bytes_buffer_jump_readable(bytes_buf);
 	return cr + jr;
+}
+
+int muggle_bytes_buffer_contiguous_readable(muggle_bytes_buffer_t *bytes_buf)
+{
+	if (bytes_buf->w >= bytes_buf->r)
+	{
+		return bytes_buf->w - bytes_buf->r;
+	}
+	else
+	{
+		return bytes_buf->t - bytes_buf->r;
+	}
 }
 
 bool muggle_bytes_buffer_fetch(muggle_bytes_buffer_t *bytes_buf, int num_bytes, void *dst)

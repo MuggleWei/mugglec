@@ -45,10 +45,16 @@ MUGGLE_CC_EXPORT
 int muggle_bytes_buffer_writable(muggle_bytes_buffer_t *bytes_buf);
 
 /*
- * get len of bytes can read
+ * get len of bytes can be read
  * */
 MUGGLE_CC_EXPORT
 int muggle_bytes_buffer_readable(muggle_bytes_buffer_t *bytes_buf);
+
+/*
+ * get contiguous len of bytes can be read
+ * */
+MUGGLE_CC_EXPORT
+int muggle_bytes_buffer_contiguous_readable(muggle_bytes_buffer_t *bytes_buf);
 
 /*
  * fetch bytes from buffer without move read position
