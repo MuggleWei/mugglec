@@ -75,3 +75,41 @@ int muggle_socket_set_nonblock(muggle_socket_t socket, int on)
 	return fcntl(socket, F_SETFL, flags);
 #endif
 }
+
+int muggle_socket_send(muggle_socket_t fd, const void *buf, size_t len, int flags)
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	return send(fd, (const char*)buf, (int)len, flags);
+#else
+	return (int)send(fd, buf, len, flags);
+#endif
+}
+
+int muggle_socket_sendto(muggle_socket_t fd, const void *buf, size_t len, int flags,
+	const struct sockaddr *dest_addr, muggle_socklen_t addrlen)
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	return sendto(fd, (const char*)buf, (int)len, flags, dest_addr, addrlen);
+#else
+	return (int)sendto(fd, buf, len, flags, dest_addr, addrlen);
+#endif
+}
+
+int muggle_socket_recv(muggle_socket_t fd, void *buf, size_t len, int flags)
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	return recv(fd, (char*)buf, (int)len, flags);
+#else
+	return (int)recv(fd, buf, len, flags);
+#endif
+}
+
+int muggle_socket_recvfrom(muggle_socket_t fd, void *buf, size_t len, int flags,
+	struct sockaddr *addr, muggle_socklen_t *addrlen)
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	return recvfrom(fd, (char*)buf, (int)len, flags, addr, addrlen);
+#else
+	return (int)recvfrom(fd, buf, len, flags, addr, addrlen);
+#endif
+}

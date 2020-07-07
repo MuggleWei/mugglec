@@ -112,11 +112,7 @@ int muggle_socket_peer_recvfrom(
 	int n = 0;
 	while (1)
 	{
-#if MUGGLE_PLATFORM_WINDOWS
-		n = recvfrom(peer->fd, buf, (int)len, flags, addr, addrlen);
-#else
-		n = recvfrom(peer->fd, buf, len, flags, addr, addrlen);
-#endif
+		n = muggle_socket_recvfrom(peer->fd, buf, len, flags, addr, addrlen);
 		if (n > 0)
 		{
 			break;
@@ -157,11 +153,7 @@ int muggle_socket_peer_recv(muggle_socket_peer_t *peer, void *buf, size_t len, i
 	int n = 0;
 	while (1)
 	{
-#if MUGGLE_PLATFORM_WINDOWS
-		n = recv(peer->fd, buf, (int)len, flags);
-#else
-		n = recv(peer->fd, buf, len, flags);
-#endif
+		n = muggle_socket_recv(peer->fd, buf, len, flags);
 		if (n > 0)
 		{
 			break;
@@ -191,11 +183,7 @@ int muggle_socket_peer_recv(muggle_socket_peer_t *peer, void *buf, size_t len, i
 int muggle_socket_peer_sendto(muggle_socket_peer_t *peer, const void *buf, size_t len, int flags,
 	const struct sockaddr *dest_addr, socklen_t addrlen)
 {
-#if MUGGLE_PLATFORM_WINDOWS
-	int num_bytes = sendto(peer->fd, buf, (int)len, flags, dest_addr, addrlen);
-#else
-	int num_bytes = sendto(peer->fd, buf, len, flags, dest_addr, addrlen);
-#endif
+	int num_bytes = muggle_socket_sendto(peer->fd, buf, len, flags, dest_addr, addrlen);
 	if (num_bytes != len)
 	{
 		if (num_bytes == MUGGLE_SOCKET_ERROR)
@@ -216,11 +204,7 @@ int muggle_socket_peer_sendto(muggle_socket_peer_t *peer, const void *buf, size_
 
 int muggle_socket_peer_send(muggle_socket_peer_t *peer, const void *buf, size_t len, int flags)
 {
-#if MUGGLE_PLATFORM_WINDOWS
-	int num_bytes = send(peer->fd, buf, (int)len, flags);
-#else
-	int num_bytes = send(peer->fd, buf, len, flags);
-#endif
+	int num_bytes = muggle_socket_send(peer->fd, buf, len, flags);
 	if (num_bytes != len)
 	{
 		if (num_bytes == MUGGLE_SOCKET_ERROR)

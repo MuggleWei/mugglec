@@ -117,6 +117,32 @@ int muggle_socket_strerror(int errnum, char *buf, size_t bufsize);
 MUGGLE_CC_EXPORT
 int muggle_socket_set_nonblock(muggle_socket_t socket, int on);
 
+/*
+ * socket send, the same as send
+ * */
+MUGGLE_CC_EXPORT
+int muggle_socket_send(muggle_socket_t fd, const void *buf, size_t len, int flags);
+
+/*
+ * socket sendto, the same as send
+ * */
+MUGGLE_CC_EXPORT
+int muggle_socket_sendto(muggle_socket_t fd, const void *buf, size_t len, int flags,
+	const struct sockaddr *dest_addr, muggle_socklen_t addrlen);
+
+/*
+ * socket recv, the same as recv
+ * */
+MUGGLE_CC_EXPORT
+int muggle_socket_recv(muggle_socket_t fd, void *buf, size_t len, int flags);
+
+/*
+ * socket recvfrom ,the same as recvfrom
+ * */
+MUGGLE_CC_EXPORT
+int muggle_socket_recvfrom(muggle_socket_t fd, void *buf, size_t len, int flags,
+	struct sockaddr *addr, muggle_socklen_t *addrlen);
+
 EXTERN_C_END
 
 #endif

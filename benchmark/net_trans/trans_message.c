@@ -41,7 +41,7 @@ void sendPkgs(muggle_socket_peer_t *peer)
 		for (int j = 0; j < PKG_PER_ROUND; j++)
 		{
 			genPkgData((struct pkg_data*)&msg.placeholder, idx++);
-			send(peer->fd, &msg, sizeof(struct pkg_header) + msg.header.data_len, 0);
+			muggle_socket_send(peer->fd, &msg, sizeof(struct pkg_header) + (size_t)msg.header.data_len, 0);
 		}
 
 		if (ROUND_INTERVAL_MS > 0)
@@ -58,6 +58,6 @@ void sendPkgs(muggle_socket_peer_t *peer)
 	muggle_msleep(5);
 	memset(&msg, 0, sizeof(msg));
 	msg.header.msg_type = MSG_TYPE_END;
-	send(peer->fd, &msg, sizeof(struct pkg_header) + msg.header.data_len, 0);
+	muggle_socket_send(peer->fd, &msg, sizeof(struct pkg_header) + (size_t)msg.header.data_len, 0);
 	MUGGLE_LOG_INFO("send end pkg");
 }
