@@ -116,7 +116,7 @@ void parse_message(muggle_socket_peer_t *peer, muggle_bytes_buffer_t *bytes_buf)
 
 static void tcp_client_on_message(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
 {
-	muggle_bytes_buffer_t *bytes_buf = (muggle_bytes_buffer_t*)ev->datas;
+	muggle_bytes_buffer_t *bytes_buf = (muggle_bytes_buffer_t*)peer->data;
 
 	// read message into bytes buffer
 	recv_message(peer, bytes_buf);
@@ -148,6 +148,7 @@ void run_tcp_client(const char *host, const char *port)
 		MUGGLE_LOG_ERROR("failed connect %s:%s", host, port);
 		exit(EXIT_FAILURE);
 	}
+	tcp_peer.data = &bytes_buf;
 
 	// set TCP_NODELAY
 	int enable = 1;
@@ -160,7 +161,6 @@ void run_tcp_client(const char *host, const char *port)
 	ev_init_arg.cnt_peer = 1;
 	ev_init_arg.peers = &tcp_peer;
 	ev_init_arg.timeout_ms = -1;
-	ev_init_arg.datas = &bytes_buf;
 	ev_init_arg.on_message = tcp_client_on_message;
 	ev_init_arg.on_error = tcp_client_on_error;
 
