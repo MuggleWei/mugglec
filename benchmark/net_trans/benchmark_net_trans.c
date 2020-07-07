@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 
 	if (argc < 4)
 	{
-		MUGGLE_LOG_ERROR("usage: %s <udp-send|udp-recv|tcp-serv|tcp-client> <host> <port>");
+		MUGGLE_LOG_ERROR("usage: %s <udp-send|udp-recv|tcp-serv|tcp-client> <host> <port>", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
