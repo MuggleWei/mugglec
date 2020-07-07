@@ -5,6 +5,11 @@
  *	found in the LICENSE file.
  */
 
-#include "muggle_benchmark/muggle_benchmark.h"
+#ifndef TCP_SERV_H_
+#define TCP_SERV_H_
 
-void gen_benchmark_report(const char *name, muggle_benchmark_block_t *block, int cnt);
+#include "trans_message.h"
+
+void run_tcp_serv(const char *host, const char *port);
+
+#endif

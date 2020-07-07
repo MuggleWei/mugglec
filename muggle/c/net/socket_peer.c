@@ -87,7 +87,7 @@ int muggle_socket_peer_release(muggle_socket_peer_t *peer)
 		MUGGLE_DEBUG_INFO("close socket %d[%s]", peer->fd, straddr);
 #endif
 #endif
-		if (peer->ev)
+		if (peer->ev && peer->ev->on_close)
 		{
 			peer->ev->on_close(peer->ev, peer);
 		}

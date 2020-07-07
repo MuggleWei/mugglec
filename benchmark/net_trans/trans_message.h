@@ -34,6 +34,12 @@ struct pkg_header
 	uint32_t data_len;         // length of data
 };
 
+struct pkg
+{
+	struct pkg_header header;
+	char placeholder[512 - sizeof(struct pkg_header)];
+};
+
 struct pkg_data 
 {
 	uint32_t idx;
@@ -41,18 +47,12 @@ struct pkg_data
 	uint32_t nsec;
 };
 
-struct pkg
-{
-	struct pkg_header header;
-	struct pkg_data   data;
-};
-
 #pragma pack(pop)
-
-extern muggle_benchmark_block_t *g_blocks;
 
 void genPkgHeader(struct pkg_header *header);
 
 void genPkgData(struct pkg_data *data, uint32_t idx);
+
+void sendPkgs(muggle_socket_peer_t *peer);
 
 #endif

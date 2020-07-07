@@ -8,6 +8,8 @@
 #include "trans_message.h"
 #include "udp_sender.h"
 #include "udp_receiver.h"
+#include "tcp_serv.h"
+#include "tcp_client.h"
 
 int main(int argc, char *argv[])
 {
@@ -42,6 +44,14 @@ int main(int argc, char *argv[])
 	else if (strcmp(app_type, "udp-recv") == 0)
 	{
 		run_udp_receiver(host, port);
+	}
+	else if (strcmp(app_type, "tcp-serv") == 0)
+	{
+		run_tcp_serv(host, port);
+	}
+	else if (strcmp(app_type, "tcp-client") == 0)
+	{
+		run_tcp_client(host, port);
 	}
 	else
 	{
