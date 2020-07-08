@@ -86,4 +86,13 @@ int muggle_thread_hardware_concurrency()
 	return sysconf(_SC_NPROCESSORS_ONLN);
 }
 
+void muggle_thread_yield()
+{
+#if MUGGLE_PLATFORM_WINDOWS
+		SwitchToThread();
+#else
+		sched_yield();
+#endif
+}
+
 #endif

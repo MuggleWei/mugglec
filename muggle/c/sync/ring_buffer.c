@@ -16,6 +16,7 @@
 #endif
 #include "muggle/c/base/err.h"
 #include "muggle/c/base/utils.h"
+#include "muggle/c/base/thread.h"
 #include "muggle/c/sync/futex.h"
 
 enum
@@ -125,11 +126,7 @@ inline static void muggle_ring_buffer_write_busy_loop(muggle_ring_buffer_t *r, v
 	// move cursor
 	while (muggle_atomic_load(&r->cursor, muggle_memory_order_relaxed) != idx)
 	{
-#if MUGGLE_PLATFORM_WINDOWS
-		SwitchToThread();
-#else
-		sched_yield();
-#endif
+		muggle_thread_yield();
 	}
 	muggle_atomic_store(&r->cursor, idx + 1, muggle_memory_order_release);
 }
@@ -185,11 +182,7 @@ inline static void* muggle_ring_buffer_read_busy_loop(muggle_ring_buffer_t *r, m
 			return r->datas[r_pos];
 		}
 
-#if MUGGLE_PLATFORM_WINDOWS
-		SwitchToThread();
-#else
-		sched_yield();
-#endif
+		muggle_thread_yield();
 	} while (1);
 
 	return NULL;

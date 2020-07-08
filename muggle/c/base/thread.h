@@ -75,6 +75,12 @@ muggle_thread_id muggle_thread_current_id();
 MUGGLE_CC_EXPORT
 int muggle_thread_hardware_concurrency();
 
+/*
+ * calling thread to yield execution and relinquish the CPU
+ * */
+MUGGLE_CC_EXPORT
+void muggle_thread_yield();
+
 EXTERN_C_END
 
 #endif

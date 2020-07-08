@@ -147,6 +147,98 @@ TEST(atomic, cmp_exch_single_thread)
 	EXPECT_EQ(i64, 1);
 }
 
+TEST(atomic, cmp_exch_mul_thread)
+{
+	int data[8];
+	muggle_atomic_int write_cursor = 0;
+	muggle_atomic_int read_cursor = write_cursor;
+	muggle_atomic_int action_idx = 0;
+
+	std::thread t1([&]{
+		// fetch write position
+		muggle_atomic_int w_pos = muggle_atomic_fetch_add(&write_cursor, 1, muggle_memory_order_relaxed);
+		EXPECT_EQ(w_pos, 0);
+		EXPECT_EQ(write_cursor, 1);
+
+		// write data
+		data[w_pos] = 1;
+
+		// set action_idx = 1
+		ASSERT_EQ(action_idx, 0);
+		muggle_atomic_fetch_add(&action_idx, 1, muggle_memory_order_relaxed);
+
+		// wait until action_idx == 2
+		while (muggle_atomic_load(&action_idx, muggle_memory_order_relaxed) != 2)
+		{
+			muggle_thread_yield();
+		}
+
+		// move read cursor
+		muggle_atomic_int cur_w_cursor = w_pos;
+		while (!muggle_atomic_cmp_exch_weak(&read_cursor, &cur_w_cursor, w_pos + 1, muggle_memory_order_release) &&
+				cur_w_cursor != w_pos)
+		{
+			muggle_thread_yield();
+			cur_w_cursor = w_pos;
+		}
+		ASSERT_EQ(cur_w_cursor, w_pos);
+		ASSERT_EQ(read_cursor, w_pos + 1);
+
+		// set action_idx == 3
+		ASSERT_EQ(action_idx, 2);
+		muggle_atomic_fetch_add(&action_idx, 1, muggle_memory_order_relaxed);
+	});
+
+	std::thread t2([&]{
+		// wait until action_idx == 1
+		while (muggle_atomic_load(&action_idx, muggle_memory_order_relaxed) != 1)
+		{
+			muggle_thread_yield();
+		}
+
+		// fetch write position
+		muggle_atomic_int w_pos = muggle_atomic_fetch_add(&write_cursor, 1, muggle_memory_order_relaxed);
+		EXPECT_EQ(w_pos, 1);
+		EXPECT_EQ(write_cursor, 2);
+
+		// write data
+		data[w_pos] = 2;
+
+		// try move cursor, and will failed
+		muggle_atomic_int cur_w_cursor = w_pos;
+		ASSERT_TRUE(!muggle_atomic_cmp_exch_weak(&read_cursor, &cur_w_cursor, w_pos + 1, muggle_memory_order_release));
+		ASSERT_NE(cur_w_cursor, w_pos);
+
+		// set action_idx = 2
+		ASSERT_EQ(action_idx, 1);
+		muggle_atomic_fetch_add(&action_idx, 1, muggle_memory_order_relaxed);
+
+		// wait until action_idx == 3
+		while (muggle_atomic_load(&action_idx, muggle_memory_order_relaxed) != 3)
+		{
+			muggle_thread_yield();
+		}
+
+		// move read cursor
+		cur_w_cursor = w_pos;
+		while (!muggle_atomic_cmp_exch_weak(&read_cursor, &cur_w_cursor, w_pos + 1, muggle_memory_order_release) &&
+				cur_w_cursor != w_pos)
+		{
+			muggle_thread_yield();
+			cur_w_cursor = w_pos;
+		}
+		ASSERT_EQ(cur_w_cursor, w_pos);
+		ASSERT_EQ(read_cursor, w_pos + 1);
+	});
+
+	t1.join();
+	t2.join();
+
+	ASSERT_EQ(read_cursor, 2);
+	ASSERT_EQ(data[0], 1);
+	ASSERT_EQ(data[1], 2);
+}
+
 TEST(atomic, fetch_add_sub_single_thread)
 {
 	muggle_atomic_int i = 0;
