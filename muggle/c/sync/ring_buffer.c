@@ -124,11 +124,13 @@ inline static void muggle_ring_buffer_write_busy_loop(muggle_ring_buffer_t *r, v
 	r->datas[IDX_IN_POW_OF_2_RING(idx, r->capacity)] = data;
 
 	// move cursor
-	while (muggle_atomic_load(&r->cursor, muggle_memory_order_relaxed) != idx)
+	muggle_atomic_int cur_idx = idx;
+	while (!muggle_atomic_cmp_exch_weak(&r->cursor, &cur_idx, idx + 1, muggle_memory_order_release)
+			&& cur_idx != idx)
 	{
 		muggle_thread_yield();
+		cur_idx = idx;
 	}
-	muggle_atomic_store(&r->cursor, idx + 1, muggle_memory_order_release);
 }
 
 // muggle ring_buffer wakeup functions
