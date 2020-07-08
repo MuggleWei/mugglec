@@ -57,6 +57,11 @@ int muggle_thread_hardware_concurrency()
 	return (int)sysinfo.dwNumberOfProcessors;
 }
 
+void muggle_thread_yield()
+{
+	SwitchToThread();
+}
+
 #else
 
 #include <unistd.h>
@@ -88,11 +93,7 @@ int muggle_thread_hardware_concurrency()
 
 void muggle_thread_yield()
 {
-#if MUGGLE_PLATFORM_WINDOWS
-		SwitchToThread();
-#else
-		sched_yield();
-#endif
+	sched_yield();
 }
 
 #endif
