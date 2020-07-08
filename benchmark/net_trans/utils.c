@@ -49,6 +49,8 @@ void gen_benchmark_report(const char *name, muggle_benchmark_block_t *blocks, in
 	muggle_benchmark_gen_reports_head(fp, &config);
 	muggle_benchmark_gen_reports_body(fp, &config, blocks, "sort by idx", cnt, 0, 1, 0);
 	muggle_benchmark_gen_reports_body(fp, &config, blocks, "sort by elapsed", cnt, 0, 1, 1);
+
+	fclose(fp);
 }
 
 /****************** message callbacks ******************/
