@@ -149,3 +149,116 @@ TEST(ts_memory_pool, mul_thread)
 	muggle_ts_memory_pool_destroy(&pool);
 	free(datas);
 }
+
+TEST(ts_memory_pool, busy_alloc_free)
+{
+	muggle_atomic_int capacity = 1024;
+	int msg_cnt = (int)capacity * 512;
+	ts_data **datas = (ts_data**)malloc(sizeof(ts_data*) * msg_cnt);
+	for (int i = 0; i < msg_cnt; i++)
+	{
+		datas[i] = nullptr;
+	}
+
+	int hc = (int)std::thread::hardware_concurrency() * 2;
+	if (hc <= 0)
+	{
+		hc = 4;
+	}
+
+	std::map<int, int> alloc_count;
+	std::map<int, int> free_count;
+	for (int i = 0; i < hc; i++)
+	{
+		alloc_count[i] = 0;
+		free_count[i] = 0;
+	}
+
+	muggle_ts_memory_pool_t pool;
+	muggle_ts_memory_pool_init(&pool, capacity, sizeof(ts_data));
+
+	// run allocate threads
+	std::vector<std::thread> alloc_threads;
+	muggle_atomic_int alloc_idx = 0;
+	for (int i = 0; i < hc; i++)
+	{
+		alloc_threads.push_back(std::thread([i, &pool, &datas, &alloc_count, &alloc_idx, &msg_cnt]{
+			while (true)
+			{
+				muggle_atomic_int cur_idx = muggle_atomic_fetch_add(&alloc_idx, 1, muggle_memory_order_relaxed);
+				if (cur_idx >= msg_cnt)
+				{
+					break;
+				}
+
+				ts_data *data = (ts_data*)muggle_ts_memory_pool_alloc(&pool);
+				while (data == nullptr)
+				{
+					muggle_thread_yield();
+					data = (ts_data*)muggle_ts_memory_pool_alloc(&pool);
+				}
+
+				datas[cur_idx] = data;
+
+				alloc_count[i]++;
+			}
+		}));
+	}
+
+	// run free threads
+	std::vector<std::thread> free_threads;
+	muggle_atomic_int free_idx = 0;
+	for (int i = 0; i < hc; i++)
+	{
+		free_threads.push_back(std::thread([i, &datas, &free_count, &free_idx, &msg_cnt]{
+			while (true)
+			{
+				muggle_atomic_int cur_idx = muggle_atomic_fetch_add(&free_idx, 1, muggle_memory_order_relaxed);
+				if (cur_idx >= msg_cnt)
+				{
+					break;
+				}
+
+				ts_data *data = datas[cur_idx];
+				while (data == nullptr)
+				{
+					muggle_thread_yield();
+					data = datas[cur_idx];
+				}
+
+				muggle_ts_memory_pool_free(data);
+
+				free_count[i]++;
+			}
+		}));
+	}
+
+	// join threads
+	for (int i = 0; i < hc; i++)
+	{
+		alloc_threads[i].join();
+	}
+	for (int i = 0; i < hc; i++)
+	{
+		free_threads[i].join();
+	}
+
+	// check message count
+	int alloc_sum=0, free_sum=0;
+	for (int i = 0; i < hc; i++)
+	{
+		// printf("alloc thread[%d]: %d\n", i, alloc_count[i]);
+		alloc_sum += alloc_count[i];
+	}
+	for (int i = 0; i < hc; i++)
+	{
+		// printf("free thread[%d]: %d\n", i, free_count[i]);
+		free_sum += free_count[i];
+	}
+
+	ASSERT_EQ(alloc_sum, msg_cnt);
+	ASSERT_EQ(free_sum, msg_cnt);
+
+	muggle_ts_memory_pool_destroy(&pool);
+	free(datas);
+}
