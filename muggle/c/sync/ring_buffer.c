@@ -9,11 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#if MUGGLE_PLATFORM_WINDOWS
-#include <windows.h>
-#else
-#include <sched.h>
-#endif
 #include "muggle/c/base/err.h"
 #include "muggle/c/base/utils.h"
 #include "muggle/c/base/thread.h"
