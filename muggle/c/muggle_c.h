@@ -52,6 +52,7 @@
 #include "muggle/c/sync/ring_buffer.h"
 #include "muggle/c/sync/array_blocking_queue.h"
 #include "muggle/c/sync/double_buffer.h"
+#include "muggle/c/sync/channel.h"
 
 // log
 #include "muggle/c/log/log_fmt.h"
