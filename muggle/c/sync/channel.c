@@ -17,25 +17,34 @@ static int muggle_channel_write_default(struct muggle_channel *chan, void *data)
 {
 	// move next
 	muggle_atomic_int expected = chan->next_write_cursor;
-	muggle_atomic_int next;
-	do {
+	muggle_atomic_int next = expected;
+	if (next == chan->read_cursor)
+	{
+		return MUGGLE_ERR_FULL;
+	}
+
+	while (!muggle_atomic_cmp_exch_weak(&chan->next_write_cursor, &expected, next+1, muggle_memory_order_relaxed)
+			&& expected != next)
+	{
+		muggle_thread_yield();
 		next = expected;
 		if (next == chan->read_cursor)
 		{
 			return MUGGLE_ERR_FULL;
 		}
-	} while (!muggle_atomic_cmp_exch_weak(&chan->next_write_cursor, &expected, next+1, muggle_memory_order_relaxed)
-			&& expected != next);
+	}
 
 	// assignment
 	chan->blocks[IDX_IN_POW_OF_2_RING(next, chan->capacity)].data = data;
 
 	// move write cursor
-	muggle_atomic_int w_pos;
-	do {
+	muggle_atomic_int w_pos = next;
+	while (!muggle_atomic_cmp_exch_weak(&chan->write_cursor, &w_pos, next + 1, muggle_memory_order_release)
+			&& w_pos != next)
+	{
+		muggle_thread_yield();
 		w_pos = next;
-	} while (!muggle_atomic_cmp_exch_weak(&chan->write_cursor, &w_pos, next + 1, muggle_memory_order_release)
-			&& w_pos != next);
+	}
 
 	return MUGGLE_OK;
 }
