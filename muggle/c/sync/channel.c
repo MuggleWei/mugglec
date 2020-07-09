@@ -55,7 +55,7 @@ static int muggle_channel_write_single_writer(struct muggle_channel *chan, void 
 	}
 
 	chan->blocks[IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity)].data = data;
-	chan->write_cursor++;
+	muggle_atomic_store(&chan->write_cursor, chan->write_cursor + 1, muggle_memory_order_release);
 
 	if (chan->write_cursor == chan->read_cursor)
 	{
