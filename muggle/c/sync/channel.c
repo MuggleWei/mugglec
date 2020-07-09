@@ -12,55 +12,55 @@
 #include "muggle/c/base/utils.h"
 #include "muggle/c/sync/futex.h"
 
+static void muggle_channel_lock_write(muggle_channel_t *chan)
+{
+	muggle_atomic_int expected = MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK;
+	while (!muggle_atomic_cmp_exch_weak(&chan->write_lock, &expected, MUGGLE_CHANNEL_LOCK_STATUS_LOCK, muggle_memory_order_acquire)
+			&& expected != MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK)
+	{
+		muggle_futex_wait(&chan->write_lock, expected, NULL);
+		expected = MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK;
+	}
+}
+
+static void muggle_channel_unlock_write(muggle_channel_t *chan)
+{
+	muggle_atomic_store(&chan->write_lock, MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK, muggle_memory_order_relaxed);
+	muggle_futex_wake_one(&chan->write_lock);
+}
+
 // writer functions
 static int muggle_channel_write_default(struct muggle_channel *chan, void *data)
 {
-	// move next
-	muggle_atomic_int expected = chan->next_write_cursor;
-	muggle_atomic_int next = expected;
-	if (next == chan->read_cursor)
+	muggle_channel_lock_write(chan);
+
+	if (chan->write_cursor + 1 == chan->read_cursor)
 	{
+		muggle_channel_unlock_write(chan);
 		return MUGGLE_ERR_FULL;
 	}
 
-	while (!muggle_atomic_cmp_exch_weak(&chan->next_write_cursor, &expected, next+1, muggle_memory_order_relaxed)
-			&& expected != next)
-	{
-		muggle_thread_yield();
-		next = expected;
-		if (next == chan->read_cursor)
-		{
-			return MUGGLE_ERR_FULL;
-		}
-	}
+	chan->blocks[IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity)].data = data;
+	muggle_atomic_store(&chan->write_cursor, chan->write_cursor + 1, muggle_memory_order_release);
 
-	// assignment
-	chan->blocks[IDX_IN_POW_OF_2_RING(next, chan->capacity)].data = data;
-
-	// move write cursor
-	muggle_atomic_int w_pos = next;
-	while (!muggle_atomic_cmp_exch_weak(&chan->write_cursor, &w_pos, next + 1, muggle_memory_order_release)
-			&& w_pos != next)
-	{
-		muggle_thread_yield();
-		w_pos = next;
-	}
+	muggle_channel_unlock_write(chan);
 
 	return MUGGLE_OK;
 }
 static int muggle_channel_write_single_writer(struct muggle_channel *chan, void *data)
 {
-	if (chan->write_cursor == chan->read_cursor)
+	if (chan->write_cursor + 1 == chan->read_cursor)
 	{
 		return MUGGLE_ERR_FULL;
 	}
 
-	// assignment
-	muggle_channel_block_t *block = &chan->blocks[IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity)];
-	block->data = data;
+	chan->blocks[IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity)].data = data;
+	chan->write_cursor++;
 
-	// move cursor
-	muggle_atomic_fetch_add(&chan->write_cursor, 1, muggle_memory_order_release);
+	if (chan->write_cursor == chan->read_cursor)
+	{
+		return MUGGLE_ERR_FULL;
+	}
 
 	return MUGGLE_OK;
 }
@@ -80,7 +80,8 @@ static void* muggle_channel_read_default(struct muggle_channel *chan)
 {
 	muggle_atomic_int r_pos = IDX_IN_POW_OF_2_RING(chan->read_cursor + 1, chan->capacity);
 	muggle_atomic_int w_cursor;
-	do {
+	while (1)
+	{
 		w_cursor = muggle_atomic_load(&chan->write_cursor, muggle_memory_order_acquire);
 		if (IDX_IN_POW_OF_2_RING(w_cursor, chan->capacity) != r_pos)
 		{
@@ -90,17 +91,16 @@ static void* muggle_channel_read_default(struct muggle_channel *chan)
 		}
 
 		muggle_futex_wait(&chan->write_cursor, w_cursor, NULL);
-	} while(1);
+	}
 
 	return NULL;
 }
 static void* muggle_channel_read_busy_loop(struct muggle_channel *chan)
 {
 	muggle_atomic_int r_pos = IDX_IN_POW_OF_2_RING(chan->read_cursor + 1, chan->capacity);
-	muggle_atomic_int w_cursor;
-	do {
-		w_cursor = muggle_atomic_load(&chan->write_cursor, muggle_memory_order_acquire);
-		if (IDX_IN_POW_OF_2_RING(w_cursor, chan->capacity) != r_pos)
+	while (1)
+	{
+		if (IDX_IN_POW_OF_2_RING(muggle_atomic_load(&chan->write_cursor, muggle_memory_order_acquire), chan->capacity) != r_pos)
 		{
 			void *data = chan->blocks[r_pos].data;
 			chan->read_cursor++;
@@ -108,7 +108,7 @@ static void* muggle_channel_read_busy_loop(struct muggle_channel *chan)
 		}
 
 		muggle_thread_yield();
-	} while (1);
+	}
 
 	return NULL;
 }
@@ -129,8 +129,8 @@ int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int 
 	chan->capacity = capacity;
 	chan->flags = flags;
 	chan->write_cursor = 0;
-	chan->next_write_cursor = 0;
 	chan->read_cursor = capacity - 1;
+	chan->write_lock = MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK;
 	chan->blocks = (muggle_channel_block_t*)malloc(sizeof(muggle_channel_block_t) * capacity);
 	if (chan->blocks == NULL)
 	{

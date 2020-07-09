@@ -32,9 +32,8 @@ enum
 
 enum
 {
-	MUGGLE_CHANNEL_BLOCK_STATUS_EMPTY = 0,
-	MUGGLE_CHANNEL_BLOCK_STATUS_PREPARE,
-	MUGGLE_CHANNEL_BLOCK_STATUS_READY,
+	MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK,
+	MUGGLE_CHANNEL_LOCK_STATUS_LOCK,
 };
 
 typedef struct muggle_channel_block
@@ -57,13 +56,14 @@ typedef struct muggle_channel
 	fn_muggle_channel_read  fn_read;
 	fn_muggle_channel_wake  fn_wake;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
-	muggle_atomic_int next_write_cursor;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
 	muggle_atomic_int write_cursor;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
 	muggle_atomic_int read_cursor;
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
+	muggle_atomic_int write_lock;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(4);
 	muggle_channel_block_t *blocks;
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(5);
 }muggle_channel_t;
 
 /*
