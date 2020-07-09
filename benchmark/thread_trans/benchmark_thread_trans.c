@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 	// convert input arguments
 	if (argc < 3)
 	{
-		MUGGLE_LOG_ERROR("usage: %s <num-thread> <msg-per-write>");
+		MUGGLE_LOG_ERROR("usage: %s <num-thread> <msg-per-write>", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
