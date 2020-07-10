@@ -35,9 +35,10 @@
 #include "muggle/c/memory/bytes_buffer.h"
 #include "muggle/c/memory/threadsafe_memory_pool.h"
 
-// muggle c time
+// time
 #include "muggle/c/time/win_gettimeofday.h"
 #include "muggle/c/time/win_gmtime.h"
+#include "muggle/c/time/cpu_cycle.h"
 
 // os
 #include "muggle/c/os/os.h"

@@ -36,6 +36,7 @@ void gen_benchmark_report(const char *name, muggle_benchmark_block_t *blocks, in
 	config.cnt_per_loop = PKG_PER_ROUND;
 	config.loop_interval_ms = ROUND_INTERVAL_MS;
 	config.report_step = 10;
+	config.elapsed_unit = MUGGLE_BENCHMARK_ELAPSED_UNIT_NS;
 
 	char file_name[128];
 	snprintf(file_name, sizeof(file_name)-1, "benchmark_%s.csv", config.name);

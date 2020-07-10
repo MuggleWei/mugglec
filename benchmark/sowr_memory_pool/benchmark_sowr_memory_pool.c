@@ -189,6 +189,7 @@ int main()
 	config.cnt_per_loop = 20000;
 	config.loop_interval_ms = 10;
 	config.report_step = 10;
+	config.elapsed_unit = MUGGLE_BENCHMARK_ELAPSED_UNIT_NS;
 
 	char file_name[128];
 	snprintf(file_name, sizeof(file_name)-1, "benchmark_%s.csv", config.name);

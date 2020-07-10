@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
 	benchmark_cfg.loop_interval_ms = round_interval;
 	benchmark_cfg.cnt_per_loop = msg_per_round;
 	benchmark_cfg.report_step = 10;
+	benchmark_cfg.elapsed_unit = MUGGLE_BENCHMARK_ELAPSED_UNIT_NS;
 
 	// allocate memory
 	int total_msg_num = num_thread * rounds * msg_per_round;

@@ -14,6 +14,17 @@ void muggle_benchmark_gen_reports_head(
 	struct muggle_benchmark_config *config
 )
 {
+	char buf[4096] = {0};
+	if (config->elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_NS)
+	{
+		snprintf(buf, sizeof(buf), "elapsed unit[ns]\n");
+	}
+	else if (config->elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_CPU_CYCLE)
+	{
+		snprintf(buf, sizeof(buf), "elapsed unit[cpu cycle]\n");
+	}
+	fwrite(buf, 1, strlen(buf), fp);
+
 	fwrite("case_name", 1, strlen("case_name"), fp);
 	fwrite(",", 1, strlen(","), fp);
 	fwrite("loop", 1, strlen("loop"), fp);
@@ -60,17 +71,36 @@ void muggle_benchmark_gen_reports_body(
 	uint64_t sum = 0, cnt_sum = 0, avg = 0;
 	for (uint64_t i = 0; i < cnt; ++i)
 	{
-		if (blocks[i].ts[ts_end_idx].tv_sec == 0 || blocks[i].ts[ts_begin_idx].tv_sec == 0)
+		if (config->elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_NS)
 		{
-			elapseds[i] = UINT_MAX;
+			if (blocks[i].ts[ts_end_idx].tv_sec == 0 || blocks[i].ts[ts_begin_idx].tv_sec == 0)
+			{
+				elapseds[i] = UINT_MAX;
+			}
+			else
+			{
+				elapseds[i] = get_elapsed_ns(&blocks[i], ts_begin_idx, ts_end_idx);
+				sum += elapseds[i];
+				cnt_sum++;
+			}
+		}
+		else if (config->elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_CPU_CYCLE)
+		{
+			if (blocks[i].cpu_cycles[ts_end_idx] == 0 || blocks[i].cpu_cycles[ts_begin_idx] == 0)
+			{
+				elapseds[i] = UINT_MAX;
+			}
+			else
+			{
+				elapseds[i] = get_elapsed_cpu_cycles(&blocks[i], ts_begin_idx, ts_end_idx);
+				sum += elapseds[i];
+				cnt_sum++;
+			}
 		}
 		else
 		{
-			elapseds[i] = 
-				(blocks[i].ts[ts_end_idx].tv_sec - blocks[i].ts[ts_begin_idx].tv_sec) * 1000000000 +
-				blocks[i].ts[ts_end_idx].tv_nsec - blocks[i].ts[ts_begin_idx].tv_nsec;
-			sum += elapseds[i];
-			cnt_sum++;
+			MUGGLE_LOG_ERROR("invalid elapseds unit");
+			exit(EXIT_FAILURE);
 		}
 	}
 	avg = sum / cnt_sum;
@@ -115,6 +145,18 @@ void muggle_benchmark_gen_reports_body(
 	fwrite("\n", 1, strlen("\n"), fp);
 
 	free(elapseds);
+}
+
+uint64_t get_elapsed_ns(muggle_benchmark_block_t *block, int begin, int end)
+{
+	return
+		((uint64_t)(block->ts[end].tv_sec - block->ts[begin].tv_sec) * 1000000000 +	(uint64_t)block->ts[end].tv_nsec)
+		- (uint64_t)block->ts[begin].tv_nsec;
+}
+
+uint64_t get_elapsed_cpu_cycles(muggle_benchmark_block_t *block, int begin, int end)
+{
+	return block->cpu_cycles[end] - block->cpu_cycles[begin];
 }
 
 NS_MUGGLE_END

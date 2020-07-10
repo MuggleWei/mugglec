@@ -24,10 +24,19 @@
 
 EXTERN_C_BEGIN
 
+enum
+{
+	MUGGLE_BENCHMARK_ELAPSED_UNIT_NS,
+	MUGGLE_BENCHMARK_ELAPSED_UNIT_CPU_CYCLE,
+};
+
 typedef struct muggle_benchmark_block
 {
 	uint64_t idx;
-	struct timespec ts[8];
+	union {
+		struct timespec ts[8];
+		uint64_t cpu_cycles[8];
+	};
 	uint64_t elapsed_ns;
 } muggle_benchmark_block_t;
 
@@ -38,6 +47,7 @@ typedef struct muggle_benchmark_config
 	uint64_t cnt_per_loop;
 	uint64_t loop_interval_ms;
 	int report_step;
+	int elapsed_unit;
 } muggle_benchmark_config_t;
 
 MUGGLE_BENCHMARK_EXPORT
@@ -54,6 +64,12 @@ void muggle_benchmark_gen_reports_body(
 	uint64_t ts_end_idx,
 	bool sort
 );
+
+MUGGLE_BENCHMARK_EXPORT
+uint64_t get_elapsed_ns(muggle_benchmark_block_t *block, int begin, int end);
+
+MUGGLE_BENCHMARK_EXPORT
+uint64_t get_elapsed_cpu_cycles(muggle_benchmark_block_t *block, int begin, int end);
 
 EXTERN_C_END
 

@@ -22,11 +22,13 @@ muggle_thread_ret_t write_thread(void *p_arg)
 		for (int j = 0; j < arg->cfg->cnt_per_loop; j++)
 		{
 			timespec_get(&arg->blocks[idx].ts[0], TIME_UTC);
+			// arg->blocks[idx].cpu_cycles[0] = muggle_get_cpu_cycle();
 			while (trans_fn(trans_obj, &arg->blocks[idx]) != 0)
 			{
 				continue;
 			}
 			timespec_get(&arg->blocks[idx].ts[1], TIME_UTC);
+			// arg->blocks[idx].cpu_cycles[1] = muggle_get_cpu_cycle();
 			idx++;
 		}
 
@@ -79,6 +81,7 @@ void run_thread_trans_benchmark(struct write_thread_args *args, int num_thread, 
 		{
 			muggle_benchmark_block_t *block = (muggle_benchmark_block_t*)data;
 			timespec_get(&block->ts[2], TIME_UTC);
+			// block->cpu_cycles[2] = muggle_get_cpu_cycle();
 			total_recv++;
 		}
 		else
