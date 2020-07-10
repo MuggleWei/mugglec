@@ -13,7 +13,7 @@ int muggle_log_simple_init(int level_console, int level_file_rotating)
     muggle_log_handle_console_init(
         &s_log_utils_handle_console,
         MUGGLE_LOG_WRITE_TYPE_SYNC,
-        MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_THREAD | MUGGLE_LOG_FMT_FUNC,
+        MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_FUNC,
         level_console,
         0, NULL, NULL, 1);
     muggle_log_add_handle(&s_log_utils_handle_console);
@@ -70,7 +70,7 @@ int muggle_log_simple_init(int level_console, int level_file_rotating)
     int ret = muggle_log_handle_rotating_file_init(
         &s_log_utils_handle_rotating_file,
         MUGGLE_LOG_WRITE_TYPE_SYNC,
-        MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_TIME | MUGGLE_LOG_FMT_THREAD,
+        MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_TIME | MUGGLE_LOG_FMT_TIME | MUGGLE_LOG_FMT_THREAD,
         level_file_rotating,
         0, NULL, NULL, log_path,
         1024 * 1024 * 64, 5

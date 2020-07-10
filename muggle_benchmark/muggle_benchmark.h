@@ -42,7 +42,7 @@ typedef struct muggle_benchmark_block
 
 typedef struct muggle_benchmark_config
 {
-	char name[32];
+	char name[64];
 	uint64_t loop;
 	uint64_t cnt_per_loop;
 	uint64_t loop_interval_ms;
