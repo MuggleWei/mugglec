@@ -8,6 +8,7 @@
 #include "trans_runner.h"
 #include "benchmark_channel.h"
 #include "benchmark_ringbuffer.h"
+#include "benchmark_array_blocking_queue.h"
 
 #define PARAM_NUM 5
 
@@ -99,6 +100,12 @@ int main(int argc, char *argv[])
 	flags = MUGGLE_RING_BUFFER_FLAG_WRITE_BUSY_LOOP | MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP;
 	snprintf(name, sizeof(name), "ringbuffer_%dw_busyloop_1r_busyloop", num_thread);
 	run_ringbuffer(name, flags, args, num_thread, blocks);
+
+	// array blocking queue
+	MUGGLE_LOG_INFO("=======================================================");
+	flags = 0;
+	snprintf(name, sizeof(name), "array_blocking_queue_%dw_1r", num_thread);
+	run_array_blocking_queue(name, flags, args, num_thread, blocks);
 
 	// free memory
 	free(args);
