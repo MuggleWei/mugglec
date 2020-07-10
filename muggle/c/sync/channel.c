@@ -15,22 +15,22 @@
 static void muggle_channel_lock_write(muggle_channel_t *chan)
 {
 	muggle_atomic_int expected = MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK;
-	while (!muggle_atomic_cmp_exch_weak(&chan->write_lock, &expected, MUGGLE_CHANNEL_LOCK_STATUS_LOCK, muggle_memory_order_acquire)
+	while (!muggle_atomic_cmp_exch_weak(&chan->write_futex, &expected, MUGGLE_CHANNEL_LOCK_STATUS_LOCK, muggle_memory_order_acquire)
 			&& expected != MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK)
 	{
-		muggle_futex_wait(&chan->write_lock, expected, NULL);
+		muggle_futex_wait(&chan->write_futex, expected, NULL);
 		expected = MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK;
 	}
 }
 
 static void muggle_channel_unlock_write(muggle_channel_t *chan)
 {
-	muggle_atomic_store(&chan->write_lock, MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK, muggle_memory_order_relaxed);
-	muggle_futex_wake_one(&chan->write_lock);
+	muggle_atomic_store(&chan->write_futex, MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK, muggle_memory_order_relaxed);
+	muggle_futex_wake_one(&chan->write_futex);
 }
 
-// writer functions
-static int muggle_channel_write_default(muggle_channel_t *chan, void *data)
+/***************** write *****************/
+static int muggle_channel_write_mutex(muggle_channel_t *chan, void *data)
 {
 	muggle_mutex_lock(&chan->write_mutex);
 
@@ -77,8 +77,8 @@ static int muggle_channel_write_futex(muggle_channel_t *chan, void *data)
 	return MUGGLE_OK;
 }
 
-// weak functions
-static void muggle_channel_wake_default(struct muggle_channel *chan)
+/***************** wake *****************/
+static void muggle_channel_wake_futex(struct muggle_channel *chan)
 {
 	muggle_futex_wake_one(&chan->write_cursor);
 }
@@ -87,8 +87,8 @@ static void muggle_channel_wake_busy_loop(struct muggle_channel *chan)
 	// do nothing
 }
 
-// read functions
-static void* muggle_channel_read_default(struct muggle_channel *chan)
+/***************** read *****************/
+static void* muggle_channel_read_futex(struct muggle_channel *chan)
 {
 	muggle_atomic_int r_pos = IDX_IN_POW_OF_2_RING(chan->read_cursor + 1, chan->capacity);
 	muggle_atomic_int w_cursor;
@@ -142,7 +142,7 @@ int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int 
 	chan->flags = flags;
 	chan->write_cursor = 0;
 	chan->read_cursor = capacity - 1;
-	chan->write_lock = MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK;
+	chan->write_futex = MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK;
 
 	int ret = muggle_mutex_init(&chan->write_mutex);
 	if (ret != MUGGLE_OK)
@@ -172,7 +172,7 @@ int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int 
 	}
 	else
 	{
-		chan->fn_write = muggle_channel_write_default;
+		chan->fn_write = muggle_channel_write_mutex;
 	}
 
 	if (chan->flags & MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP)
@@ -182,8 +182,8 @@ int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int 
 	}
 	else
 	{
-		chan->fn_read = muggle_channel_read_default;
-		chan->fn_wake = muggle_channel_wake_default;
+		chan->fn_read = muggle_channel_read_futex;
+		chan->fn_wake = muggle_channel_wake_futex;
 	}
 
 	return MUGGLE_OK;

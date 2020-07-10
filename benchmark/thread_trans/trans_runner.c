@@ -39,6 +39,9 @@ muggle_thread_ret_t write_thread(void *p_arg)
 	}
 
 	MUGGLE_LOG_INFO("write thread exit");
+
+	// for wait all thread write data completed
+	muggle_msleep(100);
 	trans_fn(trans_obj, NULL);
 
 	return 0;

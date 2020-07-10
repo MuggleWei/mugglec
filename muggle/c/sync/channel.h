@@ -65,7 +65,7 @@ typedef struct muggle_channel
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
 	muggle_atomic_int read_cursor;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
-	muggle_atomic_int write_lock;
+	muggle_atomic_int write_futex;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(4);
 	muggle_mutex_t write_mutex;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(5);
