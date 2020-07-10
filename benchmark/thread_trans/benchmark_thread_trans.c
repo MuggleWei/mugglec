@@ -15,7 +15,7 @@
 int get_argv(int argc, int idx, char **argv, const char *name, int default_val)
 {
 	int val;
-	if (idx + 1 >= PARAM_NUM || !muggle_str_toi(argv[idx], &val, 10))
+	if (idx >= PARAM_NUM || !muggle_str_toi(argv[idx], &val, 10))
 	{
 		MUGGLE_LOG_WARNING("failed get value of %s, use default val: %d", name, default_val);
 		val = default_val;
