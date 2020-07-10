@@ -25,6 +25,7 @@ muggle_thread_ret_t write_thread(void *p_arg)
 		timespec_get(&arg->blocks[i].ts[1], TIME_UTC);
 	}
 
+	MUGGLE_LOG_INFO("write thread exit");
 	trans_fn(trans_obj, NULL);
 
 	return 0;
@@ -71,6 +72,7 @@ void run_thread_trans_benchmark(struct write_thread_args *args, int num_thread, 
 		else
 		{
 			recv_null++;
+			MUGGLE_LOG_INFO("recv thread end");
 			if (recv_null == num_thread)
 			{
 				break;
