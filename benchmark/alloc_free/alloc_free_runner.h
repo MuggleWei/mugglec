@@ -21,6 +21,7 @@ struct alloc_free_args
 	muggle_benchmark_block_t *blocks;
 	void                     **data_container;
 
+	muggle_atomic_int        fetch_cursor;
 	muggle_atomic_int        alloc_cursor;
 	muggle_atomic_int        free_cursor;
 

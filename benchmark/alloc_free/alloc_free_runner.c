@@ -17,13 +17,15 @@ static muggle_thread_ret_t alloc_thread(void *p_arg)
 	fn_alloc cb_alloc = args->cb_alloc;
 	void *allocator = args->allocator;
 	muggle_atomic_int *alloc_cursor = &args->alloc_cursor;
+	muggle_atomic_int *fetch_cursor = &args->fetch_cursor;
 	size_t data_size = args->data_size;
 
 	muggle_atomic_int idx;
 	void *data = NULL;
+	int cnt = 0;
 	while (1)
 	{
-		idx = muggle_atomic_fetch_add(alloc_cursor, 1, muggle_memory_order_relaxed);
+		idx = muggle_atomic_fetch_add(fetch_cursor, 1, muggle_memory_order_relaxed);
 		if (idx >= args->cnt_blocks)
 		{
 			break;
@@ -38,17 +40,28 @@ static muggle_thread_ret_t alloc_thread(void *p_arg)
 			if (data)
 			{
 				data_container[idx] = data;
+
+				muggle_atomic_int expected = idx;
+				while (!muggle_atomic_cmp_exch_weak(alloc_cursor, &expected, idx + 1, muggle_memory_order_release)
+						&& expected != idx)
+				{
+					muggle_thread_yield();
+					expected = idx;
+				}
+
+				++cnt;
 				break;
 			}
 			else
 			{
 				MUGGLE_LOG_WARNING("failed allocate memory for idx[%d], retry", idx);
+				muggle_msleep(5);
 				muggle_thread_yield();
 			}
 		};
 	}
 
-	MUGGLE_LOG_INFO("allocate thread exit");
+	MUGGLE_LOG_INFO("allocate thread exit, allocate cnt: %d", cnt);
 
 	return 0;
 }
@@ -67,6 +80,7 @@ static muggle_thread_ret_t free_thread(void *p_arg)
 
 	muggle_atomic_int idx;
 	void *data = NULL;
+	int cnt = 0;
 	while (1)
 	{
 		idx = muggle_atomic_load(free_cursor, muggle_memory_order_relaxed);
@@ -82,6 +96,7 @@ static muggle_thread_ret_t free_thread(void *p_arg)
 				timespec_get(&blocks[idx].ts[2], TIME_UTC);
 				cb_free(allocator, data_container[idx]);
 				timespec_get(&blocks[idx].ts[3], TIME_UTC);
+				++cnt;
 			}
 		}
 		else
@@ -90,7 +105,7 @@ static muggle_thread_ret_t free_thread(void *p_arg)
 		}
 	}
 
-	MUGGLE_LOG_INFO("free thread exit");
+	MUGGLE_LOG_INFO("free thread exit, free cnt: %d", cnt);
 
 	return 0;
 }
@@ -120,6 +135,7 @@ void run_alloc_free_benchmark(const char *name, struct alloc_free_args *args)
 	}
 
 	// init alloc and free cursor
+	args->fetch_cursor = 0;
 	args->alloc_cursor = 0;
 	args->free_cursor = 0;
 
@@ -135,6 +151,35 @@ void run_alloc_free_benchmark(const char *name, struct alloc_free_args *args)
 	}
 	else
 	{
+		muggle_thread_t *alloc_threads = (muggle_thread_t*)malloc(args->num_alloc_threads * sizeof(muggle_thread_t));
+		muggle_thread_t *free_threads = (muggle_thread_t*)malloc(args->num_free_threads * sizeof(muggle_thread_t));
+
+		for (int i = 0; i < args->num_free_threads; i++)
+		{
+			MUGGLE_LOG_INFO("start %s free thread %d", name, i);
+			muggle_thread_create(&free_threads[i], free_thread, args);
+		}
+
+		for (int i = 0; i < args->num_alloc_threads; i++)
+		{
+			MUGGLE_LOG_INFO("start %s allocate thread %d", name, i);
+			muggle_thread_create(&alloc_threads[i], alloc_thread, args);
+		}
+
+		for (int i = 0; i < args->num_alloc_threads; i++)
+		{
+			muggle_thread_join(&alloc_threads[i]);
+			MUGGLE_LOG_INFO("join %s allocate thread %d", name, i);
+		}
+
+		for (int i = 0; i < args->num_free_threads; i++)
+		{
+			muggle_thread_join(&free_threads[i]);
+			MUGGLE_LOG_INFO("join %s free thread %d", name, i);
+		}
+
+		free(alloc_threads);
+		free(free_threads);
 	}
 
 	// gen report
