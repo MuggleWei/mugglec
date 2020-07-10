@@ -30,7 +30,36 @@ static void muggle_channel_unlock_write(muggle_channel_t *chan)
 }
 
 // writer functions
-static int muggle_channel_write_default(struct muggle_channel *chan, void *data)
+static int muggle_channel_write_default(muggle_channel_t *chan, void *data)
+{
+	muggle_mutex_lock(&chan->write_mutex);
+
+	if (chan->write_cursor + 1 == chan->read_cursor)
+	{
+		muggle_mutex_unlock(&chan->write_mutex);
+		return MUGGLE_ERR_FULL;
+	}
+
+	chan->blocks[IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity)].data = data;
+	muggle_atomic_store(&chan->write_cursor, chan->write_cursor + 1, muggle_memory_order_release);
+
+	muggle_mutex_unlock(&chan->write_mutex);
+
+	return MUGGLE_OK;
+}
+static int muggle_channel_write_single_writer(muggle_channel_t *chan, void *data)
+{
+	if (chan->write_cursor + 1 == chan->read_cursor)
+	{
+		return MUGGLE_ERR_FULL;
+	}
+
+	chan->blocks[IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity)].data = data;
+	muggle_atomic_store(&chan->write_cursor, chan->write_cursor + 1, muggle_memory_order_release);
+
+	return MUGGLE_OK;
+}
+static int muggle_channel_write_futex(muggle_channel_t *chan, void *data)
 {
 	muggle_channel_lock_write(chan);
 
@@ -44,23 +73,6 @@ static int muggle_channel_write_default(struct muggle_channel *chan, void *data)
 	muggle_atomic_store(&chan->write_cursor, chan->write_cursor + 1, muggle_memory_order_release);
 
 	muggle_channel_unlock_write(chan);
-
-	return MUGGLE_OK;
-}
-static int muggle_channel_write_single_writer(struct muggle_channel *chan, void *data)
-{
-	if (chan->write_cursor + 1 == chan->read_cursor)
-	{
-		return MUGGLE_ERR_FULL;
-	}
-
-	chan->blocks[IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity)].data = data;
-	muggle_atomic_store(&chan->write_cursor, chan->write_cursor + 1, muggle_memory_order_release);
-
-	if (chan->write_cursor == chan->read_cursor)
-	{
-		return MUGGLE_ERR_FULL;
-	}
 
 	return MUGGLE_OK;
 }
@@ -131,9 +143,17 @@ int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int 
 	chan->write_cursor = 0;
 	chan->read_cursor = capacity - 1;
 	chan->write_lock = MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK;
+
+	int ret = muggle_mutex_init(&chan->write_mutex);
+	if (ret != MUGGLE_OK)
+	{
+		return ret;
+	}
+
 	chan->blocks = (muggle_channel_block_t*)malloc(sizeof(muggle_channel_block_t) * capacity);
 	if (chan->blocks == NULL)
 	{
+		muggle_mutex_destroy(&chan->write_mutex);
 		return MUGGLE_ERR_MEM_ALLOC;
 	}
 
@@ -145,6 +165,10 @@ int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int 
 	if (chan->flags & MUGGLE_CHANNEL_FLAG_SINGLE_WRITER)
 	{
 		chan->fn_write = muggle_channel_write_single_writer;
+	}
+	else if (chan->flags & MUGGLE_CHANNEL_FLAG_WRITE_FUTEX)
+	{
+		chan->fn_write = muggle_channel_write_futex;
 	}
 	else
 	{
@@ -172,6 +196,8 @@ void muggle_channel_destroy(muggle_channel_t *chan)
 		free(chan->blocks);
 		chan->blocks = NULL;
 	}
+
+	muggle_mutex_destroy(&chan->write_mutex);
 }
 
 int muggle_channel_write(muggle_channel_t *chan, void *data)

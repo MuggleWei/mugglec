@@ -73,12 +73,22 @@ int main(int argc, char *argv[])
 	// benchmark channel
 	MUGGLE_LOG_INFO("=======================================================");
 	flags = 0;
-	snprintf(name, sizeof(name), "channel_%dw_1r", num_thread);
+	snprintf(name, sizeof(name), "channel_%dw_mutex_1r", num_thread);
+	run_channel(name, flags, args, num_thread, blocks);
+
+	MUGGLE_LOG_INFO("=======================================================");
+	flags = MUGGLE_CHANNEL_FLAG_WRITE_FUTEX;
+	snprintf(name, sizeof(name), "channel_%dw_futex_1r", num_thread);
 	run_channel(name, flags, args, num_thread, blocks);
 
 	MUGGLE_LOG_INFO("=======================================================");
 	flags = MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP;
-	snprintf(name, sizeof(name), "channel_%dw_1r_busyloop", num_thread);
+	snprintf(name, sizeof(name), "channel_%dw_mutex_1r_busyloop", num_thread);
+	run_channel(name, flags, args, num_thread, blocks);
+
+	MUGGLE_LOG_INFO("=======================================================");
+	flags = MUGGLE_CHANNEL_FLAG_WRITE_FUTEX | MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP;
+	snprintf(name, sizeof(name), "channel_%dw_futex_1r_busyloop", num_thread);
 	run_channel(name, flags, args, num_thread, blocks);
 
 	// benchmark ringbuffer

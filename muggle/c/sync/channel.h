@@ -10,6 +10,7 @@
 
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/atomic.h"
+#include "muggle/c/sync/mutex.h"
 
 EXTERN_C_BEGIN
 
@@ -20,14 +21,18 @@ EXTERN_C_BEGIN
  * When channel empty, read will block until data write into channel
  *
  * muggle_channel_t and muggle_ring_buffer_t with only one reader are very similar, but most important different is
- * when ringbuffer full, last message will cover oldest message, the oldest message will lost
+ * when ringbuffer full, last message will be pushed in and lost all old message
  * when channel full, write will return failed
  * */
 
 enum
 {
+	MUGGLE_CHANNEL_FLAG_WRITE_MUTEX    = 0x00, // write lock use mutex
+	MUGGLE_CHANNEL_FLAG_READ_WAIT      = 0x00, // reader wait
+
 	MUGGLE_CHANNEL_FLAG_SINGLE_WRITER  = 0x01, // user guarantee only one writer use this channel
 	MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP = 0x02, // reader busy loop until read message from channel
+	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX    = 0x04, // write lock use futex
 };
 
 enum
@@ -62,8 +67,10 @@ typedef struct muggle_channel
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
 	muggle_atomic_int write_lock;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(4);
-	muggle_channel_block_t *blocks;
+	muggle_mutex_t write_mutex;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(5);
+	muggle_channel_block_t *blocks;
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(6);
 }muggle_channel_t;
 
 /*
