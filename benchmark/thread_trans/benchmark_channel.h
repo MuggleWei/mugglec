@@ -12,6 +12,11 @@
 
 int channel_write(void *trans_obj, void *data);
 void* channel_read(void *trans_obj);
-void run_channel(struct write_thread_args *args, muggle_benchmark_block_t *blocks, int num_thread, int msg_per_write, int read_busy_loop);
+void run_channel(
+	const char *name,
+	int flags,
+	struct write_thread_args *args,
+	int num_thread,
+	muggle_benchmark_block_t *blocks);
 
 #endif

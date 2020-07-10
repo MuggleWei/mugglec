@@ -17,29 +17,29 @@ void* channel_read(void *trans_obj)
 	muggle_channel_t *chan = (muggle_channel_t*)trans_obj;
 	return muggle_channel_read(chan);
 }
-void run_channel(struct write_thread_args *args, muggle_benchmark_block_t *blocks, int num_thread, int msg_per_write, int read_busy_loop)
+void run_channel(
+	const char *name,
+	int flags,
+	struct write_thread_args *args,
+	int num_thread,
+	muggle_benchmark_block_t *blocks)
 {
-	MUGGLE_LOG_INFO("run benchmark channel, read_busy_loop=%d", read_busy_loop);
+	MUGGLE_LOG_INFO("run benchmark %s", name);
 
-	init_blocks(args, blocks, num_thread, msg_per_write);
+	init_blocks(args, blocks, num_thread);
 
 	MUGGLE_LOG_INFO("init blocks ok");
 
-	int flags = 0;
-	if (read_busy_loop)
-	{
-		flags = MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP;
-	}
-
+	int total_msg_num = num_thread * args->cfg->loop * args->cfg->cnt_per_loop;
 	muggle_channel_t chan;
-	muggle_atomic_int capacity = num_thread * msg_per_write / 64;
+	muggle_atomic_int capacity = total_msg_num / 64;
 	if (muggle_channel_init(&chan, capacity, flags) != 0)
 	{
-		MUGGLE_LOG_ERROR("failed init channel with capacity: %d", (int)capacity);
+		MUGGLE_LOG_ERROR("failed init %s with capacity: %d", name, (int)capacity);
 		exit(EXIT_FAILURE);
 	}
 
-	MUGGLE_LOG_INFO("init channel ok");
+	MUGGLE_LOG_INFO("init %s ok", name);
 
 	for (int i = 0; i < num_thread; i++)
 	{
@@ -47,27 +47,17 @@ void run_channel(struct write_thread_args *args, muggle_benchmark_block_t *block
 		args[i].trans_obj = (void*)&chan;
 	}
 
-	MUGGLE_LOG_INFO("start benchmark channel");
+	MUGGLE_LOG_INFO("start benchmark %s", name);
 
 	run_thread_trans_benchmark(args, num_thread, channel_read);
 
-	MUGGLE_LOG_INFO("benchmark channel completed");
+	MUGGLE_LOG_INFO("benchmark %s completed", name);
 
 	muggle_channel_destroy(&chan);
 
-	MUGGLE_LOG_INFO("gen report for benchmark channel");
+	MUGGLE_LOG_INFO("gen report for benchmark %s", name);
 
-	char name[64];
-	if (read_busy_loop)
-	{
-		snprintf(name, sizeof(name), "channel_%dw_1r", num_thread);
-		gen_benchmark_report(name, blocks, num_thread * msg_per_write);
-	}
-	else
-	{
-		snprintf(name, sizeof(name), "channel_%dw_1r_busyloop", num_thread);
-		gen_benchmark_report(name, blocks, num_thread * msg_per_write);
-	}
+	gen_benchmark_report(name, blocks, args[0].cfg, total_msg_num);
 
-	MUGGLE_LOG_INFO("report for benchmark channel complete");
+	MUGGLE_LOG_INFO("report for benchmark %s complete", name);
 }

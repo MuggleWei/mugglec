@@ -19,24 +19,24 @@ void* ringbuffer_read(void *trans_obj)
 	muggle_ring_buffer_t *ringbuf = (muggle_ring_buffer_t*)trans_obj;
 	return muggle_ring_buffer_read(ringbuf, ringbuf_read_idx++);
 }
-void run_ringbuffer(struct write_thread_args *args, muggle_benchmark_block_t *blocks, int num_thread, int msg_per_write, int read_busy_loop)
+void run_ringbuffer(
+	const char *name,
+	int flags,
+	struct write_thread_args *args,
+	int num_thread,
+	muggle_benchmark_block_t *blocks)
 {
-	MUGGLE_LOG_INFO("run benchmark ring buffer, read_busy_loop=%d", read_busy_loop);
+	MUGGLE_LOG_INFO("run benchmark %s", name);
 
 	ringbuf_read_idx = 0;
 
-	init_blocks(args, blocks, num_thread, msg_per_write);
+	init_blocks(args, blocks, num_thread);
 
 	MUGGLE_LOG_INFO("init blocks ok");
 
-	int flags = MUGGLE_RING_BUFFER_FLAG_SINGLE_READER | MUGGLE_RING_BUFFER_FLAG_WRITE_BUSY_LOOP;
-	if (read_busy_loop)
-	{
-		flags |= MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP;
-	}
-
+	int total_msg_num = num_thread * args->cfg->loop * args->cfg->cnt_per_loop;
 	muggle_ring_buffer_t ringbuf;
-	muggle_atomic_int capacity = num_thread * msg_per_write / 64;
+	muggle_atomic_int capacity = total_msg_num / 64;
 	if (muggle_ring_buffer_init(&ringbuf, capacity, flags) != 0)
 	{
 		MUGGLE_LOG_ERROR("failed init ring buffer with capacity: %d", (int)capacity);
@@ -61,17 +61,7 @@ void run_ringbuffer(struct write_thread_args *args, muggle_benchmark_block_t *bl
 
 	MUGGLE_LOG_INFO("gen report for benchmark ring buffer");
 
-	char name[64];
-	if (read_busy_loop)
-	{
-		snprintf(name, sizeof(name), "ringbuffer_%dw_1r", num_thread);
-		gen_benchmark_report(name, blocks, num_thread * msg_per_write);
-	}
-	else
-	{
-		snprintf(name, sizeof(name), "ringbuffer_%dw_1r_busyloop", num_thread);
-		gen_benchmark_report(name, blocks, num_thread * msg_per_write);
-	}
+	gen_benchmark_report(name, blocks, args[0].cfg, total_msg_num);
 
 	MUGGLE_LOG_INFO("report for benchmark ring buffer complete");
 }
