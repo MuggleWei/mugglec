@@ -12,7 +12,7 @@ struct ts_data
 
 TEST(ts_memory_pool, single_thread)
 {
-	muggle_atomic_int capacity = next_pow_of_2(5); // real capacity is 8, real allocate capacity = capacity - 1
+	muggle_atomic_int capacity = (muggle_atomic_int)next_pow_of_2((uint64_t)5); // real capacity is 8, real allocate capacity = capacity - 1
 	muggle_atomic_int real_capacity = capacity - 1;
 
 	ASSERT_EQ(capacity, 8);

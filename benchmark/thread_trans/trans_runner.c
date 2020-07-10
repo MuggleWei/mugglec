@@ -34,7 +34,7 @@ muggle_thread_ret_t write_thread(void *p_arg)
 
 		if (arg->cfg->loop_interval_ms > 0)
 		{
-			muggle_msleep(arg->cfg->loop_interval_ms);
+			muggle_msleep((unsigned long)arg->cfg->loop_interval_ms);
 		}
 	}
 
@@ -49,7 +49,7 @@ muggle_thread_ret_t write_thread(void *p_arg)
 
 void init_blocks(struct write_thread_args *args, muggle_benchmark_block_t *blocks, int num_thread)
 {
-	int msg_per_thread = args->cfg->loop * args->cfg->cnt_per_loop;
+	int msg_per_thread = (int)args->cfg->loop * (int)args->cfg->cnt_per_loop;
 	int total_msg_num = num_thread * msg_per_thread;
 
 	for (int i = 0; i < total_msg_num; i++)
@@ -98,7 +98,7 @@ void run_thread_trans_benchmark(struct write_thread_args *args, int num_thread, 
 		}
 	}
 
-	int total_msg_num = num_thread * args[0].cfg->loop * args[0].cfg->cnt_per_loop;
+	int total_msg_num = num_thread * (int)args[0].cfg->loop * (int)args[0].cfg->cnt_per_loop;
 	if (total_recv != total_msg_num)
 	{
 		MUGGLE_LOG_WARNING("total send message: %d, total recv message %d, lost message: %d",

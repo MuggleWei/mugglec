@@ -79,7 +79,7 @@ void muggle_benchmark_gen_reports_body(
 			}
 			else
 			{
-				elapseds[i] = get_elapsed_ns(&blocks[i], ts_begin_idx, ts_end_idx);
+				elapseds[i] = get_elapsed_ns(&blocks[i], (int)ts_begin_idx, (int)ts_end_idx);
 				sum += elapseds[i];
 				cnt_sum++;
 			}
@@ -92,7 +92,7 @@ void muggle_benchmark_gen_reports_body(
 			}
 			else
 			{
-				elapseds[i] = get_elapsed_cpu_cycles(&blocks[i], ts_begin_idx, ts_end_idx);
+				elapseds[i] = get_elapsed_cpu_cycles(&blocks[i], (int)ts_begin_idx, (int)ts_end_idx);
 				sum += elapseds[i];
 				cnt_sum++;
 			}

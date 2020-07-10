@@ -34,7 +34,7 @@ void run_ringbuffer(
 
 	MUGGLE_LOG_INFO("init blocks ok");
 
-	int total_msg_num = num_thread * args->cfg->loop * args->cfg->cnt_per_loop;
+	int total_msg_num = num_thread * (int)args->cfg->loop * (int)args->cfg->cnt_per_loop;
 	muggle_ring_buffer_t ringbuf;
 	muggle_atomic_int capacity = total_msg_num / 64;
 	if (muggle_ring_buffer_init(&ringbuf, capacity, flags) != 0)
