@@ -38,6 +38,9 @@ typedef struct muggle_ts_memory_pool
 	muggle_atomic_int alloc_cursor;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
 	muggle_atomic_int free_cursor;
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
+	muggle_atomic_int free_fetch;
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
 }muggle_ts_memory_pool_t;
 
 /*
