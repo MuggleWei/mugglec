@@ -13,16 +13,14 @@ struct ts_data
 TEST(ts_memory_pool, single_thread)
 {
 	muggle_atomic_int capacity = (muggle_atomic_int)next_pow_of_2((uint64_t)5); // real capacity is 8, real allocate capacity = capacity - 1
-	muggle_atomic_int real_capacity = capacity - 1;
 
 	ASSERT_EQ(capacity, 8);
-	ASSERT_EQ(real_capacity, 7);
 
 	muggle_ts_memory_pool_t pool;
 	muggle_ts_memory_pool_init(&pool, capacity, sizeof(ts_data));
 
 	ts_data *arr[8];
-	for (int i = 0; i < real_capacity; i++)
+	for (int i = 0; i < capacity; i++)
 	{
 		arr[i] = (ts_data*)muggle_ts_memory_pool_alloc(&pool);
 		ASSERT_TRUE(arr[i] != NULL);
@@ -33,11 +31,11 @@ TEST(ts_memory_pool, single_thread)
 	arr[0] = (ts_data*)muggle_ts_memory_pool_alloc(&pool);
 	ASSERT_TRUE(arr[0] != NULL);
 
-	for (int i = 0; i < real_capacity; i++)
+	for (int i = 0; i < capacity; i++)
 	{
 		muggle_ts_memory_pool_free(arr[i]);
 	}
-	for (int i = 0; i < real_capacity; i++)
+	for (int i = 0; i < capacity; i++)
 	{
 		arr[i] = (ts_data*)muggle_ts_memory_pool_alloc(&pool);
 		ASSERT_TRUE(arr[i] != NULL);
@@ -92,7 +90,7 @@ TEST(ts_memory_pool, mul_thread)
 	}
 	threads.clear();
 
-	ASSERT_EQ(data_pos, next_pow_of_2(capacity) - 1);
+	ASSERT_EQ(data_pos, next_pow_of_2(capacity));
 	ASSERT_EQ(muggle_ts_memory_pool_alloc(&pool), nullptr);
 
 	std::map<int, int> thread_count;
@@ -144,7 +142,7 @@ TEST(ts_memory_pool, mul_thread)
 	}
 	threads.clear();
 
-	ASSERT_EQ(pool.alloc_cursor + next_pow_of_2(capacity) - 1, pool.free_cursor);
+	ASSERT_EQ(pool.alloc_cursor + next_pow_of_2(capacity), pool.free_cursor);
 
 	muggle_ts_memory_pool_destroy(&pool);
 	free(datas);

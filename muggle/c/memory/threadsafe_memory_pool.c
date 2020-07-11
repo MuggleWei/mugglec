@@ -101,11 +101,11 @@ void* muggle_ts_memory_pool_alloc(muggle_ts_memory_pool_t *pool)
 		// fetch data
 		// NOTE: fetch data must before move cursor, avoid error this thread pending and at the same 
 		// time other thread alloc and free, then this thread wake
-		alloc_pos = IDX_IN_POW_OF_2_RING(alloc_pos, pool->capacity);
+		alloc_pos = IDX_IN_POW_OF_2_RING(alloc_cursor, pool->capacity);
 		data = (void*)(pool->ptrs[alloc_pos].ptr + 1);
 
 		// move allocate cursor
-	} while (!muggle_atomic_cmp_exch_weak(&pool->alloc_cursor, &expected, alloc_pos + 1, muggle_memory_order_relaxed)
+	} while (!muggle_atomic_cmp_exch_weak(&pool->alloc_cursor, &expected, alloc_cursor + 1, muggle_memory_order_relaxed)
 			&& expected != alloc_pos);
 
 	return data;
