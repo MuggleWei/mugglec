@@ -10,6 +10,7 @@
 
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/atomic.h"
+#include "muggle/c/sync/mutex.h"
 
 EXTERN_C_BEGIN
 
@@ -39,7 +40,7 @@ typedef struct muggle_ts_memory_pool
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
 	muggle_atomic_int free_cursor;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
-	muggle_atomic_int free_fetch;
+	muggle_mutex_t free_mutex;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
 }muggle_ts_memory_pool_t;
 

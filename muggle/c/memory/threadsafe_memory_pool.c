@@ -36,16 +36,23 @@ int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_atomic_int 
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
+	int ret = muggle_mutex_init(&pool->free_mutex);
+	if (ret != 0)
+	{
+		return ret;
+	}
+
 	pool->capacity = capacity;
 	pool->block_size = block_size;
 	pool->data = malloc(capacity * block_size);
 	pool->ptrs = (muggle_ts_memory_pool_head_ptr_t*)malloc(capacity * sizeof(muggle_ts_memory_pool_head_ptr_t));
 	pool->alloc_cursor = 0;
 	pool->free_cursor = capacity;
-	pool->free_fetch = pool->free_cursor;
 
 	if (pool->data == NULL || pool->ptrs == NULL)
 	{
+		muggle_mutex_destroy(&pool->free_mutex);
+
 		if (pool->data)
 		{
 			free(pool->data);
@@ -72,6 +79,8 @@ int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_atomic_int 
 
 void muggle_ts_memory_pool_destroy(muggle_ts_memory_pool_t *pool)
 {
+	muggle_mutex_destroy(&pool->free_mutex);
+
 	if (pool->data)
 	{
 		free(pool->data);
@@ -116,18 +125,13 @@ void muggle_ts_memory_pool_free(void *data)
 	muggle_ts_memory_pool_head_t *block = (muggle_ts_memory_pool_head_t*)data - 1;
 	muggle_ts_memory_pool_t *pool = block->pool;
 
-	// free data
-	muggle_atomic_int fetch_cursor = muggle_atomic_fetch_add(&pool->free_fetch, 1, muggle_memory_order_relaxed);
-	muggle_atomic_int free_pos = IDX_IN_POW_OF_2_RING(fetch_cursor, pool->capacity);
+	muggle_mutex_lock(&pool->free_mutex);
+
+	muggle_atomic_int free_pos = IDX_IN_POW_OF_2_RING(pool->free_cursor, pool->capacity);
 	pool->ptrs[free_pos].ptr = block;
 
-	// move free cursor
-	muggle_atomic_int expected = fetch_cursor;
-	while (!muggle_atomic_cmp_exch_weak(&pool->free_cursor, &expected, fetch_cursor + 1, muggle_memory_order_release)
-			&& expected != fetch_cursor)
-	{
-		muggle_futex_wait(&pool->free_cursor, expected, NULL);
-		expected = fetch_cursor;
-	}
-	muggle_futex_wake_all(&pool->free_cursor);
+	// use atomic store for writer see correct order
+	muggle_atomic_store(&pool->free_cursor, pool->free_cursor + 1, muggle_memory_order_release);
+
+	muggle_mutex_unlock(&pool->free_mutex);
 }
