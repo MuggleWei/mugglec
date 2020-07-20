@@ -21,7 +21,10 @@ void recv_message(muggle_socket_peer_t *peer, muggle_bytes_buffer_t *bytes_buf)
 		}
 
 		int n = muggle_socket_peer_recv(peer, p, read_bytes, 0);
-		muggle_bytes_buffer_writer_move(bytes_buf, n);
+		if (n > 0)
+		{
+			muggle_bytes_buffer_writer_move(bytes_buf, n);
+		}
 
 		if (n < read_bytes)
 		{
