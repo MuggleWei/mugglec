@@ -64,7 +64,7 @@ void muggle_pointer_slot_destroy(muggle_pointer_slot_t *pointer_slot)
 	}
 }
 
-int muggle_pointer_slot_insert(muggle_pointer_slot_t *pointer_slot, void *data, unsigned int *idx)
+int muggle_pointer_slot_insert(muggle_pointer_slot_t *pointer_slot, void *data, unsigned int *slot_idx)
 {
 	unsigned int alloc_idx = IDX_IN_POW_OF_2_RING(pointer_slot->alloc_index, pointer_slot->capacity);
 	if (pointer_slot->pp_slots[alloc_idx]->in_used == 1)
@@ -75,29 +75,29 @@ int muggle_pointer_slot_insert(muggle_pointer_slot_t *pointer_slot, void *data, 
 
 	pointer_slot->pp_slots[alloc_idx]->data = data;
 	pointer_slot->pp_slots[alloc_idx]->in_used = 1;
-	*idx = pointer_slot->pp_slots[alloc_idx]->slot_idx;
+	*slot_idx = pointer_slot->pp_slots[alloc_idx]->slot_idx;
 
 	pointer_slot->alloc_index++;
 
 	return 0;
 }
 
-int muggle_pointer_slot_remove(muggle_pointer_slot_t *pointer_slot, unsigned int idx)
+int muggle_pointer_slot_remove(muggle_pointer_slot_t *pointer_slot, unsigned int slot_idx)
 {
-	if (idx >= pointer_slot->capacity)
+	if (slot_idx >= pointer_slot->capacity)
 	{
-		MUGGLE_ASSERT(idx < pointer_slot->capacity);
+		MUGGLE_ASSERT(slot_idx < pointer_slot->capacity);
 		return MUGGLE_ERR_BEYOND_RANGE;
 	}
 
-	if (pointer_slot->slots[idx].in_used == 0)
+	if (pointer_slot->slots[slot_idx].in_used == 0)
 	{
-		MUGGLE_ASSERT(pointer_slot->slots[idx].in_used == 1);
+		MUGGLE_ASSERT(pointer_slot->slots[slot_idx].in_used == 1);
 		return MUGGLE_ERR_MEM_DUPLICATE_FREE;
 	}
 
 	unsigned int free_idx = IDX_IN_POW_OF_2_RING(pointer_slot->free_index, pointer_slot->capacity);
-	pointer_slot->pp_slots[free_idx] = &pointer_slot->slots[idx];
+	pointer_slot->pp_slots[free_idx] = &pointer_slot->slots[slot_idx];
 
 	pointer_slot->pp_slots[free_idx]->in_used = 0;
 	pointer_slot->pp_slots[free_idx]->data = NULL;
@@ -121,4 +121,21 @@ void* muggle_pointer_slot_get(muggle_pointer_slot_t *pointer_slot, unsigned int 
 	}
 
 	return pointer_slot->slots[idx].data;
+}
+
+unsigned int muggle_pointer_slot_iter_begin(muggle_pointer_slot_t *pointer_slot)
+{
+	return pointer_slot->free_index;
+}
+
+unsigned int muggle_pointer_slot_iter_end(muggle_pointer_slot_t *pointer_slot)
+{
+	return pointer_slot->alloc_index;
+}
+
+void* muggle_pointer_slot_iter_data(muggle_pointer_slot_t *pointer_slot, unsigned int iter)
+{
+	unsigned int idx = IDX_IN_POW_OF_2_RING(iter, pointer_slot->capacity);
+	unsigned int slot_idx = pointer_slot->pp_slots[idx]->slot_idx;
+	return muggle_pointer_slot_get(pointer_slot, slot_idx);
 }

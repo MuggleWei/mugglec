@@ -47,14 +47,14 @@ void muggle_pointer_slot_destroy(muggle_pointer_slot_t *pointer_slot);
 // @param idx return slot idx
 // @return 0 - success, otherwise return error code
 MUGGLE_CC_EXPORT
-int muggle_pointer_slot_insert(muggle_pointer_slot_t *pointer_slot, void *data, unsigned int *idx);
+int muggle_pointer_slot_insert(muggle_pointer_slot_t *pointer_slot, void *data, unsigned int *slot_idx);
 
 // remove pointer data from muggle_pointer_slot_t
 // @param pointer_slot pointer to a muggle_pointer_slot_t
 // @param idx slot index that pointer data need to be removed
 // @return 0 - success, otherwise return error code
 MUGGLE_CC_EXPORT
-int muggle_pointer_slot_remove(muggle_pointer_slot_t *pointer_slot, unsigned int idx);
+int muggle_pointer_slot_remove(muggle_pointer_slot_t *pointer_slot, unsigned int slot_idx);
 
 // get pointer data from muggle_pointer_slot_t
 // @param pointer_slot pointer to a muggle_pointer_slot_t
@@ -62,6 +62,17 @@ int muggle_pointer_slot_remove(muggle_pointer_slot_t *pointer_slot, unsigned int
 // @return pointer data
 MUGGLE_CC_EXPORT
 void* muggle_pointer_slot_get(muggle_pointer_slot_t *pointer_slot, unsigned int idx);
+
+// get muggle_pointer_slot_t iterator begin and end
+MUGGLE_CC_EXPORT
+unsigned int muggle_pointer_slot_iter_begin(muggle_pointer_slot_t *pointer_slot);
+
+MUGGLE_CC_EXPORT
+unsigned int muggle_pointer_slot_iter_end(muggle_pointer_slot_t *pointer_slot);
+
+// get muggle_pointer_slot_t iterator data
+MUGGLE_CC_EXPORT
+void* muggle_pointer_slot_iter_data(muggle_pointer_slot_t *pointer_slot, unsigned int iter);
 
 EXTERN_C_END
 

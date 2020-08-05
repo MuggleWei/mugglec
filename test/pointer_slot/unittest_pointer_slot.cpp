@@ -115,3 +115,49 @@ TEST(pointer_slot, idx_truncate)
 
 	muggle_pointer_slot_destroy(&ptr_slot);
 }
+
+TEST(pointer_slot, iter)
+{
+	unsigned int capacity = 16;
+	muggle_pointer_slot_t ptr_slot;
+	int ret = muggle_pointer_slot_init(&ptr_slot, capacity);
+	ASSERT_EQ(ret, 0);
+
+	int arr[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+	unsigned int slot_idx_arr[sizeof(arr) / sizeof(arr[0])];
+	for (int i = 0; i < 256; i++)
+	{
+		// insert
+		for (int idx = 0; idx < (int)(sizeof(arr) / sizeof(arr[0])); idx++)
+		{
+			ret = muggle_pointer_slot_insert(&ptr_slot, &arr[idx], &slot_idx_arr[idx]);
+			ASSERT_EQ(ret, 0);
+		}
+
+		// iter
+		int j = 0;
+		for (unsigned int it = muggle_pointer_slot_iter_begin(&ptr_slot); it != muggle_pointer_slot_iter_end(&ptr_slot); it++)
+		{
+			int *data = (int*)muggle_pointer_slot_iter_data(&ptr_slot, it);
+			ASSERT_EQ(data, &arr[j]);
+			j++;
+		}
+
+		// rand sort and remove
+		srand(time(nullptr));
+		for (int idx = 0; idx < (int)(sizeof(arr) / sizeof(arr[0])); idx++)
+		{
+			int swap_idx = rand() % (int)(sizeof(arr) / sizeof(arr[0]));
+			unsigned int tmp = slot_idx_arr[idx];
+			slot_idx_arr[idx] = slot_idx_arr[swap_idx];
+			slot_idx_arr[swap_idx] = tmp;
+		}
+		for (int idx = 0; idx < (int)(sizeof(arr) / sizeof(arr[0])); idx++)
+		{
+			ret = muggle_pointer_slot_remove(&ptr_slot, slot_idx_arr[idx]);
+			ASSERT_EQ(ret, 0);
+		}
+	}
+
+	muggle_pointer_slot_destroy(&ptr_slot);
+}
