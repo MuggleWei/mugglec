@@ -30,7 +30,7 @@ void run_channel(
 
 	MUGGLE_LOG_INFO("init blocks ok");
 
-	int total_msg_num = num_thread * args->cfg->loop * args->cfg->cnt_per_loop;
+	int total_msg_num = (int)(num_thread * args->cfg->loop * args->cfg->cnt_per_loop);
 	muggle_channel_t chan;
 	muggle_atomic_int capacity = total_msg_num / 64;
 	if (muggle_channel_init(&chan, capacity, flags) != 0)
