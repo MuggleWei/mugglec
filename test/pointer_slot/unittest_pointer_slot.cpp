@@ -37,6 +37,23 @@ TEST(pointer_slot, insert_remove)
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[2], &idx);
 	ASSERT_NE(ret, 0);
 
+	for (int i = 0; i < 20; i++)
+	{
+		ret = muggle_pointer_slot_remove(&ptr_slot, 1);
+		ASSERT_EQ(ret, 0);
+		ret = muggle_pointer_slot_remove(&ptr_slot, 0);
+		ASSERT_EQ(ret, 0);
+
+		ret = muggle_pointer_slot_insert(&ptr_slot, nullptr, &idx);
+		ASSERT_EQ(ret, 0);
+
+		ret = muggle_pointer_slot_insert(&ptr_slot, nullptr, &idx);
+		ASSERT_EQ(ret, 0);
+
+		ret = muggle_pointer_slot_insert(&ptr_slot, nullptr, &idx);
+		ASSERT_NE(ret, 0);
+	}
+
 	muggle_pointer_slot_destroy(&ptr_slot);
 }
 

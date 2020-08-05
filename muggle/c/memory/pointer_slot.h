@@ -15,6 +15,7 @@ EXTERN_C_BEGIN
 typedef struct muggle_pointer_slot_item
 {
 	unsigned int slot_idx;
+	unsigned int in_used;
 	void *data;
 }muggle_pointer_slot_item_t;
 
@@ -26,7 +27,6 @@ typedef struct muggle_pointer_slot
 	unsigned int capacity;
 	unsigned int alloc_index;
 	unsigned int free_index;
-	unsigned int used;
 }muggle_pointer_slot_t;
 
 // init muggle_pointer_slot_t
