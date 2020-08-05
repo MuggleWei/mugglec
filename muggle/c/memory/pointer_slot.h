@@ -56,6 +56,13 @@ int muggle_pointer_slot_insert(muggle_pointer_slot_t *pointer_slot, void *data, 
 MUGGLE_CC_EXPORT
 int muggle_pointer_slot_remove(muggle_pointer_slot_t *pointer_slot, unsigned int idx);
 
+// get pointer data from muggle_pointer_slot_t
+// @param pointer_slot pointer to a muggle_pointer_slot_t
+// @param idx slot index that pointer data need to be removed
+// @return pointer data
+MUGGLE_CC_EXPORT
+void* muggle_pointer_slot_get(muggle_pointer_slot_t *pointer_slot, unsigned int idx);
+
 EXTERN_C_END
 
 #endif

@@ -1,12 +1,13 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
-TEST(pointer_slot, insert_remove)
+TEST(pointer_slot, insert_get_remove)
 {
 	muggle_pointer_slot_t ptr_slot;
 	int ret = muggle_pointer_slot_init(&ptr_slot, 2);
 	ASSERT_EQ(ret, 0);
 
+	void *data;
 	unsigned int idx;
 	int arr[3] = { 1, 2, 3 };
 
@@ -21,10 +22,23 @@ TEST(pointer_slot, insert_remove)
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[2], &idx);
 	ASSERT_NE(ret, 0);
 
+	data = muggle_pointer_slot_get(&ptr_slot, 0);
+	ASSERT_EQ(data, &arr[0]);
+
+	data = muggle_pointer_slot_get(&ptr_slot, 1);
+	ASSERT_EQ(data, &arr[1]);
+
 	ret = muggle_pointer_slot_remove(&ptr_slot, 1);
 	ASSERT_EQ(ret, 0);
+
+	data = muggle_pointer_slot_get(&ptr_slot, 1);
+	ASSERT_EQ(data, nullptr);
+
 	ret = muggle_pointer_slot_remove(&ptr_slot, 0);
 	ASSERT_EQ(ret, 0);
+
+	data = muggle_pointer_slot_get(&ptr_slot, 0);
+	ASSERT_EQ(data, nullptr);
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[0], &idx);
 	ASSERT_EQ(ret, 0);
@@ -33,6 +47,13 @@ TEST(pointer_slot, insert_remove)
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[1], &idx);
 	ASSERT_EQ(ret, 0);
 	ASSERT_EQ(idx, 0);
+
+	data = muggle_pointer_slot_get(&ptr_slot, 0);
+	ASSERT_EQ(data, &arr[1]);
+
+	data = muggle_pointer_slot_get(&ptr_slot, 1);
+	ASSERT_EQ(data, &arr[0]);
+
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[2], &idx);
 	ASSERT_NE(ret, 0);
@@ -44,14 +65,20 @@ TEST(pointer_slot, insert_remove)
 		ret = muggle_pointer_slot_remove(&ptr_slot, 0);
 		ASSERT_EQ(ret, 0);
 
-		ret = muggle_pointer_slot_insert(&ptr_slot, nullptr, &idx);
+		ret = muggle_pointer_slot_insert(&ptr_slot, &arr[0], &idx);
 		ASSERT_EQ(ret, 0);
 
-		ret = muggle_pointer_slot_insert(&ptr_slot, nullptr, &idx);
+		ret = muggle_pointer_slot_insert(&ptr_slot, &arr[1], &idx);
 		ASSERT_EQ(ret, 0);
 
-		ret = muggle_pointer_slot_insert(&ptr_slot, nullptr, &idx);
+		ret = muggle_pointer_slot_insert(&ptr_slot, &arr[2], &idx);
 		ASSERT_NE(ret, 0);
+
+		data = muggle_pointer_slot_get(&ptr_slot, 0);
+		ASSERT_NE(data, nullptr);
+
+		data = muggle_pointer_slot_get(&ptr_slot, 1);
+		ASSERT_NE(data, nullptr);
 	}
 
 	muggle_pointer_slot_destroy(&ptr_slot);

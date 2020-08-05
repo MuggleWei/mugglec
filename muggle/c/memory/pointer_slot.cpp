@@ -106,3 +106,19 @@ int muggle_pointer_slot_remove(muggle_pointer_slot_t *pointer_slot, unsigned int
 
 	return 0;
 }
+
+void* muggle_pointer_slot_get(muggle_pointer_slot_t *pointer_slot, unsigned int idx)
+{
+	if (idx >= pointer_slot->capacity)
+	{
+		MUGGLE_ASSERT(idx < pointer_slot->capacity);
+		return NULL;
+	}
+
+	if (pointer_slot->slots[idx].in_used == 0)
+	{
+		return NULL;
+	}
+
+	return pointer_slot->slots[idx].data;
+}
