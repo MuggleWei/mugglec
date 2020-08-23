@@ -136,7 +136,7 @@ TEST(pointer_slot, iter)
 
 		// iter
 		int j = 0;
-		for (unsigned int it = muggle_pointer_slot_iter_begin(&ptr_slot); it != muggle_pointer_slot_iter_end(&ptr_slot); it++)
+		for (muggle_pointer_slot_item_t *it = muggle_pointer_slot_iter_begin(&ptr_slot); it != muggle_pointer_slot_iter_end(&ptr_slot); it = it->next)
 		{
 			int *data = (int*)muggle_pointer_slot_iter_data(&ptr_slot, it);
 			ASSERT_EQ(data, &arr[j]);
@@ -160,4 +160,41 @@ TEST(pointer_slot, iter)
 	}
 
 	muggle_pointer_slot_destroy(&ptr_slot);
+}
+
+TEST(pointer_slot, insert_remove_iter)
+{
+	muggle_pointer_slot_t ptr_slot;
+	int ret = muggle_pointer_slot_init(&ptr_slot, 4);
+	ASSERT_EQ(ret, 0);
+
+	unsigned int idx;
+	int arr[3] = { 1, 2, 3 };
+	int *p_arr[3] = { nullptr, nullptr, nullptr };
+
+	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[0], &idx);
+	ASSERT_EQ(ret, 0);
+	ASSERT_EQ(idx, 0);
+
+	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[1], &idx);
+	ASSERT_EQ(ret, 0);
+	ASSERT_EQ(idx, 1);
+
+	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[2], &idx);
+	ASSERT_EQ(ret, 0);
+	ASSERT_EQ(idx, 2);
+
+	ret = muggle_pointer_slot_remove(&ptr_slot, 1);
+	ASSERT_EQ(ret, 0);
+
+	// iter
+	int cnt = 0;
+	for (muggle_pointer_slot_item_t *it = muggle_pointer_slot_iter_begin(&ptr_slot); it != muggle_pointer_slot_iter_end(&ptr_slot); it = it->next)
+	{
+		int *data = (int*)muggle_pointer_slot_iter_data(&ptr_slot, it);
+		p_arr[cnt++] = data;
+	}
+	ASSERT_EQ(cnt, 2);
+	ASSERT_EQ(p_arr[0], &arr[0]);
+	ASSERT_EQ(p_arr[1], &arr[2]);
 }

@@ -14,6 +14,8 @@ EXTERN_C_BEGIN
 
 typedef struct muggle_pointer_slot_item
 {
+	struct muggle_pointer_slot_item *prev;
+	struct muggle_pointer_slot_item *next;
 	unsigned int slot_idx;
 	unsigned int in_used;
 	void *data;
@@ -27,6 +29,9 @@ typedef struct muggle_pointer_slot
 	unsigned int capacity;
 	unsigned int alloc_index;
 	unsigned int free_index;
+
+	muggle_pointer_slot_item_t head;
+	muggle_pointer_slot_item_t tail;
 }muggle_pointer_slot_t;
 
 // init muggle_pointer_slot_t
@@ -65,14 +70,14 @@ void* muggle_pointer_slot_get(muggle_pointer_slot_t *pointer_slot, unsigned int 
 
 // get muggle_pointer_slot_t iterator begin and end
 MUGGLE_CC_EXPORT
-unsigned int muggle_pointer_slot_iter_begin(muggle_pointer_slot_t *pointer_slot);
+muggle_pointer_slot_item_t* muggle_pointer_slot_iter_begin(muggle_pointer_slot_t *pointer_slot);
 
 MUGGLE_CC_EXPORT
-unsigned int muggle_pointer_slot_iter_end(muggle_pointer_slot_t *pointer_slot);
+muggle_pointer_slot_item_t* muggle_pointer_slot_iter_end(muggle_pointer_slot_t *pointer_slot);
 
 // get muggle_pointer_slot_t iterator data
 MUGGLE_CC_EXPORT
-void* muggle_pointer_slot_iter_data(muggle_pointer_slot_t *pointer_slot, unsigned int iter);
+void* muggle_pointer_slot_iter_data(muggle_pointer_slot_t *pointer_slot, muggle_pointer_slot_item_t *iter);
 
 EXTERN_C_END
 
