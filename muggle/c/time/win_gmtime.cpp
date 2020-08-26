@@ -13,4 +13,9 @@ struct tm* gmtime_r(const time_t *timep, struct tm *result)
 	return nullptr;
 }
 
+time_t timegm(struct tm *p_tm)
+{
+	return _mkgmtime(p_tm);
+}
+
 #endif
