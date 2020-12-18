@@ -40,6 +40,13 @@ set(MUGGLE_CRYPT_OPTIMIZATION ON)
 # option(MUGGLE_CRYPT_COMPARE_OPENSSL "Link openssl in unittest for compare result" OFF)
 set(MUGGLE_CRYPT_COMPARE_OPENSSL ON)
 
+# prefix path for FIND_XXX command
+if (WIN32)
+	list(APPEND CMAKE_PREFIX_PATH "f:/c_pkg")
+else()
+	list(APPEND CMAKE_PREFIX_PATH "~/c_pkg")
+endif()
+
 # version
 set(MUGGLE_CC_VER_MAJOR 0)
 set(MUGGLE_CC_VER_MINOR 0)
@@ -253,10 +260,17 @@ function(add_gtest name folder)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
-	add_dependencies(${name} ${muggle_cc} gtest_main)
+
+	add_dependencies(${name} ${muggle_cc})
+	if (FOUND_GTEST_FROM_DOWNLOAD)
+		add_dependencies(${name} ${GTEST_BOTH_LIBRARIES})
+	endif()
+	target_include_directories(${name} PUBLIC
+		${GTEST_INCLUDE_DIRS}
+	)
 	target_link_libraries(${name}
 		${muggle_cc}
-		gtest_main
+		${GTEST_BOTH_LIBRARIES}
 	)
 
 	# link openssl
@@ -289,43 +303,56 @@ endif()
 # test
 if (BUILD_TESTING)
 	enable_testing()
+	
+	# search gtest first
+	find_package(GTest)
+	
+	if (GTEST_FOUND)
+		message("find gtest include directories: ${GTEST_INCLUDE_DIRS}")
+		message("find gtest both libraries: ${GTEST_BOTH_LIBRARIES}")
+		set(FOUND_GTEST_FROM_SEARCH ON)
+	else()
+		# Download and unpack googletest at configure time
+		configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/CMakeLists.txt.in googletest-download/CMakeLists.txt)
+		execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+			RESULT_VARIABLE result
+			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+		if(result)
+			message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+		endif()
+		execute_process(COMMAND ${CMAKE_COMMAND} --build .
+			RESULT_VARIABLE result
+			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+		if(result)
+			message(FATAL_ERROR "Build step for googletest failed: ${result}")
+		endif()
 
-	# Download and unpack googletest at configure time
-	configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/CMakeLists.txt.in googletest-download/CMakeLists.txt)
-	execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-	  RESULT_VARIABLE result
-	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
-	if(result)
-	  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+		# Prevent overriding the parent project's compiler/linker
+		# settings on Windows
+		set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+		# Add googletest directly to our build. This defines
+		# the gtest and gtest_main targets.
+		add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
+						${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+						EXCLUDE_FROM_ALL)
+
+		# The gtest/gtest_main targets carry header search path
+		# dependencies automatically when using CMake 2.8.11 or
+		# later. Otherwise we have to add them here ourselves.
+		if (CMAKE_VERSION VERSION_LESS 2.8.11)
+			include_directories("${gtest_SOURCE_DIR}/include")
+		endif()
+
+		# # Now simply link against gtest or gtest_main as needed. Eg
+		# add_executable(example src/test/example/example.cpp)
+		# target_link_libraries(example gtest_main)
+		# add_test(NAME example_test COMMAND example)
+
+		set(GTEST_INCLUDE_DIRS "${gtest_SOURCE_DIR}/include")
+		set(GTEST_BOTH_LIBRARIES gtest_main)
+		set(FOUND_GTEST_FROM_DOWNLOAD ON)
 	endif()
-	execute_process(COMMAND ${CMAKE_COMMAND} --build .
-	  RESULT_VARIABLE result
-	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
-	if(result)
-	  message(FATAL_ERROR "Build step for googletest failed: ${result}")
-	endif()
-	
-	# Prevent overriding the parent project's compiler/linker
-	# settings on Windows
-	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-	
-	# Add googletest directly to our build. This defines
-	# the gtest and gtest_main targets.
-	add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-	                 ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
-	                 EXCLUDE_FROM_ALL)
-	
-	# The gtest/gtest_main targets carry header search path
-	# dependencies automatically when using CMake 2.8.11 or
-	# later. Otherwise we have to add them here ourselves.
-	if (CMAKE_VERSION VERSION_LESS 2.8.11)
-	  include_directories("${gtest_SOURCE_DIR}/include")
-	endif()
-	
-	# # Now simply link against gtest or gtest_main as needed. Eg
-	# add_executable(example src/test/example/example.cpp)
-	# target_link_libraries(example gtest_main)
-	# add_test(NAME example_test COMMAND example)
 endif()
 
 if (MUGGLE_BUILD_TESTING)
