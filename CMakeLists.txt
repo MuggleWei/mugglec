@@ -34,18 +34,12 @@ option(MUGGLE_BUILD_SHARED_LIB ON "build shared or static library")
 option(MUGGLE_BUILD_EXAMPLE "Build muggleCC example" OFF)
 option(MUGGLE_BUILD_TESTING "Build muggleCC test" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build muggleCC benchmark" OFF)
+option(MUGGLE_EXTRA_PREFIX_PATH "extra prefix path for cmake FIND_XXX" "")
 option(BUILD_TESTING "Buid testing" OFF)
 # option(MUGGLE_CRYPT_OPTIMIZATION "Enable crypt optimization(use source codes extract from openssl)" ON)
 set(MUGGLE_CRYPT_OPTIMIZATION ON)
 # option(MUGGLE_CRYPT_COMPARE_OPENSSL "Link openssl in unittest for compare result" OFF)
 set(MUGGLE_CRYPT_COMPARE_OPENSSL ON)
-
-# prefix path for FIND_XXX command
-if (WIN32)
-	list(APPEND CMAKE_PREFIX_PATH "f:/c_pkg")
-else()
-	list(APPEND CMAKE_PREFIX_PATH "~/c_pkg")
-endif()
 
 # version
 set(MUGGLE_CC_VER_MAJOR 0)
@@ -62,9 +56,17 @@ message("-- option MUGGLE_BUILD_SHARED_LIB ${MUGGLE_BUILD_SHARED_LIB}")
 message("-- option MUGGLE_BUILD_EXAMPLE ${MUGGLE_BUILD_EXAMPLE}")
 message("-- option MUGGLE_BUILD_TESTING ${MUGGLE_BUILD_TESTING}")
 message("-- option MUGGLE_BUILD_BENCHMARK ${MUGGLE_BUILD_BENCHMARK}")
+message("-- option MUGGLE_EXTRA_PREFIX_PATH ${MUGGLE_EXTRA_PREFIX_PATH}")
 message("-- option BUILD_TESTING ${BUILD_TESTING}")
 message("-- option MUGGLE_CRYPT_OPTIMIZATION ${MUGGLE_CRYPT_OPTIMIZATION}")
 message("-- option MUGGLE_CRYPT_COMPARE_OPENSSL ${MUGGLE_CRYPT_COMPARE_OPENSSL}")
+
+if ("${MUGGLE_EXTRA_PREFIX_PATH}" STREQUAL "" OR ${MUGGLE_EXTRA_PREFIX_PATH} EQUAL OFF)
+else()
+	list(APPEND CMAKE_PREFIX_PATH ${MUGGLE_EXTRA_PREFIX_PATH})
+	message("-- cmake prefix path: ${CMAKE_PREFIX_PATH}")
+endif()
+
 
 if (MUGGLE_BUILD_SHARED_LIB)
 	set(MUGGLE_LIB_TYPE SHARED)
@@ -76,6 +78,7 @@ if (MUGGLE_BUILD_TESTING)
 	set(BUILD_TESTING ON)
 endif()
 
+# find openssl
 set(MUGGLE_TEST_LINK_OPENSSL OFF)
 if (MUGGLE_CRYPT_COMPARE_OPENSSL)
 	find_package(OpenSSL QUIET)
@@ -292,14 +295,6 @@ function(add_gtest name folder)
 	add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
-# example
-if (${MUGGLE_BUILD_EXAMPLE})
-	SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/example)
-	FOREACH(subdir ${example_dirs})
-		add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/example/${subdir})
-	ENDFOREACH()
-endif()
-
 # test
 if (BUILD_TESTING)
 	enable_testing()
@@ -308,9 +303,11 @@ if (BUILD_TESTING)
 	find_package(GTest)
 	
 	if (GTEST_FOUND)
-		message("find gtest include directories: ${GTEST_INCLUDE_DIRS}")
-		message("find gtest both libraries: ${GTEST_BOTH_LIBRARIES}")
 		set(FOUND_GTEST_FROM_SEARCH ON)
+
+		message("-- Find GTest - use gtest from search")
+		message("-- GTest include directories: ${GTEST_INCLUDE_DIRS}")
+		message("-- GTest both libraries: ${GTEST_BOTH_LIBRARIES}")
 	else()
 		# Download and unpack googletest at configure time
 		configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/CMakeLists.txt.in googletest-download/CMakeLists.txt)
@@ -352,10 +349,23 @@ if (BUILD_TESTING)
 		set(GTEST_INCLUDE_DIRS "${gtest_SOURCE_DIR}/include")
 		set(GTEST_BOTH_LIBRARIES gtest_main)
 		set(FOUND_GTEST_FROM_DOWNLOAD ON)
+
+		message("-- Find GTest - use gtest from download")
 	endif()
 endif()
 
+# example
+if (${MUGGLE_BUILD_EXAMPLE})
+	message("---------------------- example ----------------------")
+	SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/example)
+	FOREACH(subdir ${example_dirs})
+		add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/example/${subdir})
+	ENDFOREACH()
+endif()
+
+# test
 if (MUGGLE_BUILD_TESTING)
+	message("---------------------- test ----------------------")
 	SUBDIRLIST(test_root_dir ${CMAKE_CURRENT_LIST_DIR}/test)
 	FOREACH(subdir ${test_root_dir})
 		add_gtest(${subdir} ${CMAKE_CURRENT_LIST_DIR}/test/${subdir})
@@ -364,6 +374,7 @@ endif()
 
 # benchmark
 if (MUGGLE_BUILD_BENCHMARK)
+	message("---------------------- benchmark ----------------------")
 	SUBDIRLIST(benchmark_root_dir ${CMAKE_CURRENT_LIST_DIR}/benchmark)
 	FOREACH(subdir ${benchmark_root_dir})
 		add_benchmark(${subdir} ${CMAKE_CURRENT_LIST_DIR}/benchmark/${subdir})

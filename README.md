@@ -13,11 +13,13 @@ cmake .. \
     -DMUGGLE_BUILD_EXAMPLE=ON \
     -DMUGGLE_BUILD_TESTING=OFF \
     -DMUGGLE_BUILD_BENCHMARK=OFF \
+	-DMUGGLE_EXTRA_PREFIX_PATH=~/c_pkg \
     -DBUILD_TESTING=OFF
 ```
 * MUGGLE_BUILD_TRACE: Just for debug, you will never switch it on   
 * MUGGLE_BUILD_SHARED_LIB: Build shared lib or static lib   
 * MUGGLE_BUILD_EXAMPLE: Build muggleCC examples   
 * MUGGLE_BUILD_TESTING: Build muggleCC unittest, if it's on, BUILD_TESTING will be set ON   
-* MUGGLE_BUILD_BENCHMARK: Build muggleCC performance test   
+* MUGGLE_BUILD_BENCHMARK: Build muggleCC performance test  
+* MUGGLE_EXTRA_PREFIX_PATH: extra prefix path list for cmake FIND_XXX
 * BUILD_TESTING: Build gtest, if it's on, will download gtest in first time of cmake build, if you need gtest, don't download repeatedly   
