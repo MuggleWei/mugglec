@@ -83,4 +83,15 @@
 // version
 #include "muggle/c/version/version.h"
 
+// data structure and algorithm
+#include "muggle/c/dsaa/array_list.h"
+#include "muggle/c/dsaa/linked_list.h"
+#include "muggle/c/dsaa/stack.h"
+#include "muggle/c/dsaa/queue.h"
+#include "muggle/c/dsaa/trie.h"
+#include "muggle/c/dsaa/avl_tree.h"
+#include "muggle/c/dsaa/hash_table.h"
+#include "muggle/c/dsaa/heap.h"
+#include "muggle/c/dsaa/sort.h"
+
 #endif

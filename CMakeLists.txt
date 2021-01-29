@@ -189,6 +189,13 @@ install(TARGETS ${muggle_cc}
 )
 muggle_install_headers(${CMAKE_CURRENT_LIST_DIR}/muggle include/muggle)
 
+# muggle test utils
+if (MUGGLE_BUILD_TESTING)
+	set(test_utils muggle_test_utils)
+	muggle_add_project(${test_utils} ${CMAKE_CURRENT_LIST_DIR}/test_utils SHARED)
+	add_dependencies(${test_utils} ${muggle_cc})
+endif()
+
 # functions
 function(add_example name folder)
 	message("add example ${name} ${folder}")
@@ -264,7 +271,7 @@ function(add_gtest name folder)
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
 
-	add_dependencies(${name} ${muggle_cc})
+	add_dependencies(${name} ${muggle_cc} ${test_utils})
 	if (FOUND_GTEST_FROM_DOWNLOAD)
 		add_dependencies(${name} ${GTEST_BOTH_LIBRARIES})
 	endif()
@@ -273,6 +280,7 @@ function(add_gtest name folder)
 	)
 	target_link_libraries(${name}
 		${muggle_cc}
+		${test_utils}
 		${GTEST_BOTH_LIBRARIES}
 	)
 
