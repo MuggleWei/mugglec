@@ -249,13 +249,13 @@ TEST(str, stou)
 	unsigned int ret;
 
 	EXPECT_TRUE(muggle_str_tou("5", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (unsigned int)5);
 	EXPECT_TRUE(muggle_str_tou(" 5", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (unsigned int)5);
 	EXPECT_TRUE(muggle_str_tou("5 ", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (unsigned int)5);
 	EXPECT_TRUE(muggle_str_tou(" 5 ", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (unsigned int)5);
 
 	EXPECT_FALSE(muggle_str_tou("5 6", &ret, 10));
 	EXPECT_FALSE(muggle_str_tou(" 5 6", &ret, 10));
@@ -269,13 +269,13 @@ TEST(str, stou)
 	EXPECT_FALSE(muggle_str_tou(" -1 ", &ret, 10));
 
 	EXPECT_TRUE(muggle_str_tou("0xa", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (unsigned int)10);
 	EXPECT_TRUE(muggle_str_tou(" 0xa", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (unsigned int)10);
 	EXPECT_TRUE(muggle_str_tou("0xa ", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (unsigned int)10);
 	EXPECT_TRUE(muggle_str_tou(" 0xa ", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (unsigned int)10);
 
 	EXPECT_FALSE(muggle_str_tou("100000000000000000000000", &ret, 10));
 }
@@ -285,13 +285,13 @@ TEST(str, stol)
 	long ret;
 
 	EXPECT_TRUE(muggle_str_tol("5", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (long)5);
 	EXPECT_TRUE(muggle_str_tol(" 5", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (long)5);
 	EXPECT_TRUE(muggle_str_tol("5 ", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (long)5);
 	EXPECT_TRUE(muggle_str_tol(" 5 ", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (long)5);
 
 	EXPECT_FALSE(muggle_str_tol("5 6", &ret, 10));
 	EXPECT_FALSE(muggle_str_tol(" 5 6", &ret, 10));
@@ -300,22 +300,22 @@ TEST(str, stol)
 	EXPECT_FALSE(muggle_str_tol("hello", &ret, 10));
 
 	EXPECT_TRUE(muggle_str_tol("-1", &ret, 10));
-	EXPECT_EQ(ret, -1);
+	EXPECT_EQ(ret, (long)-1);
 	EXPECT_TRUE(muggle_str_tol(" -1", &ret, 10));
-	EXPECT_EQ(ret, -1);
+	EXPECT_EQ(ret, (long)-1);
 	EXPECT_TRUE(muggle_str_tol("-1 ", &ret, 10));
-	EXPECT_EQ(ret, -1);
+	EXPECT_EQ(ret, (long)-1);
 	EXPECT_TRUE(muggle_str_tol(" -1 ", &ret, 10));
-	EXPECT_EQ(ret, -1);
+	EXPECT_EQ(ret, (long)-1);
 
 	EXPECT_TRUE(muggle_str_tol("0xa", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (long)10);
 	EXPECT_TRUE(muggle_str_tol(" 0xa", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (long)10);
 	EXPECT_TRUE(muggle_str_tol("0xa ", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (long)10);
 	EXPECT_TRUE(muggle_str_tol(" 0xa ", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (long)10);
 
 	EXPECT_FALSE(muggle_str_tol("100000000000000000000000", &ret, 10));
 }
@@ -325,13 +325,13 @@ TEST(str, stoul)
 	unsigned long ret;
 
 	EXPECT_TRUE(muggle_str_toul("5", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (unsigned long)5);
 	EXPECT_TRUE(muggle_str_toul(" 5", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (unsigned long)5);
 	EXPECT_TRUE(muggle_str_toul("5 ", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (unsigned long)5);
 	EXPECT_TRUE(muggle_str_toul(" 5 ", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (unsigned long)5);
 
 	EXPECT_FALSE(muggle_str_toul("5 6", &ret, 10));
 	EXPECT_FALSE(muggle_str_toul(" 5 6", &ret, 10));
@@ -345,13 +345,13 @@ TEST(str, stoul)
 	EXPECT_FALSE(muggle_str_toul(" -1 ", &ret, 10));
 
 	EXPECT_TRUE(muggle_str_toul("0xa", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (unsigned long)10);
 	EXPECT_TRUE(muggle_str_toul(" 0xa", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (unsigned long)10);
 	EXPECT_TRUE(muggle_str_toul("0xa ", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (unsigned long)10);
 	EXPECT_TRUE(muggle_str_toul(" 0xa ", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (unsigned long)10);
 
 	EXPECT_FALSE(muggle_str_toul("100000000000000000000000", &ret, 10));
 }
@@ -361,13 +361,13 @@ TEST(str, stoll)
 	long long ret;
 
 	EXPECT_TRUE(muggle_str_toll("5", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (long long)5);
 	EXPECT_TRUE(muggle_str_toll(" 5", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (long long)5);
 	EXPECT_TRUE(muggle_str_toll("5 ", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (long long)5);
 	EXPECT_TRUE(muggle_str_toll(" 5 ", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (long long)5);
 
 	EXPECT_FALSE(muggle_str_toll("5 6", &ret, 10));
 	EXPECT_FALSE(muggle_str_toll(" 5 6", &ret, 10));
@@ -376,22 +376,22 @@ TEST(str, stoll)
 	EXPECT_FALSE(muggle_str_toll("hello", &ret, 10));
 
 	EXPECT_TRUE(muggle_str_toll("-1", &ret, 10));
-	EXPECT_EQ(ret, -1);
+	EXPECT_EQ(ret, (long long)-1);
 	EXPECT_TRUE(muggle_str_toll(" -1", &ret, 10));
-	EXPECT_EQ(ret, -1);
+	EXPECT_EQ(ret, (long long)-1);
 	EXPECT_TRUE(muggle_str_toll("-1 ", &ret, 10));
-	EXPECT_EQ(ret, -1);
+	EXPECT_EQ(ret, (long long)-1);
 	EXPECT_TRUE(muggle_str_toll(" -1 ", &ret, 10));
-	EXPECT_EQ(ret, -1);
+	EXPECT_EQ(ret, (long long)-1);
 
 	EXPECT_TRUE(muggle_str_toll("0xa", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (long long)10);
 	EXPECT_TRUE(muggle_str_toll(" 0xa", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (long long)10);
 	EXPECT_TRUE(muggle_str_toll("0xa ", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (long long)10);
 	EXPECT_TRUE(muggle_str_toll(" 0xa ", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (long long)10);
 
 	EXPECT_FALSE(muggle_str_toll("100000000000000000000000", &ret, 10));
 }
@@ -401,13 +401,13 @@ TEST(str, stoull)
 	unsigned long long ret;
 
 	EXPECT_TRUE(muggle_str_toull("5", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (unsigned long long)5);
 	EXPECT_TRUE(muggle_str_toull(" 5", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (unsigned long long)5);
 	EXPECT_TRUE(muggle_str_toull("5 ", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (unsigned long long)5);
 	EXPECT_TRUE(muggle_str_toull(" 5 ", &ret, 10));
-	EXPECT_EQ(ret, 5);
+	EXPECT_EQ(ret, (unsigned long long)5);
 
 	EXPECT_FALSE(muggle_str_toull("5 6", &ret, 10));
 	EXPECT_FALSE(muggle_str_toull(" 5 6", &ret, 10));
@@ -421,13 +421,13 @@ TEST(str, stoull)
 	EXPECT_FALSE(muggle_str_toull(" -1 ", &ret, 10));
 
 	EXPECT_TRUE(muggle_str_toull("0xa", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (unsigned long long)10);
 	EXPECT_TRUE(muggle_str_toull(" 0xa", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (unsigned long long)10);
 	EXPECT_TRUE(muggle_str_toull("0xa ", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (unsigned long long)10);
 	EXPECT_TRUE(muggle_str_toull(" 0xa ", &ret, 16));
-	EXPECT_EQ(ret, 10);
+	EXPECT_EQ(ret, (unsigned long long)10);
 
 	EXPECT_FALSE(muggle_str_toull("100000000000000000000000", &ret, 10));
 }

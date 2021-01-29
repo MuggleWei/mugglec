@@ -90,7 +90,7 @@ TEST(ts_memory_pool, mul_thread)
 	}
 	threads.clear();
 
-	ASSERT_EQ(data_pos, next_pow_of_2(capacity));
+	ASSERT_EQ(data_pos, (muggle_atomic_int)next_pow_of_2(capacity));
 	ASSERT_EQ(muggle_ts_memory_pool_alloc(&pool), nullptr);
 
 	std::map<int, int> thread_count;
@@ -142,7 +142,7 @@ TEST(ts_memory_pool, mul_thread)
 	}
 	threads.clear();
 
-	ASSERT_EQ(pool.alloc_cursor + next_pow_of_2(capacity), pool.free_cursor);
+	ASSERT_EQ(pool.alloc_cursor + (muggle_atomic_int)next_pow_of_2(capacity), pool.free_cursor);
 
 	muggle_ts_memory_pool_destroy(&pool);
 	free(datas);

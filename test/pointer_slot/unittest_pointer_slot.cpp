@@ -13,11 +13,11 @@ TEST(pointer_slot, insert_get_remove)
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[0], &idx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(idx, 0);
+	ASSERT_EQ(idx, (unsigned int)0);
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[1], &idx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(idx, 1);
+	ASSERT_EQ(idx, (unsigned int)1);
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[2], &idx);
 	ASSERT_NE(ret, 0);
@@ -42,11 +42,11 @@ TEST(pointer_slot, insert_get_remove)
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[0], &idx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(idx, 1);
+	ASSERT_EQ(idx, (unsigned int)1);
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[1], &idx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(idx, 0);
+	ASSERT_EQ(idx, (unsigned int)0);
 
 	data = muggle_pointer_slot_get(&ptr_slot, 0);
 	ASSERT_EQ(data, &arr[1]);
@@ -174,15 +174,15 @@ TEST(pointer_slot, insert_remove_iter)
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[0], &idx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(idx, 0);
+	ASSERT_EQ(idx, (unsigned int)0);
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[1], &idx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(idx, 1);
+	ASSERT_EQ(idx, (unsigned int)1);
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[2], &idx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(idx, 2);
+	ASSERT_EQ(idx, (unsigned int)2);
 
 	ret = muggle_pointer_slot_remove(&ptr_slot, 1);
 	ASSERT_EQ(ret, 0);

@@ -34,8 +34,8 @@ void gen_input_var(
 
 TEST(crypt_des, block_size)
 {
-	ASSERT_EQ(sizeof(muggle_64bit_block_t), 8);
-	ASSERT_EQ(sizeof(muggle_32bit_block_t), 4);
+	ASSERT_EQ(sizeof(muggle_64bit_block_t), (size_t)8);
+	ASSERT_EQ(sizeof(muggle_32bit_block_t), (size_t)4);
 }
 
 TEST(crypt_des, EncrypDecrypt)
@@ -330,7 +330,7 @@ TEST(crypt_des, cfb64)
 			ret = memcmp(iv, iv3, MUGGLE_DES_BLOCK_SIZE);
 			ASSERT_EQ(ret, 0);
 
-			ASSERT_EQ(iv_off, iv_off3);
+			ASSERT_EQ(iv_off, (unsigned int)iv_off3);
 #endif
 
 			offset += num_bytes;
@@ -429,7 +429,7 @@ TEST(crypt_des, ofb64)
 			ret = memcmp(iv, iv3, MUGGLE_DES_BLOCK_SIZE);
 			ASSERT_EQ(ret, 0);
 
-			ASSERT_EQ(iv_off, iv_off3);
+			ASSERT_EQ(iv_off, (unsigned int)iv_off3);
 #endif
 
 			offset += num_bytes;

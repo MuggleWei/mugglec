@@ -76,7 +76,7 @@ TEST(baseutils, round_pow_of_2)
 		for (uint32_t j = 1; j < 30; ++j)
 		{
 			uint32_t x = ROUND_UP_POW_OF_2_MUL(i,0x01<<j);
-			EXPECT_EQ(x % 0x01<<j, 0);
+			EXPECT_EQ(x % 0x01<<j, (uint32_t)0);
 			EXPECT_LT(x-i, (uint32_t)0x01<<j);
 		}
 	}
@@ -84,13 +84,13 @@ TEST(baseutils, round_pow_of_2)
 
 TEST(baseutils, next_pow_of_2)
 {
-	EXPECT_EQ(next_pow_of_2((uint64_t)2), 2);
-	EXPECT_EQ(next_pow_of_2((uint64_t)3), 4);
-	EXPECT_EQ(next_pow_of_2((uint64_t)4), 4);
-	EXPECT_EQ(next_pow_of_2((uint64_t)5), 8);
-	EXPECT_EQ(next_pow_of_2((uint64_t)6), 8);
-	EXPECT_EQ(next_pow_of_2((uint64_t)7), 8);
-	EXPECT_EQ(next_pow_of_2((uint64_t)8), 8);
+	EXPECT_EQ(next_pow_of_2((uint64_t)2), (uint64_t)2);
+	EXPECT_EQ(next_pow_of_2((uint64_t)3), (uint64_t)4);
+	EXPECT_EQ(next_pow_of_2((uint64_t)4), (uint64_t)4);
+	EXPECT_EQ(next_pow_of_2((uint64_t)5), (uint64_t)8);
+	EXPECT_EQ(next_pow_of_2((uint64_t)6), (uint64_t)8);
+	EXPECT_EQ(next_pow_of_2((uint64_t)7), (uint64_t)8);
+	EXPECT_EQ(next_pow_of_2((uint64_t)8), (uint64_t)8);
 
 	// for save time, only test i < 16
 	for (uint32_t i = 1; i < 16; ++i)
