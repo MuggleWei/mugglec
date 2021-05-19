@@ -187,7 +187,11 @@ int muggle_os_mkdir(const char *path)
 			/* Temporarily truncate */
 			*p = '\0';
 
-			if (mkdir(_path, S_IRWXU) != 0)
+			if (_path[0] == '\0')
+			{
+				// don't need to create root directory
+			}
+			else if (mkdir(_path, S_IRWXU) != 0)
 			{
 				if (errno != EEXIST)
 				{
@@ -199,7 +203,11 @@ int muggle_os_mkdir(const char *path)
 		}
 	}
 
-	if (mkdir(_path, S_IRWXU) != 0)
+	if (_path[0] == '\0')
+	{
+		// don't need to create root directory
+	}
+	else if (mkdir(_path, S_IRWXU) != 0)
 	{
 		if (errno != EEXIST)
 		{
