@@ -66,6 +66,11 @@ int muggle_os_mkdir(const char *path)
 	char _path[MUGGLE_MAX_PATH];
 	char *p;
 
+	if (len == 0)
+	{
+		return MUGGLE_OK;
+	}
+
 	if (len > sizeof(_path)-1)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
@@ -173,6 +178,11 @@ int muggle_os_mkdir(const char *path)
 	char _path[MUGGLE_MAX_PATH];
 	char *p;
 
+	if (len == 0)
+	{
+		return MUGGLE_OK;
+	}
+
 	if (len > sizeof(_path)-1)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
@@ -187,11 +197,7 @@ int muggle_os_mkdir(const char *path)
 			/* Temporarily truncate */
 			*p = '\0';
 
-			if (_path[0] == '\0')
-			{
-				// don't need to create root directory
-			}
-			else if (mkdir(_path, S_IRWXU) != 0)
+			if (mkdir(_path, S_IRWXU) != 0)
 			{
 				if (errno != EEXIST)
 				{
@@ -203,11 +209,7 @@ int muggle_os_mkdir(const char *path)
 		}
 	}
 
-	if (_path[0] == '\0')
-	{
-		// don't need to create root directory
-	}
-	else if (mkdir(_path, S_IRWXU) != 0)
+	if (mkdir(_path, S_IRWXU) != 0)
 	{
 		if (errno != EEXIST)
 		{
