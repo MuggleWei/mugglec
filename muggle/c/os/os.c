@@ -7,6 +7,7 @@
 
 #include "os.h"
 #include "muggle/c/base/err.h"
+#include "muggle/c/os/path.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 
@@ -81,7 +82,11 @@ int muggle_os_mkdir(const char *path)
 			/* Temporarily truncate */
 			*p = '\0';
 
-			if (!CreateDirectoryA(_path, NULL))
+			if (strlen(_path) == 2 && _path[1] == ':')
+			{
+				// don't need to create windows drive letter
+			}
+			else if (!CreateDirectoryA(_path, NULL))
 			{
 				DWORD err = GetLastError();
 				if(err != ERROR_ALREADY_EXISTS)
@@ -94,7 +99,11 @@ int muggle_os_mkdir(const char *path)
 		}
 	}
 
-	if (!CreateDirectoryA(_path, NULL))
+	if (strlen(_path) == 2 && _path[1] == ':')
+	{
+		// don't need to create windows drive letter
+	}
+	else if (!CreateDirectoryA(_path, NULL))
 	{
 		DWORD err = GetLastError();
 		if(err != ERROR_ALREADY_EXISTS)

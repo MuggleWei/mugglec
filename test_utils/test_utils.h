@@ -1,8 +1,10 @@
 #ifndef MUGGLE_C_TEST_UTILS_H_
 #define MUGGLE_C_TEST_UTILS_H_
 
-#if MUGGLE_PLATFORM_WINDOWS && defined(test_utils_USE_DLL)
-	#ifdef test_utils_EXPORTS
+#include "muggle/c/muggle_c.h"
+
+#if MUGGLE_PLATFORM_WINDOWS && defined(muggle_test_utils_USE_DLL)
+	#ifdef muggle_test_utils_EXPORTS
 		#define TEST_UTILS_EXPORT __declspec(dllexport)
 	#else
 		#define TEST_UTILS_EXPORT __declspec(dllimport)

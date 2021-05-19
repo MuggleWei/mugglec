@@ -78,6 +78,54 @@ TEST(os, mkdir_rmdir)
 	ASSERT_FALSE(ret);
 }
 
+TEST(os, recursive_mkdir_rmdir_rel_path)
+{
+	int ret;
+	char buf[MUGGLE_MAX_PATH];
+	auto t = time(NULL);
+	snprintf(buf, sizeof(buf) - 1, "test/unittest_os/test_os_dir_%lld", (long long)t);
+
+	ret = muggle_os_mkdir(buf);
+	ASSERT_EQ(ret, 0);
+
+	ret = muggle_path_exists(buf);
+	ASSERT_TRUE(ret);
+
+	ret = muggle_os_rmdir(buf);
+	ASSERT_EQ(ret, 0);
+
+	ret = muggle_path_exists(buf);
+	ASSERT_FALSE(ret);
+}
+
+TEST(os, recursive_mkdir_rmdir_abs_path)
+{
+	int ret;
+	char tmp_dir[MUGGLE_MAX_PATH];
+	char dir_name[MUGGLE_MAX_PATH];
+	char buf[MUGGLE_MAX_PATH];
+	auto t = time(NULL);
+#if MUGGLE_PLATFORM_WINDOWS
+	GetTempPathA((DWORD)sizeof(tmp_dir), tmp_dir);
+#else
+	snprintf(tmp_dir, sizeof(tmp_dir), "/tmp");
+#endif
+	snprintf(dir_name, sizeof(dir_name), "muggle_test/unittest_os/%lld", (long long)t);
+	muggle_path_join(tmp_dir, dir_name, buf, sizeof(buf));
+
+	ret = muggle_os_mkdir(buf);
+	ASSERT_EQ(ret, 0);
+
+	ret = muggle_path_exists(buf);
+	ASSERT_TRUE(ret);
+
+	ret = muggle_os_rmdir(buf);
+	ASSERT_EQ(ret, 0);
+
+	ret = muggle_path_exists(buf);
+	ASSERT_FALSE(ret);
+}
+
 TEST(os, remove)
 {
 	int ret;
