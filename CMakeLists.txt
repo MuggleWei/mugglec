@@ -30,11 +30,12 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(MUGGLE_BUILD_ONLY_C ON)
 # option(MUGGLE_BUILD_ONLY_C "Only build muggle c lib" OFF) # deprecate all cpp file
 option(MUGGLE_BUILD_TRACE "If build type is debug then build with trace info in source codes" OFF)
-option(MUGGLE_BUILD_SHARED_LIB ON "build shared or static library")
+option(MUGGLE_BUILD_SHARED_LIB "build shared or static library" ON)
+option(MUGGLE_BUILD_STATIC_PIC "build static library with position independent code flag" ON)
 option(MUGGLE_BUILD_EXAMPLE "Build muggleCC example" OFF)
 option(MUGGLE_BUILD_TESTING "Build muggleCC test" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build muggleCC benchmark" OFF)
-option(MUGGLE_EXTRA_PREFIX_PATH "extra prefix path for cmake FIND_XXX" "")
+set(MUGGLE_EXTRA_PREFIX_PATH "" CACHE STRING "extra prefix path for cmake FIND_XXX")
 option(BUILD_TESTING "Buid testing" OFF)
 # option(MUGGLE_CRYPT_OPTIMIZATION "Enable crypt optimization(use source codes extract from openssl)" ON)
 set(MUGGLE_CRYPT_OPTIMIZATION ON)
@@ -53,6 +54,7 @@ set(MUGGLE_CC_SOVERSION "${MUGGLE_CC_VER_MAJOR}")
 message("-- version ${MUGGLE_CC_VERSION}")
 message("-- option MUGGLE_BUILD_TRACE ${MUGGLE_BUILD_TRACE}")
 message("-- option MUGGLE_BUILD_SHARED_LIB ${MUGGLE_BUILD_SHARED_LIB}")
+message("-- option MUGGLE_BUILD_STATIC_PIC ${MUGGLE_BUILD_STATIC_PIC}")
 message("-- option MUGGLE_BUILD_EXAMPLE ${MUGGLE_BUILD_EXAMPLE}")
 message("-- option MUGGLE_BUILD_TESTING ${MUGGLE_BUILD_TESTING}")
 message("-- option MUGGLE_BUILD_BENCHMARK ${MUGGLE_BUILD_BENCHMARK}")
@@ -61,7 +63,7 @@ message("-- option BUILD_TESTING ${BUILD_TESTING}")
 message("-- option MUGGLE_CRYPT_OPTIMIZATION ${MUGGLE_CRYPT_OPTIMIZATION}")
 message("-- option MUGGLE_CRYPT_COMPARE_OPENSSL ${MUGGLE_CRYPT_COMPARE_OPENSSL}")
 
-if ("${MUGGLE_EXTRA_PREFIX_PATH}" STREQUAL "" OR ${MUGGLE_EXTRA_PREFIX_PATH} EQUAL OFF)
+if ("${MUGGLE_EXTRA_PREFIX_PATH}" STREQUAL "")
 else()
 	list(APPEND CMAKE_PREFIX_PATH ${MUGGLE_EXTRA_PREFIX_PATH})
 	message("-- cmake prefix path: ${CMAKE_PREFIX_PATH}")
@@ -112,6 +114,11 @@ if (${MUGGLE_BUILD_ONLY_C})
 		VERSION ${MUGGLE_CC_VERSION}
 		SOVERSION ${MUGGLE_CC_SOVERSION}
 	)
+	if ((NOT ${MUGGLE_BUILD_SHARED_LIB}) AND (${MUGGLE_BUILD_STATIC_PIC}))
+		set_target_properties(${muggle_cc} PROPERTIES
+			POSITION_INDEPENDENT_CODE ON
+		)
+	endif()
 	target_compile_definitions(${muggle_cc}	PUBLIC MUGGLE_BUILD_C_ONLY)
 	target_compile_definitions(${muggle_cc}	PUBLIC
 		MUGGLE_CC_VERSION_MAJOR=${MUGGLE_CC_VER_MAJOR}
@@ -135,6 +142,11 @@ set_target_properties(muggle_benchmark PROPERTIES
 	VERSION ${MUGGLE_CC_VERSION}
 	SOVERSION ${MUGGLE_CC_SOVERSION}
 )
+if ((NOT ${MUGGLE_BUILD_SHARED_LIB}) AND (${MUGGLE_BUILD_STATIC_PIC}))
+	set_target_properties(muggle_benchmark PROPERTIES
+		POSITION_INDEPENDENT_CODE ON
+	)
+endif()
 target_link_libraries(muggle_benchmark ${muggle_cc})
 add_dependencies(muggle_benchmark ${muggle_cc})
 
