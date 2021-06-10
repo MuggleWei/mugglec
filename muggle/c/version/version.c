@@ -1,16 +1,11 @@
 #include "version.h"
 #include <stdio.h>
 
-// extra level of indirection will allow the preprocessor to
-// expand the macros before they are converted to strings
-#define MUGGLE_STR_HELPER(x) #x
-#define MUGGLE_STR(x)        MUGGLE_STR_HELPER(x)
-
 #ifdef MUGGLE_C_VERSION_MAJOR
 	#define MUGGLE_C_VERSION \
-		MUGGLE_STR(MUGGLE_C_VERSION_MAJOR) "." \
-		MUGGLE_STR(MUGGLE_C_VERSION_MINOR) "." \
-		MUGGLE_STR(MUGGLE_C_VERSION_BUILD)
+		MUGGLE_MACRO_STR(MUGGLE_C_VERSION_MAJOR) "." \
+		MUGGLE_MACRO_STR(MUGGLE_C_VERSION_MINOR) "." \
+		MUGGLE_MACRO_STR(MUGGLE_C_VERSION_BUILD)
 #else
 	#define MUGGLE_C_VERSION "?.?.?"
 #endif

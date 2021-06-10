@@ -1,5 +1,16 @@
 ## mugglec
-mugglec is a cross platform pure C base library, contains utilities like network, concurrency, memory pool, path operation, logging, crypt and so on. I keep it as tiny as possible and easy to use.  
+<b>Cross platform c base library</b>
+* [readme EN](./README.md)
+* [readme 中文](./README_cn.md)
+
+mugglec is a cross platform pure C base library, contains utilities like basic data structure, network, concurrency, log, crypt, memory pool, path operation and so on.
+
+### Feature
+* Provide common basic functions
+* Cross platform (mostly), Linux/Windows(main target)
+* No dependencies
+* Easy to use
+* As tiny as possible
 
 ### Build
 It's easy to build this project with CMake, the typical workflow starts with:
@@ -20,4 +31,4 @@ There are some cmake build options to decide build this library as shared or sta
 | MUGGLE_BUILD_TRACE | OFF | build with trace info in debug |
 | MUGGLE_EXTRA_PREFIX_PATH | "" | specify extra find path, it will append into CMAKE_PREFIX_PATH |
 
-NOTE: mugglec unittest use gtest, so if MUGGLE_BUILD_TESTING is ON, it will try find gtest first, if gtest not found, will download gtest automaticlly.  
+NOTE: mugglec unittest use gtest, so if MUGGLE_BUILD_TESTING is ON, it will try find gtest first, if gtest not found, will download gtest in first time automaticlly.  
