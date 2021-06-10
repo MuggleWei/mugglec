@@ -16,6 +16,7 @@ jobs:
           cmake ..  \
             -DCMAKE_C_COMPILER=clang \
             -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_BUILD_TYPE=Release \
             -DMUGGLE_BUILD_SHARED_LIB=ON \
             -DMUGGLE_BUILD_EXAMPLE=OFF \
             -DMUGGLE_BUILD_TESTING=ON \
