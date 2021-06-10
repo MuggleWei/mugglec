@@ -42,7 +42,7 @@ typedef struct muggle_aes_context
  *   - 0 success
  *   - otherwise failed, see MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_aes_set_key(
 	int op,
 	int mode,
@@ -60,7 +60,7 @@ int muggle_aes_set_key(
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_aes_ecb(
 	const muggle_aes_context_t *ctx,
 	const unsigned char *input,
@@ -78,7 +78,7 @@ int muggle_aes_ecb(
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_aes_cbc(
 	const muggle_aes_context_t *ctx,
 	const unsigned char *input,
@@ -98,7 +98,7 @@ int muggle_aes_cbc(
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_aes_cfb128(
 	const muggle_aes_context_t *ctx,
 	const unsigned char *input,
@@ -119,7 +119,7 @@ int muggle_aes_cfb128(
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_aes_ofb128(
 	const muggle_aes_context_t *ctx,
 	const unsigned char *input,
@@ -141,7 +141,7 @@ int muggle_aes_ofb128(
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_aes_ctr(
 	const muggle_aes_context_t *ctx,
 	const unsigned char *input,

@@ -80,25 +80,25 @@ typedef struct muggle_channel
  * @flags: bitwise or of MUGGLE_CHANNEL_FLAG_*
  * RETURN: 0 - success, otherwise failed and return MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int flags);
 
 /*
  * destroy muggle_channel_t
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_channel_destroy(muggle_channel_t *chan);
 
 /*
  * write data into channel
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_channel_write(muggle_channel_t *chan, void *data);
 
 /*
  * read data from channel
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void* muggle_channel_read(muggle_channel_t *chan);
 
 EXTERN_C_END

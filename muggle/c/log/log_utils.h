@@ -10,7 +10,7 @@ EXTERN_C_BEGIN
  * @level_console: console output level
  * @level_file_rotating: file rotating output level
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_log_simple_init(int level_console, int level_file_rotating);
 
 EXTERN_C_END

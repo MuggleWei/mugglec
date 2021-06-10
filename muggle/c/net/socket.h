@@ -73,7 +73,7 @@ typedef socklen_t muggle_socklen_t;
  * initialize socket library
  * RETURN: return 0 if success, otherwise failed
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_lib_init();
 
 /*
@@ -82,21 +82,21 @@ int muggle_socket_lib_init();
  * RETURN: on success, a socket descriptor is returned 
  *         on error, MUGGLE_INVALID_SOCKET is returned, and MUGGLE_SOCKET_LAST_ERRNO is set
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 muggle_socket_t muggle_socket_create(int family, int type, int protocol);
 
 /*
  * close socket
  * RETURN: returns 0 on success, on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_close(muggle_socket_t fd);
 
 /*
  * shutdown socket
  * RETURN: returns 0 on success, on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_shutdown(muggle_socket_t fd, int how);
 
 /*
@@ -106,7 +106,7 @@ int muggle_socket_shutdown(muggle_socket_t fd, int how);
  * @bufsize: size of buffer
  * RETURN: returns 0 on success
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_strerror(int errnum, char *buf, size_t bufsize);
 
 /*
@@ -114,32 +114,32 @@ int muggle_socket_strerror(int errnum, char *buf, size_t bufsize);
  * @on: if 0, set block, otherwise set non block
  * RETURN: returns 0 on success, on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_set_nonblock(muggle_socket_t socket, int on);
 
 /*
  * socket send, the same as send
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_send(muggle_socket_t fd, const void *buf, size_t len, int flags);
 
 /*
  * socket sendto, the same as send
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_sendto(muggle_socket_t fd, const void *buf, size_t len, int flags,
 	const struct sockaddr *dest_addr, muggle_socklen_t addrlen);
 
 /*
  * socket recv, the same as recv
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_recv(muggle_socket_t fd, void *buf, size_t len, int flags);
 
 /*
  * socket recvfrom ,the same as recvfrom
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_recvfrom(muggle_socket_t fd, void *buf, size_t len, int flags,
 	struct sockaddr *addr, muggle_socklen_t *addrlen);
 

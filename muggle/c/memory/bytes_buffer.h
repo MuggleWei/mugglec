@@ -29,31 +29,31 @@ typedef struct muggle_bytes_buffer
  * initialize byte buffer
  * RETURN: if success return true, otherwise return false
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_bytes_buffer_init(muggle_bytes_buffer_t *bytes_buf, int capacity);
 
 /*
  * destroy byte buffer
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_bytes_buffer_destroy(muggle_bytes_buffer_t *bytes_buf);
 
 /*
  * get len of remain memory use for write
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_bytes_buffer_writable(muggle_bytes_buffer_t *bytes_buf);
 
 /*
  * get len of bytes can be read
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_bytes_buffer_readable(muggle_bytes_buffer_t *bytes_buf);
 
 /*
  * get contiguous len of bytes can be read
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_bytes_buffer_contiguous_readable(muggle_bytes_buffer_t *bytes_buf);
 
 /*
@@ -62,7 +62,7 @@ int muggle_bytes_buffer_contiguous_readable(muggle_bytes_buffer_t *bytes_buf);
  * @dst: save fetched bytes into dst
  * RETURN: true represent sucess, failed return false
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_bytes_buffer_fetch(muggle_bytes_buffer_t *bytes_buf, int num_bytes, void *dst);
 
 /*
@@ -71,7 +71,7 @@ bool muggle_bytes_buffer_fetch(muggle_bytes_buffer_t *bytes_buf, int num_bytes, 
  * @dst: save fetched bytes into dst
  * RETURN: if success return true, otherwise return false
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_bytes_buffer_read(muggle_bytes_buffer_t *bytes_buf, int num_bytes, void *dst);
 
 /*
@@ -80,7 +80,7 @@ bool muggle_bytes_buffer_read(muggle_bytes_buffer_t *bytes_buf, int num_bytes, v
  * @src: address of bytes
  * RETURN: if success return true, otherwise return false
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_bytes_buffer_write(muggle_bytes_buffer_t *bytes_buf, int num_bytes, void *src);
 
 /*
@@ -90,7 +90,7 @@ bool muggle_bytes_buffer_write(muggle_bytes_buffer_t *bytes_buf, int num_bytes, 
  *         if return null, mean have no enough contiguous memory for write
  * NOTE: usually use with muggle_bytes_buffer_writer_move
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void* muggle_bytes_buffer_writer_fc(muggle_bytes_buffer_t *bytes_buf, int num_bytes);
 
 /*
@@ -100,7 +100,7 @@ void* muggle_bytes_buffer_writer_fc(muggle_bytes_buffer_t *bytes_buf, int num_by
  *         jump), return true, otherwise return false
  * NOTE: usually use with muggle_bytes_buffer_writer_fc
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_bytes_buffer_writer_move(muggle_bytes_buffer_t *bytes_buf, int num_bytes);
 
 /*
@@ -110,7 +110,7 @@ bool muggle_bytes_buffer_writer_move(muggle_bytes_buffer_t *bytes_buf, int num_b
  *         if return null, mean have no enough contiguous memory for read
  * NOTE: usually use with muggle_bytes_buffer_reader_move
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void* muggle_bytes_buffer_reader_fc(muggle_bytes_buffer_t *bytes_buf, int num_bytes);
 
 /*
@@ -120,13 +120,13 @@ void* muggle_bytes_buffer_reader_fc(muggle_bytes_buffer_t *bytes_buf, int num_by
  *         jump), return true, otherwise return false
  * NOTE: usually use with muggle_bytes_buffer_reader_fc
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_bytes_buffer_reader_move(muggle_bytes_buffer_t *bytes_buf, int num_bytes);
 
 /*
  * clear bytes in bytes buffer 
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_bytes_buffer_clear(muggle_bytes_buffer_t *bytes_buf);
 
 EXTERN_C_END

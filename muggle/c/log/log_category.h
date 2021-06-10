@@ -32,7 +32,7 @@ typedef struct muggle_log_category_tag
  * @handle: log handle
  * RETURN: success returns 0, otherwise return err code in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_log_category_add(muggle_log_category_t *category, muggle_log_handle_t *handle);
 
 /*
@@ -41,7 +41,7 @@ int muggle_log_category_add(muggle_log_category_t *category, muggle_log_handle_t
  * @delete_handles: nonzero represent need delete all handles in this category
  * RETURN: success returns 0, otherwise return err code in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_log_category_destroy(muggle_log_category_t *category, int delete_handles);
 
 /*
@@ -51,7 +51,7 @@ int muggle_log_category_destroy(muggle_log_category_t *category, int delete_hand
  * @msg: log messages
  * RETURN: success returns 0, otherwise return err code in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_log_category_write(
 	muggle_log_category_t *category,
 	muggle_log_fmt_arg_t *arg,

@@ -26,7 +26,7 @@ EXTERN_C_BEGIN
  * @enable_color: whether or not use color in console
  * RETURN: success returns 0, otherwise return err code in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_log_handle_console_init(
 	muggle_log_handle_t *handle,
 	int write_type,
@@ -43,7 +43,7 @@ int muggle_log_handle_console_init(
  * RETURN: success returns 0, otherwise return err code in err.h
  * NOTE: don't invoke this function immediatly, use muggle_log_handle_destroy
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_log_handle_console_destroy(muggle_log_handle_t *handle);
 
 /*
@@ -54,7 +54,7 @@ int muggle_log_handle_console_destroy(muggle_log_handle_t *handle);
  * RETURN: success return number of bytes be writed to output, otherwise return negative
  * NOTE: don't invoke this function immediatly, use muggle_log_handle_write
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_log_handle_console_output(
 	muggle_log_handle_t *handle,
 	muggle_log_fmt_arg_t *arg,

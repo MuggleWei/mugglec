@@ -46,39 +46,39 @@ typedef pthread_t muggle_thread_id;
  * starts a new thread in the calling process
  * RETURN: on success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_thread_create(muggle_thread_t *thread, muggle_thread_routine routine, void *args);
 
 /*
  * waits for the thread specified by thread to terminate
  * RETURN: on success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_thread_join(muggle_thread_t *thread);
 
 /*
  * marks the thread identified by thread as detached
  * RETURN: on success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_thread_detach(muggle_thread_t *thread);
 
 /*
  * get current thread id
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 muggle_thread_id muggle_thread_current_id();
 
 /*
  * the same as c++11 std::thread::hardware_concurrency
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_thread_hardware_concurrency();
 
 /*
  * calling thread to yield execution and relinquish the CPU
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_thread_yield();
 
 EXTERN_C_END

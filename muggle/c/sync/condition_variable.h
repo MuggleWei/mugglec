@@ -30,19 +30,19 @@ typedef struct muggle_condition_variable_tag
 #endif
 }muggle_condition_variable_t;
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_condition_variable_init(muggle_condition_variable_t *cv);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_condition_variable_destroy(muggle_condition_variable_t *cv);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_condition_variable_wait(muggle_condition_variable_t *cv, muggle_mutex_t *mutex, const struct timespec *timeout);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_condition_variable_notify_one(muggle_condition_variable_t *cv);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_condition_variable_notify_all(muggle_condition_variable_t *cv);
 
 EXTERN_C_END

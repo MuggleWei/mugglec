@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.0.2)
-project(muggleCC)
+project(mugglec)
 
 # set compile parameter
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
@@ -162,8 +162,8 @@ endif()
 # export macro for windows
 if (MUGGLE_BUILD_SHARED_LIB)
 	target_compile_definitions(${muggle_c}
-		PUBLIC MUGGLE_CC_USE_DLL
-		PRIVATE MUGGLE_CC_EXPORTS 
+		PUBLIC MUGGLE_C_USE_DLL
+		PRIVATE MUGGLE_C_EXPORTS 
 	)
 	target_compile_definitions(muggle_benchmark
 		PUBLIC MUGGLE_BENCHMARK_USE_DLL

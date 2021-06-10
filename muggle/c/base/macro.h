@@ -71,14 +71,14 @@
 #endif 
 
 // lib and dll
-#if MUGGLE_PLATFORM_WINDOWS && defined(MUGGLE_CC_USE_DLL)
-	#ifdef MUGGLE_CC_EXPORTS
-		#define MUGGLE_CC_EXPORT __declspec(dllexport)
+#if MUGGLE_PLATFORM_WINDOWS && defined(MUGGLE_C_USE_DLL)
+	#ifdef MUGGLE_C_EXPORTS
+		#define MUGGLE_C_EXPORT __declspec(dllexport)
 	#else
-		#define MUGGLE_CC_EXPORT __declspec(dllimport)
+		#define MUGGLE_C_EXPORT __declspec(dllimport)
 	#endif
 #else
-	#define MUGGLE_CC_EXPORT
+	#define MUGGLE_C_EXPORT
 #endif
 
 // deprecated macro

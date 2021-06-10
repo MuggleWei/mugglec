@@ -54,7 +54,7 @@ typedef struct muggle_socket_peer
 /*
  * init socket peer
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_socket_peer_init(
 	muggle_socket_peer_t *peer, muggle_socket_t fd,
 	int peer_type, const struct sockaddr *addr, muggle_socklen_t addr_len);
@@ -63,7 +63,7 @@ void muggle_socket_peer_init(
  * increases the reference count of peer
  * RETURN: refence count of peer after this call
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_peer_retain(muggle_socket_peer_t *peer);
 
 /*
@@ -71,19 +71,19 @@ int muggle_socket_peer_retain(muggle_socket_peer_t *peer);
  * at 0
  * RETURN: refence count of peer after this call
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_peer_release(muggle_socket_peer_t *peer);
 
 /*
  * try to close socket peer
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_socket_peer_close(muggle_socket_peer_t *peer);
 
 /*
  * receive messages from a socket peer
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_peer_recvfrom(
 	muggle_socket_peer_t *peer, void *buf, size_t len, int flags,
 	struct sockaddr *addr, muggle_socklen_t *addrlen);
@@ -91,20 +91,20 @@ int muggle_socket_peer_recvfrom(
 /*
  * receive messages from a socket peer
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_peer_recv(muggle_socket_peer_t *peer, void *buf, size_t len, int flags);
 
 /*
  * transmit a message to another socket
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_peer_sendto(muggle_socket_peer_t *peer, const void *buf, size_t len, int flags,
 	const struct sockaddr *dest_addr, socklen_t addrlen);
 
 /*
  * transmit a message to another socket
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_peer_send(muggle_socket_peer_t *peer, const void *buf, size_t len, int flags);
 
 EXTERN_C_END

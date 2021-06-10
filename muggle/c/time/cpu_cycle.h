@@ -13,7 +13,7 @@
 
 EXTERN_C_BEGIN
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 uint64_t muggle_get_cpu_cycle();
 
 EXTERN_C_END

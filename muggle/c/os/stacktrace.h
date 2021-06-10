@@ -26,19 +26,19 @@ typedef struct muggle_stacktrace
  * @max_cnt_frame: want to get max frame number, if frame == 0, use MUGGLE_MAX_STACKTRACE_FRAME_NUM
  * RETURN: on success, return the number of frames, on error, -1 is returned
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_stacktrace_get(muggle_stacktrace_t *st, unsigned int max_cnt_frame);
 
 /*
  * free stack trace info
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_stacktrace_free(muggle_stacktrace_t *st);
 
 /*
  * output stack trace info to stdout
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_print_stacktrace();
 
 EXTERN_C_END

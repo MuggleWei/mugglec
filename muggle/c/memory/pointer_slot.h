@@ -38,12 +38,12 @@ typedef struct muggle_pointer_slot
 // @param pointer_slot pointer to a muggle_pointer_slot_t
 // @param capacity expect slot capacity
 // @return 0 - success, otherwise return error code
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_pointer_slot_init(muggle_pointer_slot_t *pointer_slot, unsigned int capacity);
 
 // destroy muggle_pointer_slot_t
 // @param pointer_slot pointer to a muggle_pointer_slot_t
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_pointer_slot_destroy(muggle_pointer_slot_t *pointer_slot);
 
 // insert data into muggle_pointer_slot_t
@@ -51,32 +51,32 @@ void muggle_pointer_slot_destroy(muggle_pointer_slot_t *pointer_slot);
 // @param data data need to insert into slot
 // @param idx return slot idx
 // @return 0 - success, otherwise return error code
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_pointer_slot_insert(muggle_pointer_slot_t *pointer_slot, void *data, unsigned int *slot_idx);
 
 // remove pointer data from muggle_pointer_slot_t
 // @param pointer_slot pointer to a muggle_pointer_slot_t
 // @param idx slot index that pointer data need to be removed
 // @return 0 - success, otherwise return error code
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_pointer_slot_remove(muggle_pointer_slot_t *pointer_slot, unsigned int slot_idx);
 
 // get pointer data from muggle_pointer_slot_t
 // @param pointer_slot pointer to a muggle_pointer_slot_t
 // @param idx slot index that pointer data need to be removed
 // @return pointer data
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void* muggle_pointer_slot_get(muggle_pointer_slot_t *pointer_slot, unsigned int idx);
 
 // get muggle_pointer_slot_t iterator begin and end
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 muggle_pointer_slot_item_t* muggle_pointer_slot_iter_begin(muggle_pointer_slot_t *pointer_slot);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 muggle_pointer_slot_item_t* muggle_pointer_slot_iter_end(muggle_pointer_slot_t *pointer_slot);
 
 // get muggle_pointer_slot_t iterator data
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void* muggle_pointer_slot_iter_data(muggle_pointer_slot_t *pointer_slot, muggle_pointer_slot_item_t *iter);
 
 EXTERN_C_END

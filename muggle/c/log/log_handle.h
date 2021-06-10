@@ -116,7 +116,7 @@ typedef struct muggle_log_handle_tag
  * @p_free: function for async free memory, if NULL, use free
  * NOTE: don't invoke this function immediatly
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_log_handle_base_init(
 	muggle_log_handle_t *handle,
 	int write_type,
@@ -132,7 +132,7 @@ int muggle_log_handle_base_init(
  * @handle: console log handle pointer
  * RETURN: success returns 0, otherwise return err code in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_log_handle_destroy(muggle_log_handle_t *handle);
 
 /*
@@ -142,7 +142,7 @@ int muggle_log_handle_destroy(muggle_log_handle_t *handle);
  * @msg: log messages
  * RETURN: success returns 0, otherwise return err code in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_log_handle_write(
 	muggle_log_handle_t *handle,
 	muggle_log_fmt_arg_t *arg,

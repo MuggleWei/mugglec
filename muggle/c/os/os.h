@@ -18,7 +18,7 @@ EXTERN_C_BEGIN
  * @size: the max size of path (include '\0')
  * RETURN: on success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_os_process_path(char *path, unsigned int size);
 
 /*
@@ -27,7 +27,7 @@ int muggle_os_process_path(char *path, unsigned int size);
  * @size: the max size of path (include '\0')
  * RETURN: on success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_os_curdir(char *path, unsigned int size);
 
 /*
@@ -35,7 +35,7 @@ int muggle_os_curdir(char *path, unsigned int size);
  * @path: target working directory
  * RETURN: on success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_os_chdir(const char *path);
 
 /*
@@ -43,7 +43,7 @@ int muggle_os_chdir(const char *path);
  * @path: path need to create
  * RETURN: success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_os_mkdir(const char *path);
 
 /*
@@ -51,7 +51,7 @@ int muggle_os_mkdir(const char *path);
  * @path: the file need to be remove
  * RETURN: success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_os_remove(const char *path);
 
 /*
@@ -59,14 +59,14 @@ int muggle_os_remove(const char *path);
  * @path: directory need to be delete
  * RETURN: success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_os_rmdir(const char *path);
 
 /*
  * rename the file or directory src to dst
  * RETURN: success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_os_rename(const char *src, const char *dst);
 
 EXTERN_C_END

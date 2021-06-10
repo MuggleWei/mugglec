@@ -51,16 +51,16 @@ typedef struct muggle_ts_memory_pool
  * @data_size: user data size
  * RETURN: 0 - success, otherwise failed and return MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_atomic_int capacity, muggle_atomic_int data_size);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_ts_memory_pool_destroy(muggle_ts_memory_pool_t *pool);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void* muggle_ts_memory_pool_alloc(muggle_ts_memory_pool_t *pool);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_ts_memory_pool_free(void *data);
 
 EXTERN_C_END

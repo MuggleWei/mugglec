@@ -43,19 +43,19 @@ typedef struct muggle_sowr_memory_pool_tag
 	muggle_atomic_int cached_free_pos;
 }muggle_sowr_memory_pool_t;
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_sowr_memory_pool_init(muggle_sowr_memory_pool_t *pool, muggle_atomic_int capacity, muggle_atomic_int data_size);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_sowr_memory_pool_destroy(muggle_sowr_memory_pool_t *pool);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void* muggle_sowr_memory_pool_alloc(muggle_sowr_memory_pool_t *pool);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_sowr_memory_pool_free(void *data);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_sowr_memory_pool_is_all_free(muggle_sowr_memory_pool_t *pool);
 
 EXTERN_C_END

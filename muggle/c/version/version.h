@@ -12,10 +12,10 @@
 
 EXTERN_C_BEGIN
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 const char* mugglec_version();
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 const char* mugglec_compile_time();
 
 EXTERN_C_END

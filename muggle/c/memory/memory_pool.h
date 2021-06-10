@@ -37,25 +37,25 @@ typedef struct muggle_memory_pool_tag
 #endif
 }muggle_memory_pool_t;
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_memory_pool_init(muggle_memory_pool_t* pool, unsigned int init_capacity, unsigned int block_size);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_memory_pool_destroy(muggle_memory_pool_t* pool);
 
-MUGGLE_CC_EXPORT 
+MUGGLE_C_EXPORT 
 void* muggle_memory_pool_alloc(muggle_memory_pool_t* pool);
 
-MUGGLE_CC_EXPORT 
+MUGGLE_C_EXPORT 
 void muggle_memory_pool_free(muggle_memory_pool_t* pool, void* p_data);
 
-MUGGLE_CC_EXPORT 
+MUGGLE_C_EXPORT 
 bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, unsigned int capacity);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 unsigned int muggle_memory_pool_get_flag(muggle_memory_pool_t* pool);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_memory_pool_set_flag(muggle_memory_pool_t* pool, unsigned int flag);
 
 EXTERN_C_END

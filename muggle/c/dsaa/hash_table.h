@@ -39,7 +39,7 @@ typedef struct muggle_hash_table
 // @param hash          hash function, if it's NULL, use default hash function
 // @param cmp           compare function for key
 // @param capacity      init capacity for nodes memory pool, if 0, don't use memory pool
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_hash_table_init(muggle_hash_table_t *p_hash_table, size_t table_size, hash_func hash, muggle_dsaa_data_cmp cmp, size_t capacity);
 
 // destroy hash table
@@ -48,7 +48,7 @@ bool muggle_hash_table_init(muggle_hash_table_t *p_hash_table, size_t table_size
 // @param key_pool          the memory pool passed to key_func_free
 // @param value_func_free   function for free value data, if it's NULL, do nothing for value data
 // @param value_pool        the memory pool passed to value_func_free
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_hash_table_destroy(muggle_hash_table_t *p_hash_table,
 	muggle_dsaa_data_free key_func_free, void *key_pool,
 	muggle_dsaa_data_free value_func_free, void *value_pool);
@@ -59,7 +59,7 @@ void muggle_hash_table_destroy(muggle_hash_table_t *p_hash_table,
 // @param key_pool          the memory pool passed to key_func_free
 // @param value_func_free   function for free value data, if it's NULL, do nothing for value data
 // @param value_pool        the memory pool passed to value_func_free
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_hash_table_clear(muggle_hash_table_t *p_hash_table,
 	muggle_dsaa_data_free key_func_free, void *key_pool,
 	muggle_dsaa_data_free value_func_free, void *value_pool);
@@ -68,7 +68,7 @@ void muggle_hash_table_clear(muggle_hash_table_t *p_hash_table,
 // @param p_hash_table      pointer to hash table
 // @param key               the key that want to found
 // @return the node that found, if failed, return NULL
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 muggle_hash_table_node_t* muggle_hash_table_find(muggle_hash_table_t *p_hash_table, void *key);
 
 // put data into hash table
@@ -76,7 +76,7 @@ muggle_hash_table_node_t* muggle_hash_table_find(muggle_hash_table_t *p_hash_tab
 // @param key               key
 // @param value             value
 // @return return generated node contain added data, if NULL, failed insert data
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 muggle_hash_table_node_t* muggle_hash_table_put(muggle_hash_table_t *p_hash_table, void *key, void *value);
 
 // remove data in hash table
@@ -86,7 +86,7 @@ muggle_hash_table_node_t* muggle_hash_table_put(muggle_hash_table_t *p_hash_tabl
 // @param key_pool          the memory pool passed to key_func_free
 // @param value_func_free   function for free value data, if it's NULL, do nothing for value data
 // @param value_pool        the memory pool passed to value_func_free
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_hash_table_remove(
 	muggle_hash_table_t *p_hash_table, muggle_hash_table_node_t *node,
 	muggle_dsaa_data_free key_func_free, void *key_pool,
