@@ -13,6 +13,10 @@ mugglec is a cross platform pure C base library, contains utilities like basic d
 * As tiny as possible
 
 ### Build
+![linux-gcc](https://github.com/MuggleWei/mugglec/actions/workflows/linux-gcc.yaml/badge.svg?branch=master)
+![linux-clang](https://github.com/MuggleWei/mugglec/actions/workflows/linux-clang.yaml/badge.svg?branch=master)
+![win-msvc](https://github.com/MuggleWei/mugglec/actions/workflows/win-msvc.yaml/badge.svg?branch=master)
+
 It's easy to build this project with CMake, the typical workflow starts with:
 ```
 mkdir build
