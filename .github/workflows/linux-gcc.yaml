@@ -7,18 +7,18 @@ jobs:
     name: Linux GCC
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: lukka/get-cmake@latest
       - name: build
-        run: >
+        run: |
           mkdir build;
           cd build;
-          cmake .. 
-            -DCMAKE_C_COMPILER=gcc-9
-            -DCMAKE_CXX_COMPILER=g++-9
-            -DMUGGLE_BUILD_SHARED_LIB=ON
-            -DMUGGLE_BUILD_EXAMPLE=OFF
-            -DMUGGLE_BUILD_TESTING=ON
+          cmake ..  \
+            -DCMAKE_C_COMPILER=gcc-9 \
+            -DCMAKE_CXX_COMPILER=g++-9 \
+            -DMUGGLE_BUILD_SHARED_LIB=ON \
+            -DMUGGLE_BUILD_EXAMPLE=OFF \
+            -DMUGGLE_BUILD_TESTING=ON \
             -DMUGGLE_BUILD_BENCHMARK=ON;
           cmake --build . --config Release;
 
