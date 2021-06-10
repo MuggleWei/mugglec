@@ -5,18 +5,18 @@
  *	found in the LICENSE file.
  */
 
-#ifndef MUGGLE_CC_VERSION_H_
-#define MUGGLE_CC_VERSION_H_
+#ifndef MUGGLE_C_VERSION_H_
+#define MUGGLE_C_VERSION_H_
 
 #include "muggle/c/base/macro.h"
 
 EXTERN_C_BEGIN
 
 MUGGLE_CC_EXPORT
-void mugglecc_version(char *buf, unsigned int bufsize);
+const char* mugglec_version();
 
 MUGGLE_CC_EXPORT
-void mugglecc_compile_time(char *buf, unsigned int bufsize);
+const char* mugglec_compile_time();
 
 EXTERN_C_END
 
