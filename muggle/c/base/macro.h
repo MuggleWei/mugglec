@@ -157,4 +157,10 @@
 // idx % capacity, capacity must be pow of 2
 #define IDX_IN_POW_OF_2_RING(idx, capacity) ((idx) & ((capacity) - 1))
 
+// convert macro value to string
+// extra level of indirection will allow the preprocessor to
+// expand the macros before they are converted to strings
+#define MUGGLE_STR_HELPER(x) #x
+#define MUGGLE_MACRO_STR(x)  MUGGLE_STR_HELPER(x)
+
 #endif
