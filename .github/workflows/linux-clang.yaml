@@ -28,3 +28,8 @@ jobs:
         run: >
           cd build;
           make test;
+
+      - name: test-ringbuffer
+        run: >
+          cd build;
+          ./bin/test/test_ring_buffer;
