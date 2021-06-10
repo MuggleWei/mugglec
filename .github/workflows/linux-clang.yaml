@@ -23,13 +23,12 @@ jobs:
             -DMUGGLE_BUILD_BENCHMARK=ON;
           cmake --build . --config Release;
 
+      - name: test-ringbuffer
+        run: >
+          cd build;
+          ./bin/test/test_ring_buffer;
 
       - name: tests
         run: >
           cd build;
           make test;
-
-      - name: test-ringbuffer
-        run: >
-          cd build;
-          ./bin/test/test_ring_buffer;
