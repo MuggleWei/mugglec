@@ -75,7 +75,7 @@ typedef struct muggle_socket_event_init_arg
  * init muggle socket event
  * RETURN: 0 - success, otherwise failed init event
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_event_init(muggle_socket_event_init_arg_t *ev_init_arg, muggle_socket_event_t *ev);
 
 /*
@@ -83,13 +83,13 @@ int muggle_socket_event_init(muggle_socket_event_init_arg_t *ev_init_arg, muggle
  * more of the descriptors become "ready"
  * RETURN: 0 - exit normally, otherwise failed init
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_socket_event_loop(muggle_socket_event_t *ev);
 
 /*
  * exit event loop 
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_socket_event_loop_exit(muggle_socket_event_t *ev);
 
 EXTERN_C_END

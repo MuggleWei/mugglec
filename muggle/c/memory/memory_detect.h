@@ -26,10 +26,10 @@ struct muggle_debug_memory_state
 	_CrtMemState end;
 };
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_debug_memory_leak_start(struct muggle_debug_memory_state *state);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_debug_memory_leak_end(struct muggle_debug_memory_state *state);
 
 #else

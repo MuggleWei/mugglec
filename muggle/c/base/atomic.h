@@ -68,10 +68,10 @@
 
 EXTERN_C_BEGIN
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_win_atomic_cmp_exch32(muggle_atomic_int32 *dst, muggle_atomic_int32 *expected, muggle_atomic_int32 desired);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_win_atomic_cmp_exch64(muggle_atomic_int64 *dst, muggle_atomic_int64 *expected, muggle_atomic_int64 desired);
 
 EXTERN_C_END

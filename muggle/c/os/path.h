@@ -19,7 +19,7 @@ EXTERN_C_BEGIN
  * @size: the max size of returned path (include '\0')
  * RETURN: on success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT 
+MUGGLE_C_EXPORT 
 int muggle_path_abspath(const char *path, char *ret, unsigned int size);
 
 /*
@@ -29,7 +29,7 @@ int muggle_path_abspath(const char *path, char *ret, unsigned int size);
  * @size: the max size of returned basename (include '\0')
  * RETURN: on success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT 
+MUGGLE_C_EXPORT 
 int muggle_path_basename(const char *path, char *ret, unsigned int size);
 
 /*
@@ -39,21 +39,21 @@ int muggle_path_basename(const char *path, char *ret, unsigned int size);
  * @size: the max size of returned dirname (include '\0')
  * RETURN: on success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT 
+MUGGLE_C_EXPORT 
 int muggle_path_dirname(const char *path, char *ret, unsigned int size);
 
 /*
  * check whether the path is absolutized version of path
  * RETURN: on success returns nonzero, otherwise returns zero
  * */
-MUGGLE_CC_EXPORT 
+MUGGLE_C_EXPORT 
 int muggle_path_isabs(const char *path);
 
 /*
  * check whether the path exists
  * RETURN: on success returns nonzero, otherwise returns zero
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_path_exists(const char *path);
 
 /*
@@ -64,7 +64,7 @@ int muggle_path_exists(const char *path);
  * @size: the max size of returned path (include '\0')
  * RETURN: on success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_path_join(const char *path1, const char *path2, char *ret, unsigned int size);
 
 /*
@@ -74,7 +74,7 @@ int muggle_path_join(const char *path1, const char *path2, char *ret, unsigned i
  * @size: the max size of returned path (include '\0')
  * RETURN: on success returns 0, otherwise return errno in err.h
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_path_normpath(const char *path, char *ret, unsigned int size);
 
 EXTERN_C_END

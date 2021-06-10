@@ -37,16 +37,16 @@ typedef struct muggle_double_buffer_tag
 	muggle_condition_variable_t cv_not_full;
 }muggle_double_buffer_t;
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_double_buffer_init(muggle_double_buffer_t *buf, int capacity, int non_blocking);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_double_buffer_destroy(muggle_double_buffer_t *buf);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_double_buffer_write(muggle_double_buffer_t *buf, void *data);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 muggle_single_buffer_t* muggle_double_buffer_read(muggle_double_buffer_t *buf);
 
 EXTERN_C_END

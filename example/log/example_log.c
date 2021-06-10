@@ -205,13 +205,11 @@ void example_default()
 	init_log();
 
 	// version and compile time informations
-	char ver[32];
-	mugglecc_version(ver, sizeof(ver));
-	MUGGLE_LOG_INFO("mugglecc version: %s", ver);
+	const char *ver = mugglec_version(ver, sizeof(ver));
+	MUGGLE_LOG_INFO("mugglec version: %s", ver);
 
-	char compile_ts[32];
-	mugglecc_compile_time(compile_ts, sizeof(compile_ts));
-	MUGGLE_LOG_INFO("mugglecc compile time: %s", compile_ts);
+	const char *compile_ts = mugglec_compile_time();
+	MUGGLE_LOG_INFO("mugglec compile time: %s", compile_ts);
 
 	muggle_thread_t threads[8];
 	for (int i = 0; i < 8; ++i)

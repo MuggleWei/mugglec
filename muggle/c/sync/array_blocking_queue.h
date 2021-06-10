@@ -26,16 +26,16 @@ typedef struct muggle_array_blocking_queue_tag
 	muggle_condition_variable_t cv_not_full;
 }muggle_array_blocking_queue_t;
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_array_blocking_queue_init(muggle_array_blocking_queue_t *queue, int capacity);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_array_blocking_queue_destroy(muggle_array_blocking_queue_t *queue);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_array_blocking_queue_put(muggle_array_blocking_queue_t *queue, void *data);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void* muggle_array_blocking_queue_take(muggle_array_blocking_queue_t *queue);
 
 EXTERN_C_END

@@ -53,16 +53,16 @@ typedef struct muggle_ring_buffer_tag
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(9);
 }muggle_ring_buffer_t;
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_ring_buffer_init(muggle_ring_buffer_t *r, muggle_atomic_int capacity, int flag);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_ring_buffer_destroy(muggle_ring_buffer_t *r);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_ring_buffer_write(muggle_ring_buffer_t *r, void *data);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void* muggle_ring_buffer_read(muggle_ring_buffer_t *r, muggle_atomic_int idx);
 
 EXTERN_C_END

@@ -27,19 +27,19 @@ typedef struct muggle_mutex_tag
 #endif
 }muggle_mutex_t;
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_mutex_init(muggle_mutex_t *mutex);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_mutex_destroy(muggle_mutex_t *mutex);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_mutex_lock(muggle_mutex_t *mutex);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_mutex_trylock(muggle_mutex_t *mutex);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_mutex_unlock(muggle_mutex_t *mutex);
 
 EXTERN_C_END

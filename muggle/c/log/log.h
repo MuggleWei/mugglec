@@ -87,19 +87,19 @@ do \
 
 #endif
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 extern muggle_log_category_t g_log_default_category;
 
 /*
  * add log handle to default log category
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_log_add_handle(muggle_log_handle_t *handle);
 
 /*
  * destroy default log category
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_log_destroy();
 
 /*
@@ -108,7 +108,7 @@ void muggle_log_destroy();
  *	@arg: log attribute information
  *	@format: like print(format, ...);
  */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_log_function(
 	muggle_log_category_t *category,
 	muggle_log_fmt_arg_t *arg,

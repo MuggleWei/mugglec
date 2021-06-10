@@ -29,21 +29,21 @@ typedef struct muggle_trie
 // initialize trie
 // @param p_trie     pointer to trie
 // @param capacity   init capacity for nodes memory pool, if 0, don't use memory pool
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_trie_init(muggle_trie_t *p_trie, size_t capacity);
 
 // destroy trie
 // @param p_trie     pointer to trie
 // @param func_free  function for free data, if it's NULL, do nothing for data
 // @param pool       the memory pool passed to func_free
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_trie_destroy(muggle_trie_t *p_trie, muggle_dsaa_data_free func_free, void *pool);
 
 // find trie node of key
 // NOTE: cause trie_remove is lazy remove, node != NULL and node->data == NULL will exists
 // @param p_trie     pointer to trie
 // @param key        key word
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 muggle_trie_node_t* muggle_trie_find(muggle_trie_t *p_trie, const char *key);
 
 // insert key value pair
@@ -51,7 +51,7 @@ muggle_trie_node_t* muggle_trie_find(muggle_trie_t *p_trie, const char *key);
 // @param key        key word
 // @param value      value insert into trie
 // @return return generated node contain added data, if NULL, failed add data
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 muggle_trie_node_t* muggle_trie_insert(muggle_trie_t *p_trie, const char *key, void *value);
 
 // remove trie node by key
@@ -60,7 +60,7 @@ muggle_trie_node_t* muggle_trie_insert(muggle_trie_t *p_trie, const char *key, v
 // @param key        key word
 // @param func_free     function for free data, if it's NULL, do nothing for data
 // @param pool          the memory pool passed to func_free
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_trie_remove(muggle_trie_t *p_trie, const char *key, muggle_dsaa_data_free func_free, void *pool);
 
 EXTERN_C_END

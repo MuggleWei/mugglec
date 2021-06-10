@@ -21,19 +21,19 @@ EXTERN_C_BEGIN
 
 typedef bool (*muggle_func_sort)(void **ptr, size_t count, muggle_dsaa_data_cmp cmp);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_insertion_sort(void **ptr, size_t count, muggle_dsaa_data_cmp cmp);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_shell_sort(void **ptr, size_t count, muggle_dsaa_data_cmp cmp);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_heap_sort(void **ptr, size_t count, muggle_dsaa_data_cmp cmp);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_merge_sort(void **ptr, size_t count, muggle_dsaa_data_cmp cmp);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_quick_sort(void **ptr, size_t count, muggle_dsaa_data_cmp cmp);
 
 EXTERN_C_END

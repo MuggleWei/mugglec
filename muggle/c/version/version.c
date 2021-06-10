@@ -1,24 +1,27 @@
 #include "version.h"
 #include <stdio.h>
 
-#ifdef MUGGLE_CC_VERSION_MAJOR
+// extra level of indirection will allow the preprocessor to
+// expand the macros before they are converted to strings
+#define MUGGLE_STR_HELPER(x) #x
+#define MUGGLE_STR(x)        MUGGLE_STR_HELPER(x)
 
+#ifdef MUGGLE_C_VERSION_MAJOR
+	#define MUGGLE_C_VERSION \
+		MUGGLE_STR(MUGGLE_C_VERSION_MAJOR) "." \
+		MUGGLE_STR(MUGGLE_C_VERSION_MINOR) "." \
+		MUGGLE_STR(MUGGLE_C_VERSION_BUILD)
 #else
-#define MUGGLE_CC_VERSION \
-	"unknown " __DATE__ " " __TIME__
+	#define MUGGLE_C_VERSION "?.?.?"
 #endif
+#define MUGGLE_C_COMPILRE_TIME __DATE__ " " __TIME__
 
-void mugglecc_version(char *buf, unsigned int bufsize)
+const char* mugglec_version()
 {
-#if defined(MUGGLE_CC_VERSION_MAJOR) && defined(MUGGLE_CC_VERSION_MINOR) && defined(MUGGLE_CC_VERSION_BUILD)
-	snprintf(buf, bufsize, "%d.%d.%d",
-		MUGGLE_CC_VERSION_MAJOR, MUGGLE_CC_VERSION_MINOR, MUGGLE_CC_VERSION_BUILD);
-#else
-	snprintf(buf, bufsize, "?.?.?");
-#endif
+	return MUGGLE_C_VERSION;
 }
 
-void mugglecc_compile_time(char *buf, unsigned int bufsize)
+const char* mugglec_compile_time()
 {
-	snprintf(buf, bufsize, __DATE__ " " __TIME__);
+	return MUGGLE_C_COMPILRE_TIME;
 }

@@ -14,13 +14,13 @@
 
 EXTERN_C_BEGIN
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_futex_wait(muggle_atomic_int *futex_addr, muggle_atomic_int val, const struct timespec *timeout);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_futex_wake_one(muggle_atomic_int *futex_addr);
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_futex_wake_all(muggle_atomic_int *futex_addr);
 
 EXTERN_C_END

@@ -19,7 +19,7 @@ EXTERN_C_BEGIN
  * @prefix: the prefix string to be checked
  * RETURN: return nonzero if found matching string otherwise zero
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_str_startswith(const char *str, const char *prefix);
 
 /*
@@ -28,7 +28,7 @@ int muggle_str_startswith(const char *str, const char *prefix);
  * @prefix: the suffix string to be checked
  * RETURN: return nonzero if found matching string otherwise zero
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_str_endswith(const char *str, const char *suffix);
 
 /*
@@ -39,7 +39,7 @@ int muggle_str_endswith(const char *str, const char *suffix);
  * @end: search ends from this index - 1, NOTE: 0 represet end = strlen(str)
  * RETURN: the number of occurrences 
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_str_count(const char *str, const char *sub, int start, int end);
 
 /*
@@ -50,7 +50,7 @@ int muggle_str_count(const char *str, const char *sub, int start, int end);
  * @end: search ends from this index - 1, NOTE: 0 represet end = strlen(str)
  * RETURN: the lowest index when found, return -1 if sub is not found
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_str_find(const char *str, const char *sub, int start, int end);
 
 /*
@@ -58,7 +58,7 @@ int muggle_str_find(const char *str, const char *sub, int start, int end);
  * @str: the whole string
  * RETURN: index after blank leading bytes removed
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_str_lstrip_idx(const char *str);
 
 /*
@@ -66,7 +66,7 @@ int muggle_str_lstrip_idx(const char *str);
  * @str: the whole string
  * RETURN: index after blank trailling bytes removed
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_str_rstrip_idx(const char *str);
 
 
@@ -74,15 +74,15 @@ int muggle_str_rstrip_idx(const char *str);
  * convert to number
  * return non-zero represent success, 0 represent failed
  * */
-MUGGLE_CC_EXPORT int muggle_str_toi(const char *str, int *pval, int base);
-MUGGLE_CC_EXPORT int muggle_str_tou(const char *str, unsigned int *pval, int base); 
-MUGGLE_CC_EXPORT int muggle_str_tol(const char *str, long *pval, int base);
-MUGGLE_CC_EXPORT int muggle_str_toul(const char *str, unsigned long *pval, int base);
-MUGGLE_CC_EXPORT int muggle_str_toll(const char *str, long long *pval, int base);
-MUGGLE_CC_EXPORT int muggle_str_toull(const char *str, unsigned long long *pval, int base);
-MUGGLE_CC_EXPORT int muggle_str_tof(const char *str, float *pval);
-MUGGLE_CC_EXPORT int muggle_str_tod(const char *str, double *pval);
-MUGGLE_CC_EXPORT int muggle_str_told(const char *str, long double *pval);
+MUGGLE_C_EXPORT int muggle_str_toi(const char *str, int *pval, int base);
+MUGGLE_C_EXPORT int muggle_str_tou(const char *str, unsigned int *pval, int base); 
+MUGGLE_C_EXPORT int muggle_str_tol(const char *str, long *pval, int base);
+MUGGLE_C_EXPORT int muggle_str_toul(const char *str, unsigned long *pval, int base);
+MUGGLE_C_EXPORT int muggle_str_toll(const char *str, long long *pval, int base);
+MUGGLE_C_EXPORT int muggle_str_toull(const char *str, unsigned long long *pval, int base);
+MUGGLE_C_EXPORT int muggle_str_tof(const char *str, float *pval);
+MUGGLE_C_EXPORT int muggle_str_tod(const char *str, double *pval);
+MUGGLE_C_EXPORT int muggle_str_told(const char *str, long double *pval);
 
 EXTERN_C_END
 

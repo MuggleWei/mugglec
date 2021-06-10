@@ -1,25 +1,23 @@
-## muggleCC
-****
-muggleCC is a pure C basic library written for myself, contains utilities like concurrency, memory pool, network, path operation, logging, crypt and so on. I keep it as tiny as possible, easy to use and cross-platform, so far, it work well on the systems I use often, recently linux version (with gcc 5.4, 7.4), win10.  
+## mugglec
+mugglec is a cross platform pure C base library, contains utilities like network, concurrency, memory pool, path operation, logging, crypt and so on. I keep it as tiny as possible and easy to use.  
 
-### How to build
-It's easy to build this project with CMake, contains muggleCC library, example, unittest and benchmark, if you just wanna use library, can close other corresponding build options. 
-About unittest, I use gtest, if switch BUILD_TESTING options on, will download gtest in first time of CMake build, this will takes some time, If your internet speed is not good, remember switch BUILD_TESTING and DMUGGLE_BUILD_TESTING off.  
-If you just wanna use this library and learn how to use it with examples, just build library and example:  
+### Build
+It's easy to build this project with CMake, the typical workflow starts with:
 ```
-cmake .. \
-    -DMUGGLE_BUILD_TRACE=OFF \
-    -DMUGGLE_BUILD_SHARED_LIB=ON \
-    -DMUGGLE_BUILD_EXAMPLE=ON \
-    -DMUGGLE_BUILD_TESTING=OFF \
-    -DMUGGLE_BUILD_BENCHMARK=OFF \
-	-DMUGGLE_EXTRA_PREFIX_PATH=~/c_pkg \
-    -DBUILD_TESTING=OFF
+mkdir build
+cd build
+cmake ..
 ```
-* MUGGLE_BUILD_TRACE: Just for debug, you will never switch it on   
-* MUGGLE_BUILD_SHARED_LIB: Build shared lib or static lib   
-* MUGGLE_BUILD_EXAMPLE: Build muggleCC examples   
-* MUGGLE_BUILD_TESTING: Build muggleCC unittest, if it's on, BUILD_TESTING will be set ON   
-* MUGGLE_BUILD_BENCHMARK: Build muggleCC performance test  
-* MUGGLE_EXTRA_PREFIX_PATH: extra prefix path list for cmake FIND_XXX
-* BUILD_TESTING: Build gtest, if it's on, will download gtest in first time of cmake build, if you need gtest, don't download repeatedly   
+
+There are some cmake build options to decide build this library as shared or static, whether build example, test and benchmark, and add some extra library search path.  
+| option | default | desc |
+| ---- | ---- | ---- |
+| MUGGLE_BUILD_SHARED_LIB | ON | build shared library |
+| MUGGLE_BUILD_STATIC_PIC | ON | if build static library, set position independent code flag |
+| MUGGLE_BUILD_EXAMPLE | OFF | build examples |
+| MUGGLE_BUILD_TESTING | OFF | build unittests |
+| MUGGLE_BUILD_BENCHMARK | OFF | build benchmark |
+| MUGGLE_BUILD_TRACE | OFF | build with trace info in debug |
+| MUGGLE_EXTRA_PREFIX_PATH | "" | specify extra find path, it will append into CMAKE_PREFIX_PATH |
+
+NOTE: mugglec unittest use gtest, so if MUGGLE_BUILD_TESTING is ON, it will try find gtest first, if gtest not found, will download gtest automaticlly.  

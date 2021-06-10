@@ -45,7 +45,7 @@ typedef struct muggle_des_context
  *   - 0 success
  *   - otherwise failed, see MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_des_set_key(
 	int op,
 	int mode,
@@ -62,7 +62,7 @@ int muggle_des_set_key(
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_des_ecb(
 	const muggle_des_context_t *ctx,
 	const unsigned char *input,
@@ -80,7 +80,7 @@ int muggle_des_ecb(
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_des_cbc(
 	const muggle_des_context_t *ctx,
 	const unsigned char *input,
@@ -100,7 +100,7 @@ int muggle_des_cbc(
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_des_cfb64(
 	const muggle_des_context_t *ctx,
 	const unsigned char *input,
@@ -121,7 +121,7 @@ int muggle_des_cfb64(
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_des_ofb64(
 	const muggle_des_context_t *ctx,
 	const unsigned char *input,
@@ -143,7 +143,7 @@ int muggle_des_ofb64(
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
  * */
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 int muggle_des_ctr(
 	const muggle_des_context_t *ctx,
 	const unsigned char *input,

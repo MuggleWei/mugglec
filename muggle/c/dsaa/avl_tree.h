@@ -33,7 +33,7 @@ typedef struct muggle_avl_tree
 // @param p_avl_tree  pointer to avl tree
 // @param cmp         pointer to compare function
 // @param capacity    init capacity for nodes memory pool, if 0, don't use memory pool
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 bool muggle_avl_tree_init(muggle_avl_tree_t *p_avl_tree, muggle_dsaa_data_cmp cmp, size_t capacity);
 
 // destroy avl tree
@@ -42,7 +42,7 @@ bool muggle_avl_tree_init(muggle_avl_tree_t *p_avl_tree, muggle_dsaa_data_cmp cm
 // @param key_pool          the memory pool passed to key_func_free
 // @param value_func_free   function for free value data, if it's NULL, do nothing for value data
 // @param value_pool        the memory pool passed to value_func_free
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_avl_tree_destroy(muggle_avl_tree_t *p_avl_tree, 
 	muggle_dsaa_data_free key_func_free, void *key_pool,
 	muggle_dsaa_data_free value_func_free, void *value_pool);
@@ -53,7 +53,7 @@ void muggle_avl_tree_destroy(muggle_avl_tree_t *p_avl_tree,
 // @param key_pool          the memory pool passed to key_func_free
 // @param value_func_free   function for free value data, if it's NULL, do nothing for value data
 // @param value_pool        the memory pool passed to value_func_free
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_avl_tree_clear(muggle_avl_tree_t *p_avl_tree, 
 	muggle_dsaa_data_free key_func_free, void *key_pool,
 	muggle_dsaa_data_free value_func_free, void *value_pool);
@@ -62,7 +62,7 @@ void muggle_avl_tree_clear(muggle_avl_tree_t *p_avl_tree,
 // @param p_avl_tree  pointer to avl tree
 // @param data        the data that want to found
 // @return the node that found, if failed, return NULL
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 muggle_avl_tree_node_t* muggle_avl_tree_find(muggle_avl_tree_t *p_avl_tree, void *data);
 
 // insert data into avl tree
@@ -70,7 +70,7 @@ muggle_avl_tree_node_t* muggle_avl_tree_find(muggle_avl_tree_t *p_avl_tree, void
 // @param key         inserted key
 // @param value       inserted value
 // @return return generated node contain inserted data, if NULL, failed insert data
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 muggle_avl_tree_node_t* muggle_avl_tree_insert(muggle_avl_tree_t *p_avl_tree, void *key, void *value);
 
 // remove data in avl tree
@@ -80,7 +80,7 @@ muggle_avl_tree_node_t* muggle_avl_tree_insert(muggle_avl_tree_t *p_avl_tree, vo
 // @param key_pool         the memory pool passed to key_func_free
 // @param value_func_free  function for free value data, if it's NULL, do nothing for value data
 // @param value_pool       the memory pool passed to value_func_free
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 void muggle_avl_tree_remove(
 	muggle_avl_tree_t *p_avl_tree, muggle_avl_tree_node_t *node,
 	muggle_dsaa_data_free key_func_free, void *key_pool,

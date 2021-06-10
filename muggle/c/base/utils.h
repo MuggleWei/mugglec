@@ -23,7 +23,7 @@ EXTERN_C_BEGIN
 		return err_enum; \
 	}
 
-MUGGLE_CC_EXPORT
+MUGGLE_C_EXPORT
 uint64_t next_pow_of_2(uint64_t x);
 
 EXTERN_C_END
