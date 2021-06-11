@@ -23,7 +23,6 @@ jobs:
             -DMUGGLE_BUILD_BENCHMARK=ON;
           cmake --build . --config Release;
 
-
       - name: tests
         run: >
           cd build;
