@@ -29,7 +29,8 @@ TEST(ring_buffer, usage_utils)
 	pos = ~pos;
 
 	ASSERT_GT(pos, 0);
-	ASSERT_LT(pos + 1, 0);
+	// -2147483648 > 0 is true in some compiler, don't compare it with 0
+	// ASSERT_LT(pos + 1, 0);
 
 	muggle_atomic_int idx_in_ring = IDX_IN_POW_OF_2_RING(pos, capacity);
 	ASSERT_GE(idx_in_ring, 0);
