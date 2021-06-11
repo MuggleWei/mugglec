@@ -26,7 +26,7 @@ jobs:
       - name: test-ringbuffer
         run: >
           cd build;
-          ./bin/test/test_ring_buffer;
+          ./bin/test_ring_buffer;
 
       - name: tests
         run: >
