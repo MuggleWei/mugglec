@@ -1,9 +1,12 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
+/******************************************************************************
+ *  @file         thread.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-15
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec thread header file
+ *****************************************************************************/
 
 #ifndef MUGGLE_C_THREAD_H_
 #define MUGGLE_C_THREAD_H_
@@ -42,42 +45,63 @@ typedef DWORD muggle_thread_id;
 typedef pthread_t muggle_thread_id;
 #endif
 
-/*
- * starts a new thread in the calling process
- * RETURN: on success returns 0, otherwise return errno in err.h
- * */
+/**
+ * @brief starts a new thread in the calling process
+ *
+ * @param thread   pointer to thread handler
+ * @param routine  thread callback
+ * @param args     arguments passing to thread function
+ *
+ * @return
+ *     0 - success start thread
+ *     otherwise return errno in mugglec/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_thread_create(muggle_thread_t *thread, muggle_thread_routine routine, void *args);
 
-/*
- * waits for the thread specified by thread to terminate
- * RETURN: on success returns 0, otherwise return errno in err.h
- * */
+/**
+ * @brief waits for the thread specified by thread to terminate
+ *
+ * @param thread  pointer to thread handler
+ *
+ * @return
+ *     0 - success start thread
+ *     otherwise return errno in mugglec/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_thread_join(muggle_thread_t *thread);
 
-/*
- * marks the thread identified by thread as detached
- * RETURN: on success returns 0, otherwise return errno in err.h
- * */
+/**
+ * @brief marks the thread identified by thread as detached
+ *
+ * @param thread  pointer to thread handler
+ *
+ * @return
+ *     0 - success start thread
+ *     otherwise return errno in mugglec/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_thread_detach(muggle_thread_t *thread);
 
-/*
- * get current thread id
- * */
+/**
+ * @brief get current thread id
+ *
+ * @return current thread id
+ */
 MUGGLE_C_EXPORT
 muggle_thread_id muggle_thread_current_id();
 
-/*
- * the same as c++11 std::thread::hardware_concurrency
- * */
+/**
+ * @brief return the number of concurrent threads supported by the implementation
+ *
+ * @return number of concurrent threads supported
+ */
 MUGGLE_C_EXPORT
 int muggle_thread_hardware_concurrency();
 
-/*
- * calling thread to yield execution and relinquish the CPU
- * */
+/**
+ * @brief calling thread to yield execution and relinquish the CPU
+ */
 MUGGLE_C_EXPORT
 void muggle_thread_yield();
 

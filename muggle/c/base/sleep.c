@@ -1,3 +1,13 @@
+/******************************************************************************
+ *  @file         sleep.c
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-15
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec sleep source file
+ *****************************************************************************/
+
 #include "sleep.h"
 #include "muggle/c/base/err.h"
 
