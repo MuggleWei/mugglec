@@ -1,9 +1,12 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
+/******************************************************************************
+ *  @file         str.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-12
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec string handle header file
+ *****************************************************************************/
 
 #ifndef MUGGLE_C_STR_H_
 #define MUGGLE_C_STR_H_
@@ -13,21 +16,25 @@
 
 EXTERN_C_BEGIN
 
-/*
- * check whether str starts with prefix
- * @str: the whole string
- * @prefix: the prefix string to be checked
- * RETURN: return nonzero if found matching string otherwise zero
- * */
+/**
+ * @brief check whether string starts with prefix
+ *
+ * @param str    the whole string
+ * @param prefix the prefix string to be checked
+ *
+ * @return  return nonzero if string starts with the prefix, otherwise return zero
+ */
 MUGGLE_C_EXPORT
 int muggle_str_startswith(const char *str, const char *prefix);
 
-/*
- * check whether str ends with suffix
- * @str: the whole string
- * @prefix: the suffix string to be checked
- * RETURN: return nonzero if found matching string otherwise zero
- * */
+/**
+ * @brief check whether string ends with suffix
+ *
+ * @param str    the whole string
+ * @param suffix the suffix string to be checked
+ *
+ * @return  return nonzero if found matching string otherwise zero
+ */
 MUGGLE_C_EXPORT
 int muggle_str_endswith(const char *str, const char *suffix);
 
