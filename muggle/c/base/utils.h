@@ -10,7 +10,6 @@
 
 #include "muggle/c/base/macro.h"
 #include <stdint.h>
-#include "muggle/c/log/log.h"
 
 EXTERN_C_BEGIN
 

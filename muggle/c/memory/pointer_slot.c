@@ -10,6 +10,7 @@
 #include <string.h>
 #include "muggle/c/base/err.h"
 #include "muggle/c/base/utils.h"
+#include "muggle/c/log/log.h"
 
 int muggle_pointer_slot_init(muggle_pointer_slot_t *pointer_slot, unsigned int capacity)
 {

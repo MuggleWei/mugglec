@@ -6,6 +6,8 @@
  */
 
 #include "tcp_client.h"
+
+#include "muggle/c/log/log.h"
 #include "utils.h"
 
 void recv_message(muggle_socket_peer_t *peer, muggle_bytes_buffer_t *bytes_buf)

@@ -10,6 +10,7 @@
 #include <string.h>
 #include "muggle/c/base/err.h"
 #include "muggle/c/base/utils.h"
+#include "muggle/c/base/thread.h"
 #include "muggle/c/sync/futex.h"
 
 static void muggle_channel_lock_write(muggle_channel_t *chan)
