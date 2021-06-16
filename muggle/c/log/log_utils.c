@@ -1,3 +1,13 @@
+/******************************************************************************
+ *  @file         log_utils.c
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec log utils
+ *****************************************************************************/
+ 
 #include "log_utils.h"
 #include "muggle/c/log/log_handle_console.h"
 #include "muggle/c/log/log_handle_rotating_file.h"

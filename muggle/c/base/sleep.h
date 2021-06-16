@@ -5,7 +5,7 @@
  *  @date         2021-06-15
  *  @copyright    Copyright 2021 Muggle Wei
  *  @license      MIT License
- *  @brief        mugglec sleep header file
+ *  @brief        prototypes for mugglec sleep functions
  *****************************************************************************/
 
 #ifndef MUGGLE_C_SLEEP_H_

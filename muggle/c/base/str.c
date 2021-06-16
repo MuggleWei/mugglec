@@ -5,7 +5,7 @@
  *  @date         2021-06-15
  *  @copyright    Copyright 2021 Muggle Wei
  *  @license      MIT License
- *  @brief        mugglec string processing source file
+ *  @brief        mugglec string processing
  *****************************************************************************/
 
 #include "str.h"

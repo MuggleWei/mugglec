@@ -5,9 +5,9 @@
  *  @date         2021-06-15
  *  @copyright    Copyright 2021 Muggle Wei
  *  @license      MIT License
- *  @brief        mugglec atomic header file
+ *  @brief        function prototypes for mugglec atomic
  *
- *  Here contain typically atomic operator functions
+ *  Here contain typically atomic operate functions
  *****************************************************************************/
 
 #ifndef MUGGLE_C_ATOMIC_H_

@@ -5,7 +5,7 @@
  *  @date         2021-06-15
  *  @copyright    Copyright 2021 Muggle Wei
  *  @license      MIT License
- *  @brief        mugglec err
+ *  @brief        mugglec err message enum
  *****************************************************************************/
 
 #ifndef MUGGLE_C_ERR_H_

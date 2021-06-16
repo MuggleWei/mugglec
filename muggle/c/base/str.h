@@ -5,7 +5,7 @@
  *  @date         2021-06-12
  *  @copyright    Copyright 2021 Muggle Wei
  *  @license      MIT License
- *  @brief        mugglec string processing header file
+ *  @brief        function prototypes for mugglec string processing
  *
  *  This file contains some simple functions for processing strings
  *****************************************************************************/

@@ -1,10 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         log_handle_rotating_file.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec rotating file log handle
+ *****************************************************************************/
+ 
 #ifndef MUGGLE_C_LOG_HANDLE_ROTATING_FILE_H_
 #define MUGGLE_C_LOG_HANDLE_ROTATING_FILE_H_
 
@@ -14,20 +17,22 @@
 
 EXTERN_C_BEGIN
 
-/*
- * initialize a rotating file log handle
- * @handle: rotating file log handle pointer
- * @write_type: use one of MUGGLE_LOG_WRITE_TYPE_*
- * @fmt_flag: use MUGGLE_LOG_FMT_*
- * @level: log level that the log handle will output
- * @async_capacity: if write_type == MUGGLE_LOG_WRITE_TYPE_ASYNC, use this specify async buffer capacity
- * @p_alloc: function for async allocate memory, if NULL, use malloc
- * @p_free: function for async free memory, if NULL, use free
- * @file_path: log file path
- * @max_bytes: max size when to rotate log
- * @backup_count: max backup file count
- * RETURN: success returns 0, otherwise return err code in err.h
- * */
+/**
+ * @brief initialize a rotating file log handle
+ *
+ * @param handle       rotating file log handle pointer
+ * @param write_type   use one of MUGGLE_LOG_WRITE_TYPE_*
+ * @param fmt_flag     use MUGGLE_LOG_FMT_*
+ * @param level        log level that the log handle will output
+ * @param async_capacity  if write_type == MUGGLE_LOG_WRITE_TYPE_ASYNC, use this specify async buffer capacity
+ * @param p_alloc      function for async allocate memory, if NULL, use malloc
+ * @param p_free       function for async free memory, if NULL, use free
+ * @param file_path    log file path
+ * @param max_bytes    max size when to rotate log
+ * @param backup_count max backup file count
+ *
+ * @return success returns 0, otherwise return err code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_log_handle_rotating_file_init(
 	muggle_log_handle_t *handle,
@@ -41,23 +46,29 @@ int muggle_log_handle_rotating_file_init(
 	unsigned int max_bytes,
 	unsigned int backup_count);
 
-/*
- * destroy a rotating file log handle
- * @handle: rotating file log handle pointer
- * RETURN: success returns 0, otherwise return err code in err.h
+/**
+ * @brief  destroy a rotating file log handle
+ *
  * NOTE: don't invoke this function immediatly, use muggle_log_handle_destroy
- * */
+ *
+ * @param handle rotating file log handle pointer
+ *
+ * @return success returns 0, otherwise return err code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_log_handle_rotating_file_destroy(muggle_log_handle_t *handle);
 
-/*
- * output message
- * @handle: rotating file log handle pointer
- * @arg: log format arguments
- * @msg: log messages
- * RETURN: success return number of bytes be writed to output, otherwise return negative
+/**
+ * @brief output message
+ *
  * NOTE: don't invoke this function immediatly, use muggle_log_handle_write
- * */
+ *
+ * @param handle  rotating file log handle pointer
+ * @param arg     log format arguments
+ * @param msg     log messages
+ *
+ * @return success return number of bytes be writed to output, otherwise return negative
+ */
 MUGGLE_C_EXPORT
 int muggle_log_handle_rotating_file_output(
 	muggle_log_handle_t *handle,

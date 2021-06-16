@@ -5,7 +5,7 @@
  *  @date         2021-06-15
  *  @copyright    Copyright 2021 Muggle Wei
  *  @license      MIT License
- *  @brief        mugglec thread source file
+ *  @brief        mugglec thread
  *****************************************************************************/
 
 #include "thread.h"

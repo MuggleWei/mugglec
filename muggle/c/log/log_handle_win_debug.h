@@ -1,10 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         log_handle_win_debug.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec win debug log handle
+ *****************************************************************************/
+ 
 #ifndef MUGGLE_C_LOG_HANDLE_WIN_DEBUG_H_
 #define MUGGLE_C_LOG_HANDLE_WIN_DEBUG_H_
 
@@ -14,17 +17,19 @@
 
 EXTERN_C_BEGIN
 
-/*
- * initialize a win debug log handle
- * @handle: win debug log handle pointer
- * @write_type: use one of MUGGLE_LOG_WRITE_TYPE_*
- * @fmt_flag: use MUGGLE_LOG_FMT_*
- * @level: log level that the log handle will output
- * @async_capacity: if write_type == MUGGLE_LOG_WRITE_TYPE_ASYNC, use this specify async buffer capacity
- * @p_alloc: function for async allocate memory, if NULL, use malloc
- * @p_free: function for async free memory, if NULL, use free
- * RETURN: success returns 0, otherwise return err code in err.h
- * */
+/**
+ * @brief initialize a win debug log handle
+ *
+ * @param handle      win debug log handle pointer
+ * @param write_type  use one of MUGGLE_LOG_WRITE_TYPE_*
+ * @param fmt_flag    use MUGGLE_LOG_FMT_*
+ * @param level       log level that the log handle will output
+ * @param async_capacity  if write_type == MUGGLE_LOG_WRITE_TYPE_ASYNC, use this specify async buffer capacity
+ * @param p_alloc     function for async allocate memory, if NULL, use malloc
+ * @param p_free      function for async free memory, if NULL, use free
+ *
+ * @return  success returns 0, otherwise return err code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_log_handle_win_debug_init(
 	muggle_log_handle_t *handle,
@@ -36,23 +41,29 @@ int muggle_log_handle_win_debug_init(
 	muggle_log_handle_async_free p_free
 );
 
-/*
- * destroy a win debug log handle
- * @handle: win debug log handle pointer
- * RETURN: success returns 0, otherwise return err code in err.h
+/**
+ * @brief destroy a win debug log handle
+ *
  * NOTE: don't invoke this function immediatly, use muggle_log_handle_destroy
- * */
+ *
+ * @param handle  win debug log handle pointer
+ *
+ * @return success returns 0, otherwise return err code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_log_handle_win_debug_destroy(muggle_log_handle_t *handle);
 
-/*
- * output message
- * @handle: win debug log handle pointer
- * @arg: log format arguments
- * @msg: log messages
- * RETURN: success return number of bytes be writed to output, otherwise return negative
+/**
+ * @brief output message
+ *
  * NOTE: don't invoke this function immediatly, use muggle_log_handle_write
- * */
+ *
+ * @param handle  win debug log handle pointer
+ * @param arg     log format arguments
+ * @param msg      log messages
+ * 
+ * @return success return number of bytes be writed to output, otherwise return negative
+ */
 MUGGLE_C_EXPORT
 int muggle_log_handle_win_debug_output(
 	muggle_log_handle_t *handle,

@@ -1,10 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         log.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        function declarations of mugglec log
+ *****************************************************************************/
+ 
 #ifndef MUGGLE_C_LOG_H_
 #define MUGGLE_C_LOG_H_
 
@@ -90,23 +93,27 @@ do \
 MUGGLE_C_EXPORT
 extern muggle_log_category_t g_log_default_category;
 
-/*
- * add log handle to default log category
- * */
+/**
+ * @brief add log handle to default log category
+ *
+ * @param handle log handle pointer
+ */
 MUGGLE_C_EXPORT
 void muggle_log_add_handle(muggle_log_handle_t *handle);
 
-/*
- * destroy default log category
- * */
+/**
+ * @brief destroy default log category
+ */
 MUGGLE_C_EXPORT
 void muggle_log_destroy();
 
-/*
- *	output log, don't use this function immediately, use MUGGLE_LOG macro instead
- *	@category: the category need to output
- *	@arg: log attribute information
- *	@format: like print(format, ...);
+/**
+ * @brief output log, don't use this function immediately, use MUGGLE_LOG macro instead
+ *
+ * @param category the category need to output
+ * @param arg      log attribute information
+ * @param format   format string
+ * @param ...      input arguments for format string
  */
 MUGGLE_C_EXPORT
 void muggle_log_function(

@@ -5,7 +5,7 @@
  *  @date         2021-06-15
  *  @copyright    Copyright 2021 Muggle Wei
  *  @license      MIT License
- *  @brief        mugglec atomic source file
+ *  @brief        mugglec atomic
  *****************************************************************************/
 
 #include "atomic.h"

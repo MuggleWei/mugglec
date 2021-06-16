@@ -5,7 +5,7 @@
  *  @date         2021-06-15
  *  @copyright    Copyright 2021 Muggle Wei
  *  @license      MIT License
- *  @brief        mugglec thread header file
+ *  @brief        function prototypes for mugglec thread
  *****************************************************************************/
 
 #ifndef MUGGLE_C_THREAD_H_

@@ -5,7 +5,7 @@
  *  @date         2021-06-12
  *  @copyright    Copyright 2021 Muggle Wei
  *  @license      MIT License
- *  @brief        mugglec macro file
+ *  @brief        mugglec macros
  *****************************************************************************/
 
 #ifndef MUGGLE_MACRO_H_
