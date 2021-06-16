@@ -1,3 +1,13 @@
+/******************************************************************************
+ *  @file         internal_aes.c
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec crypt AES internal
+ *****************************************************************************/
+ 
 #include "internal_aes.h"
 #include <string.h>
 #include "muggle/c/crypt/aes.h"

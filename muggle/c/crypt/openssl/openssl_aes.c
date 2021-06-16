@@ -1,3 +1,16 @@
+/******************************************************************************
+ *  @file         openssl_aes.c
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        
+ *  mugglec crypt compatible with openssl AES
+ *
+ *  this source file are all copied and modified from openssl(Apache License v2.0)
+ *****************************************************************************/
+ 
 #include "openssl_aes.h"
 #include <string.h>
 #include "muggle/c/crypt/aes.h"
