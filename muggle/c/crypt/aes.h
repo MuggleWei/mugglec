@@ -1,9 +1,12 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
+/******************************************************************************
+ *  @file         aes.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec crypt AES
+ *****************************************************************************/
 
 #ifndef MUGGLE_C_CRYPT_AES_H_
 #define MUGGLE_C_CRYPT_AES_H_
@@ -24,13 +27,14 @@ typedef struct muggle_aes_sub_keys
 
 typedef struct muggle_aes_context
 {
-	int                  op;   // encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
-	int                  mode; // cipher block mode, use MUGGLE_BLOCK_CIPHER_MODE_*
-	muggle_aes_subkeys_t sk;   // AES subkeys
+	int                  op;   //!< encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
+	int                  mode; //!< cipher block mode, use MUGGLE_BLOCK_CIPHER_MODE_*
+	muggle_aes_subkeys_t sk;   //!< AES subkeys
 }muggle_aes_context_t;
 
-/*
- * AES setup round keys for mode
+/**
+ * @brief AES setup round keys for mode
+ *
  * @param op
  * - MUGGLE_ENCRYPT encrypt
  * - MUGGLE_DECRYPT decrypt
@@ -38,10 +42,11 @@ typedef struct muggle_aes_context
  * @param key user input key
  * @param bits number bits of key (128|192|256)
  * @param ctx AES context
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, see MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_aes_set_key(
 	int op,
@@ -51,15 +56,17 @@ int muggle_aes_set_key(
 	muggle_aes_context_t *ctx);
 
 /**
- * AES crypt with ECB mode
+ * @brief AES crypt with ECB mode
+ *
  * @param ctx AES context
  * @param input input bytes, length must be multiple of 16
  * @param num_bytes length of input/output bytes
  * @param output output bytes
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_aes_ecb(
 	const muggle_aes_context_t *ctx,
@@ -68,16 +75,18 @@ int muggle_aes_ecb(
 	unsigned char *output);
 
 /**
- * AES crypt with CBC mode
+ * @brief AES crypt with CBC mode
+ *
  * @param ctx AES context
  * @param input input bytes, length must be multiple of 16
  * @param num_bytes length of input/output bytes
  * @param iv initialization vector
  * @param output output bytes
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_aes_cbc(
 	const muggle_aes_context_t *ctx,
@@ -87,17 +96,19 @@ int muggle_aes_cbc(
 	unsigned char *output);
 
 /**
- * AES crypt with CFB128 mode
+ * @brief AES crypt with CFB128 mode
+ *
  * @param ctx AES context
  * @param input input bytes, length must be multiple of 16
  * @param num_bytes length of input/output bytes
  * @param iv initialization vector
  * @param iv_offset offset bytes in iv
  * @param output output bytes
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_aes_cfb128(
 	const muggle_aes_context_t *ctx,
@@ -108,17 +119,19 @@ int muggle_aes_cfb128(
 	unsigned char *output);
 
 /**
- * AES crypt with OFB128 mode
+ * @brief AES crypt with OFB128 mode
+ *
  * @param ctx AES context
  * @param input input bytes, length must be multiple of 16
  * @param num_bytes length of input/output bytes
  * @param iv initialization vector
  * @param iv_offset offset bytes in iv
  * @param output output bytes
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_aes_ofb128(
 	const muggle_aes_context_t *ctx,
@@ -129,7 +142,8 @@ int muggle_aes_ofb128(
 	unsigned char *output);
 
 /**
- * AES crypt with CTR mode
+ * @brief AES crypt with CTR mode
+ *
  * @param ctx AES context
  * @param input input bytes, length must be multiple of 16
  * @param num_bytes length of input/output bytes
@@ -137,10 +151,11 @@ int muggle_aes_ofb128(
  * @param nonce_offset offset bytes in nonce
  * @param output output bytes
  * @param stream_block ciphertext of nonce
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_aes_ctr(
 	const muggle_aes_context_t *ctx,

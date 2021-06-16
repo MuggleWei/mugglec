@@ -1,10 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         tdes.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec crypt TDES
+ *****************************************************************************/
+ 
 #ifndef MUGGLE_C_TDES_H_
 #define MUGGLE_C_TDES_H_
 
@@ -24,17 +27,19 @@ typedef struct muggle_tdes_context
 }muggle_tdes_context_t;
 
 /**
- * TDES setup key schedule for mode
+ * @brief TDES setup key schedule for mode
+ *
  * @param op crypt operator
  *   - MUGGLE_DECRYPT encrypt
  *   - MUGGLE_ENCRYPT decrypt
  * @param mode block cipher mode, see MUGGLE_BLOCK_CIPHER_MODE_*
  * @param key des input key
  * @param ctx DES context
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, see MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_tdes_set_key(
 	int op,
@@ -44,16 +49,18 @@ int muggle_tdes_set_key(
 	const unsigned char key3[MUGGLE_DES_BLOCK_SIZE],
 	muggle_tdes_context_t *ctx);
 
-/*
- * TDES crypt with ECB mode
+/**
+ * @brief TDES crypt with ECB mode
+ *
  * @param ctx TDES context
  * @param input input bytes, length must be multiple of 8
  * @param num_bytes length of input/output bytes
  * @param output output bytes
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_tdes_ecb(
 	muggle_tdes_context_t *ctx,
@@ -62,17 +69,19 @@ int muggle_tdes_ecb(
 	unsigned char *output);
 
 /**
- * TDES crypt with CBC mode
+ * @brief TDES crypt with CBC mode
+ *
  * @param ctx TDES context
  * @param input input bytes, length must be multiple of 8
  * @param num_bytes length of input/output bytes
  * @param iv initialization vector
  * @param iv_offset offset bytes in iv
  * @param output output bytes
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_tdes_cbc(
 	const muggle_tdes_context_t *ctx,
@@ -82,13 +91,15 @@ int muggle_tdes_cbc(
 	unsigned char *output);
 
 /**
- * TDES crypt with CFB 64bit iv mode
+ * @brief TDES crypt with CFB 64bit iv mode
+ *
  * @param ctx TDES context
  * @param input input bytes
  * @param num_bytes length of input/output bytes
  * @param iv initialization vector
  * @param iv_offset offset bytes in iv
  * @param output output bytes
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
@@ -103,17 +114,19 @@ int muggle_tdes_cfb64(
 	unsigned char *output);
 
 /**
- * TDES crypt with OFB 64bit iv mode
+ * @brief TDES crypt with OFB 64bit iv mode
+ *
  * @param ctx TDES context
  * @param input input bytes
  * @param num_bytes length of input/output bytes
  * @param iv initialization vector
  * @param iv_offset offset bytes in iv
  * @param output output bytes
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_tdes_ofb64(
 	const muggle_tdes_context_t *ctx,
@@ -124,7 +137,8 @@ int muggle_tdes_ofb64(
 	unsigned char *output);
 
 /**
- * TDES crypt with CTR mode
+ * @brief TDES crypt with CTR mode
+ *
  * @param ctx TDES context
  * @param input input bytes
  * @param num_bytes length of input/output bytes
@@ -132,10 +146,11 @@ int muggle_tdes_ofb64(
  * @param nonce_offset offset bytes in nonce
  * @param output output bytes
  * @param stream_block ciphertext of nonce
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_tdes_ctr(
 	const muggle_tdes_context_t *ctx,
