@@ -1,10 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         socket_peer.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-17
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec socket peer
+ *****************************************************************************/
+ 
 #ifndef MUGGLE_C_SOCKET_PEER_H_
 #define MUGGLE_C_SOCKET_PEER_H_
 
@@ -30,15 +33,18 @@ enum
 
 struct muggle_socket_event;
 
-/*
- * socket peer
+/**
+ * @brief socket peer
+ *
  * usage tip:
+ *
  *   1. if only use in event thread, just muggle_socket_peer_close(peer) at anywhere u wanna close
+ *
  *   2. if send peer to other thread, need invoke muggle_socket_peer_retain(peer) before send, and 
  *      invoke muggle_socket_peer_release(peer) after use in other thread, if u wanna close peer in
  *      other thread, in addition to invoke muggle_socket_peer_close(peer), muggle_socket_peer_release
  *      is still need to invoked
- * */
+ */
 typedef struct muggle_socket_peer
 {
 	muggle_atomic_int       ref_cnt;
@@ -51,59 +57,107 @@ typedef struct muggle_socket_peer
 	struct muggle_socket_event *ev;
 }muggle_socket_peer_t;
 
-/*
- * init socket peer
- * */
+/**
+ * @brief init socket peer
+ *
+ * @param peer      socket peer pointer
+ * @param fd        socket file descriptor
+ * @param peer_type socket peer type
+ * @param addr      socket address
+ * @param addr_len  socket address length
+ */
 MUGGLE_C_EXPORT
 void muggle_socket_peer_init(
 	muggle_socket_peer_t *peer, muggle_socket_t fd,
 	int peer_type, const struct sockaddr *addr, muggle_socklen_t addr_len);
 
-/*
- * increases the reference count of peer
- * RETURN: refence count of peer after this call
- * */
+/**
+ * @brief increases the reference count of peer
+ *
+ * @param peer socket peer pointer
+ *
+ * @return refence count of peer after this call
+ */
 MUGGLE_C_EXPORT
 int muggle_socket_peer_retain(muggle_socket_peer_t *peer);
 
-/*
- * decreases the reference count by 1 and peer deallocates if the reference count reaches
- * at 0
- * RETURN: refence count of peer after this call
- * */
+/**
+ * @brief 
+ *   decreases the reference count by 1 and peer deallocates if the reference count
+ *   reaches at 0
+ *
+ * @param peer  socket peer pointer
+ *
+ * @return refence count of peer after this call
+ */
 MUGGLE_C_EXPORT
 int muggle_socket_peer_release(muggle_socket_peer_t *peer);
 
-/*
- * try to close socket peer
- * */
+/**
+ * @brief try to close socket peer
+ *
+ * @param peer  socket peer pointer
+ */
 MUGGLE_C_EXPORT
 void muggle_socket_peer_close(muggle_socket_peer_t *peer);
 
-/*
- * receive messages from a socket peer
- * */
+/**
+ * @brief receive messages from a socket peer
+ *
+ * @param peer     socket peer pointer
+ * @param buf      buffer store received bytes
+ * @param len      buffer size
+ * @param flags    flag
+ * @param addr     socket address
+ * @param addrlen  socket address length
+ *
+ * @return 
+ * return the number of bytes received, if error occurred, will try to close socket
+ */
 MUGGLE_C_EXPORT
 int muggle_socket_peer_recvfrom(
 	muggle_socket_peer_t *peer, void *buf, size_t len, int flags,
 	struct sockaddr *addr, muggle_socklen_t *addrlen);
 
-/*
- * receive messages from a socket peer
- * */
+/**
+ * @brief receive messages from a socket peer
+ *
+ * @param peer  socket peer pointer
+ * @param buf   buffer store received bytes
+ * @param len   buffer size
+ * @param flags flag
+ *
+ * @return 
+ */
 MUGGLE_C_EXPORT
 int muggle_socket_peer_recv(muggle_socket_peer_t *peer, void *buf, size_t len, int flags);
 
-/*
- * transmit a message to another socket
- * */
+/**
+ * @brief socket send message
+ *
+ * @param peer       socket peer pointer
+ * @param buf        buffer store the bytes that need to sent
+ * @param len        buffer size
+ * @param flags      flag
+ * @param dest_addr  dest socket address
+ * @param addrlen    dest socket address length
+ *
+ * @return 
+ */
 MUGGLE_C_EXPORT
 int muggle_socket_peer_sendto(muggle_socket_peer_t *peer, const void *buf, size_t len, int flags,
 	const struct sockaddr *dest_addr, socklen_t addrlen);
 
-/*
- * transmit a message to another socket
- * */
+/**
+ * @brief 
+ *
+ * @param peer       socket peer pointer
+ * @param buf        buffer store the bytes that need to sent
+ * @param len        buffer size
+ * @param flags      flag
+ *
+ * @return 
+ */
 MUGGLE_C_EXPORT
 int muggle_socket_peer_send(muggle_socket_peer_t *peer, const void *buf, size_t len, int flags);
 
