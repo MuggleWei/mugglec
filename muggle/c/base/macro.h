@@ -1,9 +1,12 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
+/******************************************************************************
+ *  @file         macro.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-12
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec macros
+ *****************************************************************************/
 
 #ifndef MUGGLE_MACRO_H_
 #define MUGGLE_MACRO_H_
@@ -100,28 +103,27 @@
 
 // snprintf
 #if MUGGLE_PLATFORM_WINDOWS
-#if _MSC_VER <= 1800 // VS 2013
-	#define snprintf(buf, size_in_byte, format, ...) sprintf_s(buf, size_in_byte, format, ##__VA_ARGS__)
-#endif
+	#if _MSC_VER <= 1800 // VS 2013
+		#define snprintf(buf, size_in_byte, format, ...) sprintf_s(buf, size_in_byte, format, ##__VA_ARGS__)
+	#endif
 #endif
 
 // wait ifinite macro for mutex,cond,semaphore etc
 #if MUGGLE_PLATFORM_WINDOWS
-#define MUGGLE_WAIT_INFINITE INFINITE
+	#define MUGGLE_WAIT_INFINITE INFINITE
 #else
-#define MUGGLE_WAIT_INFINITE ULONG_MAX
+	#define MUGGLE_WAIT_INFINITE ULONG_MAX
 #endif
 
 // fileno
 #if MUGGLE_PLATFORM_WINDOWS
-#define MUGGLE_FILENO _fileno
+	#define MUGGLE_FILENO _fileno
 #else
-#define MUGGLE_FILENO fileno
+	#define MUGGLE_FILENO fileno
 #endif
 
 // winsock
 #if MUGGLE_PLATFORM_WINDOWS
-
 ///////////////////////////////////////////////////////////////////
 // From Windows NOTE: 
 // https://docs.microsoft.com/en-us/windows/win32/winsock/creating-a-basic-winsock-application
@@ -144,11 +146,11 @@
 // macro prevents the Winsock.h from being included by the Windows.h 
 // header.An example illustrating this is shown below.
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
+	#ifndef WIN32_LEAN_AND_MEAN
+		#define WIN32_LEAN_AND_MEAN
+	#endif
 
-#endif
+#endif // MUGGLE_PLATFORM_WINDOWS
 
 // cache line padding in structure
 #define MUGGLE_CACHE_LINE_SIZE 64

@@ -1,10 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         internal_des.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec crpyt DES internal
+ *****************************************************************************/
+ 
 #ifndef MUGGLE_C_INTERNAL_DES_H_
 #define MUGGLE_C_INTERNAL_DES_H_
 
@@ -16,70 +19,78 @@ EXTERN_C_BEGIN
 
 #define MUGGLE_CRYPT_DES_DEBUG 0
 
-/*
- * move single bit
- * */
+/**
+ * @brief move single bit
+ */
 #define MUGGLE_MOVE_BIT(in, from, to) ((((in)>>(from))&0x01)<<(to))
 
-/*
- * key shift
- * */
+/**
+ * @brief key shift
+ */
 #define MUGGLE_DES_KEY_SHIFT(in, shift, mask) (((in)<<(shift))|(((in)>>(28-(shift)))&(mask)))
 
-/*
- * DES Initial Permutation
- * @in: input block
- * @out: output block
- * */
+/**
+ * @brief DES Initial Permutation
+ *
+ * @param in  input block
+ * @param out output block
+ */
 void muggle_des_ip(const muggle_64bit_block_t *in, muggle_64bit_block_t *out);
 
-/*
- * DES Final Permutation(Inverse IP)
- * @in: input block
- * @out: output block
- * */
+/**
+ * @brief DES Final Permutation(Inverse IP)
+ *
+ * @param in  input block
+ * @param out output block
+ */
 void muggle_des_fp(const muggle_64bit_block_t *in, muggle_64bit_block_t *out);
 
-/*
- * DES Expand Permutation
- * @in: input block
- * @out: 48bits in 8 bytes
- * */
+/**
+ * @brief DES Expand Permutation
+ *
+ * @param in   input block
+ * @param out  48bits in 8 bytes
+ */
 void muggle_des_expand(const muggle_32bit_block_t *in, muggle_des_48bit_t *out);
 
-/*
- * DES S-Box
- * @in: input 48bits
- * @out: 4bit x 8 output
- * */
+/**
+ * @brief DES S-Box
+ *
+ * @param in   input 48bits
+ * @param out  4bit x 8 output
+ */
 void muggle_des_sbox(const muggle_des_subkey_t *in, muggle_des_48bit_t *out);
 
-/*
- * DES P permutation
- * @in: output of S-Box
- * @out: output block
- * */
+/**
+ * @brief DES P permutation
+ *
+ * @param in   output of S-Box
+ * @param out  output block
+ */
 void muggle_des_p(const muggle_32bit_block_t *in, muggle_32bit_block_t *out);
 
-/*
- * DES f function
- * @in: input block
- * @out: output block
- * */
+/**
+ * @brief DES f function
+ *
+ * @param in  input block
+ * @param out output block
+ */
 void muggle_des_f(const muggle_32bit_block_t *in, const muggle_des_subkey_t *sk, muggle_32bit_block_t *out);
 
-/*
- * DES PC-1
- * @in: input block
- * @out: output block
- * */
+/**
+ * @brief DES PC-1
+ *
+ * @param in  input block
+ * @param out output block
+ */
 void muggle_des_pc1(const muggle_64bit_block_t *in, muggle_64bit_block_t *out);
 
-/*
- * DES PC-2
- * @k: contain 28bit in k->u32.l and 28bit in k->u32.h
- * @sk: output smuggle_des_subkey_t ub key
- * */
+/**
+ * @brief DES PC-2
+ *
+ * @param k   contain 28bit in k->u32.l and 28bit in k->u32.h
+ * @param sk  output smuggle_des_subkey_t ub key
+ */
 void muggle_des_pc2(muggle_64bit_block_t *k, muggle_des_subkey_t *sk);
 
 EXTERN_C_END

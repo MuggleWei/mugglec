@@ -1,3 +1,13 @@
+/******************************************************************************
+ *  @file         stacktrace.c
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-22
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec stacktrace
+ *****************************************************************************/
+
 #include "stacktrace.h"
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,10 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         sort.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-17
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec sort
+ *****************************************************************************/
+ 
 #ifndef MUGGLE_C_DSAA_SORT_H_
 #define MUGGLE_C_DSAA_SORT_H_
 
@@ -12,13 +15,17 @@
 
 EXTERN_C_BEGIN
 
-////////////////////////////////////////////////////////////////
-// sort algorithm
-// all sort function have same input arguments
-// @param ptr    pointer to element pointer array
-// @param count  number of elements in the array
-// @param cmp    comparison function
-
+/**
+ * @brief prototype of sort algorithm function
+ *
+ * all sort function have same input arguments
+ *
+ * @param ptr    pointer to element pointer array
+ * @param count  number of elements in the array
+ * @param cmp    comparison function
+ *
+ * @return boolean
+ */
 typedef bool (*muggle_func_sort)(void **ptr, size_t count, muggle_dsaa_data_cmp cmp);
 
 MUGGLE_C_EXPORT

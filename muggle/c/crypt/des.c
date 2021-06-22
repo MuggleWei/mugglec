@@ -1,10 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         des.c
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec crypt DES
+ *****************************************************************************/
+ 
 #include "des.h"
 #include <stddef.h>
 #include <string.h>
@@ -14,17 +17,19 @@
 #include "muggle/c/crypt/internal/internal_des.h"
 #include "muggle/c/crypt/openssl/openssl_des.h"
 
-/*
- * DES set key
+/**
+ * @brief DES set key
+ *
  * @param op crypt operator
  *   - MUGGLE_DECRYPT encrypt
  *   - MUGGLE_ENCRYPT decrypt
  * @param key des input key
  * @param ctx DES context
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, see MUGGLE_ERR_*
- * */
+ */
 static int muggle_des_set_key_inner(
 	int op,
 	const unsigned char key_bytes[MUGGLE_DES_BLOCK_SIZE],
@@ -82,9 +87,9 @@ static int muggle_des_set_key_inner(
 }
 
 
-/*
+/**
  * DES crypt single 64bits block
- * */
+ */
 static void muggle_des_crypt(
 	const muggle_des_subkeys_t *ks,
 	const muggle_64bit_block_t *input,

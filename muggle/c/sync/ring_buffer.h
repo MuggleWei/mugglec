@@ -1,9 +1,12 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
+/******************************************************************************
+ *  @file         ring_buffer.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-22
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec ring buffer
+ *****************************************************************************/
 
 #ifndef MUGGLE_C_RING_BUFFER_H_
 #define MUGGLE_C_RING_BUFFER_H_
@@ -17,15 +20,15 @@ EXTERN_C_BEGIN
 
 enum
 {
-	MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK = 0x00, // default, write with write lock
-	MUGGLE_RING_BUFFER_FLAG_READ_ALL   = 0x00, // default, every reader get all message from all writer
-	MUGGLE_RING_BUFFER_FLAG_READ_WAIT  = 0x00, // default, if no message in ring, reader wait
+	MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK      = 0x00, //!< default, write with write lock
+	MUGGLE_RING_BUFFER_FLAG_READ_ALL        = 0x00, //!< default, every reader get all message from all writer
+	MUGGLE_RING_BUFFER_FLAG_READ_WAIT       = 0x00, //!< default, if no message in ring, reader wait
 
-	MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER = 0x01,   // user guarantee only one writer use this ring_buffer
-	MUGGLE_RING_BUFFER_FLAG_SINGLE_READER = 0x02,   // user guarantee only one reader use this ring_buffer
-	MUGGLE_RING_BUFFER_FLAG_WRITE_BUSY_LOOP = 0x04, // every writer busy loop until write message into ring
-	MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP = 0x08,  // reader busy loop until read message from ring
-	MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE = 0x10,  // every message will only be read once
+	MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER   = 0x01, //!< user guarantee only one writer use this ring_buffer
+	MUGGLE_RING_BUFFER_FLAG_SINGLE_READER   = 0x02, //!< user guarantee only one reader use this ring_buffer
+	MUGGLE_RING_BUFFER_FLAG_WRITE_BUSY_LOOP = 0x04, //!< every writer busy loop until write message into ring
+	MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP  = 0x08, //!< reader busy loop until read message from ring
+	MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE   = 0x10, //!< every message will only be read once
 };
 
 typedef struct muggle_ring_buffer_tag
@@ -53,15 +56,53 @@ typedef struct muggle_ring_buffer_tag
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(9);
 }muggle_ring_buffer_t;
 
+/**
+ * @brief initialize ring buffer
+ *
+ * @param r         ring buffer pointer
+ * @param capacity  initialize capacity for ring buffer
+ * @param flag      bit OR operationg of MUGGLE_RING_BUFFER_FLAG_*
+ *
+ * @return 
+ *     - return 0 on success
+ *     - otherwise return error code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_ring_buffer_init(muggle_ring_buffer_t *r, muggle_atomic_int capacity, int flag);
 
+/**
+ * @brief destroy ring buffer
+ *
+ * @param r  ring buffer pointer
+ *
+ * @return 
+ *     - return 0 on success
+ *     - otherwise return error code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_ring_buffer_destroy(muggle_ring_buffer_t *r);
 
+/**
+ * @brief write data into ring buffer
+ *
+ * @param r     ring buffer pointer
+ * @param data  data pointer
+ *
+ * @return 
+ *     - return 0 on success
+ *     - otherwise return error code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_ring_buffer_write(muggle_ring_buffer_t *r, void *data);
 
+/**
+ * @brief read data from ring buffer
+ *
+ * @param r     ring buffer pointer
+ * @param idx   index of data
+ *
+ * @return data pointer
+ */
 MUGGLE_C_EXPORT
 void* muggle_ring_buffer_read(muggle_ring_buffer_t *r, muggle_atomic_int idx);
 

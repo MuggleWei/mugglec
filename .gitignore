@@ -11,3 +11,6 @@ build/
 
 # clangd
 .clangd/
+
+# doxygen
+/doxy

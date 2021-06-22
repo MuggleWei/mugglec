@@ -1,10 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         memory_detect.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-17
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec memory detect
+ *****************************************************************************/
+ 
 #ifndef MUGGLE_C_MEMORY_DETECT_H_
 #define MUGGLE_C_MEMORY_DETECT_H_
 

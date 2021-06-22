@@ -1,10 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         log_category.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec log category
+ *****************************************************************************/
+ 
 #ifndef MUGGLE_C_LOG_CATEGORY_H_
 #define MUGGLE_C_LOG_CATEGORY_H_
 
@@ -26,31 +29,37 @@ typedef struct muggle_log_category_tag
 	int lowest_log_level;
 }muggle_log_category_t;
 
-/*
- * add log handle into log category
- * @category: log category
- * @handle: log handle
- * RETURN: success returns 0, otherwise return err code in err.h
- * */
+/**
+ * @brief add log handle into log category
+ *
+ * @param category log category
+ * @param handle   log handle
+ *
+ * @return success returns 0, otherwise return err code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_log_category_add(muggle_log_category_t *category, muggle_log_handle_t *handle);
 
-/*
- * destroy log category
- * @category: log category
- * @delete_handles: nonzero represent need delete all handles in this category
- * RETURN: success returns 0, otherwise return err code in err.h
- * */
+/**
+ * @brief destroy log category
+ *
+ * @param category        log category
+ * @param delete_handles  nonzero represent need delete all handles in this category
+ *
+ * @return success returns 0, otherwise return err code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_log_category_destroy(muggle_log_category_t *category, int delete_handles);
 
-/*
- * output message
- * @category: log category
- * @arg: log format arguments
- * @msg: log messages
- * RETURN: success returns 0, otherwise return err code in err.h
- * */
+/**
+ * @brief output message
+ *
+ * @param category log category
+ * @param arg      log format arguments
+ * @param msg      log messages
+ *
+ * @return  success returns 0, otherwise return err code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_log_category_write(
 	muggle_log_category_t *category,
