@@ -1,3 +1,13 @@
+/******************************************************************************
+ *  @file         utils.c
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec base utils
+ *****************************************************************************/
+ 
 #include "muggle/c/base/utils.h"
 
 // from https://github.com/cloudwu/buddy/blob/master/buddy.c

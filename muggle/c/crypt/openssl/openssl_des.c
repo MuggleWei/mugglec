@@ -1,17 +1,16 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
+/******************************************************************************
+ *  @file         openssl_des.c
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        
+ *  mugglec crypt compatible with openssl DES
  *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
-/*
- * Compatibility with openssl
- *
- * this file are copied and modified from openssl(Apache License v2.0)
- *
- * */
-
+ *  this file are all copied and modified from openssl(Apache License v2.0)
+ *****************************************************************************/
+ 
 #include "openssl_des.h"
 #include <stdio.h>
 #include <string.h>

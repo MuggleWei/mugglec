@@ -1,15 +1,19 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         pointer_slot.c
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-17
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec pointer slot
+ *****************************************************************************/
+ 
 #include "pointer_slot.h"
 #include <stdlib.h>
 #include <string.h>
 #include "muggle/c/base/err.h"
 #include "muggle/c/base/utils.h"
+#include "muggle/c/log/log.h"
 
 int muggle_pointer_slot_init(muggle_pointer_slot_t *pointer_slot, unsigned int capacity)
 {

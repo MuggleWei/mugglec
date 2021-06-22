@@ -1,15 +1,19 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
+/******************************************************************************
+ *  @file         channel.c
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-22
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec channel
+ *****************************************************************************/
 
 #include "channel.h"
 #include <stdlib.h>
 #include <string.h>
 #include "muggle/c/base/err.h"
 #include "muggle/c/base/utils.h"
+#include "muggle/c/base/thread.h"
 #include "muggle/c/sync/futex.h"
 
 static void muggle_channel_lock_write(muggle_channel_t *chan)

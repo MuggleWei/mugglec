@@ -205,7 +205,7 @@ void example_default()
 	init_log();
 
 	// version and compile time informations
-	const char *ver = mugglec_version(ver, sizeof(ver));
+	const char *ver = mugglec_version();
 	MUGGLE_LOG_INFO("mugglec version: %s", ver);
 
 	const char *compile_ts = mugglec_compile_time();

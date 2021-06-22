@@ -1,10 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         log_fmt.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec log formatter
+ *****************************************************************************/
+ 
 #ifndef MUGGLE_C_LOG_FMT_H_
 #define MUGGLE_C_LOG_FMT_H_
 
@@ -26,31 +29,33 @@ enum
 
 enum
 {
-	MUGGLE_LOG_FMT_LEVEL = 0x01,
-	MUGGLE_LOG_FMT_FILE = 0x02,
-	MUGGLE_LOG_FMT_FUNC = 0x04,
-	MUGGLE_LOG_FMT_TIME = 0x08,
-	MUGGLE_LOG_FMT_THREAD = 0x10,
+	MUGGLE_LOG_FMT_LEVEL = 0x01,  //!< show log level in log
+	MUGGLE_LOG_FMT_FILE = 0x02,   //!< show file name in log
+	MUGGLE_LOG_FMT_FUNC = 0x04,   //!< show function name in log
+	MUGGLE_LOG_FMT_TIME = 0x08,   //!< show print time in log
+	MUGGLE_LOG_FMT_THREAD = 0x10, //!< show thread id in log
 };
 
 typedef struct muggle_log_fmt_arg_tag
 {
-	int level;
-	unsigned int line;
-	const char *file;
-	const char *func;
-	muggle_thread_id tid;
+	int              level; //!< log level
+	unsigned int     line;  //!< line in file
+	const char       *file; //!< file name
+	const char       *func; //!< function name
+	muggle_thread_id tid;   //!< thread id
 }muggle_log_fmt_arg_t;
 
-/*
- * generate formated message
- * @fmt_flag: format flag
- * @arg: format arguments
- * @msg: original message
- * @buf: the formated message output buffer
- * @size: the size of buf
- * RETURN: the len of formated message, negative represent failed
- * */
+/**
+ * @brief generate formated message
+ *
+ * @param fmt_flag format flag
+ * @param arg      format arguments
+ * @param msg      original message
+ * @param buf      the formated message output buffer
+ * @param size     the size of buf
+ *
+ * @return  the len of formated message, negative represent failed
+ */
 MUGGLE_C_EXPORT
 int muggle_log_fmt_gen(
 	int fmt_flag, muggle_log_fmt_arg_t *arg,

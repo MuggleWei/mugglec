@@ -1,10 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
+/******************************************************************************
+ *  @file         des.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-16
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec crypt DES
+ *****************************************************************************/
+ 
 #ifndef MUGGLE_C_DES_H_
 #define MUGGLE_C_DES_H_
 
@@ -28,23 +31,25 @@ typedef struct muggle_des_subkeys
 
 typedef struct muggle_des_context
 {
-	int                  op;   // encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
-	int                  mode; // cipher block mode, use MUGGLE_BLOCK_CIPHER_MODE_*
-	muggle_des_subkeys_t sk;   // DES subkeys
+	int                  op;   //!< encryption or decryption, use MUGGLE_DECRYPT or MUGGLE_ENCRYPT
+	int                  mode; //!< cipher block mode, use MUGGLE_BLOCK_CIPHER_MODE_*
+	muggle_des_subkeys_t sk;   //!< DES subkeys
 }muggle_des_context_t;
 
 /**
- * DES setup key schedule for mode
+ * @brief DES setup key schedule for mode
+ *
  * @param op crypt operator
  *   - MUGGLE_DECRYPT encrypt
  *   - MUGGLE_ENCRYPT decrypt
  * @param mode block cipher mode, see MUGGLE_BLOCK_CIPHER_MODE_*
  * @param key des input key
  * @param ctx DES context
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, see MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_des_set_key(
 	int op,
@@ -53,15 +58,17 @@ int muggle_des_set_key(
 	muggle_des_context_t *ctx);
 
 /**
- * DES crypt with ECB mode
+ * @brief DES crypt with ECB mode
+ *
  * @param ctx DES context
  * @param input input bytes, length must be multiple of 8
  * @param num_bytes length of input/output bytes
  * @param output output bytes
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_des_ecb(
 	const muggle_des_context_t *ctx,
@@ -70,16 +77,18 @@ int muggle_des_ecb(
 	unsigned char *output);
 
 /**
- * DES crypt with CBC mode
+ * @brief DES crypt with CBC mode
+ *
  * @param ctx DES context
  * @param input input bytes, length must be multiple of 8
  * @param num_bytes length of input/output bytes
  * @param iv initialization vector
  * @param output output bytes
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_des_cbc(
 	const muggle_des_context_t *ctx,
@@ -89,17 +98,19 @@ int muggle_des_cbc(
 	unsigned char *output);
 
 /**
- * DES crypt with CFB 64bit iv mode
+ * @brief DES crypt with CFB 64bit iv mode
+ *
  * @param ctx DES context
  * @param input input bytes
  * @param num_bytes length of input/output bytes
  * @param iv initialization vector
  * @param iv_offset offset bytes in iv
  * @param output output bytes
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_des_cfb64(
 	const muggle_des_context_t *ctx,
@@ -110,17 +121,19 @@ int muggle_des_cfb64(
 	unsigned char *output);
 
 /**
- * DES crypt with OFB 64bit iv mode
+ * @brief DES crypt with OFB 64bit iv mode
+ *
  * @param ctx DES context
  * @param input input bytes
  * @param num_bytes length of input/output bytes
  * @param iv initialization vector
  * @param iv_offset offset bytes in iv
  * @param output output bytes
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_des_ofb64(
 	const muggle_des_context_t *ctx,
@@ -131,7 +144,8 @@ int muggle_des_ofb64(
 	unsigned char *output);
 
 /**
- * DES crypt with CTR mode
+ * @brief DES crypt with CTR mode
+ *
  * @param ctx DES context
  * @param input input bytes
  * @param num_bytes length of input/output bytes
@@ -139,10 +153,11 @@ int muggle_des_ofb64(
  * @param nonce_offset offset bytes in nonce
  * @param output output bytes
  * @param stream_block ciphertext of nonce
+ *
  * @return
  *   - 0 success
  *   - otherwise failed, return MUGGLE_ERR_*
- * */
+ */
 MUGGLE_C_EXPORT
 int muggle_des_ctr(
 	const muggle_des_context_t *ctx,

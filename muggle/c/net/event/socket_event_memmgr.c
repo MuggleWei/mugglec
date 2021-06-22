@@ -1,3 +1,13 @@
+/******************************************************************************
+ *  @file         socket_event_memmgr.c
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-21
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec socket event memory manager
+ *****************************************************************************/
+
 #include "socket_event_memmgr.h"
 #include <string.h>
 #include "muggle/c/base/sleep.h"

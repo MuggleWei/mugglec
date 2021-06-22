@@ -1,3 +1,13 @@
+/******************************************************************************
+ *  @file         win_gmtime.cpp
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-22
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec gmtime_r and timegm in windows
+ *****************************************************************************/
+
 #include "win_gmtime.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
