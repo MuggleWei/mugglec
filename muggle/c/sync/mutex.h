@@ -1,9 +1,12 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
+/******************************************************************************
+ *  @file         mutex.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-22
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec mutex
+ *****************************************************************************/
 
 #ifndef MUGGLE_C_MUTEX_H_
 #define MUGGLE_C_MUTEX_H_
@@ -27,18 +30,63 @@ typedef struct muggle_mutex_tag
 #endif
 }muggle_mutex_t;
 
+/**
+ * @brief initialize mutex
+ *
+ * @param mutex mutex pointer
+ *
+ * @return 
+ *     - return 0 on success
+ *     - otherwise return error code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_mutex_init(muggle_mutex_t *mutex);
 
+/**
+ * @brief destroy mutex
+ *
+ * @param mutex mutex pointer
+ *
+ * @return 
+ *     - return 0 on success
+ *     - otherwise return error code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_mutex_destroy(muggle_mutex_t *mutex);
 
+/**
+ * @brief lock mutex
+ *
+ * @param mutex mutex pointer
+ *
+ * @return 
+ *     - return 0 on success
+ *     - otherwise return error code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_mutex_lock(muggle_mutex_t *mutex);
 
+/**
+ * @brief try lock mutex
+ *
+ * @param mutex mutex pointer
+ *
+ * @return 
+ *     - return 0 on success
+ *     - otherwise return error code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_mutex_trylock(muggle_mutex_t *mutex);
 
+/**
+ * @brief unlock mutex
+ *
+ * @param mutex mutex pointer
+ *
+ * @return 
+ *     - return 0 on success
+ *     - otherwise return error code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_mutex_unlock(muggle_mutex_t *mutex);
 

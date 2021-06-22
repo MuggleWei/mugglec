@@ -1,9 +1,12 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
+/******************************************************************************
+ *  @file         os.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-21
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec os utils
+ *****************************************************************************/
 
 #ifndef MUGGLE_C_OS_H_
 #define MUGGLE_C_OS_H_
@@ -12,60 +15,76 @@
 
 EXTERN_C_BEGIN
 
-/*
- * get current process file path
- * @path: the returned path
- * @size: the max size of path (include '\0')
- * RETURN: on success returns 0, otherwise return errno in err.h
- * */
+/**
+ * @brief get current process file path
+ *
+ * @param path  the returned path
+ * @param size  the max size of path (include '\0')
+ *
+ * @return on success returns 0, otherwise return errno in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_os_process_path(char *path, unsigned int size);
 
-/*
- * get current working directory
- * @path: the returned path
- * @size: the max size of path (include '\0')
- * RETURN: on success returns 0, otherwise return errno in err.h
- * */
+/**
+ * @brief get current working directory
+ *
+ * @param path  the returned path
+ * @param size  the max size of path (include '\0')
+ *
+ * @return on success returns 0, otherwise return errno in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_os_curdir(char *path, unsigned int size);
 
-/*
- * change working directory
- * @path: target working directory
- * RETURN: on success returns 0, otherwise return errno in err.h
- * */
+/**
+ * @brief change working directory
+ *
+ * @param path  target working directory
+ *
+ * @return on success returns 0, otherwise return errno in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_os_chdir(const char *path);
 
-/*
- * recursive create directory named path
- * @path: path need to create
- * RETURN: success returns 0, otherwise return errno in err.h
- * */
+/**
+ * @brief recursive create directory named path
+ *
+ * @param path: path need to create
+ *
+ * @return success returns 0, otherwise return errno in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_os_mkdir(const char *path);
 
-/*
- * remove the file path
- * @path: the file need to be remove
- * RETURN: success returns 0, otherwise return errno in err.h
- * */
+/**
+ * @brief remove the file path
+ *
+ * @param path  the file need to be remove
+ *
+ * @return success returns 0, otherwise return errno in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_os_remove(const char *path);
 
-/*
- * delete an empty directory
- * @path: directory need to be delete
- * RETURN: success returns 0, otherwise return errno in err.h
- * */
+/**
+ * @brief delete an empty directory
+ *
+ * @param path  directory need to be delete
+ *
+ * @return success returns 0, otherwise return errno in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_os_rmdir(const char *path);
 
-/*
- * rename the file or directory src to dst
- * RETURN: success returns 0, otherwise return errno in err.h
- * */
+/**
+ * @brief rename the file or directory src to dst
+ *
+ * @param src  source file path
+ * @param dst  destination fiel path
+ *
+ * @return success returns 0, otherwise return errno in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_os_rename(const char *src, const char *dst);
 

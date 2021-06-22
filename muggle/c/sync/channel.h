@@ -1,9 +1,20 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
+/******************************************************************************
+ *  @file         channel.h
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2021-06-22
+ *  @copyright    Copyright 2021 Muggle Wei
+ *  @license      MIT License
+ *  @brief        mugglec channel
  *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
+ * Passing data between threads, user must gurantee only one reader use channel at the same time
+ * When channel full, write will failed and return enum MUGGLE_ERR_*
+ * When channel empty, read will block until data write into channel
+ *
+ * muggle_channel_t and muggle_ring_buffer_t with only one reader are very similar, but most important different is
+ * when ringbuffer full, last message will be pushed in and lost all old message
+ * when channel full, write will return failed
+ *****************************************************************************/
 
 #ifndef MUGGLE_C_CHANNEL_H_
 #define MUGGLE_C_CHANNEL_H_
@@ -14,25 +25,14 @@
 
 EXTERN_C_BEGIN
 
-/*
- * channel
- * Passing data between threads, user must gurantee only one reader use channel at the same time
- * When channel full, write will failed and return enum MUGGLE_ERR_*
- * When channel empty, read will block until data write into channel
- *
- * muggle_channel_t and muggle_ring_buffer_t with only one reader are very similar, but most important different is
- * when ringbuffer full, last message will be pushed in and lost all old message
- * when channel full, write will return failed
- * */
-
 enum
 {
-	MUGGLE_CHANNEL_FLAG_WRITE_MUTEX    = 0x00, // write lock use mutex
-	MUGGLE_CHANNEL_FLAG_READ_WAIT      = 0x00, // reader wait
+	MUGGLE_CHANNEL_FLAG_WRITE_MUTEX    = 0x00, //!< write lock use mutex
+	MUGGLE_CHANNEL_FLAG_READ_WAIT      = 0x00, //!< reader wait
 
-	MUGGLE_CHANNEL_FLAG_SINGLE_WRITER  = 0x01, // user guarantee only one writer use this channel
-	MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP = 0x02, // reader busy loop until read message from channel
-	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX    = 0x04, // write lock use futex
+	MUGGLE_CHANNEL_FLAG_SINGLE_WRITER  = 0x01, //!< user guarantee only one writer use this channel
+	MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP = 0x02, //!< reader busy loop until read message from channel
+	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX    = 0x04, //!< write lock use futex
 };
 
 enum
@@ -41,6 +41,9 @@ enum
 	MUGGLE_CHANNEL_LOCK_STATUS_LOCK,
 };
 
+/**
+ * @brief channel node block
+ */
 typedef struct muggle_channel_block
 {
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
@@ -52,6 +55,9 @@ typedef int (*fn_muggle_channel_write)(struct muggle_channel *chan, void *data);
 typedef void* (*fn_muggle_channel_read)(struct muggle_channel *chan);
 typedef void (*fn_muggle_channel_wake)(struct muggle_channel *chan);
 
+/**
+ * @brief channel
+ */
 typedef struct muggle_channel
 {
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
@@ -73,31 +79,48 @@ typedef struct muggle_channel
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(6);
 }muggle_channel_t;
 
-/*
- * init muggle_channel_t
- * @chan: pointer to muggle_channel_t
- * @capacity: capacity of channel
- * @flags: bitwise or of MUGGLE_CHANNEL_FLAG_*
- * RETURN: 0 - success, otherwise failed and return MUGGLE_ERR_*
- * */
+/**
+ * @brief init muggle_channel_t
+ *
+ * @param chan      pointer to muggle_channel_t
+ * @param capacity  capacity of channel
+ * @param flags     bitwise or of MUGGLE_CHANNEL_FLAG_*
+ *
+ * @return
+ *     - return 0 on success
+ *     - otherwise return error code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int flags);
 
-/*
- * destroy muggle_channel_t
- * */
+/**
+ * @brief destroy muggle_channel_t
+ *
+ * @param chan  pointer to muggle_channel_t
+ */
 MUGGLE_C_EXPORT
 void muggle_channel_destroy(muggle_channel_t *chan);
 
-/*
- * write data into channel
- * */
+/**
+ * @brief write data into channel
+ *
+ * @param chan  pointer to muggle_channel_t
+ * @param data  data pointer
+ *
+ * @return 
+ *     - return 0 on success
+ *     - otherwise return error code in muggle/c/base/err.h
+ */
 MUGGLE_C_EXPORT
 int muggle_channel_write(muggle_channel_t *chan, void *data);
 
-/*
- * read data from channel
- * */
+/**
+ * @brief read data from channel
+ *
+ * @param chan  pointer to muggle_channel_t
+ *
+ * @return data pointer
+ */
 MUGGLE_C_EXPORT
 void* muggle_channel_read(muggle_channel_t *chan);
 
