@@ -17,11 +17,11 @@ endif()
 # # set standard and print features
 # set(CMAKE_C_STANDARD 11)
 # set(CMAKE_C_STANDARD_REQUIRED ON)
-# 
-# message("-- compiler support features: ")
-# foreach(feature ${CMAKE_C_COMPILE_FEATURES})
-# 	message("support feature: ${feature}")
-# endforeach()
+
+message("-- c compiler support features: ")
+foreach(feature ${CMAKE_C_COMPILE_FEATURES})
+	message("support feature: ${feature}")
+endforeach()
 
 # for vim plugin - YCM
 if (NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
