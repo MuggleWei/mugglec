@@ -1,14 +1,27 @@
 cmake_minimum_required (VERSION 3.0.2)
 project(mugglec)
 
+# print compiler
+message("-- use c compiler ${CMAKE_C_COMPILER}")
+message("-- use c++ compiler ${CMAKE_CXX_COMPILER}")
+
 # set compile parameter
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -Wextra -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -Wextra")
 elseif (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -Wextra -Wno-missing-field-initializers")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS=1 -D_UNICODE -DUNICODE)
 endif()
+
+# # set standard and print features
+# set(CMAKE_C_STANDARD 11)
+# set(CMAKE_C_STANDARD_REQUIRED ON)
+# 
+# message("-- compiler support features: ")
+# foreach(feature ${CMAKE_C_COMPILE_FEATURES})
+# 	message("support feature: ${feature}")
+# endforeach()
 
 # for vim plugin - YCM
 if (NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
