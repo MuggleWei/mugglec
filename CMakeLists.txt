@@ -63,6 +63,12 @@ if (MUGGLE_BUILD_TESTING)
 	set(BUILD_TESTING ON)
 endif()
 
+if (MUGGLE_BUILD_EXAMPLE OR MUGGLE_BUILD_TESTING OR MUGGLE_BUILD_BENCHMARK)
+	set(MUGGLE_BUILD_LIB_BENCHMARK ON)
+else()
+	set(MUGGLE_BUILD_LIB_BENCHMARK OFF)
+endif()
+
 
 # version
 
@@ -122,46 +128,42 @@ include_directories(
 # mugglec
 set(muggle_c mugglec)
 muggle_add_project(${muggle_c} ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
+
 set_target_properties(${muggle_c} PROPERTIES 
 	LINKER_LANGUAGE C
 	VERSION ${MUGGLE_C_VERSION}
 	SOVERSION ${MUGGLE_C_SOVERSION}
+	DEBUG_POSTFIX d
 )
 if ((NOT ${MUGGLE_BUILD_SHARED_LIB}) AND (${MUGGLE_BUILD_STATIC_PIC}))
 	set_target_properties(${muggle_c} PROPERTIES
 		POSITION_INDEPENDENT_CODE ON
 	)
 endif()
-target_compile_definitions(${muggle_c}	PUBLIC MUGGLE_BUILD_C_ONLY)
-target_compile_definitions(${muggle_c}	PUBLIC
+
+target_compile_definitions(${muggle_c} PUBLIC
 	MUGGLE_C_SEMVER=${MUGGLE_C_VERSION}
 )
-
-if (${MUGGLE_BUILD_TRACE})
-	target_compile_definitions(${muggle_c} PUBLIC MUGGLE_BUILD_TRACE)
-endif()
-
-# muggle benchmark
-muggle_add_project(muggle_benchmark ${CMAKE_CURRENT_LIST_DIR}/muggle_benchmark ${MUGGLE_LIB_TYPE})
-set_target_properties(muggle_benchmark PROPERTIES 
-	VERSION ${MUGGLE_C_VERSION}
-	SOVERSION ${MUGGLE_C_SOVERSION}
-)
-if ((NOT ${MUGGLE_BUILD_SHARED_LIB}) AND (${MUGGLE_BUILD_STATIC_PIC}))
-	set_target_properties(muggle_benchmark PROPERTIES
-		POSITION_INDEPENDENT_CODE ON
+if (MUGGLE_BUILD_SHARED_LIB)
+	target_compile_definitions(${muggle_c}
+		PUBLIC MUGGLE_C_USE_DLL
+		PRIVATE MUGGLE_C_EXPORTS 
 	)
 endif()
-target_link_libraries(muggle_benchmark ${muggle_c})
-add_dependencies(muggle_benchmark ${muggle_c})
+if (MUGGLE_CRYPT_OPTIMIZATION)
+	target_compile_definitions(${muggle_c}
+		PUBLIC MUGGLE_CRYPT_OPTIMIZATION
+	)
+endif()
+if (MUGGLE_BUILD_TRACE)
+	target_compile_definitions(${muggle_c}
+		PUBLIC MUGGLE_BUILD_TRACE
+	)
+	if (WIN32)
+		target_link_libraries(${muggle_c} debug Dbghelp)
+	endif()
+endif()
 
-# set debug postfix
-set_target_properties(${muggle_c} muggle_benchmark
-	PROPERTIES 
-	DEBUG_POSTFIX d
-)
-
-# link thread and dll lib
 find_package(Threads)
 if (WIN32)
 	target_link_libraries(${muggle_c}
@@ -169,9 +171,6 @@ if (WIN32)
 		${CMAKE_DL_LIBS}
 		synchronization
 	)
-	if (${MUGGLE_BUILD_TRACE})
-		target_link_libraries(${muggle_c} debug Dbghelp)
-	endif()
 else()
 	target_link_libraries(${muggle_c}
 		${CMAKE_THREAD_LIBS_INIT}
@@ -179,32 +178,39 @@ else()
 	)
 endif()
 
-# export macro for windows
-if (MUGGLE_BUILD_SHARED_LIB)
-	target_compile_definitions(${muggle_c}
-		PUBLIC MUGGLE_C_USE_DLL
-		PRIVATE MUGGLE_C_EXPORTS 
-	)
-	target_compile_definitions(muggle_benchmark
-		PUBLIC MUGGLE_BENCHMARK_USE_DLL
-		PRIVATE MUGGLE_BENCHMARK_EXPORTS 
-	)
-endif()
-
-if (MUGGLE_CRYPT_OPTIMIZATION)
-	target_compile_definitions(${muggle_c}
-		PUBLIC MUGGLE_CRYPT_OPTIMIZATION
-	)
-endif()
-
-
-# install
 install(TARGETS ${muggle_c}
 	RUNTIME DESTINATION bin
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib/static
 )
 muggle_install_headers(${CMAKE_CURRENT_LIST_DIR}/muggle include/muggle)
+
+# muggle benchmark
+if (MUGGLE_BUILD_LIB_BENCHMARK)
+	muggle_add_project(muggle_benchmark ${CMAKE_CURRENT_LIST_DIR}/muggle_benchmark ${MUGGLE_LIB_TYPE})
+	set_target_properties(muggle_benchmark PROPERTIES 
+		VERSION ${MUGGLE_C_VERSION}
+		SOVERSION ${MUGGLE_C_SOVERSION}
+	)
+	set_target_properties(muggle_benchmark
+		PROPERTIES 
+		DEBUG_POSTFIX d
+	)
+	if ((NOT ${MUGGLE_BUILD_SHARED_LIB}) AND (${MUGGLE_BUILD_STATIC_PIC}))
+		set_target_properties(muggle_benchmark PROPERTIES
+			POSITION_INDEPENDENT_CODE ON
+		)
+	endif()
+	target_link_libraries(muggle_benchmark ${muggle_c})
+	add_dependencies(muggle_benchmark ${muggle_c})
+	
+	if (MUGGLE_BUILD_SHARED_LIB)
+		target_compile_definitions(muggle_benchmark
+			PUBLIC MUGGLE_BENCHMARK_USE_DLL
+			PRIVATE MUGGLE_BENCHMARK_EXPORTS 
+		)
+	endif()
+endif()
 
 # muggle test utils
 if (MUGGLE_BUILD_TESTING)
