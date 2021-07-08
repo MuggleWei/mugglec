@@ -65,11 +65,20 @@ endif()
 
 
 # version
-set(MUGGLE_C_VER_MAJOR 0)
-set(MUGGLE_C_VER_MINOR 0)
-set(MUGGLE_C_VER_BUILD 0)
 
-set(MUGGLE_C_VERSION "${MUGGLE_C_VER_MAJOR}.${MUGGLE_C_VER_MINOR}.${MUGGLE_C_VER_BUILD}")
+# NTOE: don't use READ, it will add newline
+#file(READ "version.txt" mugglec_version)
+file(STRINGS "version.txt" mugglec_version)
+
+string(REPLACE "-" ";" mugglec_semver_ext ${mugglec_version})
+list(GET mugglec_semver_ext 0 mugglec_semver)
+string(REPLACE "." ";" mugglec_semver_list ${mugglec_semver})
+
+list(GET mugglec_semver_list 0 MUGGLE_C_VER_MAJOR)
+list(GET mugglec_semver_list 1 MUGGLE_C_VER_MINOR)
+list(GET mugglec_semver_list 2 MUGGLE_C_VER_PATCH)
+
+set(MUGGLE_C_VERSION "${mugglec_version}")
 set(MUGGLE_C_SOVERSION "${MUGGLE_C_VER_MAJOR}")
 
 # output options
@@ -125,9 +134,7 @@ if ((NOT ${MUGGLE_BUILD_SHARED_LIB}) AND (${MUGGLE_BUILD_STATIC_PIC}))
 endif()
 target_compile_definitions(${muggle_c}	PUBLIC MUGGLE_BUILD_C_ONLY)
 target_compile_definitions(${muggle_c}	PUBLIC
-	MUGGLE_C_VERSION_MAJOR=${MUGGLE_C_VER_MAJOR}
-	MUGGLE_C_VERSION_MINOR=${MUGGLE_C_VER_MINOR}
-	MUGGLE_C_VERSION_BUILD=${MUGGLE_C_VER_BUILD}
+	MUGGLE_C_SEMVER=${MUGGLE_C_VERSION}
 )
 
 if (${MUGGLE_BUILD_TRACE})
