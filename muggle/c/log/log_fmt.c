@@ -20,16 +20,7 @@
 	#include <unistd.h>
 #endif
 #include "muggle/c/os/path.h"
-
- // default log priority string
-const char* g_muggle_log_level_str[MUGGLE_LOG_LEVEL_MAX] = {
-	"",
-	"TRACE",
-	"INFO",
-	"WARNING",
-	"ERROR",
-	"FATAL"
-};
+#include "log_level.h"
 
 int muggle_log_fmt_gen(
 	int fmt_flag, muggle_log_fmt_arg_t *arg,
@@ -50,17 +41,14 @@ int muggle_log_fmt_gen(
 
 	if (fmt_flag & MUGGLE_LOG_FMT_LEVEL)
 	{
-		int level = arg->level >> MUGGLE_LOG_LEVEL_OFFSET;
-		if (level > 0 && level < MUGGLE_LOG_LEVEL_MAX)
+		const char* str_level = muggle_log_level_to_str(arg->level);
+		num_write = snprintf(p, remaining, "<L>%s|", str_level);
+		if (num_write < 0)
 		{
-			num_write = snprintf(p, remaining, "<L>%s|", g_muggle_log_level_str[level]);
-			if (num_write < 0)
-			{
-				return -1;
-			}
-			remaining -= num_write;
-			p += num_write;
-		}		
+			return -1;
+		}
+		remaining -= num_write;
+		p += num_write;
 
 		if (remaining <= 0)
 		{

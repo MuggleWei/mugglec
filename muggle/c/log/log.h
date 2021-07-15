@@ -13,6 +13,7 @@
 
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/thread.h"
+#include "muggle/c/log/log_level.h"
 #include "muggle/c/log/log_fmt.h"
 #include "muggle/c/log/log_handle.h"
 #include "muggle/c/log/log_category.h"

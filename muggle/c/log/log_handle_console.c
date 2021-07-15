@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "muggle/c/base/err.h"
+#include "muggle/c/log/log_level.h"
 
  // terminal color for *nix
 #define UNIX_TERMINAL_COLOR_NRM  "\x1B[0m"
