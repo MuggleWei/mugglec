@@ -21,83 +21,47 @@
 #include "muggle/c/log/log_level.h"
 #include "muggle/c/log/log_fmt.h"
 #include "muggle/c/log/log_handler.h"
-#include "muggle/c/log/log_handler_console.h"
+#include "muggle/c/log/log_console_handler.h"
+#include "muggle/c/os/path.h"
 
-muggle_logger_t* muggle_logger_default()
+int muggle_log_simple_init_fmt(const muggle_log_msg_t *msg, char *buf, size_t bufsize)
 {
-	static muggle_logger_t logger =
-	{
-		{NULL}, 0, 0, MUGGLE_LOG_LEVEL_FATAL
-	};
-	return &logger;
-}
+	const char *level = muggle_log_level_to_str(msg->level);
 
-void muggle_log_function(
-	muggle_logger_t *logger,
-	int level,
-	muggle_log_src_loc_t *src_loc,
-	const char *format,
-	...)
-{
-	if (logger->lowest_log_level > level)
+	char filename[MUGGLE_MAX_PATH];
+	muggle_path_basename(msg->src_loc.file, filename, sizeof(filename));
+
+	const char *payload = "";
+	if (msg->payload)
 	{
-		return;
+		payload = msg->payload;
 	}
 
-	muggle_log_msg_t msg;
-	memset(&msg, 0, sizeof(msg));
-
-	// level
-	msg.level = level;
-
-	// timestamp
-	if (logger->fmt_hint & MUGGLE_LOG_FMT_TIME)
-	{
-		timespec_get(&msg.ts, TIME_UTC);
-	}
-
-	// thread id
-	if (logger->fmt_hint & MUGGLE_LOG_FMT_THREAD)
-	{
-		msg.tid = muggle_thread_current_id();
-	}
-
-	// source location
-	memcpy(&msg.src_loc, src_loc, sizeof(msg.src_loc));
-
-	// payload
-	char payload[MUGGLE_LOG_MSG_MAX_LEN];
-	va_list args;
-
-	va_start(args, format);
-	vsnprintf(payload, sizeof(payload), format, args);
-	va_end(args);
-
-	msg.payload = payload;
-
-	// write
-	muggle_logger_write(logger, &msg);
-
-#if MUGGLE_DEBUG
-	if (arg->level >= MUGGLE_LOG_LEVEL_FATAL)
-	{
-		muggle_print_stacktrace();
-#if MUGGLE_PLATFORM_WINDOWS
-		__debugbreak();
-#endif
-		abort();
-	}
-#endif
+	return (int)snprintf(buf, bufsize,
+		"%s|%llu.%09d|%s:%u|%s|%llu - %s\n",
+		level,
+		(unsigned long long)msg->ts.tv_sec,
+		(int)msg->ts.tv_nsec / 1000,
+		filename,
+		(unsigned int)msg->src_loc.line,
+		msg->src_loc.func,
+		(unsigned long long)msg->tid,
+		payload);
 }
 
 int muggle_log_simple_init(int level_console, int level_file_rotating)
 {
+	static muggle_log_fmt_t formatter = {
+		MUGGLE_LOG_FMT_ALL,
+		muggle_log_simple_init_fmt
+	};
 	muggle_logger_t *logger = muggle_logger_default();
 
 	// console handler
-	static muggle_log_handler_console_t console_handler;
-	muggle_log_handler_console_init(&console_handler, 1);
+	static muggle_log_console_handler_t console_handler;
+	muggle_log_console_handler_init(&console_handler, 1);
 	muggle_log_handler_set_level((muggle_log_handler_t*)&console_handler, level_console);
+	muggle_log_handler_set_fmt((muggle_log_handler_t*)&console_handler, &formatter); 
 
 	muggle_logger_add_handler(logger, (muggle_log_handler_t*)&console_handler);
 

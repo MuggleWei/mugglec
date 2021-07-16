@@ -1,4 +1,4 @@
-#include "log_handler_console.h"
+#include "log_console_handler.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -26,7 +26,7 @@
  *     - on success, return number of bytes be writed
  *     - otherwise return negative number
  */
-static int muggle_log_handler_console_write(
+static int muggle_log_console_handler_write(
 	struct muggle_log_handler *base_handler, const muggle_log_msg_t *msg)
 {
 	char buf[MUGGLE_LOG_MSG_MAX_LEN];
@@ -42,7 +42,7 @@ static int muggle_log_handler_console_write(
 		return -2;
 	}
 
-	muggle_log_handler_console_t *handler = (muggle_log_handler_console_t*)base_handler;
+	muggle_log_console_handler_t *handler = (muggle_log_console_handler_t*)base_handler;
 
 	FILE *fp = stdout;
 	if (msg->level >= MUGGLE_LOG_LEVEL_WARNING)
@@ -123,22 +123,22 @@ static int muggle_log_handler_console_write(
  *     - success returns 0
  *     - otherwise return err code in muggle/c/base/err.h
  */
-static int muggle_log_handler_console_destroy(
+static int muggle_log_console_handler_destroy(
 	muggle_log_handler_t *base_handler)
 {
-	muggle_log_handler_console_t *handler = (muggle_log_handler_console_t*)base_handler;
+	muggle_log_console_handler_t *handler = (muggle_log_console_handler_t*)base_handler;
 	muggle_mutex_destroy(&handler->mtx);
 
 	return MUGGLE_OK;
 }
 
-int muggle_log_handler_console_init(
-	muggle_log_handler_console_t *handler,
+int muggle_log_console_handler_init(
+	muggle_log_console_handler_t *handler,
 	int enable_color)
 {
 	muggle_log_handler_init_default((muggle_log_handler_t*)handler);
-	handler->handler.write = muggle_log_handler_console_write;
-	handler->handler.destroy = muggle_log_handler_console_destroy;
+	handler->handler.write = muggle_log_console_handler_write;
+	handler->handler.destroy = muggle_log_console_handler_destroy;
 
 	int ret = muggle_mutex_init(&handler->mtx);
 	if (ret != MUGGLE_OK)

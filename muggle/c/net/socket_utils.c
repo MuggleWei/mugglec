@@ -9,6 +9,7 @@
  *****************************************************************************/
 
 #include "socket_utils.h"
+#include <stdio.h>
 #include <string.h>
 #include "muggle/c/log/log.h"
 

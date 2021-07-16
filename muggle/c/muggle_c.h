@@ -61,8 +61,9 @@
 #include "muggle/c/log/log_msg.h"
 #include "muggle/c/log/log_fmt.h"
 #include "muggle/c/log/log_handler.h"
-#include "muggle/c/log/log_handler_console.h"
+#include "muggle/c/log/log_console_handler.h"
 #include "muggle/c/log/log_logger.h"
+#include "muggle/c/log/log_sync_logger.h"
 #include "muggle/c/log/log.h"
 
 // net

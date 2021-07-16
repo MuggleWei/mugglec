@@ -23,7 +23,8 @@ do \
 	muggle_log_src_loc_t loc_arg##__LINE__ = { \
 		__FILE__, __LINE__, __FUNCTION__ \
 	}; \
-	muggle_log_function(muggle_logger_default(), level, &loc_arg##__LINE__, format, ##__VA_ARGS__); \
+	muggle_logger_t *logger = muggle_logger_default(); \
+	logger->log(logger, level, &loc_arg##__LINE__, format, ##__VA_ARGS__); \
 } while (0)
 
 #define MUGGLE_LOG(logger, level, format, ...) \
@@ -32,7 +33,7 @@ do \
 	muggle_log_src_loc_t loc_arg##__LINE__ = { \
 		__FILE__, __LINE__, __FUNCTION__ \
 	}; \
-	muggle_log_function(logger, level, &loc_arg##__LINE__, format, ##__VA_ARGS__); \
+	logger->log(logger, level, &loc_arg##__LINE__, format, ##__VA_ARGS__); \
 } while (0)
 
 #define MUGGLE_LOG_TRACE(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_TRACE, format, ##__VA_ARGS__)
@@ -65,7 +66,8 @@ do \
 		muggle_log_src_loc_t loc_arg##__LINE__ = { \
 			__FILE__, __LINE__, __FUNCTION__ \
 		}; \
-		muggle_log_function(muggle_logger_default(), MUGGLE_LOG_LEVEL_FATAL, &loc_arg##__LINE__, "Assertion: "#x); \
+		muggle_logger_t *logger = muggle_logger_default(); \
+		logger->log(logger, MUGGLE_LOG_LEVEL_FATAL, &loc_arg##__LINE__, "Assertion: "#x); \
 	} \
 } while (0)
 
@@ -77,7 +79,8 @@ do \
 		muggle_log_src_loc_t loc_arg##__LINE__ = { \
 			__FILE__, __LINE__, __FUNCTION__ \
 		}; \
-		muggle_log_function(muggle_logger_default(), MUGGLE_LOG_LEVEL_FATAL, &loc_arg##__LINE__, "Assertion: "#x format, ##__VA_ARGS__); \
+		muggle_logger_t *logger = muggle_logger_default(); \
+		logger->log(logger, MUGGLE_LOG_LEVEL_FATAL, &loc_arg##__LINE__, "Assertion: "#x format, ##__VA_ARGS__); \
 	} \
 } while (0)
 
@@ -90,31 +93,6 @@ do \
 #define MUGGLE_DEBUG_LOG(logger, level, format, ...) MUGGLE_LOG(logger, level, format, ##__VA_ARGS__)
 
 #endif
-
-/**
- * @brief get default logger
- *
- * @return logger
- */
-MUGGLE_C_EXPORT
-muggle_logger_t* muggle_logger_default();
-
-/**
- * @brief output log, don't use this function immediately, use MUGGLE_LOG macro instead
- *
- * @param logger   logger pointer
- * @param level    log level
- * @param src_loc  source location info
- * @param format   format string
- * @param ...      input arguments for format string
- */
-MUGGLE_C_EXPORT
-void muggle_log_function(
-	muggle_logger_t *logger,
-	int level,
-	muggle_log_src_loc_t *src_loc,
-	const char *format,
-	...);
 
 /**
  * @brief simple initialize log with console and file_rotate category

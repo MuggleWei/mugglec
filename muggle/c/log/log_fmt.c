@@ -26,7 +26,7 @@
  *
  * @return the len of formated message, negative represent failed
  */
-static int muggle_log_fmt_default(const muggle_log_msg_t *msg, char *buf, size_t bufsize)
+static int muggle_log_fmt_simple(const muggle_log_msg_t *msg, char *buf, size_t bufsize)
 {
 	const char *level = muggle_log_level_to_str(msg->level);
 
@@ -40,11 +40,9 @@ static int muggle_log_fmt_default(const muggle_log_msg_t *msg, char *buf, size_t
 	}
 
 	return (int)snprintf(buf, bufsize,
-		"%s|%s:%u|%llu.%09u|%llu - %s",
+		"%s|%s:%u - %s\n",
 		level,
 		filename, (unsigned int)msg->src_loc.line,
-		(unsigned long long)msg->ts.tv_sec, (unsigned int)msg->ts.tv_nsec,
-		(unsigned long long)msg->tid,
 		payload);
 }
 
@@ -57,7 +55,7 @@ static int muggle_log_fmt_default(const muggle_log_msg_t *msg, char *buf, size_t
  *
  * @return the len of formated message, negative represent failed
  */
-static int muggle_log_fmt_iso8601(const muggle_log_msg_t *msg, char *buf, size_t bufsize)
+static int muggle_log_fmt_complicated(const muggle_log_msg_t *msg, char *buf, size_t bufsize)
 {
 	const char *level = muggle_log_level_to_str(msg->level);
 
@@ -74,12 +72,13 @@ static int muggle_log_fmt_iso8601(const muggle_log_msg_t *msg, char *buf, size_t
 	}
 
 	return (int)snprintf(buf, bufsize,
-		"%s|%s:%u|%d-%02d-%02dT%02d:%02d:%02d.%03d|%llu - %s",
+		"%s|%d-%02d-%02dT%02d:%02d:%02d.%03d|%s:%u|%s|%llu - %s\n",
 		level,
-		filename, (unsigned int)msg->src_loc.line,
 		(int)t.tm_year+1900, (int)t.tm_mon+1, (int)t.tm_mday,
 		(int)t.tm_hour, (int)t.tm_min, (int)t.tm_sec,
 		(int)msg->ts.tv_nsec / 1000000,
+		filename, (unsigned int)msg->src_loc.line,
+		msg->src_loc.func,
 		(unsigned long long)msg->tid,
 		payload);
 }
@@ -91,20 +90,20 @@ void init_fmt(muggle_log_fmt_t *p_fmt, int hint, func_muggle_log_fmt func)
 	p_fmt->fmt_func = func;
 }
 
-muggle_log_fmt_t* muggle_log_fmt_get_default()
+muggle_log_fmt_t* muggle_log_fmt_get_simple()
 {
 	static muggle_log_fmt_t fmt = {
-		MUGGLE_LOG_FMT_ALL,
-		muggle_log_fmt_default
+		MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_FUNC,
+		muggle_log_fmt_simple
 	};
 	return &fmt;
 }
 
-muggle_log_fmt_t* muggle_log_fmt_get_iso8601()
+muggle_log_fmt_t* muggle_log_fmt_get_complicated()
 {
 	static muggle_log_fmt_t fmt = {
 		MUGGLE_LOG_FMT_ALL,
-		muggle_log_fmt_iso8601
+		muggle_log_fmt_complicated
 	};
 	return &fmt;
 }

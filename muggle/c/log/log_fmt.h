@@ -67,15 +67,15 @@ void init_fmt(muggle_log_fmt_t *p_fmt, int hint, func_muggle_log_fmt func);
  * @return muggle log formatter
  */
 MUGGLE_C_EXPORT
-muggle_log_fmt_t* muggle_log_fmt_get_default();
+muggle_log_fmt_t* muggle_log_fmt_get_simple();
 
 /**
- * @brief get muggle log formatter with iso8601 timestamp
+ * @brief get muggle log formatter with level, loc info, iso8601 timestamp and thread id
  *
  * @return muggle log formatter
  */
 MUGGLE_C_EXPORT
-muggle_log_fmt_t* muggle_log_fmt_get_iso8601();
+muggle_log_fmt_t* muggle_log_fmt_get_complicated();
 
 EXTERN_C_END
 

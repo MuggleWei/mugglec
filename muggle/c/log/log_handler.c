@@ -35,7 +35,7 @@ void muggle_log_handler_init_default(muggle_log_handler_t *handler)
 {
 	memset(handler, 0, sizeof(*handler));
 
-	muggle_log_fmt_t *fmt = muggle_log_fmt_get_default();
+	muggle_log_fmt_t *fmt = muggle_log_fmt_get_simple();
 	muggle_log_handler_set_fmt(handler, fmt);
 
 	muggle_log_handler_set_level(handler, MUGGLE_LOG_LEVEL_INFO);
