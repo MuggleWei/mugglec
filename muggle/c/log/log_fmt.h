@@ -12,44 +12,70 @@
 #define MUGGLE_C_LOG_FMT_H_
 
 #include "muggle/c/base/macro.h"
-#include "muggle/c/base/thread.h"
+#include "muggle/c/log/log_msg.h"
 
 EXTERN_C_BEGIN
 
 
+/**
+ * @brief log formatter arguments
+ */
 enum
 {
-	MUGGLE_LOG_FMT_LEVEL = 0x01,  //!< show log level in log
-	MUGGLE_LOG_FMT_FILE = 0x02,   //!< show file name in log
-	MUGGLE_LOG_FMT_FUNC = 0x04,   //!< show function name in log
-	MUGGLE_LOG_FMT_TIME = 0x08,   //!< show print time in log
-	MUGGLE_LOG_FMT_THREAD = 0x10, //!< show thread id in log
+	MUGGLE_LOG_FMT_LEVEL  = 1 << 0,  //!< show log level in log
+	MUGGLE_LOG_FMT_FILE   = 1 << 1,  //!< show file name in log
+	MUGGLE_LOG_FMT_FUNC   = 1 << 2,  //!< show function name in log
+	MUGGLE_LOG_FMT_TIME   = 1 << 3,  //!< show print time in log
+	MUGGLE_LOG_FMT_THREAD = 1 << 4,  //!< show thread id in log
+
+	MUGGLE_LOG_FMT_ALL =
+		MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE |
+		MUGGLE_LOG_FMT_FUNC | MUGGLE_LOG_FMT_TIME |
+		MUGGLE_LOG_FMT_THREAD,
 };
 
-typedef struct muggle_log_fmt_arg_tag
+/**
+ * @brief prototype of log format function
+ *
+ * @param msg      log message
+ * @param buf      the formated message output buffer
+ * @param bufsize  the size of buf
+ *
+ * @return the len of formated message, negative represent failed
+ */
+typedef int (*func_muggle_log_fmt)(const muggle_log_msg_t *msg, char *buf, size_t bufsize);
+
+typedef struct muggle_log_fmt
 {
-	int              level; //!< log level
-	unsigned int     line;  //!< line in file
-	const char       *file; //!< file name
-	const char       *func; //!< function name
-	muggle_thread_id tid;   //!< thread id
-}muggle_log_fmt_arg_t;
+	int fmt_hint;                  //!< formatter hint, bitwise or of MUGGLE_LOG_FMT_*
+	func_muggle_log_fmt fmt_func;  //!< formatter callback function
+}muggle_log_fmt_t;
 
 /**
- * @brief generate formated message
+ * @brief initialize muggle log formatter
  *
- * @param fmt_flag format flag
- * @param arg      format arguments
- * @param msg      original message
- * @param buf      the formated message output buffer
- * @param size     the size of buf
- *
- * @return  the len of formated message, negative represent failed
+ * @param p_fmt  muggle log formatter pointer
+ * @param hint   formatter hint 
+ * @param func   formatter callback function
  */
 MUGGLE_C_EXPORT
-int muggle_log_fmt_gen(
-	int fmt_flag, muggle_log_fmt_arg_t *arg,
-	const char *msg, char *buf, int size);
+void init_fmt(muggle_log_fmt_t *p_fmt, int hint, func_muggle_log_fmt func);
+
+/**
+ * @brief get default muggle log formatter
+ *
+ * @return muggle log formatter
+ */
+MUGGLE_C_EXPORT
+muggle_log_fmt_t* muggle_log_fmt_get_default();
+
+/**
+ * @brief get muggle log formatter with iso8601 timestamp
+ *
+ * @return muggle log formatter
+ */
+MUGGLE_C_EXPORT
+muggle_log_fmt_t* muggle_log_fmt_get_iso8601();
 
 EXTERN_C_END
 

@@ -58,15 +58,12 @@
 
 // log
 #include "muggle/c/log/log_level.h"
+#include "muggle/c/log/log_msg.h"
 #include "muggle/c/log/log_fmt.h"
-#include "muggle/c/log/log_handle.h"
-#include "muggle/c/log/log_handle_console.h"
-#include "muggle/c/log/log_handle_file.h"
-#include "muggle/c/log/log_handle_rotating_file.h"
-#include "muggle/c/log/log_handle_win_debug.h"
-#include "muggle/c/log/log_category.h"
+#include "muggle/c/log/log_handler.h"
+#include "muggle/c/log/log_handler_console.h"
+#include "muggle/c/log/log_logger.h"
 #include "muggle/c/log/log.h"
-#include "muggle/c/log/log_utils.h"
 
 // net
 #include "muggle/c/net/socket.h"

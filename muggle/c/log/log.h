@@ -12,30 +12,27 @@
 #define MUGGLE_C_LOG_H_
 
 #include "muggle/c/base/macro.h"
-#include "muggle/c/base/thread.h"
+#include "muggle/c/log/log_logger.h"
 #include "muggle/c/log/log_level.h"
-#include "muggle/c/log/log_fmt.h"
-#include "muggle/c/log/log_handle.h"
-#include "muggle/c/log/log_category.h"
 
 EXTERN_C_BEGIN
 
 #define MUGGLE_LOG_DEFAULT(level, format, ...) \
 do \
 { \
-	muggle_log_fmt_arg_t mlf_arg##__LINE__ = { \
-		level, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id() \
+	muggle_log_src_loc_t loc_arg##__LINE__ = { \
+		__FILE__, __LINE__, __FUNCTION__ \
 	}; \
-	muggle_log_function(&g_log_default_category, &mlf_arg##__LINE__, format, ##__VA_ARGS__); \
+	muggle_log_function(muggle_logger_default(), level, &loc_arg##__LINE__, format, ##__VA_ARGS__); \
 } while (0)
 
-#define MUGGLE_LOG(p_log_category, level, format, ...) \
+#define MUGGLE_LOG(logger, level, format, ...) \
 do \
 { \
-	muggle_log_fmt_arg_t mlf_arg##__LINE__ = { \
-		level, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id() \
+	muggle_log_src_loc_t loc_arg##__LINE__ = { \
+		__FILE__, __LINE__, __FUNCTION__ \
 	}; \
-	muggle_log_function(p_log_category, &mlf_arg##__LINE__, format, ##__VA_ARGS__); \
+	muggle_log_function(logger, level, &loc_arg##__LINE__, format, ##__VA_ARGS__); \
 } while (0)
 
 #define MUGGLE_LOG_TRACE(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_TRACE, format, ##__VA_ARGS__)
@@ -65,10 +62,10 @@ do \
 { \
 	if (!(x)) \
 	{ \
-		muggle_log_fmt_arg_t mlf_arg##__LINE__ = { \
-			MUGGLE_LOG_LEVEL_FATAL, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id() \
+		muggle_log_src_loc_t loc_arg##__LINE__ = { \
+			__FILE__, __LINE__, __FUNCTION__ \
 		}; \
-		muggle_log_function(&g_log_default_category, &mlf_arg##__LINE__, "Assertion: "#x); \
+		muggle_log_function(muggle_logger_default(), MUGGLE_LOG_LEVEL_FATAL, &loc_arg##__LINE__, "Assertion: "#x); \
 	} \
 } while (0)
 
@@ -77,10 +74,10 @@ do \
 { \
 	if (!(x)) \
 	{ \
-		muggle_log_fmt_arg_t mlf_arg##__LINE__ = { \
-			MUGGLE_LOG_LEVEL_FATAL, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id() \
+		muggle_log_src_loc_t loc_arg##__LINE__ = { \
+			__FILE__, __LINE__, __FUNCTION__ \
 		}; \
-		muggle_log_function(&g_log_default_category, &mlf_arg##__LINE__, "Assertion: "#x format, ##__VA_ARGS__); \
+		muggle_log_function(muggle_logger_default(), MUGGLE_LOG_LEVEL_FATAL, &loc_arg##__LINE__, "Assertion: "#x format, ##__VA_ARGS__); \
 	} \
 } while (0)
 
@@ -90,41 +87,47 @@ do \
 #define MUGGLE_DEBUG_LOG_WARNING(format, ...) MUGGLE_LOG_WARNING(format, ##__VA_ARGS__)
 #define MUGGLE_DEBUG_LOG_ERROR(format, ...) MUGGLE_LOG_ERROR(format, ##__VA_ARGS__)
 #define MUGGLE_DEBUG_LOG_FATAL(format, ...) MUGGLE_LOG_FATAL(format, ##__VA_ARGS__)
-#define MUGGLE_DEBUG_LOG(ptr_log_handle, level, format, ...) MUGGLE_LOG(ptr_log_handle, level, format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_LOG(logger, level, format, ...) MUGGLE_LOG(logger, level, format, ##__VA_ARGS__)
 
 #endif
 
-MUGGLE_C_EXPORT
-extern muggle_log_category_t g_log_default_category;
-
 /**
- * @brief add log handle to default log category
+ * @brief get default logger
  *
- * @param handle log handle pointer
+ * @return logger
  */
 MUGGLE_C_EXPORT
-void muggle_log_add_handle(muggle_log_handle_t *handle);
-
-/**
- * @brief destroy default log category
- */
-MUGGLE_C_EXPORT
-void muggle_log_destroy();
+muggle_logger_t* muggle_logger_default();
 
 /**
  * @brief output log, don't use this function immediately, use MUGGLE_LOG macro instead
  *
- * @param category the category need to output
- * @param arg      log attribute information
+ * @param logger   logger pointer
+ * @param level    log level
+ * @param src_loc  source location info
  * @param format   format string
  * @param ...      input arguments for format string
  */
 MUGGLE_C_EXPORT
 void muggle_log_function(
-	muggle_log_category_t *category,
-	muggle_log_fmt_arg_t *arg,
+	muggle_logger_t *logger,
+	int level,
+	muggle_log_src_loc_t *src_loc,
 	const char *format,
 	...);
+
+/**
+ * @brief simple initialize log with console and file_rotate category
+ *
+ * @param level_console       console output level
+ * @param level_file_rotating file rotating output level
+ *
+ * @return 
+ *     0 - success
+ *     otherwise - failed
+ */
+MUGGLE_C_EXPORT
+int muggle_log_simple_init(int level_console, int level_file_rotating);
 
 EXTERN_C_END
 

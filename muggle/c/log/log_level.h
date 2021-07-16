@@ -28,6 +28,13 @@ enum
 	MUGGLE_LOG_LEVEL_MAX = 6,
 };
 
+/**
+ * @brief get log level string representation
+ *
+ * @param log_level  log level
+ *
+ * @return 
+ */
 MUGGLE_C_EXPORT
 const char* muggle_log_level_to_str(int log_level);
 
