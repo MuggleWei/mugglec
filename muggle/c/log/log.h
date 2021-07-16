@@ -39,6 +39,7 @@ do \
 } while (0)
 
 #define MUGGLE_LOG_TRACE(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_TRACE, format, ##__VA_ARGS__)
+#define MUGGLE_LOG_DEBUG(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_DEBUG, format, ##__VA_ARGS__)
 #define MUGGLE_LOG_INFO(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_INFO, format, ##__VA_ARGS__)
 #define MUGGLE_LOG_WARNING(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_WARNING, format, ##__VA_ARGS__)
 #define MUGGLE_LOG_ERROR(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_ERROR, format, ##__VA_ARGS__)
@@ -49,11 +50,12 @@ do \
 
 #define MUGGLE_ASSERT(x)
 #define MUGGLE_ASSERT_MSG(x, format, ...)
-#define MUGGLE_DEBUG_TRACE(format, ...)
-#define MUGGLE_DEBUG_INFO(format, ...)
-#define MUGGLE_DEBUG_WARNING(format, ...)
-#define MUGGLE_DEBUG_ERROR(format, ...)
-#define MUGGLE_DEBUG_FATAL(format, ...)
+#define MUGGLE_DEBUG_LOG_TRACE(format, ...)
+#define MUGGLE_DEBUG_LOG_DEBUG(format, ...)
+#define MUGGLE_DEBUG_LOG_INFO(format, ...)
+#define MUGGLE_DEBUG_LOG_WARNING(format, ...)
+#define MUGGLE_DEBUG_LOG_ERROR(format, ...)
+#define MUGGLE_DEBUG_LOG_FATAL(format, ...)
 #define MUGGLE_DEBUG_LOG(ptr_log_handle, level, format, ...)
 
 #else
@@ -82,11 +84,12 @@ do \
 	} \
 } while (0)
 
-#define MUGGLE_DEBUG_TRACE(format, ...) MUGGLE_LOG_TRACE(format, ##__VA_ARGS__)
-#define MUGGLE_DEBUG_INFO(format, ...) MUGGLE_LOG_INFO(format, ##__VA_ARGS__)
-#define MUGGLE_DEBUG_WARNING(format, ...) MUGGLE_LOG_WARNING(format, ##__VA_ARGS__)
-#define MUGGLE_DEBUG_ERROR(format, ...) MUGGLE_LOG_ERROR(format, ##__VA_ARGS__)
-#define MUGGLE_DEBUG_FATAL(format, ...) MUGGLE_LOG_FATAL(format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_LOG_TRACE(format, ...) MUGGLE_LOG_TRACE(format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_LOG_DEBUG(format, ...) MUGGLE_LOG_DEBUG(format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_LOG_INFO(format, ...) MUGGLE_LOG_INFO(format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_LOG_WARNING(format, ...) MUGGLE_LOG_WARNING(format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_LOG_ERROR(format, ...) MUGGLE_LOG_ERROR(format, ##__VA_ARGS__)
+#define MUGGLE_DEBUG_LOG_FATAL(format, ...) MUGGLE_LOG_FATAL(format, ##__VA_ARGS__)
 #define MUGGLE_DEBUG_LOG(ptr_log_handle, level, format, ...) MUGGLE_LOG(ptr_log_handle, level, format, ##__VA_ARGS__)
 
 #endif

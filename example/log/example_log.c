@@ -12,6 +12,8 @@ void example_log_handle_console(int write_type, int fmt_flag, int level)
 	muggle_log_handle_write(&handle, &arg, "console logging");
 	arg.level = MUGGLE_LOG_LEVEL_TRACE;
 	muggle_log_handle_write(&handle, &arg, "message trace");
+	arg.level = MUGGLE_LOG_LEVEL_DEBUG;
+	muggle_log_handle_write(&handle, &arg, "message debug");
 	arg.level = MUGGLE_LOG_LEVEL_INFO;
 	muggle_log_handle_write(&handle, &arg, "message info");
 	arg.level = MUGGLE_LOG_LEVEL_WARNING;
@@ -37,6 +39,8 @@ void example_log_handle_file(int write_type, int fmt_flag, int level, const char
 		MUGGLE_LOG_LEVEL_TRACE, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id()
 	};
 	muggle_log_handle_write(&handle, &arg, "message trace");
+	arg.level = MUGGLE_LOG_LEVEL_DEBUG;
+	muggle_log_handle_write(&handle, &arg, "message debug");
 	arg.level = MUGGLE_LOG_LEVEL_INFO;
 	muggle_log_handle_write(&handle, &arg, "message info");
 	arg.level = MUGGLE_LOG_LEVEL_WARNING;
@@ -72,6 +76,8 @@ void example_log_handle_rotating_file(int write_type, int fmt_flag, int level, c
 		MUGGLE_LOG_LEVEL_TRACE, __LINE__, __FILE__, __FUNCTION__, muggle_thread_current_id()
 	};
 	muggle_log_handle_write(&handle, &arg, "message trace");
+	arg.level = MUGGLE_LOG_LEVEL_DEBUG;
+	muggle_log_handle_write(&handle, &arg, "message debug");
 	arg.level = MUGGLE_LOG_LEVEL_INFO;
 	muggle_log_handle_write(&handle, &arg, "message info");
 	arg.level = MUGGLE_LOG_LEVEL_WARNING;
@@ -102,6 +108,8 @@ void example_log_handle_win_debug(int write_type, int fmt_flag, int level)
 	muggle_log_handle_write(&handle, &arg, "win debug logging");
 	arg.level = MUGGLE_LOG_LEVEL_TRACE;
 	muggle_log_handle_write(&handle, &arg, "message trace");
+	arg.level = MUGGLE_LOG_LEVEL_DEBUG;
+	muggle_log_handle_write(&handle, &arg, "message debug");
 	arg.level = MUGGLE_LOG_LEVEL_INFO;
 	muggle_log_handle_write(&handle, &arg, "message info");
 	arg.level = MUGGLE_LOG_LEVEL_WARNING;
@@ -143,6 +151,8 @@ void example_log_category(int write_type, int fmt_flag, int level)
 	muggle_log_category_write(&category, &arg, "category");
 	arg.level = MUGGLE_LOG_LEVEL_TRACE;
 	muggle_log_category_write(&category, &arg, "category message trace");
+	arg.level = MUGGLE_LOG_LEVEL_DEBUG;
+	muggle_log_category_write(&category, &arg, "category message debug");
 	arg.level = MUGGLE_LOG_LEVEL_INFO;
 	muggle_log_category_write(&category, &arg, "category message info");
 	arg.level = MUGGLE_LOG_LEVEL_WARNING;
@@ -217,12 +227,14 @@ void example_default()
 		muggle_thread_create(&threads[i], example_thread_output_idx, (void*)(intptr_t)i);
 	}
 
-	MUGGLE_DEBUG_TRACE("debug trace");
-	MUGGLE_DEBUG_INFO("debug info");
-	MUGGLE_DEBUG_WARNING("debug warning");
+	MUGGLE_DEBUG_LOG_TRACE("debug log trace");
+	MUGGLE_DEBUG_LOG_DEBUG("debug log debug");
+	MUGGLE_DEBUG_LOG_INFO("debug log info");
+	MUGGLE_DEBUG_LOG_WARNING("debug log warning");
 	MUGGLE_ASSERT_MSG(1 == 1, "assert message");
 
 	MUGGLE_LOG_TRACE("trace");
+	MUGGLE_LOG_DEBUG("debug");
 	MUGGLE_LOG_INFO("info");
 	MUGGLE_LOG_WARNING("warning");
 	MUGGLE_LOG_ERROR("error");
