@@ -68,11 +68,11 @@ static int muggle_log_console_handler_write(
 		// change text color
 		fflush(fp);
 
-		if (arg->level >= MUGGLE_LOG_LEVEL_ERROR)
+		if (msg->level >= MUGGLE_LOG_LEVEL_ERROR)
 		{
 			SetConsoleTextAttribute(stdout_handle, FOREGROUND_RED | FOREGROUND_INTENSITY);
 		}
-		else if (arg->level >= MUGGLE_LOG_LEVEL_WARNING)
+		else if (msg->level >= MUGGLE_LOG_LEVEL_WARNING)
 		{
 			SetConsoleTextAttribute(stdout_handle,
 				FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
