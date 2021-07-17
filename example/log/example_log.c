@@ -1,6 +1,7 @@
 #include "muggle/c/log/log.h"
 #include "muggle/c/log/log_console_handler.h"
 #include "muggle/c/log/log_fmt.h"
+#include "muggle/c/log/log_handler.h"
 #include "muggle/c/log/log_msg.h"
 #include "muggle/c/muggle_c.h"
 
@@ -85,6 +86,8 @@ void example_log_console_handler()
 
 		msg.level = MUGGLE_LOG_LEVEL_WARNING;
 		handler->write(handler, &msg);
+
+		handler->destroy(handler);
 	}
 
 	{
@@ -96,6 +99,8 @@ void example_log_console_handler()
 
 		msg.level = MUGGLE_LOG_LEVEL_WARNING;
 		handler->write(handler, &msg);
+
+		handler->destroy(handler);
 	}
 
 	{
@@ -117,6 +122,67 @@ void example_log_console_handler()
 		handler->write(handler, &msg);
 		msg.level = MUGGLE_LOG_LEVEL_ERROR;
 		handler->write(handler, &msg);
+
+		handler->destroy(handler);
+	}
+}
+
+void example_log_file_handler()
+{
+	muggle_log_handler_t *handler = NULL;
+
+	{
+		GEN_TMP_LOG_MSG(msg, "example log file handler, write into log/example_log.log");
+
+		muggle_log_file_handler_t file_handler;
+		muggle_log_file_handler_init(&file_handler, "log/example_log.log", "w");
+		handler = (muggle_log_handler_t*)&file_handler;
+		muggle_log_handler_set_level((muggle_log_handler_t*)&file_handler, MUGGLE_LOG_LEVEL_DEBUG);
+
+		msg.level = MUGGLE_LOG_LEVEL_INFO;
+		handler->write(handler, &msg);
+		msg.level = MUGGLE_LOG_LEVEL_WARNING;
+		handler->write(handler, &msg);
+		msg.level = MUGGLE_LOG_LEVEL_ERROR;
+		handler->write(handler, &msg);
+
+		handler->destroy(handler);
+	}
+
+	{
+		GEN_TMP_LOG_MSG(msg, "example log file handler, write into ./example_log.log");
+
+		muggle_log_file_handler_t file_handler;
+		muggle_log_file_handler_init(&file_handler, "./example_log.log", "w");
+		handler = (muggle_log_handler_t*)&file_handler;
+		muggle_log_handler_set_level((muggle_log_handler_t*)&file_handler, MUGGLE_LOG_LEVEL_DEBUG);
+
+		msg.level = MUGGLE_LOG_LEVEL_INFO;
+		handler->write(handler, &msg);
+		msg.level = MUGGLE_LOG_LEVEL_WARNING;
+		handler->write(handler, &msg);
+		msg.level = MUGGLE_LOG_LEVEL_ERROR;
+		handler->write(handler, &msg);
+
+		handler->destroy(handler);
+	}
+
+	{
+		GEN_TMP_LOG_MSG(msg, "example log file handler, append into log/example_log.log");
+
+		muggle_log_file_handler_t file_handler;
+		muggle_log_file_handler_init(&file_handler, "log/example_log.log", "a");
+		handler = (muggle_log_handler_t*)&file_handler;
+		muggle_log_handler_set_level((muggle_log_handler_t*)&file_handler, MUGGLE_LOG_LEVEL_DEBUG);
+
+		msg.level = MUGGLE_LOG_LEVEL_INFO;
+		handler->write(handler, &msg);
+		msg.level = MUGGLE_LOG_LEVEL_WARNING;
+		handler->write(handler, &msg);
+		msg.level = MUGGLE_LOG_LEVEL_ERROR;
+		handler->write(handler, &msg);
+
+		handler->destroy(handler);
 	}
 }
 
@@ -132,11 +198,12 @@ void example_simple_log()
 	MUGGLE_DEBUG_LOG_WARNING("debug warning, see this line only when debug");
 	MUGGLE_DEBUG_LOG_ERROR("debug error, see this line only when debug");
 
-	MUGGLE_LOG_TRACE("trace");
-	MUGGLE_LOG_DEBUG("debug");
-	MUGGLE_LOG_INFO("info");
-	MUGGLE_LOG_WARNING("warning");
-	MUGGLE_LOG_ERROR("error");
+	const char *word = "log";
+	MUGGLE_LOG_TRACE("%s trace", word);
+	MUGGLE_LOG_DEBUG("%s debug", word);
+	MUGGLE_LOG_INFO("%s info", word);
+	MUGGLE_LOG_WARNING("%s warning", word);
+	MUGGLE_LOG_ERROR("%s error", word);
 
 	MUGGLE_LOG_ERROR("fatal level will print stack and core dumped when debug");
 	MUGGLE_LOG_FATAL("fatal");
@@ -149,6 +216,7 @@ int main()
 	example_customize_log_fmt();
 
 	example_log_console_handler();
+	example_log_file_handler();
 
 	example_simple_log();
 

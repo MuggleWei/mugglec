@@ -95,7 +95,10 @@ do \
 #endif
 
 /**
- * @brief simple initialize log with console and file_rotate category
+ * @brief simple initialize log
+ *
+ * invoke this function, will initialize default sync logger
+ * and add console handler and file rotate handler
  *
  * @param level_console       console output level
  * @param level_file_rotating file rotating output level

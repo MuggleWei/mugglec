@@ -13,6 +13,7 @@
 
 #include "muggle/c/base/macro.h"
 #include <stdbool.h>
+#include "muggle/c/sync/mutex.h"
 #include "muggle/c/log/log_msg.h"
 #include "muggle/c/log/log_fmt.h"
 
@@ -38,6 +39,7 @@ typedef struct muggle_log_handler
 	int              level;
 	muggle_log_fmt_t *fmt;
 	bool             need_mutex;
+	muggle_mutex_t   mtx;          //!< mutex
 }muggle_log_handler_t;
 
 /**
@@ -88,12 +90,36 @@ MUGGLE_C_EXPORT
 bool muggle_log_handler_should_write(muggle_log_handler_t *handler, int level);
 
 /**
+ * @brief set handler need mutex or not
+ *
+ * @param flag need mutex
+ */
+MUGGLE_C_EXPORT
+void muggle_log_handler_set_mutex(muggle_log_handler_t *handler, bool flag);
+
+/**
  * @brief intialize base log handler
  *
  * @param handler  log handler pointer
+ *
+ * @return
+ *     - on success, return 0
+ *     - otherwise return err code in muggle/c/base/err.h
  */
 MUGGLE_C_EXPORT
-void muggle_log_handler_init_default(muggle_log_handler_t *handler);
+int muggle_log_handler_init_default(muggle_log_handler_t *handler);
+
+/**
+ * @brief destroy base log handler
+ *
+ * @param base_handler log handler pointer
+ *
+ * @return 
+ *     - on success, return 0
+ *     - otherwise return err code in muggle/c/base/err.h
+ */
+MUGGLE_C_EXPORT
+int muggle_log_handler_destroy_default(muggle_log_handler_t *handler);
 
 EXTERN_C_END
 

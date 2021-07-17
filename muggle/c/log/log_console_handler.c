@@ -42,17 +42,17 @@ static int muggle_log_console_handler_write(
 		return -2;
 	}
 
-	muggle_log_console_handler_t *handler = (muggle_log_console_handler_t*)base_handler;
-
 	FILE *fp = stdout;
 	if (msg->level >= MUGGLE_LOG_LEVEL_WARNING)
 	{
 		fp = stderr;
 	}
 
-	if (handler->handler.need_mutex)
+	muggle_log_console_handler_t *handler = (muggle_log_console_handler_t*)base_handler;
+
+	if (base_handler->need_mutex)
 	{
-		muggle_mutex_lock(&handler->mtx);
+		muggle_mutex_lock(&base_handler->mtx);
 	}
 
 	if (handler->enable_color && msg->level >= MUGGLE_LOG_LEVEL_WARNING)
@@ -106,9 +106,9 @@ static int muggle_log_console_handler_write(
 		fflush(fp);
 	}
 
-	if (handler->handler.need_mutex)
+	if (base_handler->need_mutex)
 	{
-		muggle_mutex_unlock(&handler->mtx);
+		muggle_mutex_unlock(&base_handler->mtx);
 	}
 
 	return ret;
@@ -126,25 +126,22 @@ static int muggle_log_console_handler_write(
 static int muggle_log_console_handler_destroy(
 	muggle_log_handler_t *base_handler)
 {
-	muggle_log_console_handler_t *handler = (muggle_log_console_handler_t*)base_handler;
-	muggle_mutex_destroy(&handler->mtx);
-
-	return MUGGLE_OK;
+	return muggle_log_handler_destroy_default(base_handler);
 }
 
 int muggle_log_console_handler_init(
 	muggle_log_console_handler_t *handler,
 	int enable_color)
 {
-	muggle_log_handler_init_default((muggle_log_handler_t*)handler);
-	handler->handler.write = muggle_log_console_handler_write;
-	handler->handler.destroy = muggle_log_console_handler_destroy;
-
-	int ret = muggle_mutex_init(&handler->mtx);
-	if (ret != MUGGLE_OK)
+	int ret = muggle_log_handler_init_default((muggle_log_handler_t*)handler);
+	if (ret != 0)
 	{
 		return ret;
 	}
+
+	handler->handler.write = muggle_log_console_handler_write;
+	handler->handler.destroy = muggle_log_console_handler_destroy;
+
 	handler->enable_color = enable_color;
 
 	return MUGGLE_OK;

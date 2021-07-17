@@ -12,8 +12,6 @@
 #define MUGGLE_C_LOG_CONSOLE_HANDLER_H_
 
 #include "muggle/c/base/macro.h"
-#include "muggle/c/sync/mutex.h"
-#include "muggle/c/log/log_handler.h"
 #include "muggle/c/log/log_handler.h"
 
 EXTERN_C_BEGIN
@@ -24,7 +22,6 @@ EXTERN_C_BEGIN
 typedef struct muggle_log_console_handler
 {
 	muggle_log_handler_t handler;      //!< base log handler
-	muggle_mutex_t       mtx;          //!< mutex
 	int                  enable_color; //!< enable color
 }muggle_log_console_handler_t;
 
