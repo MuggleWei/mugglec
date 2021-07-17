@@ -43,7 +43,6 @@ static int muggle_log_file_handler_write(
 		fflush(handler->fp);
 	}
 
-
 	if (base_handler->need_mutex)
 	{
 		muggle_mutex_unlock(&base_handler->mtx);

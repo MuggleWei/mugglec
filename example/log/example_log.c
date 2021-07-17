@@ -1,8 +1,3 @@
-#include "muggle/c/log/log.h"
-#include "muggle/c/log/log_console_handler.h"
-#include "muggle/c/log/log_fmt.h"
-#include "muggle/c/log/log_handler.h"
-#include "muggle/c/log/log_msg.h"
 #include "muggle/c/muggle_c.h"
 
 #define GEN_TMP_LOG_MSG(msg, s) \
@@ -186,6 +181,28 @@ void example_log_file_handler()
 	}
 }
 
+void example_log_file_rotate_handler()
+{
+	muggle_log_handler_t *handler = NULL;
+
+	{
+		GEN_TMP_LOG_MSG(msg, "example log file handler, write into log/example_log.log");
+
+		muggle_log_file_rotate_handler_t file_rot_handler;
+		muggle_log_file_rotate_handler_init(&file_rot_handler, "log/example_rot.log", 128, 5);
+		handler = (muggle_log_handler_t*)&file_rot_handler;
+		muggle_log_handler_set_level((muggle_log_handler_t*)&file_rot_handler, MUGGLE_LOG_LEVEL_DEBUG);
+
+		msg.level = MUGGLE_LOG_LEVEL_INFO;
+		for (int i = 0; i < 16; i++)
+		{
+			handler->write(handler, &msg);
+		}
+
+		handler->destroy(handler);
+	}
+}
+
 void example_simple_log()
 {
 	muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_TRACE);
@@ -217,6 +234,7 @@ int main()
 
 	example_log_console_handler();
 	example_log_file_handler();
+	example_log_file_rotate_handler();
 
 	example_simple_log();
 

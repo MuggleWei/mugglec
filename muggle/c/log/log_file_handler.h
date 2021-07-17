@@ -34,6 +34,8 @@ typedef struct muggle_log_file_handler
  * @param mode      file open mode
  *
  * @return 
+ *     - success returns 0
+ *     - otherwise return err code in muggle/c/base/err.h
  */
 MUGGLE_C_EXPORT
 int muggle_log_file_handler_init(

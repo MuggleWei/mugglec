@@ -32,6 +32,8 @@ typedef struct muggle_log_console_handler
  * @param enable_color  enable console log handler color
  *
  * @return 
+ *     - success returns 0
+ *     - otherwise return err code in muggle/c/base/err.h
  */
 MUGGLE_C_EXPORT
 int muggle_log_console_handler_init(
