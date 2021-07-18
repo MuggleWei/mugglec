@@ -1,3 +1,4 @@
+#include "muggle/c/base/sleep.h"
 #include "muggle/c/muggle_c.h"
 
 #define GEN_TMP_LOG_MSG(msg, s) \
@@ -186,7 +187,7 @@ void example_log_file_rotate_handler()
 	muggle_log_handler_t *handler = NULL;
 
 	{
-		GEN_TMP_LOG_MSG(msg, "example log file handler, write into log/example_log.log");
+		GEN_TMP_LOG_MSG(msg, "example log file rotate handler");
 
 		muggle_log_file_rotate_handler_t file_rot_handler;
 		muggle_log_file_rotate_handler_init(&file_rot_handler, "log/example_rot.log", 128, 5);
@@ -197,6 +198,30 @@ void example_log_file_rotate_handler()
 		for (int i = 0; i < 16; i++)
 		{
 			handler->write(handler, &msg);
+		}
+
+		handler->destroy(handler);
+	}
+}
+
+void example_log_file_time_rot_handler()
+{
+	muggle_log_handler_t *handler = NULL;
+
+	{
+		GEN_TMP_LOG_MSG(msg, "example log file time rotate handler");
+
+		muggle_log_file_time_rot_handler_t file_time_rot_handler;
+		muggle_log_file_time_rot_handler_init(&file_time_rot_handler, "log/example_time_rot.log", MUGGLE_LOG_TIME_ROTATE_UNIT_HOUR, 2);
+		handler = (muggle_log_handler_t*)&file_time_rot_handler;
+		muggle_log_handler_set_level((muggle_log_handler_t*)&file_time_rot_handler, MUGGLE_LOG_LEVEL_DEBUG);
+
+		msg.level = MUGGLE_LOG_LEVEL_INFO;
+		timespec_get(&msg.ts, TIME_UTC);
+		for (int i = 0; i < 10; i++)
+		{
+			handler->write(handler, &msg);
+			msg.ts.tv_sec += 60 * 60;
 		}
 
 		handler->destroy(handler);
@@ -235,6 +260,7 @@ int main()
 	example_log_console_handler();
 	example_log_file_handler();
 	example_log_file_rotate_handler();
+	example_log_file_time_rot_handler();
 
 	example_simple_log();
 

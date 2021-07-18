@@ -64,6 +64,7 @@
 #include "muggle/c/log/log_console_handler.h"
 #include "muggle/c/log/log_file_handler.h"
 #include "muggle/c/log/log_file_rotate_handler.h"
+#include "muggle/c/log/log_file_time_rot_handler.h"
 #include "muggle/c/log/log_logger.h"
 #include "muggle/c/log/log_sync_logger.h"
 #include "muggle/c/log/log.h"

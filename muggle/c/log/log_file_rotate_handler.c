@@ -92,7 +92,10 @@ static int muggle_log_file_rotate_handler_write(
 		handler->offset += (long)ret;
 		if (handler->offset >= handler->max_bytes)
 		{
-			muggle_log_file_rotate_handler_rotate(handler);
+			if (muggle_log_file_rotate_handler_rotate(handler) != 0)
+			{
+				fprintf(stderr, "failed rotate log handler");
+			}
 		}
 	}
 

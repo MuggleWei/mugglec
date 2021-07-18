@@ -31,7 +31,7 @@ typedef struct muggle_log_file_rotate_handler
 }muggle_log_file_rotate_handler_t;
 
 /**
- * @brief initialze file rotate log handler
+ * @brief initialize file rotate log handler
  *
  * @param handler       file rotate log handler pointer
  * @param filepath      file path
