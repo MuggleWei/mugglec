@@ -4,8 +4,49 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "muggle/c/os/stacktrace.h"
-#include "log_level.h"
-#include "log_fmt.h"
+#include "muggle/c/log/log_level.h"
+#include "muggle/c/log/log_fmt.h"
+#include "muggle/c/base/err.h"
+
+int muggle_sync_logger_init(muggle_sync_logger_t *logger)
+{
+	memset(logger, 0, sizeof(*logger));
+
+	muggle_logger_t *base_logger = (muggle_logger_t*)&logger->logger;
+	base_logger->log = muggle_sync_logger_log;
+	base_logger->add_handler = muggle_sync_logger_add_handler;
+	base_logger->destroy = muggle_sync_logger_destroy;
+	base_logger->lowest_log_level = MUGGLE_LOG_LEVEL_FATAL;
+
+	return MUGGLE_OK;
+}
+
+int muggle_sync_logger_add_handler(muggle_logger_t *logger, muggle_log_handler_t *handler)
+{
+	if (logger->cnt >= (sizeof(logger->handlers) / sizeof(logger->handlers[0])))
+	{
+		return MUGGLE_ERR_BEYOND_RANGE;
+	}
+
+	logger->handlers[logger->cnt++] = handler;
+
+	if (handler->fmt)
+	{
+		logger->fmt_hint |= handler->fmt->fmt_hint;
+	}
+
+	if (handler->level < logger->lowest_log_level)
+	{
+		logger->lowest_log_level = handler->level;
+	}
+
+	return MUGGLE_OK;
+}
+
+void muggle_sync_logger_destroy(muggle_logger_t *logger)
+{
+	// do nothing
+}
 
 void muggle_sync_logger_log(
 	struct muggle_logger *logger,

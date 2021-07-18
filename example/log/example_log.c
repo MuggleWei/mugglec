@@ -1,4 +1,5 @@
 #include "muggle/c/base/sleep.h"
+#include "muggle/c/log/log_sync_logger.h"
 #include "muggle/c/muggle_c.h"
 
 #define GEN_TMP_LOG_MSG(msg, s) \
@@ -212,7 +213,7 @@ void example_log_file_time_rot_handler()
 		GEN_TMP_LOG_MSG(msg, "example log file time rotate handler");
 
 		muggle_log_file_time_rot_handler_t file_time_rot_handler;
-		muggle_log_file_time_rot_handler_init(&file_time_rot_handler, "log/example_time_rot.log", MUGGLE_LOG_TIME_ROTATE_UNIT_HOUR, 2);
+		muggle_log_file_time_rot_handler_init(&file_time_rot_handler, "log/example_time_rot.log", MUGGLE_LOG_TIME_ROTATE_UNIT_HOUR, 2, false);
 		handler = (muggle_log_handler_t*)&file_time_rot_handler;
 		muggle_log_handler_set_level((muggle_log_handler_t*)&file_time_rot_handler, MUGGLE_LOG_LEVEL_DEBUG);
 
@@ -226,6 +227,75 @@ void example_log_file_time_rot_handler()
 
 		handler->destroy(handler);
 	}
+}
+
+void example_logger_add_handler(muggle_logger_t *logger)
+{
+	// fmt
+	static muggle_log_fmt_t formatter = {
+		MUGGLE_LOG_FMT_ALL,
+		customize_log_fmt_func
+	};
+
+	// console handler
+	static muggle_log_console_handler_t console_handler;
+	muggle_log_console_handler_init(&console_handler, 1);
+	muggle_log_handler_set_fmt((muggle_log_handler_t*)&console_handler, &formatter);
+	muggle_log_handler_set_level((muggle_log_handler_t*)&console_handler,
+		MUGGLE_LOG_LEVEL_WARNING);
+
+	// file time rotate handler
+	static muggle_log_file_time_rot_handler_t time_rot_handler;
+	muggle_log_file_time_rot_handler_init(
+		&time_rot_handler, "log/example_logger.log",
+		MUGGLE_LOG_TIME_ROTATE_UNIT_DAY, 1, false);
+	muggle_log_handler_set_fmt((muggle_log_handler_t*)&time_rot_handler, &formatter);
+	muggle_log_handler_set_level((muggle_log_handler_t*)&time_rot_handler,
+		MUGGLE_LOG_LEVEL_TRACE);
+
+	// add handler
+	logger->add_handler(logger, (muggle_log_handler_t*)&console_handler);
+	logger->add_handler(logger, (muggle_log_handler_t*)&time_rot_handler);
+}
+
+void example_sync_logger()
+{
+	// logger
+	muggle_logger_t *logger = NULL;
+	muggle_sync_logger_t sync_logger;
+	muggle_sync_logger_init(&sync_logger);
+	logger = (muggle_logger_t*)&sync_logger;
+
+	example_logger_add_handler(logger);
+
+	// log
+	MUGGLE_LOG(logger, MUGGLE_LOG_LEVEL_TRACE, "example sync logger - trace");
+	MUGGLE_LOG(logger, MUGGLE_LOG_LEVEL_DEBUG, "example sync logger - debug");
+	MUGGLE_LOG(logger, MUGGLE_LOG_LEVEL_INFO, "example sync logger - info");
+	MUGGLE_LOG(logger, MUGGLE_LOG_LEVEL_WARNING, "example sync logger - warning");
+	MUGGLE_LOG(logger, MUGGLE_LOG_LEVEL_ERROR, "example sync logger - error");
+
+	logger->destroy(logger);
+}
+
+void example_async_logger()
+{
+	// logger
+	muggle_logger_t *logger = NULL;
+	muggle_async_logger_t async_logger;
+	muggle_async_logger_init(&async_logger, 4096);
+	logger = (muggle_logger_t*)&async_logger;
+
+	example_logger_add_handler(logger);
+
+	// log
+	MUGGLE_LOG(logger, MUGGLE_LOG_LEVEL_TRACE, "example async logger - trace");
+	MUGGLE_LOG(logger, MUGGLE_LOG_LEVEL_DEBUG, "example async logger - debug");
+	MUGGLE_LOG(logger, MUGGLE_LOG_LEVEL_INFO, "example async logger - info");
+	MUGGLE_LOG(logger, MUGGLE_LOG_LEVEL_WARNING, "example async logger - warning");
+	MUGGLE_LOG(logger, MUGGLE_LOG_LEVEL_ERROR, "example async logger - error");
+
+	logger->destroy(logger);
 }
 
 void example_simple_log()
@@ -246,9 +316,46 @@ void example_simple_log()
 	MUGGLE_LOG_INFO("%s info", word);
 	MUGGLE_LOG_WARNING("%s warning", word);
 	MUGGLE_LOG_ERROR("%s error", word);
+}
 
-	MUGGLE_LOG_ERROR("fatal level will print stack and core dumped when debug");
-	MUGGLE_LOG_FATAL("fatal");
+muggle_logger_t* customize_async_logger()
+{
+	static muggle_async_logger_t async_logger;
+	return (muggle_logger_t*)&async_logger;
+}
+
+#define MY_LOG(level, format, ...) \
+do \
+{ \
+	muggle_log_src_loc_t loc_arg##__LINE__ = { \
+		__FILE__, __LINE__, __FUNCTION__ \
+	}; \
+	muggle_logger_t *logger = customize_async_logger(); \
+	logger->log(logger, level, &loc_arg##__LINE__, format, ##__VA_ARGS__); \
+} while (0)
+
+#define TRACE MUGGLE_LOG_LEVEL_TRACE
+#define DEBUG MUGGLE_LOG_LEVEL_DEBUG
+#define INFO MUGGLE_LOG_LEVEL_INFO
+#define WARN MUGGLE_LOG_LEVEL_WARN
+#define ERROR MUGGLE_LOG_LEVEL_ERROR
+#define FATAL MUGGLE_LOG_LEVEL_FATAL
+
+void example_customize_log()
+{
+	// init customize logger
+	muggle_logger_t *logger = customize_async_logger();
+	muggle_async_logger_init((muggle_async_logger_t*)logger, 4096);
+	example_logger_add_handler(logger);
+
+	MY_LOG(TRACE, "customize logger - trace");
+	MY_LOG(DEBUG, "customize logger - debug");
+	MY_LOG(INFO, "customize logger - info");
+	MY_LOG(WARN, "customize logger - warning");
+	MY_LOG(ERROR, "customize logger - error");
+
+	MY_LOG(ERROR, "fatal level will print stack and core dumped when debug");
+	MY_LOG(FATAL, "fatal");
 }
 
 int main()
@@ -262,7 +369,11 @@ int main()
 	example_log_file_rotate_handler();
 	example_log_file_time_rot_handler();
 
+	example_sync_logger();
+	example_async_logger();
+
 	example_simple_log();
+	example_customize_log();
 
 	return 0;
 }

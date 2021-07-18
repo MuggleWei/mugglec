@@ -67,6 +67,7 @@
 #include "muggle/c/log/log_file_time_rot_handler.h"
 #include "muggle/c/log/log_logger.h"
 #include "muggle/c/log/log_sync_logger.h"
+#include "muggle/c/log/log_async_logger.h"
 #include "muggle/c/log/log.h"
 
 // net

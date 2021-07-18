@@ -32,7 +32,14 @@ static bool muggle_log_file_time_rot_handler_detect(
 	}
 
 	struct tm curr_tm;
-	gmtime_r(&sec, &curr_tm);
+	if (handler->use_local_time)
+	{
+		localtime_r(&sec, &curr_tm);
+	}
+	else
+	{
+		gmtime_r(&sec, &curr_tm);
+	}
 
 	bool need_rot = false;
 	switch (handler->rotate_unit)
@@ -238,7 +245,8 @@ int muggle_log_file_time_rot_handler_init(
 	muggle_log_file_time_rot_handler_t *handler,
 	const char *filepath,
 	char rotate_unit,
-	unsigned int rotate_mod)
+	unsigned int rotate_mod,
+	bool use_local_time)
 {
 	int ret = muggle_log_handler_init_default((muggle_log_handler_t*)handler);
 	if (ret != 0)
@@ -291,9 +299,17 @@ int muggle_log_file_time_rot_handler_init(
 
 	strncpy(handler->filepath, abs_filepath, sizeof(handler->filepath)-1);
 	handler->last_sec = time(NULL);
-	gmtime_r(&handler->last_sec, &handler->last_tm);
+	if (handler->use_local_time)
+	{
+		localtime_r(&handler->last_sec, &handler->last_tm);
+	}
+	else
+	{
+		gmtime_r(&handler->last_sec, &handler->last_tm);
+	}
 	handler->rotate_mod = rotate_mod;
 	handler->rotate_unit = rotate_unit;
+	handler->use_local_time = use_local_time;
 
 	ret = muggle_log_file_time_rot_handler_rotate(handler);
 	if (ret != 0)

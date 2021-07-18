@@ -40,30 +40,39 @@ typedef void (*func_muggle_logger_log)(
 	...);
 
 /**
+ * @brief prototype of logger add handler
+ *
+ * @param logger   logger pointer
+ * @param handler  logger handler pointer
+ *
+ * @return 
+ *     - success returns 0
+ *     - otherwise return err code in muggle/c/base/err.h
+ */
+typedef int (*func_muggle_logger_add_handler)(struct muggle_logger *logger, muggle_log_handler_t *handler);
+
+/**
+ * @brief prototype of destroy logger
+ *
+ * @param logger logger pointer
+ */
+typedef void (*func_muggle_logger_destroy)(struct muggle_logger *logger);
+
+
+/**
  * @brief muggle logger
  */
 typedef struct muggle_logger
 {
-	func_muggle_logger_log log;
+	func_muggle_logger_log         log;
+	func_muggle_logger_add_handler add_handler;
+	func_muggle_logger_destroy     destroy;
 
 	muggle_log_handler_t *handlers[MUGGLE_LOGGER_MAX_HANDLER];
 	int cnt;
 	int fmt_hint;
 	int lowest_log_level;
 }muggle_logger_t;
-
-/**
- * @brief add log handler into logger
- *
- * @param logger   logger pointer
- * @param handle   log handler
- *
- * @return
- *     - success returns 0
- *     - otherwise return err code in muggle/c/base/err.h
- */
-MUGGLE_C_EXPORT
-int muggle_logger_add_handler(muggle_logger_t *logger, muggle_log_handler_t *handler);
 
 /**
  * @brief muggle logger write

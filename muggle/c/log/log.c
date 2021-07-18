@@ -110,8 +110,8 @@ int muggle_log_simple_init(int level_console, int level_file_rotating)
 	}
 
 	// add handler into logger
-	muggle_logger_add_handler(logger, (muggle_log_handler_t*)&console_handler);
-	muggle_logger_add_handler(logger, (muggle_log_handler_t*)&rot_file_handler);
+	logger->add_handler(logger, (muggle_log_handler_t*)&console_handler);
+	logger->add_handler(logger, (muggle_log_handler_t*)&rot_file_handler);
 
 	return 0;
 }

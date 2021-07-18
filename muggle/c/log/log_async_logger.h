@@ -1,43 +1,52 @@
 /******************************************************************************
- *  @file         log_sync_logger.h
+ *  @file         log_async_logger.h
  *  @author       Muggle Wei
  *  @email        mugglewei@gmail.com
- *  @date         2021-07-16
+ *  @date         2021-07-18
  *  @copyright    Copyright 2021 Muggle Wei
  *  @license      MIT License
- *  @brief        mugglec sync logger
+ *  @brief        mugglec async logger
  *****************************************************************************/
 
-#ifndef MUGGLE_C_LOG_SYNC_LOGGER_H_
-#define MUGGLE_C_LOG_SYNC_LOGGER_H_
+#ifndef MUGGLE_C_LOG_ASYNC_LOGGER_H_
+#define MUGGLE_C_LOG_ASYNC_LOGGER_H_
 
 #include "muggle/c/base/macro.h"
 #include "muggle/c/log/log_logger.h"
+#include "muggle/c/sync/channel.h"
 
 EXTERN_C_BEGIN
 
-/**
- * @brief muggle sync logger
- */
-typedef struct muggle_sync_logger
-{
-	muggle_logger_t logger;
-}muggle_sync_logger_t;
+typedef void* (*muggle_log_async_logger_alloc)(size_t size);
+typedef void (*muggle_log_async_logger_free)(void *ptr);
 
 /**
- * @brief initialize sync logger
+ * @brief muggle async logger
+ */
+typedef struct muggle_async_logger
+{
+	muggle_logger_t logger;
+	muggle_log_async_logger_alloc p_alloc;
+	muggle_log_async_logger_free p_free;
+	muggle_channel_t channel;
+	muggle_thread_t thread;
+}muggle_async_logger_t;
+
+/**
+ * @brief initialize async logger
  *
- * @param logger sync logger pointer
+ * @param logger            async logger pointer
+ * @param cahnnel_capacity  async logger's channel capacity
  *
  * @return 
  *     - success returns 0
  *     - otherwise return err code in muggle/c/base/err.h
  */
 MUGGLE_C_EXPORT
-int muggle_sync_logger_init(muggle_sync_logger_t *logger);
+int muggle_async_logger_init(muggle_async_logger_t *logger, int channel_capacity);
 
 /**
- * @brief sync logger add log handler
+ * @brief async logger add log handler
  *
  * @param logger   logger pointer
  * @param handler  log handler pointer
@@ -47,15 +56,15 @@ int muggle_sync_logger_init(muggle_sync_logger_t *logger);
  *     - otherwise return err code in muggle/c/base/err.h
  */
 MUGGLE_C_EXPORT
-int muggle_sync_logger_add_handler(muggle_logger_t *logger, muggle_log_handler_t *handler);
+int muggle_async_logger_add_handler(muggle_logger_t *logger, muggle_log_handler_t *handler);
 
 /**
- * @brief sync logger destroy
+ * @brief async logger destroy
  *
  * @param logger  logger pointer
  */
 MUGGLE_C_EXPORT
-void muggle_sync_logger_destroy(muggle_logger_t *logger);
+void muggle_async_logger_destroy(muggle_logger_t *logger);
 
 /**
  * @brief prototype of logger output function
@@ -67,7 +76,7 @@ void muggle_sync_logger_destroy(muggle_logger_t *logger);
  * @param ...      input arguments for format string
  */
 MUGGLE_C_EXPORT
-void muggle_sync_logger_log(
+void muggle_async_logger_log(
 	struct muggle_logger *logger,
 	int level,
 	muggle_log_src_loc_t *src_loc,
@@ -76,4 +85,4 @@ void muggle_sync_logger_log(
 
 EXTERN_C_END
 
-#endif /* ifndef MUGGLE_C_LOG_SYNC_LOGGER_H_ */
+#endif /* ifndef MUGGLE_C_LOG_ASYNC_LOGGER_H_ */

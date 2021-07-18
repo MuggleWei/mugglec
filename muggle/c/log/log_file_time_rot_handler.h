@@ -31,25 +31,29 @@ typedef struct muggle_log_file_time_rot_handler
 	unsigned int         rotate_mod;
 	time_t               last_sec;
 	struct tm            last_tm;
+	bool                 use_local_time;
 }muggle_log_file_time_rot_handler_t;
 
 /**
  * @brief initialize file time rotate log handler
  *
- * @param handler      file time rotate log handler pointer
- * @param filepath     file path
- * @param rotate_unit  file rotate time unit, use macro MUGGLE_LOG_TIME_ROTATE_UNIT_*
- * @param rotate_mod   file rotate time mod
+ * @param handler        file time rotate log handler pointer
+ * @param filepath       file path
+ * @param rotate_unit    file rotate time unit, use macro MUGGLE_LOG_TIME_ROTATE_UNIT_*
+ * @param rotate_mod     file rotate time mod
+ * @param use_local_time if true, use local time, otherwise use UTC+0
  *
  * @return 
  *     - success returns 0
  *     - otherwise return err code in muggle/c/base/err.h
  */
+MUGGLE_C_EXPORT
 int muggle_log_file_time_rot_handler_init(
 	muggle_log_file_time_rot_handler_t *handler,
 	const char *filepath,
 	char rotate_unit,
-	unsigned int rotate_mod);
+	unsigned int rotate_mod,
+	bool use_local_time);
 
 EXTERN_C_END
 
