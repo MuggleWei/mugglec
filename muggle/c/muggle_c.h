@@ -57,15 +57,18 @@
 #include "muggle/c/sync/channel.h"
 
 // log
+#include "muggle/c/log/log_level.h"
+#include "muggle/c/log/log_msg.h"
 #include "muggle/c/log/log_fmt.h"
-#include "muggle/c/log/log_handle.h"
-#include "muggle/c/log/log_handle_console.h"
-#include "muggle/c/log/log_handle_file.h"
-#include "muggle/c/log/log_handle_rotating_file.h"
-#include "muggle/c/log/log_handle_win_debug.h"
-#include "muggle/c/log/log_category.h"
+#include "muggle/c/log/log_handler.h"
+#include "muggle/c/log/log_console_handler.h"
+#include "muggle/c/log/log_file_handler.h"
+#include "muggle/c/log/log_file_rotate_handler.h"
+#include "muggle/c/log/log_file_time_rot_handler.h"
+#include "muggle/c/log/log_logger.h"
+#include "muggle/c/log/log_sync_logger.h"
+#include "muggle/c/log/log_async_logger.h"
 #include "muggle/c/log/log.h"
-#include "muggle/c/log/log_utils.h"
 
 // net
 #include "muggle/c/net/socket.h"

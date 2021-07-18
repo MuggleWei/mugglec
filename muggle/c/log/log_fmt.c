@@ -10,139 +10,100 @@
  
 #include "log_fmt.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <stdarg.h>
 #include <string.h>
-#if MUGGLE_PLATFORM_WINDOWS
-	#include <windows.h>
-#else
-	#include <unistd.h>
-#endif
 #include "muggle/c/os/path.h"
+#include "log_level.h"
+#if MUGGLE_PLATFORM_WINDOWS
+#include "muggle/c/time/win_gmtime.h"
+#endif
 
- // default log priority string
-const char* g_muggle_log_level_str[MUGGLE_LOG_LEVEL_MAX] = {
-	"",
-	"TRACE",
-	"INFO",
-	"WARNING",
-	"ERROR",
-	"FATAL"
-};
-
-int muggle_log_fmt_gen(
-	int fmt_flag, muggle_log_fmt_arg_t *arg,
-	const char *msg, char *buf, int size)
+/**
+ * @brief default log format function
+ *
+ * @param msg      log message
+ * @param buf      the formated message output buffer
+ * @param bufsize  the size of buf
+ *
+ * @return the len of formated message, negative represent failed
+ */
+static int muggle_log_fmt_simple(const muggle_log_msg_t *msg, char *buf, size_t bufsize)
 {
-	unsigned int remaining = size - 1, num_write = 0;
-	char *p = buf;
+	const char *level = muggle_log_level_to_str(msg->level);
 
-	if (buf == NULL || size <= 0)
+	char filename[MUGGLE_MAX_PATH];
+	muggle_path_basename(msg->src_loc.file, filename, sizeof(filename));
+
+	const char *payload = "";
+	if (msg->payload)
 	{
-		return 0;
+		payload = msg->payload;
 	}
 
-	if (remaining <= 0)
+	return (int)snprintf(buf, bufsize,
+		"%s|%s:%u - %s\n",
+		level,
+		filename, (unsigned int)msg->src_loc.line,
+		payload);
+}
+
+/**
+ * @brief default log format with time represent YYYY-MM-DDThh:mm:ss.sss
+ *
+ * @param msg      log message
+ * @param buf      the formated message output buffer
+ * @param bufsize  the size of buf
+ *
+ * @return the len of formated message, negative represent failed
+ */
+static int muggle_log_fmt_complicated(const muggle_log_msg_t *msg, char *buf, size_t bufsize)
+{
+	const char *level = muggle_log_level_to_str(msg->level);
+
+	char filename[MUGGLE_MAX_PATH];
+	muggle_path_basename(msg->src_loc.file, filename, sizeof(filename));
+
+	struct tm t;
+	gmtime_r(&msg->ts.tv_sec, &t);
+
+	const char *payload = "";
+	if (msg->payload)
 	{
-		return -1;
+		payload = msg->payload;
 	}
 
-	if (fmt_flag & MUGGLE_LOG_FMT_LEVEL)
-	{
-		int level = arg->level >> MUGGLE_LOG_LEVEL_OFFSET;
-		if (level > 0 && level < MUGGLE_LOG_LEVEL_MAX)
-		{
-			num_write = snprintf(p, remaining, "<L>%s|", g_muggle_log_level_str[level]);
-			if (num_write < 0)
-			{
-				return -1;
-			}
-			remaining -= num_write;
-			p += num_write;
-		}		
+	return (int)snprintf(buf, bufsize,
+		"%s|%d-%02d-%02dT%02d:%02d:%02d.%03d|%s:%u|%s|%llu - %s\n",
+		level,
+		(int)t.tm_year+1900, (int)t.tm_mon+1, (int)t.tm_mday,
+		(int)t.tm_hour, (int)t.tm_min, (int)t.tm_sec,
+		(int)msg->ts.tv_nsec / 1000000,
+		filename, (unsigned int)msg->src_loc.line,
+		msg->src_loc.func,
+		(unsigned long long)msg->tid,
+		payload);
+}
 
-		if (remaining <= 0)
-		{
-			return size - 1;
-		}
-	}
-	if (fmt_flag & MUGGLE_LOG_FMT_FILE)
-	{
-		char filename[MUGGLE_MAX_PATH];
-		muggle_path_basename(arg->file, filename, sizeof(filename));
+void init_fmt(muggle_log_fmt_t *p_fmt, int hint, func_muggle_log_fmt func)
+{
+	memset(p_fmt, 0, sizeof(*p_fmt));
+	p_fmt->fmt_hint = hint;
+	p_fmt->fmt_func = func;
+}
 
-		num_write = snprintf(p, remaining, "<F>%s:%d|", filename, arg->line);
-		if (num_write == -1)
-		{
-			return -1;
-		}
-		remaining -= num_write;
-		p += num_write;
+muggle_log_fmt_t* muggle_log_fmt_get_simple()
+{
+	static muggle_log_fmt_t fmt = {
+		MUGGLE_LOG_FMT_LEVEL | MUGGLE_LOG_FMT_FILE | MUGGLE_LOG_FMT_FUNC,
+		muggle_log_fmt_simple
+	};
+	return &fmt;
+}
 
-		if (remaining <= 0)
-		{
-			return size - 1;
-		}
-	}
-	if (fmt_flag & MUGGLE_LOG_FMT_FUNC)
-	{
-		num_write = snprintf(p, remaining, "<f>%s|", arg->func);
-		if (num_write == -1)
-		{
-			return -1;
-		}
-		remaining -= num_write;
-		p += num_write;
-
-		if (remaining <= 0)
-		{
-			return size - 1;
-		}
-	}
-	if (fmt_flag & MUGGLE_LOG_FMT_TIME)
-	{
-		struct timespec ts;
-		timespec_get(&ts, TIME_UTC);
-		num_write = snprintf(p, remaining, "<T>%lld.%09d|",
-			(long long)ts.tv_sec, (int)ts.tv_nsec);
-		if (num_write == -1)
-		{
-			return -1;
-		}
-		remaining -= num_write;
-		p += num_write;
-
-		if (remaining <= 0)
-		{
-			return size - 1;
-		}
-	}
-	if (fmt_flag & MUGGLE_LOG_FMT_THREAD)
-	{
-		num_write = snprintf(p, remaining, "<t>%llu|", (unsigned long long)arg->tid);
-		if (num_write == -1)
-		{
-			return -1;
-		}
-		remaining -= num_write;
-		p += num_write;
-
-		if (remaining <= 0)
-		{
-			return size - 1;
-		}
-	}
-	if (msg != NULL)
-	{
-		num_write = snprintf(p, remaining, " - %s\n", msg);
-		if (num_write == -1)
-		{
-			return -1;
-		}
-		remaining -= num_write;
-		p += num_write;
-	}
-
-	return size - 1 - remaining;
+muggle_log_fmt_t* muggle_log_fmt_get_complicated()
+{
+	static muggle_log_fmt_t fmt = {
+		MUGGLE_LOG_FMT_ALL,
+		muggle_log_fmt_complicated
+	};
+	return &fmt;
 }

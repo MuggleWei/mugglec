@@ -22,6 +22,9 @@ MUGGLE_C_EXPORT
 struct tm* gmtime_r(const time_t *timep, struct tm *result);
 
 MUGGLE_C_EXPORT
+struct tm* localtime_r(const time_t *timep, struct tm *result);
+
+MUGGLE_C_EXPORT
 time_t timegm(struct tm *p_tm);
 
 #endif

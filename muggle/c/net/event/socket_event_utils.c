@@ -9,6 +9,7 @@
  *****************************************************************************/
 
 #include "socket_event_utils.h"
+#include <stdio.h>
 #include "muggle/c/log/log.h"
 
 void muggle_socket_event_on_message(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
