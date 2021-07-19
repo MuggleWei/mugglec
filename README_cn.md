@@ -116,6 +116,7 @@ target_link_libraries(example mugglec)
 ```
 
 #### 发现并链接
+若你不想每个工程都独立去编译mugglec, 可以选择只编译一次并安装, 之后只需链接即可.  
 成功构建mugglec后, 执行install步骤, 成功之后便可在系统中查找mugglec  
 若你的工程使用的是cmake, 可在CMakeLists.txt中添加
 ```

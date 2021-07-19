@@ -4,7 +4,6 @@
 * fmt: 格式化器
 * handler: 日志处理器, 有console, file, file_rotate, file_time_rot四种handler
 * logger: 日志实例, 有sync, async两种logger  
-
 一个logger拥有多个handler, 每个handler只能被加入一个logger中, 每个handler都需要指定一个fmt
 
 ### 例子

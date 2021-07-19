@@ -115,6 +115,7 @@ target_link_libraries(example mugglec)
 ```
 
 #### Find and link
+If you don't want to compile mugglec in each project, you can compile and install once, after just link it.  
 After build and install mugglec, you can find and link it.  
 If your project already use CMake, add content below into your CMakeLists.txt  
 ```
