@@ -3,6 +3,9 @@
 #include "muggle/c/os/path.h"
 #include "muggle/c/os/os.h"
 #include "muggle/c/base/err.h"
+#if MUGGLE_PLATFORM_WINDOWS
+#include "muggle/c/time/win_gmtime.h"
+#endif
 
 /**
  * @brief rotate file rotate handler
