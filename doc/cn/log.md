@@ -2,8 +2,9 @@
 
 ### 概念
 * fmt: 格式化器
-* handler: 日志处理器
-* logger: 日志实例
+* handler: 日志处理器, 有console, file, file_rotate, file_time_rot四种handler
+* logger: 日志实例, 有sync, async两种logger  
+
 一个logger拥有多个handler, 每个handler只能被加入一个logger中, 每个handler都需要指定一个fmt
 
 ### 例子
@@ -87,7 +88,9 @@ int main()
 void init_log()
 {
 	static muggle_log_file_rotate_handler_t file_rot_handler;
-	muggle_log_file_rotate_handler_init(&file_rot_handler, "log/example_rot.log", 128, 5);
+	muggle_log_file_rotate_handler_init(
+		&file_rot_handler, "log/example_rot.log",
+		128, 5);
 	muggle_log_handler_set_level(
 		(muggle_log_handler_t*)&file_rot_handler, MUGGLE_LOG_LEVEL_DEBUG);
 
@@ -99,7 +102,10 @@ int main()
 {
 	init_log();
 
-	MUGGLE_LOG_INFO("default logger with file rotate handler");
+	for (int i = 0; i < 128; i++)
+	{
+		MUGGLE_LOG_INFO("default logger with file rotate handler, #%d", i);
+	}
 
 	return 0;
 }
@@ -119,7 +125,7 @@ void init_log()
 		(muggle_log_handler_t*)&file_time_rot_handler, MUGGLE_LOG_LEVEL_DEBUG);
 
 	muggle_logger_t *logger = muggle_logger_default();
-	logger->add_handler(logger, (muggle_log_handler_t*)&file_rot_handler);
+	logger->add_handler(logger, (muggle_log_handler_t*)&file_time_rot_handler);
 }
 
 int main()
@@ -175,7 +181,7 @@ void init_log()
 	muggle_log_handler_set_fmt((muggle_log_handler_t*)&file_time_rot_handler, &formatter);
 
 	muggle_logger_t *logger = muggle_logger_default();
-	logger->add_handler(logger, (muggle_log_handler_t*)&file_rot_handler);
+	logger->add_handler(logger, (muggle_log_handler_t*)&file_time_rot_handler);
 }
 
 int main()
@@ -190,15 +196,17 @@ int main()
 
 #### async logger
 ```
+#include "muggle/c/muggle_c.h"
+
 muggle_logger_t* my_async_logger()
 {
 	static muggle_async_logger_t async_logger;
-	return (muggle_logger_t*)async_logger;
+	return (muggle_logger_t*)&async_logger;
 }
 
 void init_log()
 {
-	muggle_logger_t *logger = my_logger();
+	muggle_logger_t *logger = my_async_logger();
 	muggle_async_logger_init((muggle_async_logger_t*)logger, 4096);
 
 	static muggle_log_console_handler_t console_handler;
@@ -215,13 +223,17 @@ int main()
 
 	MUGGLE_LOG(my_async_logger(), MUGGLE_LOG_LEVEL_INFO, "hello async logger");
 
+	muggle_logger_t *logger = my_async_logger();
+	logger->destroy(logger);
+
 	return 0;
 }
 ```
 
 #### 自定义日志宏
-为了使用方便, 可以选择自定义日志宏
 ```
+#include "muggle/c/muggle_c.h"
+
 muggle_logger_t* my_async_logger()
 {
 	static muggle_async_logger_t async_logger;
@@ -238,12 +250,39 @@ do \
 	logger->log(logger, level, &loc_arg##__LINE__, format, ##__VA_ARGS__); \
 } while (0)
 
-#define TRACE MUGGLE_LOG_LEVEL_TRACE
-#define DEBUG MUGGLE_LOG_LEVEL_DEBUG
-#define INFO MUGGLE_LOG_LEVEL_INFO
-#define WARN MUGGLE_LOG_LEVEL_WARN
-#define ERROR MUGGLE_LOG_LEVEL_ERROR
-#define FATAL MUGGLE_LOG_LEVEL_FATAL
+#define LOG_TRACE(format, ...) MY_LOG(MUGGLE_LOG_LEVEL_TRACE, format, ##__VA_ARGS__)
+#define LOG_DEBUG(format, ...) MY_LOG(MUGGLE_LOG_LEVEL_DEBUG, format, ##__VA_ARGS__)
+#define LOG_INFO(format, ...) MY_LOG(MUGGLE_LOG_LEVEL_INFO, format, ##__VA_ARGS__)
+#define LOG_WARNING(format, ...) MY_LOG(MUGGLE_LOG_LEVEL_WARNING, format, ##__VA_ARGS__)
+#define LOG_ERROR(format, ...) MY_LOG(MUGGLE_LOG_LEVEL_ERROR, format, ##__VA_ARGS__)
+#define LOG_FATAL(format, ...) MY_LOG(MUGGLE_LOG_LEVEL_FATAL, format, ##__VA_ARGS__)
+
+int my_log_fmt_func(const muggle_log_msg_t *msg, char *buf, size_t bufsize)
+{
+	const char *level = muggle_log_level_to_str(msg->level);
+
+	char filename[MUGGLE_MAX_PATH];
+	muggle_path_basename(msg->src_loc.file, filename, sizeof(filename));
+
+	struct tm t;
+	gmtime_r(&msg->ts.tv_sec, &t);
+
+	const char *payload = "";
+	if (msg->payload)
+	{
+		payload = msg->payload;
+	}
+
+	return (int)snprintf(buf, bufsize,
+		"%s|%d-%02d-%02dT%02d:%02d:%02d.%03d|%s.%u|%llu - %s\n",
+		level,
+		(int)t.tm_year+1900, (int)t.tm_mon+1, (int)t.tm_mday,
+		(int)t.tm_hour, (int)t.tm_min, (int)t.tm_sec,
+		(int)msg->ts.tv_nsec / 1000000,
+		filename, (unsigned int)msg->src_loc.line,
+		(unsigned long long)msg->tid,
+		payload);
+}
 
 void init_log()
 {
@@ -279,11 +318,13 @@ void init_log()
 
 int main()
 {
-	MY_LOG(TRACE, "my logger - trace");
-	MY_LOG(DEBUG, "my logger - debug");
-	MY_LOG(INFO, "my logger - info");
-	MY_LOG(WARN, "my logger - warning");
-	MY_LOG(ERROR, "my logger - error");
+	init_log();
+
+	LOG_TRACE("my logger - trace");
+	LOG_DEBUG("my logger - debug");
+	LOG_INFO("my logger - info");
+	LOG_WARNING("my logger - warning");
+	LOG_ERROR("my logger - error");
 
 	muggle_logger_t *logger = my_async_logger();
 	logger->destroy(logger);
