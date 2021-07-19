@@ -61,10 +61,8 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        # GIT_TAG         master
-        # GIT_SHALLOW     TRUE
-        # specify a commit
-        GIT_TAG           fd059d4100ee59c55a63d2c84ed045a5a757933d
+        GIT_TAG           v0.0.1-alpha.1
+        GIT_SHALLOW       TRUE
         SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/mugglec-src"
         BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/mugglec-build"
         CONFIGURE_COMMAND ""

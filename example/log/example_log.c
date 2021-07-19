@@ -1,6 +1,7 @@
 #include "muggle/c/base/sleep.h"
 #include "muggle/c/log/log_sync_logger.h"
 #include "muggle/c/muggle_c.h"
+#include "muggle/c/version/version.h"
 
 #define GEN_TMP_LOG_MSG(msg, s) \
 muggle_log_msg_t msg = { \
@@ -301,6 +302,8 @@ void example_async_logger()
 void example_simple_log()
 {
 	muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_TRACE);
+
+	MUGGLE_LOG_INFO("mugglec version: %s", mugglec_version());
 
 	MUGGLE_LOG_INFO("use log simple init, just set console log level and file log level");
 
