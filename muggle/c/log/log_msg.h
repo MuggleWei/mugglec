@@ -38,7 +38,7 @@ typedef struct muggle_log_msg
 	struct timespec      ts;           //!< timestamp
 	muggle_thread_id     tid;          //!< thread id
 	muggle_log_src_loc_t src_loc;      //!< source location info
-	char                 *payload;     //!< payload
+	const char           *payload;     //!< payload
 }muggle_log_msg_t;
 
 EXTERN_C_END

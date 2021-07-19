@@ -22,7 +22,7 @@ static muggle_thread_ret_t muggle_async_logger_run(void *arg)
 
 		muggle_logger_write((muggle_logger_t*)logger, msg);
 
-		free(msg->payload);
+		free((void*)msg->payload);
 		logger->p_free(msg);
 	}
 
