@@ -62,10 +62,8 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        # GIT_TAG         master
-        # GIT_SHALLOW     TRUE
-        # 由于当前未发布任何一个tag, 这里取一个相对稳定的commit
-        GIT_TAG           fd059d4100ee59c55a63d2c84ed045a5a757933d
+        GIT_TAG           v0.0.1-alpha.1
+        GIT_SHALLOW       TRUE
         SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/mugglec-src"
         BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/mugglec-build"
         CONFIGURE_COMMAND ""
@@ -116,6 +114,7 @@ target_link_libraries(example mugglec)
 ```
 
 #### 发现并链接
+若你不想每个工程都独立去编译mugglec, 可以选择只编译一次并安装, 之后只需链接即可.  
 成功构建mugglec后, 执行install步骤, 成功之后便可在系统中查找mugglec  
 若你的工程使用的是cmake, 可在CMakeLists.txt中添加
 ```

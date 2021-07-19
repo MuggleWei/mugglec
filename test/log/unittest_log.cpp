@@ -1,66 +1,70 @@
 #include "gtest/gtest.h"
+#include "muggle/c/log/log_level.h"
 #include "muggle/c/muggle_c.h"
 
-TEST(log, fmt)
+TEST(log, log_level)
 {
-	int fmt_flag;
-	char buf[4096];
-	muggle_log_fmt_arg_t arg;
-	int num_write;
+	ASSERT_STREQ(muggle_log_level_to_str(MUGGLE_LOG_LEVEL_TRACE), "TRACE");
+	ASSERT_STREQ(muggle_log_level_to_str(MUGGLE_LOG_LEVEL_DEBUG), "DEBUG");
+	ASSERT_STREQ(muggle_log_level_to_str(MUGGLE_LOG_LEVEL_INFO), "INFO");
+	ASSERT_STREQ(muggle_log_level_to_str(MUGGLE_LOG_LEVEL_WARNING), "WARNING");
+	ASSERT_STREQ(muggle_log_level_to_str(MUGGLE_LOG_LEVEL_WARN), "WARNING");
+	ASSERT_STREQ(muggle_log_level_to_str(MUGGLE_LOG_LEVEL_ERROR), "ERROR");
+	ASSERT_STREQ(muggle_log_level_to_str(MUGGLE_LOG_LEVEL_FATAL), "FATAL");
+}
 
-	memset(&arg, 0, sizeof(arg));
-	arg.level = 0;
-	arg.line = 666;
-	arg.file = "log_fmt_test_file";
-	arg.func = "log_fmt_test_func";
-	arg.tid = muggle_thread_current_id();
+int customize_log_fmt_func(const muggle_log_msg_t *msg, char *buf, size_t bufsize)
+{
+	const char *level = muggle_log_level_to_str(msg->level);
 
-	fmt_flag = 0;
-	num_write = muggle_log_fmt_gen(fmt_flag, &arg, "hello", buf, sizeof(buf));
-	EXPECT_GT(num_write, 0);
-	EXPECT_STREQ(buf, " - hello\n");
+	char filename[MUGGLE_MAX_PATH];
+	muggle_path_basename(msg->src_loc.file, filename, sizeof(filename));
 
-	fmt_flag = MUGGLE_LOG_FMT_LEVEL;
-	num_write = muggle_log_fmt_gen(fmt_flag, &arg, "hello", buf, sizeof(buf));
-	EXPECT_GT(num_write, 0);
-	EXPECT_STREQ(buf, " - hello\n");
+	const char *payload = "";
+	if (msg->payload)
+	{
+		payload = msg->payload;
+	}
 
-	fmt_flag = MUGGLE_LOG_FMT_LEVEL;
-	arg.level = MUGGLE_LOG_LEVEL_INFO;
-	num_write = muggle_log_fmt_gen(fmt_flag, &arg, "hello", buf, sizeof(buf));
-	EXPECT_GT(num_write, 0);
-	EXPECT_STREQ(buf, "<L>INFO| - hello\n");
+	return (int)snprintf(buf, bufsize,
+		"%s|%s:%u|%llu.%06d|%llu - %s\n",
+		level,
+		filename, (unsigned int)msg->src_loc.line,
+		(unsigned long long)msg->ts.tv_sec,
+		(int)msg->ts.tv_nsec / 1000,
+		(unsigned long long)msg->tid,
+		payload);
+}
 
-	fmt_flag = MUGGLE_LOG_FMT_FILE;
-	num_write = muggle_log_fmt_gen(fmt_flag, &arg, "hello", buf, sizeof(buf));
-	EXPECT_GT(num_write, 0);
-	EXPECT_STREQ(buf, "<F>log_fmt_test_file:666| - hello\n");
+TEST(log, log_fmt)
+{
+	muggle_log_fmt_t formatter = {
+		MUGGLE_LOG_FMT_ALL,
+		customize_log_fmt_func
+	};
 
-	fmt_flag = MUGGLE_LOG_FMT_FUNC;
-	num_write = muggle_log_fmt_gen(fmt_flag, &arg, "hello", buf, sizeof(buf));
-	EXPECT_GT(num_write, 0);
-	EXPECT_STREQ(buf, "<f>log_fmt_test_func| - hello\n");
+	muggle_log_msg_t msg = {
+		MUGGLE_LOG_LEVEL_INFO,
+		{0, 0},
+		0,
+		{__FILE__, __LINE__, __FUNCTION__},
+		"log formatter"
+	};
+	timespec_get(&msg.ts, TIME_UTC);
+	msg.tid = muggle_thread_id();
 
-	fmt_flag = MUGGLE_LOG_FMT_TIME;
-	num_write = muggle_log_fmt_gen(fmt_flag, &arg, "hello", buf, sizeof(buf));
-	EXPECT_GT(num_write, 0);
-	EXPECT_TRUE(muggle_str_startswith(buf, "<T>"));
-	EXPECT_TRUE(muggle_str_endswith(buf, "| - hello\n"));
+	char buf[MUGGLE_LOG_MSG_MAX_LEN];
+	formatter.fmt_func(&msg, buf, sizeof(buf));
 
-	fmt_flag = MUGGLE_LOG_FMT_THREAD;
-	num_write = muggle_log_fmt_gen(fmt_flag, &arg, "hello", buf, sizeof(buf));
-	EXPECT_GT(num_write, 0);
-	EXPECT_TRUE(muggle_str_startswith(buf, "<t>"));
-	EXPECT_TRUE(muggle_str_endswith(buf, "| - hello\n"));
+	char expect[MUGGLE_LOG_MSG_MAX_LEN];
+	snprintf(expect, sizeof(expect),
+		"%s|%s:%u|%llu.%06d|%llu - %s\n",
+		muggle_log_level_to_str(msg.level),
+		"unittest_log.cpp", msg.src_loc.line,
+		(unsigned long long)msg.ts.tv_sec,
+		(int)msg.ts.tv_nsec / 1000,
+		(unsigned long long)msg.tid,
+		msg.payload);
 
-	fmt_flag = 
-		MUGGLE_LOG_FMT_LEVEL |
-		MUGGLE_LOG_FMT_FILE |
-		MUGGLE_LOG_FMT_FUNC |
-		MUGGLE_LOG_FMT_TIME;
-	arg.level = MUGGLE_LOG_LEVEL_WARNING;
-	num_write = muggle_log_fmt_gen(fmt_flag, &arg, "hello", buf, sizeof(buf));
-	EXPECT_GT(num_write, 0);
-	EXPECT_TRUE(muggle_str_startswith(buf, "<L>WARNING|<F>log_fmt_test_file:666|<f>log_fmt_test_func|<T>"));
-	EXPECT_TRUE(muggle_str_endswith(buf, "| - hello\n"));
+	ASSERT_STREQ(buf, expect);
 }
