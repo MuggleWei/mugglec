@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
 			{
 				// do nothing
 				fprintf(stdout, "accept would block\n");
-				muggle_msleep(500);
+				// muggle_msleep(500);
 			}
 			else
 			{
