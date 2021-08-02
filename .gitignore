@@ -15,3 +15,6 @@ build/
 
 # doxygen
 /doxy
+
+# tags
+/tags
