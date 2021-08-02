@@ -1,22 +1,36 @@
+- [log](#log)
+	- [概念](#概念)
+	- [基础使用](#基础使用)
+		- [简单的初始化](#简单的初始化)
+	- [配置handler](#配置handler)
+		- [console handler](#console-handler)
+		- [file handler](#file-handler)
+		- [file rotate handler](#file-rotate-handler)
+		- [file time rotate handler](#file-time-rotate-handler)
+	- [配置输出格式](#配置输出格式)
+	- [配置logger](#配置logger)
+		- [async logger](#async-logger)
+	- [自定义日志宏](#自定义日志宏)
+
 ## log
 
 ### 概念
 * fmt: 格式化器
 * handler: 日志处理器, 有console, file, file_rotate, file_time_rot四种handler
 * logger: 日志实例, 有sync, async两种logger  
+
+
 一个logger拥有多个handler, 每个handler只能被加入一个logger中, 每个handler都需要指定一个fmt
 
-### 例子
+### 基础使用
 
-#### 基本使用
+#### 简单的初始化
+简单初始化使用默认的logger, 并且添加两个log handler, 第一个为console handler, 第二个为file rotate handler, 并且file rotate handler默认取"log/程序名.log"作为日志名称
 ```
 #include "muggle/c/muggle_c.h"
 
 int main()
 {
-	// 简单初始化默认的logger, 使用同步日志, 并有两个handler
-	// console handler指定日志过滤级别为info
-	// file rotate handler指定日志过滤级别为trace
 	muggle_log_simple_init(
 		MUGGLE_LOG_LEVEL_INFO,
 		MUGGLE_LOG_LEVEL_TRACE);
@@ -29,6 +43,8 @@ int main()
 	return 0;
 }
 ```
+
+### 配置handler
 
 #### console handler
 ```
@@ -137,7 +153,7 @@ int main()
 }
 ```
 
-#### 自定义输出格式
+### 配置输出格式
 ```
 #include "muggle/c/muggle_c.h"
 
@@ -193,7 +209,10 @@ int main()
 }
 ```
 
+### 配置logger
+
 #### async logger
+默认的logger为同步模式, 当想要日志异步输出, 可以使用async logger
 ```
 #include "muggle/c/muggle_c.h"
 
@@ -229,7 +248,7 @@ int main()
 }
 ```
 
-#### 自定义日志宏
+### 自定义日志宏
 ```
 #include "muggle/c/muggle_c.h"
 
