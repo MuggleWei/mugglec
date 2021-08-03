@@ -217,7 +217,6 @@ int main(int argc, char *argv[])
 
 	// bind and listen
 	if (bind(lfd, (struct sockaddr*)&sin, sizeof(sin)) < 0)
-	if (bind(lfd, (struct sockaddr*)&sin, sizeof(sin)) < 0)
 	{
 		fprintf(stderr, "failed bind: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
