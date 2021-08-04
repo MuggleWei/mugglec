@@ -1,12 +1,3 @@
-- [network](#network)
-  - [简单的socket用法](#简单的socket用法)
-    - [有缺陷的TCP Echo服务](#有缺陷的tcp-echo服务)
-    - [糟糕的非阻塞忙轮询](#糟糕的非阻塞忙轮询)
-    - [多线程](#多线程)
-  - [I/O多路复用与异步I/O](#io多路复用与异步io)
-- [使用mugglec网络模块](#使用mugglec网络模块)
-  - [TODO:](#todo)
-
 ## network
 
 mugglec网络模块部分.  
@@ -187,9 +178,120 @@ void on_error(socket_peer_t *peer)
 ```
 可以看到, 用户处理逻辑的代码只占很少到一部分, 而大部分代码实际是在处理select API的逻辑, 以及一些异常的处理, 比如处理EINTR. 而且连用户的那么一点代码当中, 也有大部分是在处理写失败的情况. 这还仅仅在使用select, 如果你还想根据平台, 选择使用poll, epoll或是iocp, 或是有时需要使用不同到协议, 比如UDP, QUIC或者在内网进行组播来传送消息, 那么直接使用操作系统相关的API会是十分复杂到一件事情.  
 
-## 使用mugglec网络模块
-如果用户想要专注于开发应用层的协议和应用逻辑, 避免把精力过多的分散到关注底层的细节中去, 可以使用现成的网络库. 不同的语言都有十分优秀且使用上类似的网络库存在, 比如c有libevent, libuv, Java有netty; 这些网络库有众多的用户, 也十分容易上手, 是开发网络应用的首选. 当日如果你并不想开发自己的私有协议, 而是想使用一些众所周知的协议, 比如web应用常用的http, websocket, 或是一些rpc调用, 那么找一些开箱即用的库会是更好的选择.  
+### 使用mugglec网络模块
+如果用户想要专注于开发应用层的协议和应用逻辑, 避免把精力过多的分散到关注底层的细节中去, 可以使用现成的网络库. 不同的语言都有十分优秀且使用上类似的网络库存在, 比如c有libevent, libuv, Java有netty; 这些网络库有众多的用户, 也十分容易上手, 是开发网络应用的首选. 当然如果你并不想开发自己的私有协议, 而是想使用一些众所周知的协议, 比如web应用常用的http, websocket, 或是一些rpc调用, 那么使用一些开箱即用的库或是框架会是更好的选择.  
 
 mugglec也带有自己的网络模块, 其主要目标并不是实现众所周知的一些协议, 而是封装底层的细节, 便于灵活的使用和开发自定义的协议  
 
-### TODO:
+#### 简单的TCP Echo服务
+那么现在就让我们使用mugglec的网络模块, 来构建一个简单的TCP Echo服务吧(完整的代码 [Echo Server V1](../codes/network/echo_srv_v1.c))
+```
+void on_connect(struct muggle_socket_event *ev, struct muggle_socket_peer *listen_peer, struct muggle_socket_peer *peer) { ... }
+void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer) { ... }
+void on_close(struct muggle_socket_event *ev, struct muggle_socket_peer *peer) { ... }
+void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer) { ... }
+
+...
+
+int main(int argc, char *argv[])
+{
+	...
+
+	// 创建TCP监听socket peer
+	const char *host = argv[1];
+	const char *serv = argv[2];
+
+	muggle_socket_peer_t peer;
+	if (muggle_tcp_listen(host, serv, 512, &peer) == MUGGLE_INVALID_SOCKET)
+	{
+		MUGGLE_LOG_ERROR("failed create tcp listen for %s:%s", host, serv);
+		exit(EXIT_FAILURE);
+	}
+
+	// 填充初始化参数
+	muggle_socket_event_init_arg_t ev_init_arg;
+	memset(&ev_init_arg, 0, sizeof(ev_init_arg));
+	ev_init_arg.cnt_peer = 1;
+	ev_init_arg.peers = &peer;
+	ev_init_arg.on_connect = on_connect;
+	ev_init_arg.on_error = on_error;
+	ev_init_arg.on_close = on_close;
+	ev_init_arg.on_message = on_message;
+
+	// 消息循环
+	muggle_socket_event_t ev;
+	if (muggle_socket_event_init(&ev_init_arg, &ev) != 0)
+	{
+		MUGGLE_LOG_ERROR("failed init socket event");
+		exit(EXIT_FAILURE);
+	}
+	muggle_socket_event_loop(&ev);
+
+	return 0;
+}
+
+```
+
+整个代码编写十分简单, 总结起来就是分为三步:  
+* 创建用于监听的socket peer
+* 填充socket event的初始化参数, 填入需要加入消息循环中的socket peer, 回调函数等(当然还有许多可用的参数, 之后会慢慢介绍)
+* 初始化socket event, 并且运行
+
+#### Echo服务
+刚刚我们一直在使用TCP服务, 现在让我们也把UDP的Echo加入到程序中来吧(完整的代码 [Echo Server V2](../codes/network/echo_srv_v2.c))
+```
+
+void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
+{
+	while (1)
+	{
+		if (peer->peer_type == MUGGLE_SOCKET_PEER_TYPE_UDP_PEER)
+		{
+			...
+		}
+		else if (peer->peer_type == MUGGLE_SOCKET_PEER_TYPE_TCP_PEER)
+		{
+			...
+		}
+
+		...
+	}
+}
+
+int main(int argc, char *argv[])
+{
+	...
+
+	muggle_socket_peer_t peers[2];
+
+	// 创建TCP监听socket peer
+	if (muggle_tcp_listen(host, serv, 512, &peers[0]) == MUGGLE_INVALID_SOCKET)
+	{
+		MUGGLE_LOG_ERROR("failed create tcp listen for %s:%s", host, serv);
+		exit(EXIT_FAILURE);
+	}
+
+	// 创建UDP socket peer并绑定
+	if (muggle_udp_bind(host, serv, &peers[1]) == MUGGLE_INVALID_SOCKET)
+	{
+		MUGGLE_LOG_ERROR("failed create udp bind for %s:%s", host, serv);
+		exit(EXIT_FAILURE);
+	}
+
+	muggle_socket_event_init_arg_t ev_init_arg;
+	memset(&ev_init_arg, 0, sizeof(ev_init_arg));
+
+	// 指定填入两个socket peer
+	ev_init_arg.cnt_peer = 2;
+	ev_init_arg.peers = peers;
+
+	...
+}
+
+```
+稍加改动, 就可以加入UDP的echo服务, 当然, 真实的服务大多只会提供单一协议的服务, 这里作为一个例子展示.  
+
+### 自定义协议
+到现在为止, 我们已经看到一些简单的例子, 当然真实的服务并不会如此简单, 比如TCP会遇到粘包, UDP需要自己处理丢包与重传, 还有需要传输自定义的消息而不是单纯的字符串. mugglec提供了一些简单的工具, 可以在自定义协议时, 提供便利.  
+
+#### TODO:
