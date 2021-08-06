@@ -148,3 +148,4 @@ function(add_example_net_foo ver folder)
 endfunction()
 
 add_example_net_foo(1 ${CMAKE_CURRENT_LIST_DIR}/codes/network_foo_v1)
+add_example_net_foo(2 ${CMAKE_CURRENT_LIST_DIR}/codes/network_foo_v2)

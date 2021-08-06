@@ -1,4 +1,6 @@
 #include "foo_cli_handle.h"
+#include "foo/codec/codec_endian.h"
+#include "foo/codec/codec_bytes.h"
 
 int main(int argc, char *argv[])
 {
@@ -19,8 +21,18 @@ int main(int argc, char *argv[])
 	// init dispatcher
 	foo_dispatcher_t dispatcher;
 	foo_dispatcher_init(&dispatcher);
-	foo_dispather_register(&dispatcher, FOO_MSG_TYPE_RSP_LOGIN, sizeof(foo_msg_rsp_login_t), on_msg_rsp_login);
-	foo_dispather_register(&dispatcher, FOO_MSG_TYPE_RSP_SUM, sizeof(foo_msg_rsp_sum_t), on_msg_rsp_sum);
+	foo_dispather_register(&dispatcher, FOO_MSG_TYPE_RSP_LOGIN, on_msg_rsp_login);
+	foo_dispather_register(&dispatcher, FOO_MSG_TYPE_RSP_SUM, on_msg_rsp_sum);
+
+	// append codec into dispatcher
+	foo_codec_endian_t endian_codec;
+	foo_codec_endian_init(&endian_codec);
+
+	foo_codec_t bytes_codec;
+	foo_codec_bytes_init(&bytes_codec);
+
+	foo_dispatcher_append_codec(&dispatcher, (foo_codec_t*)&endian_codec);
+	foo_dispatcher_append_codec(&dispatcher, (foo_codec_t*)&bytes_codec);
 
 	// intialize event data
 	foo_ev_data_t ev_data;
@@ -93,6 +105,6 @@ int main(int argc, char *argv[])
 
 		muggle_msleep(3000);
 	}
-	
+
 	return 0;
 }
