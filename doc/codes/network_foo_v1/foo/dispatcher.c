@@ -46,7 +46,7 @@ static bool foo_check_header(
 	muggle_socket_peer_t *peer,
 	foo_msg_header_t *p_header,
 	foo_dispatcher_t *dispatcher,
-	const char *straddr)
+	const char *straddr, uint32_t msg_len_limit)
 {
 	// check message type
 	if (p_header->msg_type >= FOO_MSG_TYPE_MAX)
@@ -58,7 +58,7 @@ static bool foo_check_header(
 
 	// check callback
 	foo_callback_t *cb = &dispatcher->callbacks[p_header->msg_type];
-	if (cb == NULL)
+	if (cb->cb_func == NULL || cb->msg_type != p_header->msg_type)
 	{
 		MUGGLE_LOG_ERROR("message type without callback: addr=%s, msg_type=%lu",
 			straddr, (unsigned long)p_header->msg_type);
@@ -67,13 +67,31 @@ static bool foo_check_header(
 
 	// check message length
 	uint32_t total_bytes = (uint32_t)sizeof(foo_msg_header_t) + p_header->body_len;
-	if (cb->msg_len >= 0 && total_bytes != cb->msg_len)
+	if (cb->msg_len >= 0)
 	{
-		MUGGLE_LOG_ERROR(
-			"invalid message length: addr=%s, msg_type=%lu, recv_len=%lu, expect_len=%lu",
-			straddr, (unsigned long)p_header->msg_type,
-			(unsigned long)total_bytes, (unsigned long)cb->msg_len);
-		return false;
+		if (total_bytes != cb->msg_len)
+		{
+			MUGGLE_LOG_ERROR(
+				"invalid message length: addr=%s, msg_type=%lu, recv_len=%lu, expect_len=%lu",
+				straddr, (unsigned long)p_header->msg_type,
+				(unsigned long)total_bytes, (unsigned long)cb->msg_len);
+			return false;
+		}
+	}
+	else if (msg_len_limit != 0)
+	{
+		if (total_bytes > msg_len_limit)
+		{
+			MUGGLE_LOG_ERROR(
+				"invalid message length: addr=%s, msg_type=%lu, recv_len=%lu, msg_len_limit=%lu",
+				straddr, (unsigned long)p_header->msg_type,
+				(unsigned long)total_bytes, (unsigned long)msg_len_limit);
+			return false;
+		}
+	}
+	else
+	{
+		// ignore message length check
 	}
 
 	return true;
@@ -83,7 +101,7 @@ bool foo_dispatcher_handle(
 	muggle_socket_event_t *ev,
 	muggle_socket_peer_t *peer)
 {
-	foo_ev_data_t *ev_data = (foo_ev_data_t*)peer->data;
+	foo_ev_data_t *ev_data = (foo_ev_data_t*)ev->datas;
 	foo_dispatcher_t *dispatcher = ev_data->dispatcher;
 
 	foo_socket_peer_data_t *data = (foo_socket_peer_data_t*)peer->data;
@@ -99,28 +117,31 @@ bool foo_dispatcher_handle(
 		}
 
 		// check message header
-		if (!foo_check_header(ev, peer, &msg_header, dispatcher, data->straddr))
+		if (!foo_check_header(ev, peer, &msg_header, dispatcher, data->straddr, ev_data->msg_len_limit))
 		{
 			return false;
 		}
 
-		// check readable
+		// get callback
 		foo_callback_t *cb = &dispatcher->callbacks[msg_header.msg_type];
+
+		// check readable
+		uint32_t msg_len = msg_header.body_len + sizeof(foo_msg_header_t);
 		int readable = muggle_bytes_buffer_readable(bytes_buf);
-		if ((uint32_t)readable < msg_header.body_len + (uint32_t)sizeof(foo_msg_header_t))
+		if ((uint32_t)readable < msg_len)
 		{
 			break;
 		}
 
 		// handle message
 		foo_msg_header_t *p_header =
-			(foo_msg_header_t*)muggle_bytes_buffer_reader_fc(bytes_buf, (int)cb->msg_len);
+			(foo_msg_header_t*)muggle_bytes_buffer_reader_fc(bytes_buf, (uint32_t)msg_len);
 		if (p_header == NULL)
 		{
 			// discontinuous memory
-			void *buf = malloc(cb->msg_len);
+			void *buf = malloc(msg_len);
 
-			muggle_bytes_buffer_read(bytes_buf, (int)cb->msg_len, buf);
+			muggle_bytes_buffer_read(bytes_buf, (int)msg_len, buf);
 			cb->cb_func(ev, peer, buf);
 
 			free(buf);
@@ -130,7 +151,7 @@ bool foo_dispatcher_handle(
 			// continuous memory
 			cb->cb_func(ev, peer, (void*)p_header);
 
-			muggle_bytes_buffer_reader_move(bytes_buf, (int)cb->msg_len);
+			muggle_bytes_buffer_reader_move(bytes_buf, (int)msg_len);
 		}
 	}
 

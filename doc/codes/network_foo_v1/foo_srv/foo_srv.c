@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
 	foo_dispatcher_t dispatcher;
 	foo_dispatcher_init(&dispatcher);
 	foo_dispather_register(&dispatcher, FOO_MSG_TYPE_REQ_LOGIN, sizeof(foo_msg_req_login_t), on_msg_req_login);
+	foo_dispather_register(&dispatcher, FOO_MSG_TYPE_REQ_SUM, FOO_VARIABLE_LEN_MSG, on_msg_req_sum);
 	
 	// intialize event data
 	foo_ev_data_t ev_data;

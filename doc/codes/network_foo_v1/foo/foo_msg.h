@@ -13,8 +13,12 @@ enum
 	FOO_MSG_TYPE_NULL = 0,
 	FOO_MSG_TYPE_REQ_LOGIN,
 	FOO_MSG_TYPE_RSP_LOGIN,
+	FOO_MSG_TYPE_REQ_SUM,
+	FOO_MSG_TYPE_RSP_SUM,
 	FOO_MSG_TYPE_MAX
 };
+
+#define FOO_VARIABLE_LEN_MSG (-1)  //!< variable length message
 
 /**
  * @brief message header
@@ -45,6 +49,27 @@ typedef struct foo_msg_rsp_login
 
 	uint8_t login_result;
 }foo_msg_rsp_login_t;
+
+/**
+ * @brief message - request sum
+ */
+typedef struct foo_msg_req_sum
+{
+	foo_msg_header_t header;
+
+	uint32_t         arr_len;
+	int32_t          *arr;
+}foo_msg_req_sum_t;
+
+/**
+ * @brief message - response sum
+ */
+typedef struct foo_msg_rsp_sum
+{
+	foo_msg_header_t header;
+
+	int32_t          sum;
+}foo_msg_rsp_sum_t;
 
 #pragma pack(pop)
 

@@ -5,6 +5,7 @@ void foo_on_connect(
 	muggle_socket_peer_t *listen_peer,
 	muggle_socket_peer_t *peer)
 {
+	// allocate new peer's data
 	foo_socket_peer_data_t *data = (foo_socket_peer_data_t*)malloc(sizeof(foo_socket_peer_data_t));
 	if (data == NULL)
 	{
@@ -31,6 +32,19 @@ void foo_on_connect(
 	peer->data = data;
 
 	MUGGLE_LOG_INFO("socket connection: addr=%s", data->straddr);
+}
+
+void foo_on_error(
+	muggle_socket_event_t *ev,
+	muggle_socket_peer_t *peer)
+{
+	if (peer->data == NULL)
+	{
+		return;
+	}
+
+	foo_socket_peer_data_t *data = (foo_socket_peer_data_t*)peer->data;
+	MUGGLE_LOG_INFO("socket disconnect: %s", data->straddr);
 }
 
 void foo_on_message(
@@ -88,6 +102,7 @@ void foo_on_close(
 
 	MUGGLE_LOG_INFO("socket close: addr=%s", data->straddr);
 
+	// destroy peer's data
 	muggle_bytes_buffer_destroy(&data->bytes_buf);
 	free(data);
 	peer->data = NULL;
@@ -99,5 +114,8 @@ void foo_send(
 	void *data,
 	size_t num_bytes)
 {
+	foo_msg_header_t *p_header = (foo_msg_header_t*)data;
+	p_header->body_len = num_bytes - sizeof(foo_msg_header_t);
+
 	muggle_socket_peer_send(peer, data, num_bytes, 0);
 }

@@ -13,7 +13,8 @@ typedef struct foo_ev_data
 {
 	foo_dispatcher_t  *dispatcher;     //!< message dispatcher
 	uint32_t          recv_unit_size;  //!< number bytes of per read that from socket into bytes buffer
-	uint32_t          msg_len_limit;   //!< max allowed message length, if 0, with no limit
+	uint32_t          msg_len_limit;   //!< max allowed message variable length, if 0, with no limit
+	void              *user_data;      //!< user event data
 }foo_ev_data_t;
 
 /**
@@ -47,6 +48,17 @@ void foo_on_connect(
  */
 NET_FOO_EXPORT
 void foo_on_message(
+	muggle_socket_event_t *ev,
+	muggle_socket_peer_t *peer);
+
+/**
+ * @brief foo on error
+ *
+ * @param ev    muggle socket event
+ * @param peer  muggle socket peer
+ */
+NET_FOO_EXPORT
+void foo_on_error(
 	muggle_socket_event_t *ev,
 	muggle_socket_peer_t *peer);
 

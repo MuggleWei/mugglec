@@ -116,6 +116,7 @@ function(add_example_net_foo ver folder)
 
 	set(foo example_net_foo_${ver})
 	set(foo_srv example_net_foo_srv_${ver})
+	set(foo_cli example_net_foo_cli_${ver})
 
 	muggle_add_project(${foo} ${folder}/foo SHARED)
 	target_link_libraries(${foo} ${muggle_c})
@@ -129,13 +130,16 @@ function(add_example_net_foo ver folder)
 		PRIVATE NET_FOO_EXPORTS 
 	)
 
-	message("${folder}/foo_srv")
 	muggle_add_project(${foo_srv} ${folder}/foo_srv EXE)
 	target_link_libraries(${foo_srv} ${foo})
 	add_dependencies(${foo_srv} ${foo})
 
+	muggle_add_project(${foo_cli} ${folder}/foo_cli EXE)
+	target_link_libraries(${foo_cli} ${foo})
+	add_dependencies(${foo_cli} ${foo})
+
 	if (WIN32)
-		set_target_properties(${foo} ${foo_srv}
+		set_target_properties(${foo} ${foo_srv} ${foo_cli}
 			PROPERTIES
 			FOLDER "example"
 			VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
