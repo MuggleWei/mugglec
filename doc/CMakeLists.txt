@@ -96,13 +96,19 @@ function(add_example name folder)
 	)
 endfunction()
 
-message("---------------------- network simple example ----------------------")
+message("---------------------- network unix only ----------------------")
 if (UNIX)
-	SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/codes/network)
+	SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/codes/network_unix)
 	FOREACH(subdir ${example_dirs})
-		add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/codes/network/${subdir})
+		add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/codes/network_unix/${subdir})
 	ENDFOREACH()
 endif()
+
+message("---------------------- network simple ----------------------")
+SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/codes/network_simple)
+FOREACH(subdir ${example_dirs})
+	add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/codes/network_simple/${subdir})
+ENDFOREACH()
 
 message("---------------------- network foo ----------------------")
 function(add_example_net_foo ver folder)
@@ -127,6 +133,14 @@ function(add_example_net_foo ver folder)
 	muggle_add_project(${foo_srv} ${folder}/foo_srv EXE)
 	target_link_libraries(${foo_srv} ${foo})
 	add_dependencies(${foo_srv} ${foo})
+
+	if (WIN32)
+		set_target_properties(${foo} ${foo_srv}
+			PROPERTIES
+			FOLDER "example"
+			VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
+		)
+	endif(WIN32)
 endfunction()
 
 add_example_net_foo(1 ${CMAKE_CURRENT_LIST_DIR}/codes/network_foo_v1)

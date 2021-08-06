@@ -62,7 +62,7 @@ void foo_on_message(
 			muggle_bytes_buffer_writer_move(bytes_buf, n);
 		}
 
-		if (n < ev_data->recv_unit_size)
+		if (n < (int)ev_data->recv_unit_size)
 		{
 			break;
 		}

@@ -33,6 +33,7 @@ typedef struct foo_socket_peer_data
  * @param listen_peer  muggle socket listenr peer
  * @param peer         connection socket peer
  */
+NET_FOO_EXPORT
 void foo_on_connect(
 	muggle_socket_event_t *ev,
 	muggle_socket_peer_t *listen_peer,
@@ -44,6 +45,7 @@ void foo_on_connect(
  * @param ev    muggle socket event
  * @param peer  muggle socket peer
  */
+NET_FOO_EXPORT
 void foo_on_message(
 	muggle_socket_event_t *ev,
 	muggle_socket_peer_t *peer);
@@ -54,6 +56,7 @@ void foo_on_message(
  * @param ev    muggle socket event
  * @param peer  muggle socket peer
  */
+NET_FOO_EXPORT
 void foo_on_close(
 	muggle_socket_event_t *ev,
 	muggle_socket_peer_t *peer);
@@ -66,6 +69,7 @@ void foo_on_close(
  * @param data       send data
  * @param num_bytes  number of bytes in data
  */
+NET_FOO_EXPORT
 void foo_send(
 	muggle_socket_event_t *ev,
 	muggle_socket_peer_t *peer,

@@ -7,10 +7,10 @@ mugglec网络模块部分.
 ### 简单的socket用法
 
 #### 有缺陷的TCP Echo服务
-让我们从一个简单的Linux下的TCP echo服务开始吧: [IPv4 TCP Echo Server v1](../codes/network/ip4_tcp_echo_srv_v1/ip4_tcp_echo_srv_v1.c), 很容易发现, 这个服务有着明显的缺陷, 一次只能处理一个连接, 直到前一个连接断开之后, 才会去处理后面的连接. 我们可不想一次只服务一个连接, 使用断点调试一下会发现, 处理逻辑是卡在了读入socket消息当中, 那么是否可以在没有消息的情况下, 就忽略当前连接, 紧接着去处理其他连接呢? 答案是肯定的!  
+让我们从一个简单的Linux下的TCP echo服务开始吧: [IPv4 TCP Echo Server v1](../codes/network_unix/ip4_tcp_echo_srv_v1/ip4_tcp_echo_srv_v1.c), 很容易发现, 这个服务有着明显的缺陷, 一次只能处理一个连接, 直到前一个连接断开之后, 才会去处理后面的连接. 我们可不想一次只服务一个连接, 使用断点调试一下会发现, 处理逻辑是卡在了读入socket消息当中, 那么是否可以在没有消息的情况下, 就忽略当前连接, 紧接着去处理其他连接呢? 答案是肯定的!  
 
 #### 糟糕的非阻塞忙轮询
-细心的朋友可能已经发现, 我们在send消息的时候, 设置了标志MSG_DONTWAIT, 它表示如果写缓冲区满的时候, 我们并不会一直等待下去. 同理, 我们也可以将recv和accept的socket设置为非阻塞的模式, 从而在一个连接没有消息需要读取时, 去处理其他的连接(完整代码 [IPv4 TCP Echo Server v2](../codes/network/ip4_tcp_echo_srv_v2/ip4_tcp_echo_srv_v2.c)):
+细心的朋友可能已经发现, 我们在send消息的时候, 设置了标志MSG_DONTWAIT, 它表示如果写缓冲区满的时候, 我们并不会一直等待下去. 同理, 我们也可以将recv和accept的socket设置为非阻塞的模式, 从而在一个连接没有消息需要读取时, 去处理其他的连接(完整代码 [IPv4 TCP Echo Server v2](../codes/network_unix/ip4_tcp_echo_srv_v2/ip4_tcp_echo_srv_v2.c)):
 ```
 
 ...
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 使用多个telnet连接上来, 发现当前我们确实可以一次性处理多个连接啦! 但是还是有些不对, 怎么日志在飞速的刷呢, 再用top看一下, 发现CPU占比相当的高, 这太糟了, 明明只做了很少的事情, 却疯狂的占用计算机的CPU资源, 这可不是我们想要的.  
 
 #### 多线程
-已经发现, 非阻塞忙轮询并不是一个好的解决方案, 那么我们要如何改进这个服务呢? 有一些编程基础的朋友这时可能马上会想到线程. 当一个连接建立时, 我们就开一个新的线程来处理这个连接, 这样我们便可以一次性处理多个连接了, 且在没有消息的时候, 不用无意义的消耗CPU资源. 啊哈~ 那就让我们着手来修改一下最开始的程序吧(完整的代码 [IPv4 TCP Echo Server v3](../codes/network/ip4_tcp_echo_srv_v3/ip4_tcp_echo_srv_v3.c)):
+已经发现, 非阻塞忙轮询并不是一个好的解决方案, 那么我们要如何改进这个服务呢? 有一些编程基础的朋友这时可能马上会想到线程. 当一个连接建立时, 我们就开一个新的线程来处理这个连接, 这样我们便可以一次性处理多个连接了, 且在没有消息的时候, 不用无意义的消耗CPU资源. 啊哈~ 那就让我们着手来修改一下最开始的程序吧(完整的代码 [IPv4 TCP Echo Server v3](../codes/network_unix/ip4_tcp_echo_srv_v3/ip4_tcp_echo_srv_v3.c)):
 ```
 
 ...
@@ -154,7 +154,7 @@ I/O多路复用允许同时检查多个文件描诉符, 发现它们当中是否
 
 Windows虽然没有提供专属的I/O多路复用API, 但提供了一个专属的异步I/O: IOCP(IO Completion Ports) API.  
 
-那么这就通过select API来改写一下上面到程序吧, 并且顺便更改一下代码, 可以同时支持IP协议的不同版本(完整的代码 [TCP Echo Server Use Select](../codes/network/tcp_echo_srv_select/tcp_echo_srv_select.c)). 让我们看一下用户逻辑部分的代码, 其实关注的只是连接, 消息到达, 断开以及定时器:
+那么这就通过select API来改写一下上面到程序吧, 并且顺便更改一下代码, 可以同时支持IP协议的不同版本(完整的代码 [TCP Echo Server Use Select](../codes/network_unix/tcp_echo_srv_select/tcp_echo_srv_select.c)). 让我们看一下用户逻辑部分的代码, 其实关注的只是连接, 消息到达, 断开以及定时器:
 ```
 void on_connection(socket_peer_t *peer)
 {
@@ -184,7 +184,7 @@ void on_error(socket_peer_t *peer)
 mugglec也带有自己的网络模块, 其主要目标并不是实现众所周知的一些协议, 而是封装底层的细节, 便于灵活的使用和开发自定义的协议  
 
 #### 简单的TCP Echo服务
-那么现在就让我们使用mugglec的网络模块, 来构建一个简单的TCP Echo服务吧(完整的代码 [Echo Server V1](../codes/network/echo_srv_v1/echo_srv_v1.c))
+那么现在就让我们使用mugglec的网络模块, 来构建一个简单的TCP Echo服务吧(完整的代码 [Echo Server V1](../codes/network_simple/echo_srv_v1/echo_srv_v1.c))
 ```
 void on_connect(struct muggle_socket_event *ev, struct muggle_socket_peer *listen_peer, struct muggle_socket_peer *peer) { ... }
 void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer) { ... }
@@ -238,7 +238,7 @@ int main(int argc, char *argv[])
 * 初始化socket event, 并且运行
 
 #### Echo服务
-刚刚我们一直在使用TCP服务, 现在让我们也把UDP的Echo加入到程序中来吧(完整的代码 [Echo Server V2](../codes/network/echo_srv_v2/echo_srv_v2.c))
+刚刚我们一直在使用TCP服务, 现在让我们也把UDP的Echo加入到程序中来吧(完整的代码 [Echo Server V2](../codes/network_simple/echo_srv_v2/echo_srv_v2.c))
 ```
 
 void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
@@ -306,4 +306,4 @@ int main(int argc, char *argv[])
 * 包头后4字节, 用于指明body的长度
 * body是消息中携带的数据
 
-按照上面的消息设定, 我们开始编写一个名为Foo的服务, 服务接受客户端发送过来的登录消息, 返回登录结果, 之后定时给登录成功的连接发送服务器时间消息(完整的代码 服务器[Foo Server](../codes/network/foo_srv/foo_srv.c), 客户端[Foo Client](../codes/network/foo_cli/foo_cli.c)):
+按照上面的消息设定, 我们开始编写一个名为Foo的服务, 服务接受客户端发送过来的登录消息, 返回登录结果, 另外服务还定时向所有连接发送心跳消息(完整的代码 服务器[Foo Server](../codes/network_foo_v1/foo_srv/foo_srv.c), 客户端[Foo Client](../codes/network_foo_v1/foo_cli/foo_cli.c)):

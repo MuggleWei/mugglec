@@ -37,6 +37,7 @@ typedef struct foo_dispatcher
  *
  * @param dispatcher   foo dispatcher
  */
+NET_FOO_EXPORT
 void foo_dispatcher_init(foo_dispatcher_t *dispatcher);
 
 /**
@@ -49,6 +50,7 @@ void foo_dispatcher_init(foo_dispatcher_t *dispatcher);
  *
  * @return boolean value
  */
+NET_FOO_EXPORT
 bool foo_dispather_register(
 	foo_dispatcher_t *dispatcher,
 	uint32_t msg_type,
@@ -63,6 +65,7 @@ bool foo_dispather_register(
  *
  * @return boolean value
  */
+NET_FOO_EXPORT
 bool foo_dispatcher_handle(
 	muggle_socket_event_t *ev,
 	muggle_socket_peer_t *peer);
