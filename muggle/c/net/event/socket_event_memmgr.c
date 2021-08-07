@@ -112,6 +112,7 @@ int muggle_socket_event_memmgr_init(
 		node->peer.ref_cnt = 1;
 		muggle_socket_set_nonblock(node->peer.fd, 1);
 		node->peer.status = MUGGLE_SOCKET_PEER_STATUS_ACTIVE;
+		node->peer.ev = ev;
 
 		muggle_socket_event_memmgr_insert_node(&mgr->active_head, node);
 
