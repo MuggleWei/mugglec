@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 		ev_init_arg.cnt_peer = 1;
 		ev_init_arg.peers = &peer;
 		ev_init_arg.p_peers = &connect_peer;
-		ev_init_arg.timeout_ms = 5000;
+		ev_init_arg.timeout_ms = 1000;
 		ev_init_arg.datas = &ev_data;
 		ev_init_arg.on_connect = NULL;
 		ev_init_arg.on_error = on_error;
