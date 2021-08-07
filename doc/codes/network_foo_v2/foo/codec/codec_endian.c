@@ -200,6 +200,11 @@ bool codec_endian_decode(
 			p_header->msg_type = msg_header.msg_type;
 			p_header->body_len = msg_header.body_len;
 
+			if (conv && conv->decode)
+			{
+				p_header = conv->decode(p_header, total_bytes);
+			}
+
 			bool ret = foo_dispatcher_decode_handle(codec->prev, ev, peer, p_header, total_bytes);
 
 			free(buf);
@@ -216,6 +221,11 @@ bool codec_endian_decode(
 			// convert header's endian
 			p_header->msg_type = msg_header.msg_type;
 			p_header->body_len = msg_header.body_len;
+
+			if (conv && conv->decode)
+			{
+				p_header = conv->decode(p_header, total_bytes);
+			}
 
 			bool ret = foo_dispatcher_decode_handle(codec->prev, ev, peer, p_header, total_bytes);
 

@@ -81,12 +81,6 @@ int main(int argc, char *argv[])
 
 		// on client connection
 		on_connect(&ev, NULL, connect_peer);
-		connect_peer->ev = &ev;
-		if (connect_peer->data == NULL)
-		{
-			MUGGLE_LOG_ERROR("failed init client socket peer");
-			break;
-		}
 
 		// event loop
 		muggle_socket_event_loop(&ev);

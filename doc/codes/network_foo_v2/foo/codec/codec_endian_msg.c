@@ -28,9 +28,8 @@ void* dec_endian_rsp_login(void *data, uint32_t data_len)
 void* enc_endian_req_sum(void *data, uint32_t data_len)
 {
 	foo_msg_req_sum_t *req = (foo_msg_req_sum_t*)data;
-	ptrdiff_t diff = (intptr_t)req->arr - (intptr_t)req;
 	req->arr_len = htonl(req->arr_len);
-	req->arr = (int32_t*)(ptrdiff_t)htonl((int32_t)diff);
+	req->arr = (int32_t*)htonl((int32_t)(sizeof(foo_msg_req_sum_t)));
 
 	return req;
 }
@@ -38,8 +37,8 @@ void* dec_endian_req_sum(void *data, uint32_t data_len)
 {
 	foo_msg_req_sum_t *req = (foo_msg_req_sum_t*)data;
 	req->arr_len = ntohl(req->arr_len);
-	ptrdiff_t diff = (ptrdiff_t)req->arr;
-	req->arr = (int32_t*)(ptrdiff_t)ntohl((int32_t)diff);
+	ptrdiff_t diff = (ptrdiff_t)ntohl((uint32_t)req->arr);
+	req->arr = (int32_t*)((intptr_t)data + diff);
 
 	return req;
 }
