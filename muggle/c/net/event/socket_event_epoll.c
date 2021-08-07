@@ -9,6 +9,7 @@
  *****************************************************************************/
 
 #include "socket_event_epoll.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "muggle/c/log/log.h"

@@ -9,6 +9,7 @@
  *****************************************************************************/
  
 #include "socket_peer.h"
+#include <stdio.h>
 #include <string.h>
 #include "muggle/c/log/log.h"
 #include "socket_utils.h"
@@ -85,9 +86,9 @@ int muggle_socket_peer_release(muggle_socket_peer_t *peer)
 			snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "?:?");
 		}
 #if MUGGLE_PLATFORM_WINDOWS
-		MUGGLE_DEBUG_INFO("close socket [%s]", straddr);
+		MUGGLE_DEBUG_LOG_TRACE("close socket [%s]", straddr);
 #else
-		MUGGLE_DEBUG_INFO("close socket %d[%s]", peer->fd, straddr);
+		MUGGLE_DEBUG_LOG_TRACE("close socket %d[%s]", peer->fd, straddr);
 #endif
 #endif
 		if (peer->ev && peer->ev->on_close)

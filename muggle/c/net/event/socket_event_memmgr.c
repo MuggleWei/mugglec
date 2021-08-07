@@ -9,6 +9,7 @@
  *****************************************************************************/
 
 #include "socket_event_memmgr.h"
+#include <stdio.h>
 #include <string.h>
 #include "muggle/c/base/sleep.h"
 #include "muggle/c/log/log.h"
@@ -46,7 +47,7 @@ void muggle_socket_event_memmgr_debug_print(
 	{
 		snprintf(buf + offset, bufsize - offset, "NULL");
 	}
-	MUGGLE_DEBUG_INFO(buf);
+	MUGGLE_DEBUG_LOG_TRACE(buf);
 }
 
 #endif
@@ -111,6 +112,7 @@ int muggle_socket_event_memmgr_init(
 		node->peer.ref_cnt = 1;
 		muggle_socket_set_nonblock(node->peer.fd, 1);
 		node->peer.status = MUGGLE_SOCKET_PEER_STATUS_ACTIVE;
+		node->peer.ev = ev;
 
 		muggle_socket_event_memmgr_insert_node(&mgr->active_head, node);
 
@@ -164,7 +166,7 @@ void muggle_socket_event_memmgr_recycle(muggle_socket_event_memmgr_t *mgr, muggl
 	}
 
 #if MUGGLE_ENABLE_TRACE
-	MUGGLE_DEBUG_INFO("muggle socket event memmgr recycle");
+	MUGGLE_DEBUG_LOG_TRACE("muggle socket event memmgr recycle");
 
 	char debug_buf[4096];
 	int debug_offset = 0;
@@ -187,7 +189,7 @@ void muggle_socket_event_memmgr_clear(muggle_socket_event_memmgr_t *mgr)
 		{
 			muggle_socket_event_memmgr_free(mgr, node);
 #if MUGGLE_ENABLE_TRACE
-			MUGGLE_DEBUG_INFO("muggle socket event memmgr clear");
+			MUGGLE_DEBUG_LOG_TRACE("muggle socket event memmgr clear");
 
 			char debug_buf[4096];
 			int debug_offset = 0;

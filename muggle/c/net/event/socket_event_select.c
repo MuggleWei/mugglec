@@ -9,6 +9,7 @@
  *****************************************************************************/
 
 #include "socket_event_select.h"
+#include <stdio.h>
 #include <string.h>
 #include "muggle/c/log/log.h"
 #include "muggle/c/memory/memory_pool.h"
