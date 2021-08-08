@@ -57,6 +57,7 @@ typedef struct foo_msg_req_sum
 {
 	foo_msg_header_t header;
 
+	uint32_t         req_id;
 	uint32_t         arr_len;
 	int32_t          *arr;
 }foo_msg_req_sum_t;
@@ -68,6 +69,7 @@ typedef struct foo_msg_rsp_sum
 {
 	foo_msg_header_t header;
 
+	uint32_t         req_id;
 	int32_t          sum;
 }foo_msg_rsp_sum_t;
 

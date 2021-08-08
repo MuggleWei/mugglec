@@ -51,6 +51,8 @@ typedef struct foo_msg_req_sum_ext
 
 #pragma pack(pop)
 
+static uint32_t req_id = 0;
+
 void on_timer(muggle_socket_event_t *ev)
 {
 	foo_ev_data_t *ev_data = (foo_ev_data_t*)ev->datas;
@@ -76,10 +78,12 @@ void on_timer(muggle_socket_event_t *ev)
 		p += offset;
 	}
 
-	MUGGLE_LOG_INFO("send request sum message: %s", str);
-
 	ext_req.req.header.msg_type = FOO_MSG_TYPE_REQ_SUM;
 	ext_req.req.arr_len = cnt;
+	ext_req.req.req_id = req_id++;
+
+	MUGGLE_LOG_INFO("send request sum message: req_id=%lu, req_array=[%s]",
+		(unsigned long)ext_req.req.req_id, str);
 
 	size_t num_bytes =
 		sizeof(foo_msg_req_sum_t) + 
@@ -104,5 +108,6 @@ void on_msg_rsp_sum(
 	void *msg)
 {
 	foo_msg_rsp_sum_t *rsp = (foo_msg_rsp_sum_t*)msg;
-	MUGGLE_LOG_INFO("recv response sum message: %d", (int)rsp->sum);
+	MUGGLE_LOG_INFO("recv response sum message: req_id=%lu, sum=%d",
+		(unsigned long)rsp->req_id, (int)rsp->sum);
 }

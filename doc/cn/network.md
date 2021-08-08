@@ -2,7 +2,7 @@
   - [简单的socket用法](#简单的socket用法)
     - [有缺陷的TCP Echo服务](#有缺陷的tcp-echo服务)
     - [糟糕的非阻塞忙轮询](#糟糕的非阻塞忙轮询)
-    - [每个连接一个多线程](#每个连接一个多线程)
+    - [每个连接一个线程](#每个连接一个线程)
   - [I/O多路复用与异步I/O](#io多路复用与异步io)
   - [使用mugglec网络模块](#使用mugglec网络模块)
     - [简单的TCP Echo服务](#简单的tcp-echo服务)
@@ -11,6 +11,7 @@
     - [字节流缓存](#字节流缓存)
     - [编解码](#编解码)
   - [多线程](#多线程)
+  - [组播](#组播)
 
 ## network
 
@@ -119,7 +120,7 @@ int main(int argc, char *argv[])
 
 使用多个telnet连接上来, 发现当前我们确实可以一次性处理多个连接啦! 但是还是有些不对, 怎么日志在飞速的刷呢, 再用top看一下, 发现CPU占比相当的高, 这太糟了, 明明只做了很少的事情, 却疯狂的占用计算机的CPU资源, 这可不是我们想要的.  
 
-#### 每个连接一个多线程
+#### 每个连接一个线程
 已经发现, 非阻塞忙轮询并不是一个好的解决方案, 那么我们要如何改进这个服务呢? 有一些编程基础的朋友这时可能马上会想到线程. 当一个连接建立时, 我们就开一个新的线程来处理这个连接, 这样我们便可以一次性处理多个连接了, 且在没有消息的时候, 不用无意义的消耗CPU资源. 啊哈~ 那就让我们着手来修改一下最开始的程序吧(完整的代码 [IPv4 TCP Echo Server v3](../codes/network_unix/ip4_tcp_echo_srv_v3/ip4_tcp_echo_srv_v3.c)):
 ```
 
@@ -360,7 +361,27 @@ foo_dispatcher_append_codec(&dispatcher, (foo_codec_t*)&bytes_codec);
 看起来不错, 但是当前在endian codec中, 我们需要为每一个消息编写独立的大小端处理函数, 这可太无趣了, 那么是否能将这部分代码自动化完成呢. 很可惜, 由于c语言本身没有反射机制, 在不借助外部工具的情况下, 很难做到结构体的自动序列化与反序列化. 好在存在很多开源的项目, 来完成这件事, 比如protobuf, thrift; 或者也可以不使用结构体, 直接使用指定的数据交换格式, 比如json, xml等. 这有些偏离了这篇文章的主题了, 关于自动序列化/反序列化的主题就不在这里展开了.  
 
 ### 多线程
-填充初始化参数时, 初始化参数muggle_socket_event_init_arg_t中的ev_loop_type被设置为0, 代表不指定消息循环类型, mugglec会自动选择系统支持的i/o多路复用的api, 所以同一个muggle_socket_event_t的所有的回调函数默认都在同一个线程当中. 用户自己选定需要的消息循环类型(MUGGLE_SOCKET_EVENT_LOOP_TYPE_* 枚举量), 但是要注意, 如果选择了MUGGLE_SOCKET_EVENT_LOOP_TYPE_MULTHREAD或是MUGGLE_SOCKET_EVENT_LOOP_TYPE_IOCP, 则不保证回调函数在同一线程当中.  
+填充初始化参数时, 初始化参数muggle_socket_event_init_arg_t中的ev_loop_type被设置为0, 代表不指定消息循环类型, mugglec会自动选择系统支持的i/o多路复用的api, 所以同一个muggle_socket_event_t的所有的回调函数默认都在同一个线程当中. 用户也可以自己选定需要的消息循环类型(MUGGLE_SOCKET_EVENT_LOOP_TYPE_* 枚举量), 但是要注意, 如果选择了MUGGLE_SOCKET_EVENT_LOOP_TYPE_MULTHREAD或是MUGGLE_SOCKET_EVENT_LOOP_TYPE_IOCP, 则不保证回调函数在同一线程当中.  
 
 在很多时候, 在同一个线程中处理所有逻辑并不是我们想要的, 那么在mugglec中, 如果让多个线程来处理网络回调消息以及将socket peer传给其他线程需要注意些什么呢?  
 让我们再次升级前面的程序, 展示一个简单的生产者消费者模型的例子, 服务程序初始化时就启动好多个工作线程, 当接收的是登录消息, 依然在消息循环线程执行, 当遇到求和运算时, 则发送给工作线程去处理, 消息的分发采用简单的轮询模式. (完整的代码 服务器[Foo Server V3](../codes/network_foo_v3/foo_srv/foo_srv.c))  
+
+生产者线程
+```
+int ref_cnt = muggle_socket_peer_retain(peer);
+......
+int ret = muggle_channel_write(chan, worker_msg);
+```
+
+消费者线程
+```
+worker_thread_msg_t *msg = (worker_thread_msg_t*)muggle_channel_read(chan);
+......
+int ref_cnt = muggle_socket_peer_release(msg->peer);
+```
+
+使用时需要注意, 若要在另一个线程使用socket peer, 那么需要在ev loop的回调函数线程里自增引用计数, 使用完成之后, 释放引用计数.  
+
+### 组播
+上面我们已经介绍过了传输层协议和自定义的应用层协议, 但是至今为止, 我们的应用都是一端发出一个消息, 另外一端接收一个; 如果我们有一条相同的消息, 需要发送给n个接收端, 是否可以只发送一次, 就让这n个接收端都接收到呢? 当然可以啦, 那就是使用组播.  
+TODO:

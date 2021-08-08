@@ -57,8 +57,8 @@ void on_msg_req_sum(
 
 	foo_msg_req_sum_t *req = (foo_msg_req_sum_t*)msg;
 	MUGGLE_LOG_INFO(
-		"recv request sum message: addr=%s",
-		peer_data->straddr);
+		"recv request sum message: addr=%s, req_id=%lu",
+		peer_data->straddr, (unsigned long)req->req_id);
 
 	// put message to worker
 	static int chan_idx = 0;
@@ -124,6 +124,7 @@ muggle_thread_t worker_thread(void *args)
 		memset(&rsp, 0, sizeof(rsp));
 		rsp.header.msg_type = FOO_MSG_TYPE_RSP_SUM;
 		rsp.sum = sum;
+		rsp.req_id = req->req_id;
 
 		foo_send(msg->ev, msg->peer, (void*)&rsp, sizeof(rsp));
 

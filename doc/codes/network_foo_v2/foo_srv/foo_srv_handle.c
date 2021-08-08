@@ -57,8 +57,8 @@ void on_msg_req_sum(
 
 	foo_msg_req_sum_t *req = (foo_msg_req_sum_t*)msg;
 	MUGGLE_LOG_INFO(
-		"recv request sum message: addr=%s",
-		data->straddr);
+		"recv request sum message: addr=%s, req_id=%lu",
+		data->straddr, (unsigned long)req->req_id);
 
 	int32_t sum = 0;
 	for (uint32_t i = 0; i < req->arr_len; i++)
@@ -70,6 +70,7 @@ void on_msg_req_sum(
 	memset(&rsp, 0, sizeof(rsp));
 	rsp.header.msg_type = FOO_MSG_TYPE_RSP_SUM;
 	rsp.sum = sum;
+	rsp.req_id = req->req_id;
 
 	foo_send(ev, peer, (void*)&rsp, sizeof(rsp));
 }
