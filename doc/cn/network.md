@@ -383,5 +383,14 @@ int ref_cnt = muggle_socket_peer_release(msg->peer);
 使用时需要注意, 若要在另一个线程使用socket peer, 那么需要在ev loop的回调函数线程里自增引用计数, 使用完成之后, 释放引用计数.  
 
 ### 组播
-上面我们已经介绍过了传输层协议和自定义的应用层协议, 但是至今为止, 我们的应用都是一端发出一个消息, 另外一端接收一个; 如果我们有一条相同的消息, 需要发送给n个接收端, 是否可以只发送一次, 就让这n个接收端都接收到呢? 当然可以啦, 那就是使用组播.  
-TODO:
+上面我们已经介绍过了传输层协议和自定义的应用层协议, 但是至今为止, 我们的应用都是一端发出一个消息, 另外一端接收一个; 如果我们有一条相同的消息, 需要发送给n个接收端, 是否可以只发送一次, 就让这n个接收端都接收到呢? 当然可以啦, 那就是使用组播. (完整的代码 发送者[MCast Sender](../codes/network_simple/mcast_sender/mcast_send.c), 接收者[MCast Recv](../codes/network_simple/mcast_recv/mcast_recv.c))  
+
+其中, mcast_recv的如参除了可以选择要加入的组播组, 还可以过滤发送源
+```
+@param mcast-IP           加入的组播组ip
+@param mcast-Port         加入的组播组端口
+@param net-iface
+    - 在Unix上, 此参数填写ifconfig命令结果中的名称
+    - 在Windows上, 此参数填写ip地址
+@param mcast-source-group 过滤组播的源(发送者的ip地址)
+```

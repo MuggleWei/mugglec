@@ -103,7 +103,7 @@ void on_msg_req_sum(
 	}
 }
 
-muggle_thread_t worker_thread(void *args)
+muggle_thread_ret_t worker_thread(void *args)
 {
 	worker_thread_args_t *p_args = (worker_thread_args_t*)args;
 	muggle_channel_t *chan = p_args->chan;

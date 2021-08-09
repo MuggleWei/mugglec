@@ -45,6 +45,6 @@ typedef struct worker_thread_args
 	muggle_channel_t *chan;
 }worker_thread_args_t;
 
-muggle_thread_t worker_thread(void *args);
+muggle_thread_ret_t worker_thread(void *args);
 
 #endif /* ifndef FOO_SRV_HANDLE_H_ */
