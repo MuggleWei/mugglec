@@ -58,9 +58,7 @@ int main(int argc, char *argv[])
 	while (1)
 	{
 		muggle_socket_peer_t peer;
-		muggle_tcp_connect(host, serv, connect_timeout, &peer);
-
-		if (peer.fd == MUGGLE_INVALID_SOCKET)
+		if (muggle_tcp_connect(host, serv, connect_timeout, &peer) == MUGGLE_INVALID_SOCKET)
 		{
 			MUGGLE_LOG_ERROR("failed connect %s:%s", host, serv);
 			muggle_msleep(3000);
