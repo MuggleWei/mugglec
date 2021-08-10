@@ -9,7 +9,6 @@
  *****************************************************************************/
 
 #include "socket_event_epoll.h"
-#include <sys/epoll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,6 +17,8 @@
 #include "socket_event_memmgr.h"
 
 #if MUGGLE_PLATFORM_LINUX
+
+#include <sys/epoll.h>
 
 static void muggle_socket_event_epoll_listen(
 	muggle_socket_event_t *ev,
