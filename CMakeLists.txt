@@ -306,10 +306,19 @@ function(add_gtest name folder)
 		${test_utils}
 		${GTEST_BOTH_LIBRARIES}
 	)
-	set_target_properties(${name} PROPERTIES
-		CXX_STANDARD 11
-		CXX_STANDARD_REQUIRED ON
-	)
+
+	if (APPLE)
+		# NOTE: APPLE not support TIME_UTC until c11 or c++17
+		set_target_properties(${name} PROPERTIES
+			CXX_STANDARD 17
+			CXX_STANDARD_REQUIRED ON
+		)
+	else()
+		set_target_properties(${name} PROPERTIES
+			CXX_STANDARD 11
+			CXX_STANDARD_REQUIRED ON
+		)
+	endif()
 
 	# link openssl
 	if (MUGGLE_TEST_LINK_OPENSSL)
