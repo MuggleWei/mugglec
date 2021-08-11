@@ -134,11 +134,7 @@ inline static void muggle_ring_buffer_write_busy_loop(muggle_ring_buffer_t *r, v
 // muggle ring_buffer wakeup functions
 inline static void muggle_ring_buffer_wake_wait(muggle_ring_buffer_t *r)
 {
-#if MUGGLE_SUPPORT_FUTEX
 	muggle_futex_wake_all(&r->cursor);
-#else
-	muggle_condition_variable_notify_all(&r->read_cv);
-#endif
 }
 
 inline static void muggle_ring_buffer_wake_busy_loop(muggle_ring_buffer_t *r)
@@ -148,20 +144,12 @@ inline static void muggle_ring_buffer_wake_busy_loop(muggle_ring_buffer_t *r)
 
 inline static void muggle_ring_buffer_wake_single_wait(muggle_ring_buffer_t *r)
 {
-#if MUGGLE_SUPPORT_FUTEX
 	muggle_futex_wake_one(&r->cursor);
-#else
-	muggle_condition_variable_notify_one(&r->read_cv);
-#endif
 }
 
 inline static void muggle_ring_buffer_wake_lock(muggle_ring_buffer_t *r)
 {
-#if MUGGLE_SUPPORT_FUTEX
 	muggle_futex_wake_one(&r->cursor);
-#else
-	muggle_condition_variable_notify_one(&r->read_cv);
-#endif
 }
 
 // muggle ring_buffer read functions
@@ -176,13 +164,7 @@ inline static void* muggle_ring_buffer_read_wait(muggle_ring_buffer_t *r, muggle
 			return r->datas[r_pos];
 		}
 
-#if MUGGLE_SUPPORT_FUTEX
 		muggle_futex_wait(&r->cursor, w_cursor, NULL);
-#else
-		muggle_mutex_lock(&r->read_mutex);
-		muggle_condition_variable_wait(&r->read_cv, &r->read_mutex, NULL);
-		muggle_mutex_unlock(&r->read_mutex);
-#endif
 	} while (1);
 
 	return NULL;
@@ -219,11 +201,7 @@ inline static void* muggle_ring_buffer_read_lock(muggle_ring_buffer_t *r, muggle
 			r->read_cursor++;
 			break;
 		}
-#if MUGGLE_SUPPORT_FUTEX
 		muggle_futex_wait(&r->cursor, w_cursor, NULL);
-#else
-		muggle_condition_variable_wait(&r->read_cv, &r->read_mutex, NULL);
-#endif
 	} while (1);
 	muggle_mutex_unlock(&r->read_mutex);
 

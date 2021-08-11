@@ -19,6 +19,8 @@
 
 EXTERN_C_BEGIN
 
+#if MUGGLE_SUPPORT_FUTEX
+
 /**
  * @brief futex wait
  *
@@ -46,6 +48,8 @@ void muggle_futex_wake_one(muggle_atomic_int *futex_addr);
  */
 MUGGLE_C_EXPORT
 void muggle_futex_wake_all(muggle_atomic_int *futex_addr);
+
+#endif  // MUGGLE_SUPPORT_FUTEX
 
 EXTERN_C_END
 
