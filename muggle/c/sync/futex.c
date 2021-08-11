@@ -73,6 +73,8 @@ void muggle_futex_wake_all(muggle_atomic_int *futex_addr)
 
 #else
 
+#include "muggle/c/log/log.h"
+
 int muggle_futex_wait(muggle_atomic_int* futex_addr, muggle_atomic_int val, const struct timespec *timeout)
 {
 	MUGGLE_ASSERT_MSG(false, "Futex not support in this platform");
