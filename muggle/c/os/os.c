@@ -148,8 +148,24 @@ int muggle_os_rename(const char *src, const char *dst)
 #include <stdio.h>
 #include <string.h>
 
+#if MUGGLE_PLATFORM_APPLE
+#include <libproc.h>
+#endif
+
 int muggle_os_process_path(char *path, unsigned int size)
 {
+#if MUGGLE_PLATFORM_APPLE
+	memset(path, 0, size);
+
+	pid_t pid = getpid();
+	int ret = proc_pidpath(pid, path, size);
+	if (ret <= 0)
+	{
+		return MUGGLE_ERR_SYS_CALL;
+	}
+
+	return MUGGLE_OK;
+#else
 	char sz_tmp[64], buf[MUGGLE_MAX_PATH];
 	ssize_t len;
 
@@ -162,6 +178,7 @@ int muggle_os_process_path(char *path, unsigned int size)
 	}
 
 	return MUGGLE_ERR_SYS_CALL;
+#endif
 }
 
 int muggle_os_curdir(char *path, unsigned int size)
