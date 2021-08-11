@@ -6,6 +6,8 @@
  *  @copyright    Copyright 2021 Muggle Wei
  *  @license      MIT License
  *  @brief        mugglec futex
+ *
+ *  NOTE: Don't use it immediatelly, futex not support in some platform
  *****************************************************************************/
 
 #ifndef MUGGLE_C_FUTEX_H_

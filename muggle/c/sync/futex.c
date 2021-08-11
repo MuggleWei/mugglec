@@ -43,8 +43,7 @@ void muggle_futex_wake_all(muggle_atomic_int *futex_addr)
 	WakeByAddressAll(futex_addr);
 }
 
-
-#else
+#elif defined(MUGGLE_PLATFORM_LINUX) || defined(MUGGLE_PLATFORM_FREEBSD)
 
 #include <unistd.h>
 #include <sys/syscall.h>
@@ -70,6 +69,24 @@ void muggle_futex_wake_one(muggle_atomic_int* futex_addr)
 void muggle_futex_wake_all(muggle_atomic_int *futex_addr)
 {
 	futex(futex_addr, FUTEX_WAKE | FUTEX_PRIVATE_FLAG, INT_MAX, NULL, NULL, 0);
+}
+
+#else
+
+int muggle_futex_wait(muggle_atomic_int* futex_addr, muggle_atomic_int val, const struct timespec *timeout)
+{
+	MUGGLE_ASSERT_MSG(false, "Futex not support in this platform");
+	return 0;
+}
+
+void muggle_futex_wake_one(muggle_atomic_int* futex_addr)
+{
+	MUGGLE_ASSERT_MSG(false, "Futex not support in this platform");
+}
+
+void muggle_futex_wake_all(muggle_atomic_int *futex_addr)
+{
+	MUGGLE_ASSERT_MSG(false, "Futex not support in this platform");
 }
 
 
