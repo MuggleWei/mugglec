@@ -88,7 +88,7 @@ set(MUGGLE_C_VERSION "${mugglec_version}")
 set(MUGGLE_C_SOVERSION "${MUGGLE_C_VER_MAJOR}")
 
 # output options
-message("-- version ${MUGGLE_C_VERSION}")
+message("-- mugglec version ${MUGGLE_C_VERSION}")
 message("-- option MUGGLE_BUILD_TRACE ${MUGGLE_BUILD_TRACE}")
 message("-- option MUGGLE_BUILD_SHARED_LIB ${MUGGLE_BUILD_SHARED_LIB}")
 message("-- option MUGGLE_BUILD_STATIC_PIC ${MUGGLE_BUILD_STATIC_PIC}")
