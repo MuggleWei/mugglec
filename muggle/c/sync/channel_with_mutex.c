@@ -8,38 +8,74 @@
 #ifndef MUGGLE_SUPPORT_FUTEX
 
 /***************** write *****************/
-static int muggle_channel_mutex_write_wait_read(muggle_channel_t *chan, void *data)
+static int muggle_channel_mutex_write_mutex_read(muggle_channel_t *chan, void *data)
 {
-	muggle_mutex_lock(&chan->mtx);
+	muggle_mutex_lock(&chan->write_mutex);
 
 	if (chan->write_cursor + 1 == chan->read_cursor)
 	{
-		muggle_mutex_unlock(&chan->mtx);
+		muggle_mutex_unlock(&chan->write_mutex);
 		return MUGGLE_ERR_FULL;
 	}
 
-	chan->blocks[IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity)].data = data;
-	chan->write_cursor++;
+	muggle_atomic_int w_cursor = IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity);
 
-	muggle_mutex_unlock(&chan->mtx);
+	muggle_mutex_lock(&chan->read_mutex);
+	chan->blocks[w_cursor].data = data;
+	chan->write_cursor++;
+	muggle_mutex_unlock(&chan->read_mutex);
+
+	muggle_mutex_unlock(&chan->write_mutex);
+
+	return MUGGLE_OK;
+}
+
+static int muggle_channel_single_write_mutex_read(muggle_channel_t *chan, void *data)
+{
+	if (chan->write_cursor + 1 == chan->read_cursor)
+	{
+		muggle_mutex_unlock(&chan->write_mutex);
+		return MUGGLE_ERR_FULL;
+	}
+
+	muggle_atomic_int w_cursor = IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity);
+
+	muggle_mutex_lock(&chan->read_mutex);
+	chan->blocks[w_cursor].data = data;
+	chan->write_cursor++;
+	muggle_mutex_unlock(&chan->read_mutex);
 
 	return MUGGLE_OK;
 }
 
 static int muggle_channel_mutex_write_busy_read(muggle_channel_t *chan, void *data)
 {
-	muggle_mutex_lock(&chan->mtx);
+	muggle_mutex_lock(&chan->write_mutex);
 
 	if (chan->write_cursor + 1 == chan->read_cursor)
 	{
-		muggle_mutex_unlock(&chan->mtx);
+		muggle_mutex_unlock(&chan->write_mutex);
 		return MUGGLE_ERR_FULL;
 	}
 
 	chan->blocks[IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity)].data = data;
 	muggle_atomic_store(&chan->write_cursor, chan->write_cursor + 1, muggle_memory_order_release);
 
-	muggle_mutex_unlock(&chan->mtx);
+	muggle_mutex_unlock(&chan->write_mutex);
+
+	return MUGGLE_OK;
+}
+
+static int muggle_channel_single_write_busy_read(muggle_channel_t *chan, void *data)
+{
+	if (chan->write_cursor + 1 == chan->read_cursor)
+	{
+		muggle_mutex_unlock(&chan->write_mutex);
+		return MUGGLE_ERR_FULL;
+	}
+
+	chan->blocks[IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity)].data = data;
+	muggle_atomic_store(&chan->write_cursor, chan->write_cursor + 1, muggle_memory_order_release);
 
 	return MUGGLE_OK;
 }
@@ -47,7 +83,7 @@ static int muggle_channel_mutex_write_busy_read(muggle_channel_t *chan, void *da
 /***************** wake *****************/
 static void muggle_channel_wake_mutex(muggle_channel_t *chan)
 {
-	muggle_condition_variable_notify_one(&chan->cv);
+	muggle_condition_variable_notify_one(&chan->read_cv);
 }
 static void muggle_channel_wake_busy_loop(muggle_channel_t *chan)
 {
@@ -57,7 +93,7 @@ static void muggle_channel_wake_busy_loop(muggle_channel_t *chan)
 /***************** read *****************/
 static void* muggle_channel_read_mutex(muggle_channel_t *chan)
 {
-	muggle_mutex_lock(&chan->mtx);
+	muggle_mutex_lock(&chan->read_mutex);
 
 	while (1)
 	{
@@ -67,11 +103,11 @@ static void* muggle_channel_read_mutex(muggle_channel_t *chan)
 		{
 			void *data = chan->blocks[r_pos].data;
 			chan->read_cursor++;
-			muggle_mutex_unlock(&chan->mtx);
+			muggle_mutex_unlock(&chan->read_mutex);
 			return data;
 		}
 
-		muggle_condition_variable_wait(&chan->cv, &chan->mtx, NULL);
+		muggle_condition_variable_wait(&chan->read_cv, &chan->read_mutex, NULL);
 	}
 }
 static void* muggle_channel_read_busy_loop(muggle_channel_t *chan)
@@ -110,24 +146,33 @@ int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int 
 	chan->write_cursor = 0;
 	chan->read_cursor = capacity - 1;
 
-	int ret = muggle_mutex_init(&chan->mtx);
+	int ret = muggle_mutex_init(&chan->write_mutex);
 	if (ret != MUGGLE_OK)
 	{
 		return ret;
 	}
 
-	ret = muggle_condition_variable_init(&chan->cv);
+	ret = muggle_mutex_init(&chan->read_mutex);
 	if (ret != MUGGLE_OK)
 	{
-		muggle_mutex_destroy(&chan->mtx);
+		muggle_mutex_destroy(&chan->write_mutex);
+		return ret;
+	}
+
+	ret = muggle_condition_variable_init(&chan->read_cv);
+	if (ret != MUGGLE_OK)
+	{
+		muggle_mutex_destroy(&chan->write_mutex);
+		muggle_mutex_destroy(&chan->read_mutex);
 		return ret;
 	}
 
 	chan->blocks = (muggle_channel_block_t*)malloc(sizeof(muggle_channel_block_t) * capacity);
 	if (chan->blocks == NULL)
 	{
-		muggle_mutex_destroy(&chan->mtx);
-		muggle_condition_variable_destroy(&chan->cv);
+		muggle_mutex_destroy(&chan->write_mutex);
+		muggle_mutex_destroy(&chan->read_mutex);
+		muggle_condition_variable_destroy(&chan->read_cv);
 		return MUGGLE_ERR_MEM_ALLOC;
 	}
 
@@ -136,17 +181,35 @@ int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int 
 		memset(&chan->blocks[i], 0, sizeof(muggle_channel_block_t));
 	}
 
-	if (chan->flags & MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP)
+	if (chan->flags & MUGGLE_CHANNEL_FLAG_SINGLE_WRITER)
 	{
-		chan->fn_write = muggle_channel_mutex_write_busy_read;
-		chan->fn_wake = muggle_channel_wake_busy_loop;
-		chan->fn_read = muggle_channel_read_busy_loop;
+		if (chan->flags & MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP)
+		{
+			chan->fn_write = muggle_channel_single_write_busy_read;
+			chan->fn_wake = muggle_channel_wake_busy_loop;
+			chan->fn_read = muggle_channel_read_busy_loop;
+		}
+		else
+		{
+			chan->fn_write = muggle_channel_single_write_mutex_read;
+			chan->fn_wake = muggle_channel_wake_mutex;
+			chan->fn_read = muggle_channel_read_mutex;
+		}
 	}
 	else
 	{
-		chan->fn_write = muggle_channel_mutex_write_wait_read;
-		chan->fn_wake = muggle_channel_wake_mutex;
-		chan->fn_read = muggle_channel_read_mutex;
+		if (chan->flags & MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP)
+		{
+			chan->fn_write = muggle_channel_mutex_write_busy_read;
+			chan->fn_wake = muggle_channel_wake_busy_loop;
+			chan->fn_read = muggle_channel_read_busy_loop;
+		}
+		else
+		{
+			chan->fn_write = muggle_channel_mutex_write_mutex_read;
+			chan->fn_wake = muggle_channel_wake_mutex;
+			chan->fn_read = muggle_channel_read_mutex;
+		}
 	}
 
 	return MUGGLE_OK;
@@ -159,8 +222,9 @@ void muggle_channel_destroy(muggle_channel_t *chan)
 		chan->blocks = NULL;
 	}
 
-	muggle_condition_variable_destroy(&chan->cv);
-	muggle_mutex_destroy(&chan->mtx);
+	muggle_condition_variable_destroy(&chan->read_cv);
+	muggle_mutex_destroy(&chan->read_mutex);
+	muggle_mutex_destroy(&chan->write_mutex);
 }
 int muggle_channel_write(muggle_channel_t *chan, void *data)
 {

@@ -33,7 +33,7 @@ enum
 
 	MUGGLE_CHANNEL_FLAG_SINGLE_WRITER  = 0x01, //!< user guarantee only one writer use this channel
 	MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP = 0x02, //!< reader busy loop until read message from channel
-	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX    = 0x04, //!< write lock use futex
+	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX    = 0x04, //!< write lock use futex if be support
 };
 
 enum
@@ -102,8 +102,9 @@ typedef struct muggle_channel
 
 	muggle_atomic_int write_cursor;
 	muggle_atomic_int read_cursor;
-	muggle_mutex_t mtx;
-	muggle_condition_variable_t cv;
+	muggle_mutex_t write_mutex;
+	muggle_mutex_t read_mutex;
+	muggle_condition_variable_t read_cv;
 	muggle_channel_block_t *blocks;
 }muggle_channel_t;
 
