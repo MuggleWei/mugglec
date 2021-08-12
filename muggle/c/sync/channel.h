@@ -22,6 +22,7 @@
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/atomic.h"
 #include "muggle/c/sync/mutex.h"
+#include "muggle/c/sync/condition_variable.h"
 
 EXTERN_C_BEGIN
 
@@ -32,7 +33,7 @@ enum
 
 	MUGGLE_CHANNEL_FLAG_SINGLE_WRITER  = 0x01, //!< user guarantee only one writer use this channel
 	MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP = 0x02, //!< reader busy loop until read message from channel
-	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX    = 0x04, //!< write lock use futex
+	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX    = 0x04, //!< write lock use futex if be support
 };
 
 enum
@@ -40,6 +41,13 @@ enum
 	MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK,
 	MUGGLE_CHANNEL_LOCK_STATUS_LOCK,
 };
+
+struct muggle_channel;
+typedef int (*fn_muggle_channel_write)(struct muggle_channel *chan, void *data);
+typedef void* (*fn_muggle_channel_read)(struct muggle_channel *chan);
+typedef void (*fn_muggle_channel_wake)(struct muggle_channel *chan);
+
+#if MUGGLE_SUPPORT_FUTEX
 
 /**
  * @brief channel node block
@@ -49,11 +57,6 @@ typedef struct muggle_channel_block
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
 	void *data;
 }muggle_channel_block_t;
-
-struct muggle_channel;
-typedef int (*fn_muggle_channel_write)(struct muggle_channel *chan, void *data);
-typedef void* (*fn_muggle_channel_read)(struct muggle_channel *chan);
-typedef void (*fn_muggle_channel_wake)(struct muggle_channel *chan);
 
 /**
  * @brief channel
@@ -78,6 +81,34 @@ typedef struct muggle_channel
 	muggle_channel_block_t *blocks;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(6);
 }muggle_channel_t;
+
+#else
+
+/**
+ * @brief channel node block
+ */
+typedef struct muggle_channel_block
+{
+	void *data;
+}muggle_channel_block_t;
+
+typedef struct muggle_channel
+{
+	muggle_atomic_int       capacity;
+	int                     flags;
+	fn_muggle_channel_write fn_write;
+	fn_muggle_channel_read  fn_read;
+	fn_muggle_channel_wake  fn_wake;
+
+	muggle_atomic_int write_cursor;
+	muggle_atomic_int read_cursor;
+	muggle_mutex_t write_mutex;
+	muggle_mutex_t read_mutex;
+	muggle_condition_variable_t read_cv;
+	muggle_channel_block_t *blocks;
+}muggle_channel_t;
+
+#endif
 
 /**
  * @brief init muggle_channel_t

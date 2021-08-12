@@ -6,6 +6,8 @@
  *  @copyright    Copyright 2021 Muggle Wei
  *  @license      MIT License
  *  @brief        mugglec futex
+ *
+ *  NOTE: Don't use it immediatelly, futex not support in some platform
  *****************************************************************************/
 
 #ifndef MUGGLE_C_FUTEX_H_
@@ -16,6 +18,8 @@
 #include "muggle/c/base/atomic.h"
 
 EXTERN_C_BEGIN
+
+#if MUGGLE_SUPPORT_FUTEX
 
 /**
  * @brief futex wait
@@ -44,6 +48,8 @@ void muggle_futex_wake_one(muggle_atomic_int *futex_addr);
  */
 MUGGLE_C_EXPORT
 void muggle_futex_wake_all(muggle_atomic_int *futex_addr);
+
+#endif  // MUGGLE_SUPPORT_FUTEX
 
 EXTERN_C_END
 

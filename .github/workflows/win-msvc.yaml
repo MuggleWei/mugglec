@@ -15,7 +15,7 @@ jobs:
           mkdir build;
           cd build;
           cmake ..
-          -DCMAKE_CXX_COMPILER="cl"
+          -DCMAKE_C_COMPILER="cl"
           -DCMAKE_CXX_COMPILER="cl"
           -DCMAKE_BUILD_TYPE=Debug
           -DMUGGLE_BUILD_SHARED_LIB=ON

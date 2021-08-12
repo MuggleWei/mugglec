@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include "muggle/c/log/log_level.h"
 #include "muggle/c/muggle_c.h"
 
 TEST(log, log_level)

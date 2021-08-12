@@ -26,6 +26,7 @@ mugglec is a cross platform pure C base library, contains utilities like basic d
 ![linux-gcc](https://github.com/MuggleWei/mugglec/actions/workflows/linux-gcc.yaml/badge.svg?branch=master)
 ![linux-clang](https://github.com/MuggleWei/mugglec/actions/workflows/linux-clang.yaml/badge.svg?branch=master)
 ![win-msvc](https://github.com/MuggleWei/mugglec/actions/workflows/win-msvc.yaml/badge.svg?branch=master)
+![macos-clang](https://github.com/MuggleWei/mugglec/actions/workflows/macos-clang.yaml/badge.svg?branch=master)
 
 It's easy to build this project with CMake, the typical workflow starts with:
 ```
@@ -61,7 +62,7 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        GIT_TAG           v0.0.1-alpha.2
+        GIT_TAG           v0.0.1-alpha.3
         GIT_SHALLOW       TRUE
         SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/mugglec-src"
         BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/mugglec-build"

@@ -16,6 +16,8 @@
 #include "muggle/c/base/thread.h"
 #include "muggle/c/sync/futex.h"
 
+#if MUGGLE_SUPPORT_FUTEX
+
 static void muggle_channel_lock_write(muggle_channel_t *chan)
 {
 	muggle_atomic_int expected = MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK;
@@ -82,17 +84,17 @@ static int muggle_channel_write_futex(muggle_channel_t *chan, void *data)
 }
 
 /***************** wake *****************/
-static void muggle_channel_wake_futex(struct muggle_channel *chan)
+static void muggle_channel_wake_futex(muggle_channel_t *chan)
 {
 	muggle_futex_wake_one(&chan->write_cursor);
 }
-static void muggle_channel_wake_busy_loop(struct muggle_channel *chan)
+static void muggle_channel_wake_busy_loop(muggle_channel_t *chan)
 {
 	// do nothing
 }
 
 /***************** read *****************/
-static void* muggle_channel_read_futex(struct muggle_channel *chan)
+static void* muggle_channel_read_futex(muggle_channel_t *chan)
 {
 	muggle_atomic_int r_pos = IDX_IN_POW_OF_2_RING(chan->read_cursor + 1, chan->capacity);
 	muggle_atomic_int w_cursor;
@@ -111,7 +113,7 @@ static void* muggle_channel_read_futex(struct muggle_channel *chan)
 
 	return NULL;
 }
-static void* muggle_channel_read_busy_loop(struct muggle_channel *chan)
+static void* muggle_channel_read_busy_loop(muggle_channel_t *chan)
 {
 	muggle_atomic_int r_pos = IDX_IN_POW_OF_2_RING(chan->read_cursor + 1, chan->capacity);
 	while (1)
@@ -218,3 +220,5 @@ void* muggle_channel_read(muggle_channel_t *chan)
 {
 	return chan->fn_read(chan);
 }
+
+#endif

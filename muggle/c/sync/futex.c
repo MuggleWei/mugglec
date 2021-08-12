@@ -10,6 +10,8 @@
 
 #include "futex.h"
 
+#if MUGGLE_SUPPORT_FUTEX
+
 #if MUGGLE_PLATFORM_WINDOWS
 
 int muggle_futex_wait(muggle_atomic_int* futex_addr, muggle_atomic_int val, const struct timespec *timeout)
@@ -43,7 +45,6 @@ void muggle_futex_wake_all(muggle_atomic_int *futex_addr)
 	WakeByAddressAll(futex_addr);
 }
 
-
 #else
 
 #include <unistd.h>
@@ -72,5 +73,6 @@ void muggle_futex_wake_all(muggle_atomic_int *futex_addr)
 	futex(futex_addr, FUTEX_WAKE | FUTEX_PRIVATE_FLAG, INT_MAX, NULL, NULL, 0);
 }
 
+#endif  // MUGGLE_PLATFORM_WINDOWS
 
-#endif
+#endif  // MUGGLE_SUPPORT_FUTEX

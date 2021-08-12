@@ -18,6 +18,8 @@
 
 #if MUGGLE_PLATFORM_LINUX
 
+#include <sys/epoll.h>
+
 static void muggle_socket_event_epoll_listen(
 	muggle_socket_event_t *ev,
 	muggle_socket_peer_t *listen_peer,

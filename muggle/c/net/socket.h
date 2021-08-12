@@ -51,7 +51,6 @@ typedef int muggle_socklen_t;
 #include <fcntl.h>
 #include <sys/select.h>
 #include <poll.h>
-#include <sys/epoll.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
 

@@ -149,3 +149,17 @@ endfunction()
 
 add_example_net_foo(1 ${CMAKE_CURRENT_LIST_DIR}/codes/network_foo_v1)
 add_example_net_foo(2 ${CMAKE_CURRENT_LIST_DIR}/codes/network_foo_v2)
+
+# srv v3
+set(foo example_net_foo_2)
+set(foo_srv example_net_foo_srv_3)
+muggle_add_project(${foo_srv} ${CMAKE_CURRENT_LIST_DIR}/codes/network_foo_v3/foo_srv EXE)
+target_link_libraries(${foo_srv} ${foo})
+add_dependencies(${foo_srv} ${foo})
+if (WIN32)
+	set_target_properties(${foo_srv}
+		PROPERTIES
+		FOLDER "example"
+		VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
+	)
+endif(WIN32)

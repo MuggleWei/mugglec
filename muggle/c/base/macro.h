@@ -152,6 +152,13 @@
 
 #endif // MUGGLE_PLATFORM_WINDOWS
 
+// futex support
+#if defined(MUGGLE_PLATFORM_WINDOWS) || \
+	defined(MUGGLE_PLATFORM_LINUX) || \
+	defined(MUGGLE_PLATFORM_FREEBSD)
+	#define MUGGLE_SUPPORT_FUTEX 1
+#endif
+
 // cache line padding in structure
 #define MUGGLE_CACHE_LINE_SIZE 64
 #define MUGGLE_STRUCT_CACHE_LINE_PADDING(idx) char cache_line_padding_##idx[MUGGLE_CACHE_LINE_SIZE]

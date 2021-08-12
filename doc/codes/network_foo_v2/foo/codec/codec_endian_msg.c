@@ -29,6 +29,7 @@ void* enc_endian_req_sum(void *data, uint32_t data_len)
 {
 	foo_msg_req_sum_t *req = (foo_msg_req_sum_t*)data;
 	req->arr_len = htonl(req->arr_len);
+	req->req_id = htonl(req->req_id);
 	req->arr = (int32_t*)htonl((int32_t)(sizeof(foo_msg_req_sum_t)));
 
 	return req;
@@ -37,6 +38,7 @@ void* dec_endian_req_sum(void *data, uint32_t data_len)
 {
 	foo_msg_req_sum_t *req = (foo_msg_req_sum_t*)data;
 	req->arr_len = ntohl(req->arr_len);
+	req->req_id = ntohl(req->req_id);
 	ptrdiff_t diff = (ptrdiff_t)ntohl((uint32_t)req->arr);
 	req->arr = (int32_t*)((intptr_t)data + diff);
 

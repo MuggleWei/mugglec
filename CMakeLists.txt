@@ -14,9 +14,9 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS=1 -D_UNICODE -DUNICODE)
 endif()
 
-# # set standard and print features
-# set(CMAKE_C_STANDARD 11)
-# set(CMAKE_C_STANDARD_REQUIRED ON)
+# set standard and print features
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 message("-- c compiler support features: ")
 foreach(feature ${CMAKE_C_COMPILE_FEATURES})
@@ -306,6 +306,19 @@ function(add_gtest name folder)
 		${test_utils}
 		${GTEST_BOTH_LIBRARIES}
 	)
+
+	if (APPLE)
+		# NOTE: APPLE not support TIME_UTC until c11 or c++17
+		set_target_properties(${name} PROPERTIES
+			CXX_STANDARD 17
+			CXX_STANDARD_REQUIRED ON
+		)
+	else()
+		set_target_properties(${name} PROPERTIES
+			CXX_STANDARD 11
+			CXX_STANDARD_REQUIRED ON
+		)
+	endif()
 
 	# link openssl
 	if (MUGGLE_TEST_LINK_OPENSSL)
