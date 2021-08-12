@@ -4,6 +4,8 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
+#if MUGGLE_SUPPORT_FUTEX
+
 TEST(futex, wait_ret_immediately)
 {
 	muggle_atomic_int val = 0;
@@ -60,3 +62,11 @@ TEST(futex, wait_and_wake_all)
 	EXPECT_EQ(x, waiter_num);
 	EXPECT_EQ(y, 1);
 }
+
+#else
+
+TEST(futex, not_support)
+{
+}
+
+#endif /* #if MUGGLE_SUPPORT_FUTEX */

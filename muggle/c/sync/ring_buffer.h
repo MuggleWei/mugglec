@@ -31,6 +31,8 @@ enum
 	MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE   = 0x10, //!< every message will only be read once
 };
 
+#if MUGGLE_SUPPORT_FUTEX
+
 typedef struct muggle_ring_buffer_tag
 {
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
@@ -55,6 +57,24 @@ typedef struct muggle_ring_buffer_tag
 	void **datas;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(9);
 }muggle_ring_buffer_t;
+
+#else
+
+typedef struct muggle_ring_buffer_tag
+{
+	muggle_atomic_int capacity;
+	int flag;
+	int write_mode;
+	int read_mode;
+	muggle_atomic_int next;
+	muggle_atomic_int cursor;
+	muggle_atomic_int read_cursor; // for MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE
+	muggle_mutex_t mtx;
+	muggle_condition_variable_t cv;
+	void **datas;
+}muggle_ring_buffer_t;
+
+#endif  /* #if MUGGLE_SUPPORT_FUTEX */
 
 /**
  * @brief initialize ring buffer
