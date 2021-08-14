@@ -133,6 +133,42 @@ MUGGLE_C_EXPORT
 int muggle_socket_strerror(int errnum, char *buf, size_t bufsize);
 
 /**
+ * @brief set socket opt
+ *
+ * @param socket   socket file descriptor
+ * @param level    socket level
+ * @param optname  option name
+ * @param optval   option val
+ * @param optlen   length of optval
+ *
+ * @return 
+ *     - returns 0 on success
+ *     - on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ */
+MUGGLE_C_EXPORT
+int muggle_setsockopt(
+	muggle_socket_t socket, int level, int optname,
+	const void *optval, muggle_socklen_t optlen);
+
+/**
+ * @brief get socket opt
+ *
+ * @param socket   socket file descriptor
+ * @param level    socket level
+ * @param optname  option name
+ * @param optval   option val
+ * @param optlen   length of optval
+ *
+ * @return 
+ *     - returns 0 on success
+ *     - on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ */
+MUGGLE_C_EXPORT
+int muggle_getsockopt(
+	muggle_socket_t socket, int level, int optname,
+	void *optval, muggle_socklen_t *optlen);
+
+/**
  * @brief set socket block or non-block
  *
  * @param socket socket file descriptor

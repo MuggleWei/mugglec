@@ -143,7 +143,7 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 
 		// always set SO_REUSEADDR for bind socket
 		int on = 1;
-		if (setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
+		if (muggle_setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, (const void*)&on, sizeof(on)) != 0)
 		{
 			char err_msg[1024] = {0};
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
@@ -404,7 +404,7 @@ muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socke
 
 		// always set SO_REUSEADDR for bind socket
 		int on = 1;
-		if (setsockopt(udp_socket, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
+		if (muggle_setsockopt(udp_socket, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
 		{
 			char err_msg[1024] = {0};
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
@@ -601,7 +601,7 @@ muggle_socket_t muggle_mcast_join(
 
 	// always set SO_REUSEADDR for bind socket
 	int on = 1;
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
+	if (muggle_setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
 	{
 		char err_msg[1024] = { 0 };
 		muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
@@ -648,7 +648,7 @@ muggle_socket_t muggle_mcast_join(
 			struct ip_mreq mreq;
 			mreq.imr_interface.s_addr = ((struct sockaddr_in*)&local_addr)->sin_addr.s_addr;
 			mreq.imr_multiaddr.s_addr = ((struct sockaddr_in*)&multicast_addr)->sin_addr.s_addr;
-			ret = setsockopt(fd, level, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq));
+			ret = muggle_setsockopt(fd, level, IP_ADD_MEMBERSHIP, (void*)&mreq, sizeof(mreq));
 			if (ret != 0)
 			{
 				char err_msg[1024] = { 0 };
@@ -672,7 +672,7 @@ muggle_socket_t muggle_mcast_join(
 				mreq.imr_interface.s_addr = ((struct sockaddr_in*)&local_addr)->sin_addr.s_addr;
 				mreq.imr_sourceaddr.s_addr = src_addr.sin_addr.s_addr;
 				mreq.imr_multiaddr.s_addr = ((struct sockaddr_in*)&multicast_addr)->sin_addr.s_addr;
-				ret = setsockopt(fd, level, IP_ADD_SOURCE_MEMBERSHIP, (char *)&mreq, sizeof(mreq));
+				ret = muggle_setsockopt(fd, level, IP_ADD_SOURCE_MEMBERSHIP, (void*)&mreq, sizeof(mreq));
 				if (ret != 0)
 				{
 					char err_msg[1024] = { 0 };
@@ -689,7 +689,7 @@ muggle_socket_t muggle_mcast_join(
 			struct ipv6_mreq mreqv6;
 			mreqv6.ipv6mr_interface = ((struct sockaddr_in6*)&local_addr)->sin6_scope_id;
 			mreqv6.ipv6mr_multiaddr = ((struct sockaddr_in6*)&multicast_addr)->sin6_addr;
-			ret = setsockopt(fd, level, IPV6_ADD_MEMBERSHIP, (char *)&mreqv6, sizeof(mreqv6));
+			ret = muggle_setsockopt(fd, level, IPV6_ADD_MEMBERSHIP, (void*)&mreqv6, sizeof(mreqv6));
 			if (ret != 0)
 			{
 				char err_msg[1024] = { 0 };
@@ -722,7 +722,7 @@ muggle_socket_t muggle_mcast_join(
 			memcpy(&req.gsr_source, src_addrinfo.ai_addr, src_addrinfo.ai_addrlen);
 		}
 
-		ret = setsockopt(fd, level, MCAST_JOIN_SOURCE_GROUP, &req, sizeof(req));
+		ret = muggle_setsockopt(fd, level, MCAST_JOIN_SOURCE_GROUP, (void*)&req, sizeof(req));
 		if (ret != 0)
 		{
 			char err_msg[1024] = { 0 };
@@ -742,7 +742,7 @@ muggle_socket_t muggle_mcast_join(
 		}
 		memcpy(&req.gr_group, multicast_addrinfo.ai_addr, multicast_addrinfo.ai_addrlen);
 
-		ret = setsockopt(fd, level, MCAST_JOIN_GROUP, &req, sizeof(req));
+		ret = muggle_setsockopt(fd, level, MCAST_JOIN_GROUP, (void*)&req, sizeof(req));
 		if (ret != 0)
 		{
 			char err_msg[1024] = { 0 };
@@ -853,7 +853,7 @@ int muggle_mcast_leave(
 			struct ip_mreq mreq;
 			mreq.imr_interface.s_addr = ((struct sockaddr_in*)&local_addr)->sin_addr.s_addr;
 			mreq.imr_multiaddr.s_addr = ((struct sockaddr_in*)&multicast_addr)->sin_addr.s_addr;
-			if (setsockopt(fd, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) != 0)
+			if (muggle_setsockopt(fd, IPPROTO_IP, IP_DROP_MEMBERSHIP, (void*)&mreq, sizeof(mreq)) != 0)
 			{
 				char err_msg[1024] = { 0 };
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
@@ -877,7 +877,7 @@ int muggle_mcast_leave(
 				mreq.imr_interface.s_addr = ((struct sockaddr_in*)&local_addr)->sin_addr.s_addr;
 				mreq.imr_sourceaddr.s_addr = src_addr.sin_addr.s_addr;
 				mreq.imr_multiaddr.s_addr = ((struct sockaddr_in*)&multicast_addr)->sin_addr.s_addr;
-				if (setsockopt(fd, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) != 0)
+				if (muggle_setsockopt(fd, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, (void*)&mreq, sizeof(mreq)) != 0)
 				{
 					char err_msg[1024] = { 0 };
 					muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
@@ -894,7 +894,7 @@ int muggle_mcast_leave(
 			struct ipv6_mreq mreqv6;
 			mreqv6.ipv6mr_interface = ((struct sockaddr_in6*)&local_addr)->sin6_scope_id;
 			mreqv6.ipv6mr_multiaddr = ((struct sockaddr_in6*)&multicast_addr)->sin6_addr;
-			if (setsockopt(fd, IPPROTO_IPV6, IPV6_DROP_MEMBERSHIP, (char *)&mreqv6, sizeof(mreqv6)) != 0)
+			if (muggle_setsockopt(fd, IPPROTO_IPV6, IPV6_DROP_MEMBERSHIP, (void*)&mreqv6, sizeof(mreqv6)) != 0)
 			{
 				char err_msg[1024] = { 0 };
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
@@ -939,7 +939,7 @@ int muggle_mcast_leave(
 			memcpy(&req.gsr_source, src_addrinfo.ai_addr, src_addrinfo.ai_addrlen);
 		}
 
-		if (setsockopt(fd, level, MCAST_LEAVE_SOURCE_GROUP, &req, sizeof(req)) != 0)
+		if (muggle_setsockopt(fd, level, MCAST_LEAVE_SOURCE_GROUP, (void*)&req, sizeof(req)) != 0)
 		{
 			char err_msg[1024] = { 0 };
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
@@ -959,7 +959,7 @@ int muggle_mcast_leave(
 		}
 		memcpy(&req.gr_group, multicast_addrinfo.ai_addr, multicast_addrinfo.ai_addrlen);
 
-		if (setsockopt(fd, level, MCAST_LEAVE_GROUP, &req, sizeof(req)) != 0)
+		if (muggle_setsockopt(fd, level, MCAST_LEAVE_GROUP, (void*)&req, sizeof(req)) != 0)
 		{
 			char err_msg[1024] = { 0 };
 			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));

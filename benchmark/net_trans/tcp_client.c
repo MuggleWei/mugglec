@@ -157,7 +157,7 @@ void run_tcp_client(const char *host, const char *port)
 
 	// set TCP_NODELAY
 	int enable = 1;
-	setsockopt(tcp_peer.fd, IPPROTO_TCP, TCP_NODELAY, (char*)&enable, sizeof(enable));
+	muggle_setsockopt(tcp_peer.fd, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
 
 	// fill up event loop input arguments
 	muggle_socket_event_init_arg_t ev_init_arg;
