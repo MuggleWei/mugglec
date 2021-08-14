@@ -56,6 +56,28 @@ int muggle_socket_strerror(int errnum, char *buf, size_t bufsize)
 #endif
 }
 
+int muggle_setsockopt(
+	muggle_socket_t socket, int level, int optname,
+	const void *optval, muggle_socklen_t optlen)
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	return setsockopt(socket, level, optname, (const char*)optval, optlen);
+#else
+	return setsockopt(socket, level, optname, optval, optlen);
+#endif
+}
+
+int muggle_getsockopt(
+	muggle_socket_t socket, int level, int optname,
+	void *optval, muggle_socklen_t *optlen)
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	return getsockopt(socket, level, optname, (const char*)optval, optlen);
+#else
+	return getsockopt(socket, level, optname, optval, optlen);
+#endif
+}
+
 int muggle_socket_set_nonblock(muggle_socket_t socket, int on)
 {
 #if MUGGLE_PLATFORM_WINDOWS
