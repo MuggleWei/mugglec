@@ -46,6 +46,7 @@
 #include "muggle/c/os/path.h"
 #include "muggle/c/os/dl.h"
 #include "muggle/c/os/stacktrace.h"
+#include "muggle/c/os/endian.h"
 
 // sync
 #include "muggle/c/sync/mutex.h"
