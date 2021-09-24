@@ -341,7 +341,7 @@ do \
 #define DEBUG MUGGLE_LOG_LEVEL_DEBUG
 #define INFO MUGGLE_LOG_LEVEL_INFO
 #define WARN MUGGLE_LOG_LEVEL_WARN
-#define ERROR MUGGLE_LOG_LEVEL_ERROR
+#define ERR MUGGLE_LOG_LEVEL_ERROR
 #define FATAL MUGGLE_LOG_LEVEL_FATAL
 
 void example_customize_log()
@@ -355,9 +355,9 @@ void example_customize_log()
 	MY_LOG(DEBUG, "customize logger - debug");
 	MY_LOG(INFO, "customize logger - info");
 	MY_LOG(WARN, "customize logger - warning");
-	MY_LOG(ERROR, "customize logger - error");
+	MY_LOG(ERR, "customize logger - error");
 
-	MY_LOG(ERROR, "fatal level will print stack and core dumped when debug");
+	MY_LOG(ERR, "fatal level will print stack and core dumped when debug");
 	MY_LOG(FATAL, "fatal");
 }
 

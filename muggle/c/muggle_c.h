@@ -47,6 +47,7 @@
 #include "muggle/c/os/dl.h"
 #include "muggle/c/os/stacktrace.h"
 #include "muggle/c/os/endian.h"
+#include "muggle/c/os/win_getopt.h"
 
 // sync
 #include "muggle/c/sync/mutex.h"
