@@ -125,7 +125,9 @@ inline static void muggle_ring_buffer_write_busy_loop(muggle_ring_buffer_t *r, v
 // muggle ring_buffer wakeup functions
 inline static void muggle_ring_buffer_wake_wait(muggle_ring_buffer_t *r)
 {
+	muggle_mutex_lock(&r->mtx);
 	muggle_condition_variable_notify_all(&r->cv);
+	muggle_mutex_unlock(&r->mtx);
 }
 
 inline static void muggle_ring_buffer_wake_busy_loop(muggle_ring_buffer_t *r)
@@ -135,12 +137,16 @@ inline static void muggle_ring_buffer_wake_busy_loop(muggle_ring_buffer_t *r)
 
 inline static void muggle_ring_buffer_wake_single_wait(muggle_ring_buffer_t *r)
 {
+	muggle_mutex_lock(&r->mtx);
 	muggle_condition_variable_notify_one(&r->cv);
+	muggle_mutex_unlock(&r->mtx);
 }
 
 inline static void muggle_ring_buffer_wake_lock(muggle_ring_buffer_t *r)
 {
+	muggle_mutex_lock(&r->mtx);
 	muggle_condition_variable_notify_one(&r->cv);
+	muggle_mutex_unlock(&r->mtx);
 }
 
 // muggle ring_buffer read functions
