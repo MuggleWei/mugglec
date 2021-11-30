@@ -12,6 +12,8 @@ mugglec is a cross platform pure C base library, contains utilities like basic d
   - [Build](#build)
   - [import mugglec library](#import-mugglec-library)
     - [Incorporating Into CMake project(recommended)](#incorporating-into-cmake-projectrecommended)
+      - [current style](#current-style)
+      - [old style](#old-style)
     - [Find and link](#find-and-link)
     - [Use git submodule](#use-git-submodule)
 
@@ -53,7 +55,39 @@ If you want to import mugglec into your project, there are several methods:
 
 #### Incorporating Into CMake project(recommended)
 If your project already use CMake, then you can invoked mugglec as a sub-build during the CMake stage.  
-New file cmake/mugglec.cmake.in
+
+##### current style
+If your cmake version >= 3.11, you can use ```FetchContent``` directly, add content below into your CMakeLists.txt. Then when run ```cmake ..```, cmake will download mugglec into ```${FETCHCONTENT_BASE_DIR}``` directory.
+```
+include(FetchContent)
+set(FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
+
+FetchContent_Declare(
+        mugglec
+        GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
+        GIT_TAG v0.0.1
+)
+FetchContent_MakeAvailable(mugglec)
+
+# set mugglec compile options
+set(MUGGLE_BUILD_TRACE OFF CACHE BOOL "")
+set(MUGGLE_BUILD_SHARED_LIB ON CACHE BOOL "")
+set(MUGGLE_BUILD_STATIC_PIC ON CACHE BOOL "")
+set(MUGGLE_BUILD_BENCHMARK OFF CACHE BOOL "")
+set(MUGGLE_BUILD_TESTING OFF CACHE BOOL "")
+set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
+
+# link mugglec
+add_executable(example src/example.c)
+add_dependencies(example mugglec)
+target_link_libraries(example mugglec)
+target_include_directories(example PUBLIC
+        ${FETCHCONTENT_BASE_DIR}/mugglec-src)
+```
+
+##### old style
+If your cmake version < 3.11, don't worry, we have old style method to implement download action.  
+Create new file cmake/mugglec.cmake.in
 ```
 cmake_minimum_required(VERSION 3.0.2)
 
@@ -62,10 +96,10 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        GIT_TAG           v0.0.1-alpha.8
+        GIT_TAG           v0.0.1
         GIT_SHALLOW       TRUE
-        SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/mugglec-src"
-        BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/mugglec-build"
+        SOURCE_DIR        "${CMAKE_BINARY_DIR}/_deps/mugglec-src"
+        BINARY_DIR        "${CMAKE_BINARY_DIR}/_deps/mugglec-build"
         CONFIGURE_COMMAND ""
         BUILD_COMMAND     ""
         INSTALL_COMMAND   ""
@@ -78,19 +112,24 @@ add content below into your CMakeLists.txt
 # Download and unpack mugglec at configure time
 configure_file(
         ${CMAKE_CURRENT_LIST_DIR}/cmake/mugglec.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/mugglec-download/CMakeLists.txt)
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
         RESULT_VARIABLE result
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mugglec-download)
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/_deps/mugglec-download)
 if (result)
         message(FATAL_ERROR "cmake step for mugglec failed: ${result}")
 endif()
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
         RESULT_VARIABLE result
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mugglec-download)
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/_deps/mugglec-download)
 if (result)
         message(FATAL_ERROR "build step for mugglec failed: ${result}")
 endif()
+
+# add mugglec to build
+add_subdirectory(
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-src
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-build)
 
 # set mugglec compile options
 set(MUGGLE_BUILD_TRACE OFF CACHE BOOL "")
@@ -100,17 +139,12 @@ set(MUGGLE_BUILD_BENCHMARK OFF CACHE BOOL "")
 set(MUGGLE_BUILD_TESTING OFF CACHE BOOL "")
 set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
 
-# add mugglec to build
-add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/mugglec-src
-        ${CMAKE_CURRENT_BINARY_DIR}/mugglec-build)
-
-# include mugglec head directories
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/mugglec-src)
-
-# link mugglec
+# link mugglec and include header files
 add_executable(example src/example.c)
 add_dependencies(example mugglec)
 target_link_libraries(example mugglec)
+target_include_directories(example PUBLIC
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-src)
 ```
 
 #### Find and link
