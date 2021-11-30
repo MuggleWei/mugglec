@@ -231,6 +231,9 @@ void muggle_socket_event_epoll(muggle_socket_event_t *ev)
 		muggle_socket_event_memmgr_clear(p_mem_mgr);
 	}
 
+	// close epoll fd
+	close(epfd);
+
 	// free memory
 	free(ret_epevs);
 }
