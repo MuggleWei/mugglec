@@ -14,6 +14,8 @@ mugglec是一个纯c语言编写, 跨平台基础库, 提供了一系列常用�
   - [构建](#构建)
   - [使用mugglec](#使用mugglec)
     - [融入进CMake工程 (推荐)](#融入进cmake工程-推荐)
+      - [当前的风格](#当前的风格)
+      - [老式的风格](#老式的风格)
     - [发现并链接](#发现并链接)
     - [使用git子模块](#使用git子模块)
 
@@ -51,10 +53,44 @@ cmake ..
 NOTE: 本库的单元测试使用的是gtest, 若MUGGLE_BUILD_TESTING被设置为ON, 构建时会首先寻找gtest库, 若在CMAKE_PREFIX_PATH的路径中没有发现gtest, 则会在第一次构建时, 自动下载gtest到构建目录中
 
 ### 使用mugglec
-如果你想要在自己的工程中使用mugglec, 有几种普遍的做法
+想要在自己的工程中使用mugglec, 有几种普遍的做法
 
 #### 融入进CMake工程 (推荐)
-若你的工程是使用cmake构建, 那么可以在工程目录中新增文件 cmake/mugglec.cmake.in
+如果你的工程也使用CMake来构建，那么可以在 CMake 阶段调用 mugglec 作为子构建。
+
+##### 当前的风格
+若你的cmake版本 >= 3.11, 那么可以直接使用```FetchContent```, 将一下内容添加到你的CMakeLists.txt文件中, 当你运行```cmake ..```时, cmake将自动下载mugglec到```${FETCHCONTENT_BASE_DIR}```目录当中
+```
+include(FetchContent)
+set(FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
+
+FetchContent_Declare(
+        mugglec
+        GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
+        GIT_TAG v0.0.1
+)
+FetchContent_MakeAvailable(mugglec)
+
+# set mugglec compile options
+set(MUGGLE_BUILD_TRACE OFF CACHE BOOL "")
+set(MUGGLE_BUILD_SHARED_LIB ON CACHE BOOL "")
+set(MUGGLE_BUILD_STATIC_PIC ON CACHE BOOL "")
+set(MUGGLE_BUILD_BENCHMARK OFF CACHE BOOL "")
+set(MUGGLE_BUILD_TESTING OFF CACHE BOOL "")
+set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
+
+# link mugglec
+add_executable(example src/example.c)
+add_dependencies(example mugglec)
+target_link_libraries(example mugglec)
+target_include_directories(example PUBLIC
+        ${FETCHCONTENT_BASE_DIR}/mugglec-src)
+```
+
+##### 老式的风格
+如果你的cmake版本 < 3.11, 也无需担心, 我们也有老式的办法来实现同样的功能.  
+
+在工程目录中新增文件 cmake/mugglec.cmake.in
 ```
 cmake_minimum_required(VERSION 3.0.2)
 
@@ -63,10 +99,10 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        GIT_TAG           v0.0.1-alpha.8
+        GIT_TAG           v0.0.1
         GIT_SHALLOW       TRUE
-        SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/mugglec-src"
-        BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/mugglec-build"
+        SOURCE_DIR        "${CMAKE_BINARY_DIR}/_deps/mugglec-src"
+        BINARY_DIR        "${CMAKE_BINARY_DIR}/_deps/mugglec-build"
         CONFIGURE_COMMAND ""
         BUILD_COMMAND     ""
         INSTALL_COMMAND   ""
@@ -79,19 +115,24 @@ ExternalProject_Add(mugglec
 # 在配置阶段, 下载mugglec并解包
 configure_file(
         ${CMAKE_CURRENT_LIST_DIR}/cmake/mugglec.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/mugglec-download/CMakeLists.txt)
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
         RESULT_VARIABLE result
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mugglec-download)
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/_deps/mugglec-download)
 if (result)
         message(FATAL_ERROR "cmake step for mugglec failed: ${result}")
 endif()
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
         RESULT_VARIABLE result
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mugglec-download)
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/_deps/mugglec-download)
 if (result)
         message(FATAL_ERROR "build step for mugglec failed: ${result}")
 endif()
+
+# 将mugglec加入工程中
+add_subdirectory(
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-src
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-build)
 
 # 设置mugglec的编译变量, 可根据需要进行更改
 set(MUGGLE_BUILD_TRACE OFF CACHE BOOL "")
@@ -101,17 +142,12 @@ set(MUGGLE_BUILD_BENCHMARK OFF CACHE BOOL "")
 set(MUGGLE_BUILD_TESTING OFF CACHE BOOL "")
 set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
 
-# 将mugglec加入工程中
-add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/mugglec-src
-        ${CMAKE_CURRENT_BINARY_DIR}/mugglec-build)
-
-# 包含mugglec的头文件路径
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/mugglec-src)
-
-# 链接mugglec
+# 链接mugglec 并 包含mugglec的头文件路径
 add_executable(example src/example.c)
 add_dependencies(example mugglec)
 target_link_libraries(example mugglec)
+target_include_directories(example PUBLIC
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-src)
 ```
 
 #### 发现并链接
