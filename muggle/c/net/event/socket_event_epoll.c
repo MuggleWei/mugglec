@@ -119,7 +119,7 @@ void muggle_socket_event_epoll(muggle_socket_event_t *ev)
 		return;
 	}
 
-	int cnt_fd;
+	int cnt_fd = 0;
 	struct epoll_event epev;
 	muggle_socket_peer_list_node_t *node = muggle_socket_event_memmgr_get_node(p_mem_mgr);
 	while (node)
