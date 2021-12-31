@@ -9,41 +9,56 @@
 
 NS_MUGGLE_BEGIN
 
-void muggle_benchmark_gen_reports_head(
+void muggle_benchmark_gen_records_report(
 	FILE *fp,
-	struct muggle_benchmark_config *config
-)
+	const char *action_name[],
+	int elapsed_unit,
+	int cnt_array,
+	int cnt_record,
+	muggle_benchmark_record_t *records[])
+{
+	for (int i = 0; i < cnt_record; i++)
+	{
+		for (int j = 0; j < cnt_array; j++)
+		{
+			muggle_benchmark_record_t *record = &records[j][i];
+			if (elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_NS)
+			{
+				fprintf(fp, "%llu,%s,%llu,%lu\n",
+					(unsigned long long)record->idx,
+					action_name[record->action],
+					(unsigned long long)record->ts.tv_sec,
+					(unsigned long)record->ts.tv_nsec);
+			}
+			else if (elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_CPU_CYCLE)
+			{
+				fprintf(fp, "%llu,%s,%llu\n",
+					(unsigned long long)record->idx,
+					action_name[record->action],
+					(unsigned long long)record->cpu_cycles);
+			}
+		}
+	}
+}
+
+void muggle_benchmark_gen_latency_report_head(FILE *fp, struct muggle_benchmark_config *config)
 {
 	char buf[4096] = {0};
 	if (config->elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_NS)
 	{
-		snprintf(buf, sizeof(buf), "elapsed unit[ns]\n");
+		fprintf(fp, "elapsed unit[ns]\n");
 	}
 	else if (config->elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_CPU_CYCLE)
 	{
-		snprintf(buf, sizeof(buf), "elapsed unit[cpu cycle]\n");
+		fprintf(fp, "elapsed unit[cpu cycle]\n");
 	}
-	fwrite(buf, 1, strlen(buf), fp);
 
-	fwrite("case_name", 1, strlen("case_name"), fp);
-	fwrite(",", 1, strlen(","), fp);
-	fwrite("loop", 1, strlen("loop"), fp);
-	fwrite(",", 1, strlen(","), fp);
-	fwrite("cnt_per_loop", 1, strlen("cnt_per_loop"), fp);
-	fwrite(",", 1, strlen(","), fp);
-	fwrite("loop_interval_ms", 1, strlen("loop_interval_ms"), fp);
-	fwrite(",", 1, strlen(","), fp);
-	fwrite("avg", 1, strlen("avg"), fp);
-	fwrite(",", 1, strlen(","), fp);
+	fprintf(fp, "case_name,producer,consumer,rounds,interval_ms,record_per_round,avg,");
 	for (int i = 0; i < 100; i += config->report_step)
 	{
-		char buf[16] = {0};
-		snprintf(buf, sizeof(buf) - 1, "%d", i);
-		fwrite(buf, 1, strlen(buf), fp);
-		fwrite(",", 1, strlen(","), fp);
+		fprintf(fp, "%d,", i);
 	}
-	fwrite("100", 1, strlen("100"), fp);
-	fwrite("\n", 1, strlen("\n"), fp);
+	fprintf(fp, "100\n");
 }
 
 static int compare_uint64(const void *a, const void *b)
@@ -56,43 +71,44 @@ static int compare_uint64(const void *a, const void *b)
 	return 0;
 }
 
-void muggle_benchmark_gen_reports_body(
+void muggle_benchmark_gen_latency_report_body(
 	FILE *fp,
+	const char *action_name[],
 	struct muggle_benchmark_config *config,
-	struct muggle_benchmark_block *blocks,
-	const char *case_name,
-	uint64_t cnt,
-	uint64_t ts_begin_idx,
-	uint64_t ts_end_idx,
-	bool sort
-)
+	uint64_t cnt_record,
+	muggle_benchmark_record_t *rs1,
+	muggle_benchmark_record_t *rs2,
+	bool sort_result)
 {
-	uint64_t *elapseds = (uint64_t*)malloc(cnt * sizeof(uint64_t));
+	uint64_t *elapseds = (uint64_t*)malloc(cnt_record * sizeof(uint64_t));
 	uint64_t sum = 0, cnt_sum = 0, avg = 0;
-	for (uint64_t i = 0; i < cnt; ++i)
+	for (uint64_t i = 0; i < cnt_record; ++i)
 	{
+		muggle_benchmark_record_t *r1 = &rs1[i];
+		muggle_benchmark_record_t *r2 = &rs2[i];
+
 		if (config->elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_NS)
 		{
-			if (blocks[i].ts[ts_end_idx].tv_sec == 0 || blocks[i].ts[ts_begin_idx].tv_sec == 0)
+			if (r1->ts.tv_sec == 0 || r2->ts.tv_sec == 0)
 			{
 				elapseds[i] = UINT_MAX;
 			}
 			else
 			{
-				elapseds[i] = get_elapsed_ns(&blocks[i], (int)ts_begin_idx, (int)ts_end_idx);
+				elapseds[i] = muggle_benchmark_get_elapsed_ns(r1, r2);
 				sum += elapseds[i];
 				cnt_sum++;
 			}
 		}
 		else if (config->elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_CPU_CYCLE)
 		{
-			if (blocks[i].cpu_cycles[ts_end_idx] == 0 || blocks[i].cpu_cycles[ts_begin_idx] == 0)
+			if (r1->cpu_cycles == 0 || r2->cpu_cycles == 0)
 			{
 				elapseds[i] = UINT_MAX;
 			}
 			else
 			{
-				elapseds[i] = get_elapsed_cpu_cycles(&blocks[i], (int)ts_begin_idx, (int)ts_end_idx);
+				elapseds[i] = muggle_benchmark_get_elapsed_cpu_cycles(r1, r2);
 				sum += elapseds[i];
 				cnt_sum++;
 			}
@@ -105,58 +121,64 @@ void muggle_benchmark_gen_reports_body(
 	}
 	avg = sum / cnt_sum;
 
-	if (sort)
+	if (sort_result)
 	{
-		qsort(elapseds, cnt, sizeof(uint64_t), compare_uint64);
+		qsort(elapseds, cnt_record, sizeof(uint64_t), compare_uint64);
 	}
 
-	char buf[4096] = {0};
-	snprintf(buf, sizeof(buf) - 1, "%s,%llu,%llu,%llu,%llu,",
-		case_name,
-		(unsigned long long)config->loop,
-		(unsigned long long)config->cnt_per_loop,
-		(unsigned long long)config->loop_interval_ms,
-		(unsigned long long)avg);
-	fwrite(buf, 1, strlen(buf), fp);
+	// case name
+	fprintf(fp, "%s->%s by %s,",
+		action_name[rs1[0].action], action_name[rs2[0].action], 
+		sort_result ? "elapsed" : "idx");
+
+	// rounds,record_per_round,interval_ms,capacity,producer,consumer,
+	fprintf(fp, "%llu,%llu,%d,%d,%d,%d,",
+		(unsigned long long)config->rounds,
+		(unsigned long long)config->record_per_round,
+		config->round_interval_ms,
+		config->capacity,
+		config->producer,
+		config->consumer);
+
 
 	for (int i = 0; i < 100; i += config->report_step)
 	{
-		uint64_t idx = (uint64_t)((i / 100.0) * cnt);
+		uint64_t idx = (uint64_t)((i / 100.0) * cnt_record);
 		if (elapseds[idx] == UINT_MAX)
 		{
-			snprintf(buf, sizeof(buf) - 1, "-");
+			fprintf(fp, "-,");
 		}
 		else
 		{
-			snprintf(buf, sizeof(buf) - 1, "%llu", (unsigned long long)elapseds[idx]);
+			fprintf(fp, "%llu,", (unsigned long long)elapseds[idx]);
 		}
-		fwrite(buf, 1, strlen(buf), fp);
-		fwrite(",", 1, strlen(","), fp);
 	}
-	if (elapseds[cnt-1] == UINT_MAX)
+
+	if (elapseds[cnt_record-1] == UINT_MAX)
 	{
-		snprintf(buf, sizeof(buf) - 1, "-");
+		fprintf(fp, "-\n");
 	}
 	else
 	{
-		snprintf(buf, sizeof(buf) - 1, "%llu", (unsigned long long)elapseds[cnt-1]);
+		fprintf(fp, "%llu\n", (unsigned long long)elapseds[cnt_record-1]);
 	}
-	fwrite(buf, 1, strlen(buf), fp);
-	fwrite("\n", 1, strlen("\n"), fp);
 
 	free(elapseds);
 }
 
-uint64_t get_elapsed_ns(muggle_benchmark_block_t *block, int begin, int end)
+uint64_t muggle_benchmark_get_elapsed_ns(
+	muggle_benchmark_record_t *r1, muggle_benchmark_record_t *r2)
 {
 	return
-		((uint64_t)(block->ts[end].tv_sec - block->ts[begin].tv_sec) * 1000000000 +	(uint64_t)block->ts[end].tv_nsec)
-		- (uint64_t)block->ts[begin].tv_nsec;
+		(uint64_t)(r2->ts.tv_sec - r1->ts.tv_sec) * 1000000000
+		+ (uint64_t)r2->ts.tv_nsec
+		- (uint64_t)r1->ts.tv_nsec;
 }
 
-uint64_t get_elapsed_cpu_cycles(muggle_benchmark_block_t *block, int begin, int end)
+uint64_t get_elapsed_cpu_cycles(
+	muggle_benchmark_record_t *r1, muggle_benchmark_record_t *r2)
 {
-	return block->cpu_cycles[end] - block->cpu_cycles[begin];
+	return r2->cpu_cycles - r1->cpu_cycles;
 }
 
 NS_MUGGLE_END
