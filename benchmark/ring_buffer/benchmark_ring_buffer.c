@@ -1,6 +1,5 @@
 #include "muggle/c/muggle_c.h"
 #include "muggle_benchmark/muggle_benchmark.h"
-#include <threads.h>
 
 int ring_write(void *user_args, void *data)
 {
