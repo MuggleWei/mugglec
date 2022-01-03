@@ -6,7 +6,7 @@ int chan_write(void *user_args, void *data)
 	return muggle_channel_write((muggle_channel_t*)user_args, data);
 }
 
-void* chan_read(void *user_args)
+void* chan_read(void *user_args, int consumer_id)
 {
 	return muggle_channel_read((muggle_channel_t*)user_args);
 }

@@ -6,7 +6,7 @@ int array_blocking_queue_write(void *user_args, void *data)
 	return muggle_array_blocking_queue_put((muggle_array_blocking_queue_t*)user_args, data);
 }
 
-void* array_blocking_queue_read(void *user_args)
+void* array_blocking_queue_read(void *user_args, int consumer_id)
 {
 	return muggle_array_blocking_queue_take((muggle_array_blocking_queue_t*)user_args);
 }

@@ -46,11 +46,12 @@ typedef int (*fn_muggle_benchmark_thread_trans_write)(void *user_args, void *dat
 /**
  * @brief function prototype of thread transfer read
  *
- * @param user_args  user customized arguments
+ * @param user_args   user customized arguments
+ * @param consumer_id consumer index
  *
  * @return transfer data
  */
-typedef void* (*fn_muggle_benchmark_thread_trans_read)(void *user_args);
+typedef void* (*fn_muggle_benchmark_thread_trans_read)(void *user_args, int consumer_id);
 
 /**
  * @brief function prototype of thread transfer producer complete

@@ -19,10 +19,11 @@ typedef struct muggle_benchmark_thread_producer_args
  */
 typedef struct muggle_benchmark_thread_consumer_args
 {
-	fn_muggle_benchmark_thread_trans_read fn_read;    //!< read function
-	fn_muggle_benchmark_record            fn_record;  //!< record function
-	muggle_benchmark_handle_t             *handle;    //!< benchmark handle
-	void                                  *user_args; //!< user customized arguments
+	fn_muggle_benchmark_thread_trans_read fn_read;     //!< read function
+	fn_muggle_benchmark_record            fn_record;   //!< record function
+	muggle_benchmark_handle_t             *handle;     //!< benchmark handle
+	void                                  *user_args;  //!< user customized arguments
+	int                                   consumer_id; //!< consumer id
 } muggle_benchmark_thread_consumer_args_t;
 
 static muggle_thread_ret_t muggle_benchmark_thread_trans_consumer(void *p_args)
@@ -34,9 +35,10 @@ static muggle_thread_ret_t muggle_benchmark_thread_trans_consumer(void *p_args)
 	muggle_benchmark_record_t *records =
 		muggle_benchmark_handle_get_records(args->handle, MUGGLE_BENCHMARK_THREAD_TRANS_ACTION_READ);
 	void *user_args = args->user_args;
+	int consumer_id = args->consumer_id;
 	while (1)
 	{
-		muggle_benchmark_thread_message_t *data = (muggle_benchmark_thread_message_t*)fn_read(user_args);
+		muggle_benchmark_thread_message_t *data = (muggle_benchmark_thread_message_t*)fn_read(user_args, consumer_id);
 		if (!data || data->id == UINT64_MAX)
 		{
 			break;
@@ -223,6 +225,7 @@ void muggle_benchmark_thread_trans_run(muggle_benchmark_thread_trans_t *benchmar
 		consumer_args[i].fn_record = muggle_benchmark_get_fn_record(config->elapsed_unit);
 		consumer_args[i].handle = handle;
 		consumer_args[i].user_args = benchmark->user_args;
+		consumer_args[i].consumer_id = i;
 	}
 
 	// run consumers
