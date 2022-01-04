@@ -62,6 +62,18 @@ int main(int argc, char *argv[])
 	const char *host = argv[2];
 	const char *port = argv[3];
 
+	int read_flags = 0;
+	if (argc >= 5)
+	{
+		if (strcmp(argv[4], "busy_read") == 0)
+		{
+#if ! defined(MUGGLE_PLATFORM_WINDOWS)
+			read_flags |= MSG_DONTWAIT;
+#endif
+		}
+	}
+
+
 	// benchmark config
 	muggle_benchmark_config_t config;
 	memset(&config, 0, sizeof(config));
@@ -93,15 +105,7 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(app_type, "udp-recv") == 0)
 	{
-		if (argc >= 5)
-		{
-			if (strcmp(argv[4], "busy_read") == 0)
-			{
-#if ! defined(MUGGLE_PLATFORM_WINDOWS)
-				flags |= MSG_DONTWAIT;
-#endif
-			}
-		}
+		flags = read_flags;
 
 		muggle_benchmark_handle_set_action(&handle, NET_TRANS_ACTION_WRITE_BEG, "write_beg");
 		muggle_benchmark_handle_set_action(&handle, NET_TRANS_ACTION_READ, "read");
@@ -123,6 +127,8 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(app_type, "tcp-client") == 0)
 	{
+		flags = read_flags;
+
 		muggle_benchmark_handle_set_action(&handle, NET_TRANS_ACTION_WRITE_BEG, "write_beg");
 		muggle_benchmark_handle_set_action(&handle, NET_TRANS_ACTION_READ, "read");
 

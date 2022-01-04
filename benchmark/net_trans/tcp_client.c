@@ -173,13 +173,21 @@ void run_tcp_client(
 	int enable = 1;
 	muggle_setsockopt(tcp_peer.fd, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
 
+#if ! defined(MUGGLE_PLATFORM_WINDOWS)
+	int timeout_ms = -1;
+	if (flags & MSG_DONTWAIT)
+	{
+		timeout_ms = 0;
+	}
+#endif
+
 	// fill up event loop input arguments
 	muggle_socket_event_init_arg_t ev_init_arg;
 	memset(&ev_init_arg, 0, sizeof(ev_init_arg));
 	ev_init_arg.ev_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_NULL;
 	ev_init_arg.cnt_peer = 1;
 	ev_init_arg.peers = &tcp_peer;
-	ev_init_arg.timeout_ms = -1;
+	ev_init_arg.timeout_ms = timeout_ms;
 	ev_init_arg.on_message = tcp_client_on_message;
 	ev_init_arg.on_error = tcp_client_on_error;
 

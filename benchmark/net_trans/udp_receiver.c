@@ -29,10 +29,12 @@ void run_udp_receiver(
 		}
 		else
 		{
+#if ! defined(MUGGLE_PLATFORM_WINDOWS)
 			if ((flags & MSG_DONTWAIT) && MUGGLE_SOCKET_LAST_ERRNO == EWOULDBLOCK)
 			{
 				continue;
 			}
+#endif
 			break;
 		}
 	}
