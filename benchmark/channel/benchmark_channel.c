@@ -69,18 +69,26 @@ int main(int argc, char *argv[])
 	int flags = 0;
 
 	// channel - futex write and wait read
+	MUGGLE_LOG_INFO("--------------------------------------------------------");
+	MUGGLE_LOG_INFO("run channel - futex write and wait read");
 	flags = MUGGLE_CHANNEL_FLAG_WRITE_FUTEX | MUGGLE_CHANNEL_FLAG_READ_WAIT;
 	benchmark_chan(&config, flags, "channel_futex_wait");
 
 	// channel - futex write and busy loop read
+	MUGGLE_LOG_INFO("--------------------------------------------------------");
+	MUGGLE_LOG_INFO("run channel - futex write and busy read");
 	flags = MUGGLE_CHANNEL_FLAG_WRITE_FUTEX | MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP;
 	benchmark_chan(&config, flags, "channel_futex_busy");
 
 	// channel - mutex write and wait read
+	MUGGLE_LOG_INFO("--------------------------------------------------------");
+	MUGGLE_LOG_INFO("run channel - mutex write and wait read");
 	flags = MUGGLE_CHANNEL_FLAG_WRITE_MUTEX | MUGGLE_CHANNEL_FLAG_READ_WAIT;
 	benchmark_chan(&config, flags, "channel_mutex_wait");
 
 	// channel - mutex write and busy loop read
+	MUGGLE_LOG_INFO("--------------------------------------------------------");
+	MUGGLE_LOG_INFO("run channel - mutex write and busy read");
 	flags = MUGGLE_CHANNEL_FLAG_WRITE_MUTEX | MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP;
 	benchmark_chan(&config, flags, "channel_mutex_busy");
 

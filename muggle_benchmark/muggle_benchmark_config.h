@@ -31,6 +31,7 @@ typedef struct muggle_benchmark_config
 	int      round_interval_ms; //!< round interval in milliseconds
 	int      elapsed_unit;      //!< elapsed time unit
 	int      capacity;          //!< [optional] usually refers to buffer capacity
+	int      block_size;        //!< [optional] data block size
 	int      producer;          //!< [optional] number of producer
 	int      consumer;          //!< [optional] number of consumer
 	int      report_step;       //!< sampling step in report

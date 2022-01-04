@@ -59,6 +59,8 @@ int main(int argc, char *argv[])
 	muggle_benchmark_config_output(&config);
 
 	// array_blocking_queue - write and read
+	MUGGLE_LOG_INFO("--------------------------------------------------------");
+	MUGGLE_LOG_INFO("run array blocking queue");
 	benchmark_array_blocking_queue(&config, "array_blocking_queue");
 
 	return 0;

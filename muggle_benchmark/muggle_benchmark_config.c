@@ -10,6 +10,7 @@ void muggle_benchmark_config_parse_cli(
 	config->round_interval_ms = 1;
 	config->elapsed_unit = MUGGLE_BENCHMARK_ELAPSED_UNIT_NS;
 	config->capacity = 1024;
+	config->block_size = 64;
 	config->producer = 0;
 	config->consumer = 1;
 	config->report_step = 10;
@@ -49,6 +50,10 @@ void muggle_benchmark_config_parse_cli(
 		{
 			muggle_str_toi(optarg, &config->capacity, 0);
 		} break;
+		case 'b':
+		{
+			muggle_str_toi(optarg, &config->block_size, 0);
+		} break;
 		case 'p':
 		{
 			muggle_str_toi(optarg, &config->producer, 0);
@@ -80,6 +85,8 @@ void muggle_benchmark_config_parse_cli(
 				"    elapsed unit\n"
 				"  -s int\n"
 				"    capacity\n"
+				"  -b int\n"
+				"    block_size\n"
 				"  -p int\n"
 				"    number of producer\n"
 				"  -c int\n"
@@ -111,6 +118,7 @@ void muggle_benchmark_config_output(muggle_benchmark_config_t *config)
 	MUGGLE_LOG_INFO("interval ms between round: %d", config->round_interval_ms);
 	MUGGLE_LOG_INFO("elapsed unit: %s", config->elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_NS ? "ns" : "cpu_cycle");
 	MUGGLE_LOG_INFO("capacity: %d", config->capacity);
+	MUGGLE_LOG_INFO("block size: %d", config->block_size);
 	MUGGLE_LOG_INFO("number of producer: %d", config->producer);
 	MUGGLE_LOG_INFO("number of consumer: %d", config->consumer);
 	MUGGLE_LOG_INFO("report step: %d", config->report_step);

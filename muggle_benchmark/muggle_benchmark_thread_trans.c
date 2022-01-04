@@ -12,6 +12,7 @@ typedef struct muggle_benchmark_thread_producer_args
 	muggle_benchmark_thread_message_t      *messages;
 	int                                    producer_idx;
 	void                                   *user_args;
+	int                                    producer_id;
 } muggle_benchmark_thread_producer_args_t;
 
 /**
@@ -36,6 +37,7 @@ static muggle_thread_ret_t muggle_benchmark_thread_trans_consumer(void *p_args)
 		muggle_benchmark_handle_get_records(args->handle, MUGGLE_BENCHMARK_THREAD_TRANS_ACTION_READ);
 	void *user_args = args->user_args;
 	int consumer_id = args->consumer_id;
+	uint64_t count = 0;
 	while (1)
 	{
 		muggle_benchmark_thread_message_t *data = (muggle_benchmark_thread_message_t*)fn_read(user_args, consumer_id);
@@ -48,7 +50,12 @@ static muggle_thread_ret_t muggle_benchmark_thread_trans_consumer(void *p_args)
 		fn_record(record);
 		record->idx = data->id;
 		record->action = MUGGLE_BENCHMARK_THREAD_TRANS_ACTION_READ;
+
+		++count;
 	}
+
+	MUGGLE_LOG_INFO("consumer[%d] completed, total read record: %llu",
+		args->consumer_id, (unsigned long long)count);
 
 	return 0;
 }
@@ -90,6 +97,9 @@ static muggle_thread_ret_t muggle_benchmark_thread_trans_producer(void *p_args)
 			muggle_msleep(config->round_interval_ms);
 		}
 	}
+
+	MUGGLE_LOG_INFO("producer[%d] completed, total write record: %llu",
+		args->producer_id, (unsigned long long)count);
 
 	return 0;
 }
@@ -201,6 +211,7 @@ void muggle_benchmark_thread_trans_run(muggle_benchmark_thread_trans_t *benchmar
 		producer_args[i].messages = messages;
 		producer_args[i].producer_idx = i;
 		producer_args[i].user_args = benchmark->user_args;
+		producer_args[i].producer_id = i;
 	}
 
 	// prepare consumer

@@ -12,6 +12,11 @@ void* ring_read(void *user_args, int consumer_id)
 	return muggle_ring_buffer_read((muggle_ring_buffer_t*)user_args, r_cursors[consumer_id]++);
 }
 
+void* ring_read_once(void *user_args, int consumer_id)
+{
+	return muggle_ring_buffer_read((muggle_ring_buffer_t*)user_args, 0);
+}
+
 void producer_complete_cb(muggle_benchmark_config_t *config, void *user_args)
 {
 	static muggle_benchmark_thread_message_t end_msg;
@@ -24,7 +29,7 @@ void producer_complete_cb(muggle_benchmark_config_t *config, void *user_args)
 	}
 }
 
-void benchmark_ring_buffer(muggle_benchmark_config_t *config, int flags, const char *name)
+void benchmark_ring_buffer(muggle_benchmark_config_t *config, int flags, const char *name, int read_once)
 {
 	// prepare ring buffer
 	muggle_ring_buffer_t ring;
@@ -32,13 +37,26 @@ void benchmark_ring_buffer(muggle_benchmark_config_t *config, int flags, const c
 
 	// initialize thread transfer benchmark
 	muggle_benchmark_thread_trans_t benchmark;
-	muggle_benchmark_thread_trans_init(
-		&benchmark,
-		config,
-		(void*)&ring,
-		ring_write,
-		ring_read,
-		producer_complete_cb);
+	if (read_once)
+	{
+		muggle_benchmark_thread_trans_init(
+			&benchmark,
+			config,
+			(void*)&ring,
+			ring_write,
+			ring_read_once,
+			producer_complete_cb);
+	}
+	else
+	{
+		muggle_benchmark_thread_trans_init(
+			&benchmark,
+			config,
+			(void*)&ring,
+			ring_write,
+			ring_read,
+			producer_complete_cb);
+	}
 
 	// run benchmark
 	muggle_benchmark_thread_trans_run(&benchmark);
@@ -68,25 +86,52 @@ int main(int argc, char *argv[])
 	int flags = 0;
 
 	// ring_buffer - lock write and wait read
+	MUGGLE_LOG_INFO("--------------------------------------------------------");
+	MUGGLE_LOG_INFO("run channel - lock write and wait read");
 	memset(r_cursors, 0, sizeof(int) * config.consumer);
 	flags = MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK | MUGGLE_RING_BUFFER_FLAG_READ_WAIT;
-	benchmark_ring_buffer(&config, flags, "ringbuffer_lock_wait");
+	benchmark_ring_buffer(&config, flags, "ringbuffer_lock_wait", 0);
 
 	// ring_buffer - lock write and busy read
+	MUGGLE_LOG_INFO("--------------------------------------------------------");
+	MUGGLE_LOG_INFO("run channel - lock write and busy read");
 	memset(r_cursors, 0, sizeof(int) * config.consumer);
 	flags = MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK | MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP;
-	benchmark_ring_buffer(&config, flags, "ringbuffer_lock_busy");
+	benchmark_ring_buffer(&config, flags, "ringbuffer_lock_busy", 0);
 
 	// ring_buffer - busy write and wait read
+	MUGGLE_LOG_INFO("--------------------------------------------------------");
+	MUGGLE_LOG_INFO("run channel - busy write and wait read");
 	memset(r_cursors, 0, sizeof(int) * config.consumer);
 	flags = MUGGLE_RING_BUFFER_FLAG_WRITE_BUSY_LOOP | MUGGLE_RING_BUFFER_FLAG_READ_WAIT;
-	benchmark_ring_buffer(&config, flags, "ringbuffer_busy_wait");
+	benchmark_ring_buffer(&config, flags, "ringbuffer_busy_wait", 0);
 
 	// ring_buffer - busy write and busy read
+	MUGGLE_LOG_INFO("--------------------------------------------------------");
+	MUGGLE_LOG_INFO("run channel - busy write and busy read");
 	memset(r_cursors, 0, sizeof(int) * config.consumer);
 	flags = MUGGLE_RING_BUFFER_FLAG_WRITE_BUSY_LOOP | MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP;
-	benchmark_ring_buffer(&config, flags, "ringbuffer_busy_busy");
-	
+	benchmark_ring_buffer(&config, flags, "ringbuffer_busy_busy", 0);
+
+	// ring buffer - lock write and read once
+	MUGGLE_LOG_INFO("--------------------------------------------------------");
+	MUGGLE_LOG_INFO("run channel - lock write and read once");
+	memset(r_cursors, 0, sizeof(int) * config.consumer);
+	flags =
+		MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK |
+		MUGGLE_RING_BUFFER_FLAG_READ_WAIT |
+		MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE;
+	benchmark_ring_buffer(&config, flags, "ringbuffer_lock_once", 1);
+
+	// ring buffer - busy write and read once
+	MUGGLE_LOG_INFO("--------------------------------------------------------");
+	MUGGLE_LOG_INFO("run channel - busy write and read once");
+	memset(r_cursors, 0, sizeof(int) * config.consumer);
+	flags =
+		MUGGLE_RING_BUFFER_FLAG_WRITE_BUSY_LOOP |
+		MUGGLE_RING_BUFFER_FLAG_READ_WAIT |
+		MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE;
+	benchmark_ring_buffer(&config, flags, "ringbuffer_busy_once", 1);
 
 	return 0;
 }

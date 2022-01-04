@@ -63,7 +63,8 @@ if (MUGGLE_BUILD_TESTING)
 	set(BUILD_TESTING ON)
 endif()
 
-if (MUGGLE_BUILD_EXAMPLE OR MUGGLE_BUILD_TESTING OR MUGGLE_BUILD_BENCHMARK)
+#if (MUGGLE_BUILD_EXAMPLE OR MUGGLE_BUILD_TESTING OR MUGGLE_BUILD_BENCHMARK)
+if (MUGGLE_BUILD_BENCHMARK)
 	set(MUGGLE_BUILD_LIB_BENCHMARK ON)
 else()
 	set(MUGGLE_BUILD_LIB_BENCHMARK OFF)
@@ -240,11 +241,8 @@ function(add_example name folder)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
-	add_dependencies(${name} ${muggle_c} muggle_benchmark)
-	target_link_libraries(${name}
-		${muggle_c}
-		muggle_benchmark
-	)
+	add_dependencies(${name} ${muggle_c})
+	target_link_libraries(${name} ${muggle_c})
 endfunction()
 
 function(add_benchmark name folder)
@@ -268,9 +266,7 @@ function(add_benchmark name folder)
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
 	add_dependencies(${name} muggle_benchmark)
-	target_link_libraries(${name}
-		muggle_benchmark
-	)
+	target_link_libraries(${name} muggle_benchmark)
 endfunction()
 
 function(add_gtest name folder)
