@@ -1,10 +1,13 @@
+/*
+ *	author: muggle wei <mugglewei@gmail.com>
+ *
+ *	Use of this source code is governed by the MIT license that can be
+ *	found in the LICENSE file.
+ */
+
 #include "udp_sender.h"
 
-void run_udp_sender(
-	const char *host, const char *port,
-	int flags,
-	muggle_benchmark_handle_t *handle,
-	muggle_benchmark_config_t *config)
+void run_udp_sender(const char *host, const char *port)
 {
 	muggle_socket_peer_t udp_peer;
 	udp_peer.fd = muggle_udp_connect(host, port, &udp_peer);
@@ -14,5 +17,5 @@ void run_udp_sender(
 		exit(EXIT_FAILURE);
 	}
 
-	sendPkgs(&udp_peer, flags, handle, config);
+	sendPkgs(&udp_peer);
 }
