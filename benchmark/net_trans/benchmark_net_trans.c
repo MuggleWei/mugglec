@@ -97,7 +97,9 @@ int main(int argc, char *argv[])
 		{
 			if (strcmp(argv[4], "busy_read") == 0)
 			{
+#if ! defined(MUGGLE_PLATFORM_WINDOWS)
 				flags |= MSG_DONTWAIT;
+#endif
 			}
 		}
 
