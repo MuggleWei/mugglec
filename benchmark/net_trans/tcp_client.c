@@ -173,8 +173,8 @@ void run_tcp_client(
 	int enable = 1;
 	muggle_setsockopt(tcp_peer.fd, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
 
-#if ! defined(MUGGLE_PLATFORM_WINDOWS)
 	int timeout_ms = -1;
+#if ! defined(MUGGLE_PLATFORM_WINDOWS)
 	if (flags & MSG_DONTWAIT)
 	{
 		timeout_ms = 0;
