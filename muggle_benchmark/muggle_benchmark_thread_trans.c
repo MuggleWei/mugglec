@@ -10,9 +10,8 @@ typedef struct muggle_benchmark_thread_producer_args
 	muggle_benchmark_config_t              *config;
 	muggle_benchmark_handle_t              *handle;
 	muggle_benchmark_thread_message_t      *messages;
-	int                                    producer_idx;
-	void                                   *user_args;
 	int                                    producer_id;
+	void                                   *user_args;
 } muggle_benchmark_thread_producer_args_t;
 
 /**
@@ -76,7 +75,7 @@ static muggle_thread_ret_t muggle_benchmark_thread_trans_producer(void *p_args)
 		muggle_benchmark_handle_get_records(args->handle, MUGGLE_BENCHMARK_THREAD_TRANS_ACTION_WRITE_END);
 
 	uint64_t count = config->rounds * config->record_per_round;
-	uint64_t offset = args->producer_idx * count;
+	uint64_t offset = args->producer_id * count;
 	for (uint64_t round = 0; round < config->rounds; round++)
 	{
 		for (uint64_t i = 0; i < config->record_per_round; i++)
@@ -209,9 +208,8 @@ void muggle_benchmark_thread_trans_run(muggle_benchmark_thread_trans_t *benchmar
 		producer_args[i].config = config;
 		producer_args[i].handle = handle;
 		producer_args[i].messages = messages;
-		producer_args[i].producer_idx = i;
-		producer_args[i].user_args = benchmark->user_args;
 		producer_args[i].producer_id = i;
+		producer_args[i].user_args = benchmark->user_args;
 	}
 
 	// prepare consumer
