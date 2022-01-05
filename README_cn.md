@@ -59,7 +59,7 @@ NOTE: 本库的单元测试使用的是gtest, 若MUGGLE_BUILD_TESTING被设置�
 如果你的工程也使用CMake来构建，那么可以在 CMake 阶段调用 mugglec 作为子构建。
 
 ##### 当前的风格
-若你的cmake版本 >= 3.11, 那么可以直接使用```FetchContent```, 将一下内容添加到你的CMakeLists.txt文件中, 当你运行```cmake ..```时, cmake将自动下载mugglec到```${FETCHCONTENT_BASE_DIR}```目录当中
+若你的cmake版本 >= 3.11, 那么可以直接使用```FetchContent```, 将以下内容添加到你的CMakeLists.txt文件中, 当你运行```cmake ..```时, cmake将自动下载mugglec到```${FETCHCONTENT_BASE_DIR}```目录当中
 ```
 include(FetchContent)
 set(FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
@@ -67,7 +67,7 @@ set(FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
 FetchContent_Declare(
         mugglec
         GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
-        GIT_TAG v0.0.1
+        GIT_TAG v0.0.2
 )
 FetchContent_MakeAvailable(mugglec)
 
@@ -99,7 +99,7 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        GIT_TAG           v0.0.1
+        GIT_TAG           v0.0.2
         GIT_SHALLOW       TRUE
         SOURCE_DIR        "${CMAKE_BINARY_DIR}/_deps/mugglec-src"
         BINARY_DIR        "${CMAKE_BINARY_DIR}/_deps/mugglec-build"

@@ -1,15 +1,13 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
 #ifndef UDP_RECEIVER_H_
 #define UDP_RECEIVER_H_
 
 #include "trans_message.h"
 
-void run_udp_receiver(const char *host, const char *port);
+void run_udp_receiver(
+	const char *host, const char *port,
+	int flags,
+	muggle_benchmark_handle_t *handle,
+	muggle_benchmark_config_t *config);
 
 #endif
+

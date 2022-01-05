@@ -1,10 +1,3 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
 #include "trans_message.h"
 
 void genPkgHeader(struct pkg_header *header)
@@ -27,7 +20,11 @@ void genPkgData(struct pkg_data *data, uint32_t idx)
 	data->nsec = (uint64_t)ts.tv_nsec;
 }
 
-void sendPkgs(muggle_socket_peer_t *peer)
+void sendPkgs(
+	muggle_socket_peer_t *peer,
+	int flags,
+	muggle_benchmark_handle_t *handle,
+	muggle_benchmark_config_t *config)
 {
 	struct pkg msg;
 	genPkgHeader(&msg.header);
@@ -35,18 +32,32 @@ void sendPkgs(muggle_socket_peer_t *peer)
 	struct timespec ts_start, ts_end;
 	timespec_get(&ts_start, TIME_UTC);
 
+	muggle_benchmark_record_t *write_beg_records =
+		muggle_benchmark_handle_get_records(handle, NET_TRANS_ACTION_WRITE_BEG);
+	muggle_benchmark_record_t *write_end_records =
+		muggle_benchmark_handle_get_records(handle, NET_TRANS_ACTION_WRITE_END);
+	fn_muggle_benchmark_record fn_record = muggle_benchmark_get_fn_record(config->elapsed_unit);
+
 	uint32_t idx = 0;
-	for (int i = 0; i < TRANS_PKG_ROUND; i++)
+	for (int i = 0; i < config->rounds; i++)
 	{
-		for (int j = 0; j < PKG_PER_ROUND; j++)
+		for (int j = 0; j < config->record_per_round; j++)
 		{
-			genPkgData((struct pkg_data*)&msg.placeholder, idx++);
-			muggle_socket_send(peer->fd, &msg, sizeof(struct pkg_header) + (size_t)msg.header.data_len, 0);
+			genPkgData((struct pkg_data*)&msg.placeholder, idx);
+
+			fn_record(&write_beg_records[idx]);
+			muggle_socket_send(
+				peer->fd, &msg,
+				sizeof(struct pkg_header) + (size_t)msg.header.data_len,
+				flags);
+			fn_record(&write_end_records[idx]);
+
+			++idx;
 		}
 
-		if (ROUND_INTERVAL_MS > 0)
+		if (config->round_interval_ms > 0)
 		{
-			muggle_msleep(ROUND_INTERVAL_MS);
+			muggle_msleep(config->round_interval_ms);
 		}
 	}
 
@@ -56,8 +67,50 @@ void sendPkgs(muggle_socket_peer_t *peer)
 	MUGGLE_LOG_INFO("send %u pkg completed, use %llu ns", (unsigned int)idx, (unsigned long long)elapsed_ns);
 
 	muggle_msleep(5);
+
 	memset(&msg, 0, sizeof(msg));
 	msg.header.msg_type = MSG_TYPE_END;
 	muggle_socket_send(peer->fd, &msg, sizeof(struct pkg_header) + (size_t)msg.header.data_len, 0);
 	MUGGLE_LOG_INFO("send end pkg");
+}
+
+int onRecvPkg(
+	muggle_socket_peer_t *peer,
+	struct pkg *pkg,
+	muggle_benchmark_handle_t *handle,
+	muggle_benchmark_config_t *config)
+{
+	// record time
+	muggle_benchmark_record_t record;
+	fn_muggle_benchmark_record fn_record =
+		muggle_benchmark_get_fn_record(config->elapsed_unit);
+	fn_record(&record);
+
+	// get records
+	muggle_benchmark_record_t *write_beg_records =
+		muggle_benchmark_handle_get_records(handle, NET_TRANS_ACTION_WRITE_BEG);
+	muggle_benchmark_record_t *read_records =
+		muggle_benchmark_handle_get_records(handle, NET_TRANS_ACTION_READ);
+
+	switch (pkg->header.msg_type)
+	{
+		case MSG_TYPE_PKG:
+			{
+				struct pkg_data *data = (struct pkg_data*)pkg->placeholder;
+				uint32_t idx = data->idx;
+
+				memcpy(&read_records[idx], &record, sizeof(record));
+
+				write_beg_records[idx].idx = idx;
+				write_beg_records[idx].ts.tv_sec = data->sec;
+				write_beg_records[idx].ts.tv_nsec = data->nsec;
+			}break;
+		case MSG_TYPE_END:
+			{
+				MUGGLE_LOG_INFO("recv end message");
+				return 1;
+			}break;
+	}
+
+	return 0;
 }

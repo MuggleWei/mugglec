@@ -1,14 +1,12 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
 #include "tcp_client.h"
 
-#include "muggle/c/log/log.h"
-#include "utils.h"
+struct tcp_client_user_data
+{
+	int flags;
+	muggle_benchmark_handle_t *handle;
+	muggle_benchmark_config_t *config;
+	muggle_bytes_buffer_t *bytes_buf;
+};
 
 void recv_message(muggle_socket_peer_t *peer, muggle_bytes_buffer_t *bytes_buf)
 {
@@ -35,7 +33,8 @@ void recv_message(muggle_socket_peer_t *peer, muggle_bytes_buffer_t *bytes_buf)
 	}
 }
 
-bool parse_message_uncontiguous(muggle_socket_peer_t *peer, muggle_bytes_buffer_t *bytes_buf, int readable)
+bool parse_message_uncontiguous(
+	muggle_socket_peer_t *peer, muggle_bytes_buffer_t *bytes_buf, int readable, struct tcp_client_user_data *user_data)
 {
 	struct pkg msg;
 	if (!muggle_bytes_buffer_fetch(bytes_buf, sizeof(struct pkg_header), &msg.header))
@@ -52,7 +51,7 @@ bool parse_message_uncontiguous(muggle_socket_peer_t *peer, muggle_bytes_buffer_
 			return false;
 		}
 
-		if (on_msg(peer, &msg) != 0)
+		if (onRecvPkg(peer, &msg, user_data->handle, user_data->config) != 0)
 		{
 			muggle_socket_peer_close(peer);
 			MUGGLE_LOG_INFO("close peer");
@@ -64,8 +63,10 @@ bool parse_message_uncontiguous(muggle_socket_peer_t *peer, muggle_bytes_buffer_
 	return false;
 }
 
-void parse_message(muggle_socket_peer_t *peer, muggle_bytes_buffer_t *bytes_buf)
+void parse_message(muggle_socket_peer_t *peer, struct tcp_client_user_data *user_data)
 {
+	muggle_bytes_buffer_t *bytes_buf = user_data->bytes_buf;
+
 	int readable = 0;
 	while (1)
 	{
@@ -93,7 +94,7 @@ void parse_message(muggle_socket_peer_t *peer, muggle_bytes_buffer_t *bytes_buf)
 			struct pkg *msg = muggle_bytes_buffer_reader_fc(bytes_buf, len_msg);
 			if (msg != NULL)
 			{
-				if (on_msg(peer, msg) != 0)
+				if (onRecvPkg(peer, msg, user_data->handle, user_data->config) != 0)
 				{
 					muggle_socket_peer_close(peer);
 					MUGGLE_LOG_INFO("close peer");
@@ -103,7 +104,7 @@ void parse_message(muggle_socket_peer_t *peer, muggle_bytes_buffer_t *bytes_buf)
 			}
 			else
 			{
-				if (!parse_message_uncontiguous(peer, bytes_buf, readable))
+				if (!parse_message_uncontiguous(peer, bytes_buf, readable, user_data))
 				{
 					break;
 				}
@@ -111,7 +112,7 @@ void parse_message(muggle_socket_peer_t *peer, muggle_bytes_buffer_t *bytes_buf)
 		}
 		else
 		{
-			if (!parse_message_uncontiguous(peer, bytes_buf, readable))
+			if (!parse_message_uncontiguous(peer, bytes_buf, readable, user_data))
 			{
 				break;
 			}
@@ -121,13 +122,14 @@ void parse_message(muggle_socket_peer_t *peer, muggle_bytes_buffer_t *bytes_buf)
 
 static void tcp_client_on_message(muggle_socket_event_t *ev, muggle_socket_peer_t *peer)
 {
-	muggle_bytes_buffer_t *bytes_buf = (muggle_bytes_buffer_t*)peer->data;
+	struct tcp_client_user_data *user_data = (struct tcp_client_user_data*)peer->data;
+	muggle_bytes_buffer_t *bytes_buf = user_data->bytes_buf;
 
 	// read message into bytes buffer
 	recv_message(peer, bytes_buf);
 
 	// parse message
-	parse_message(peer, bytes_buf);
+	parse_message(peer, user_data);
 }
 
 static void tcp_client_on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
@@ -135,7 +137,11 @@ static void tcp_client_on_error(struct muggle_socket_event *ev, struct muggle_so
 	muggle_socket_event_loop_exit(ev);
 }
 
-void run_tcp_client(const char *host, const char *port)
+void run_tcp_client(
+	const char *host, const char *port,
+	int flags,
+	muggle_benchmark_handle_t *handle,
+	muggle_benchmark_config_t *config)
 {
 	// init bytes buffer
 	muggle_bytes_buffer_t bytes_buf;
@@ -145,6 +151,14 @@ void run_tcp_client(const char *host, const char *port)
 		exit(EXIT_FAILURE);
 	}
 
+	// user data
+	struct tcp_client_user_data user_data;
+	memset(&user_data, 0, sizeof(user_data));
+	user_data.flags = flags;
+	user_data.handle = handle;
+	user_data.config = config;
+	user_data.bytes_buf = &bytes_buf;
+
 	// create tcp connect socket
 	muggle_socket_peer_t tcp_peer;
 	tcp_peer.fd = muggle_tcp_connect(host, port, 3, &tcp_peer);
@@ -153,11 +167,19 @@ void run_tcp_client(const char *host, const char *port)
 		MUGGLE_LOG_ERROR("failed connect %s:%s", host, port);
 		exit(EXIT_FAILURE);
 	}
-	tcp_peer.data = &bytes_buf;
+	tcp_peer.data = &user_data;
 
 	// set TCP_NODELAY
 	int enable = 1;
 	muggle_setsockopt(tcp_peer.fd, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
+
+	int timeout_ms = -1;
+#if ! defined(MUGGLE_PLATFORM_WINDOWS)
+	if (flags & MSG_DONTWAIT)
+	{
+		timeout_ms = 0;
+	}
+#endif
 
 	// fill up event loop input arguments
 	muggle_socket_event_init_arg_t ev_init_arg;
@@ -165,15 +187,9 @@ void run_tcp_client(const char *host, const char *port)
 	ev_init_arg.ev_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_NULL;
 	ev_init_arg.cnt_peer = 1;
 	ev_init_arg.peers = &tcp_peer;
-	ev_init_arg.timeout_ms = -1;
+	ev_init_arg.timeout_ms = timeout_ms;
 	ev_init_arg.on_message = tcp_client_on_message;
 	ev_init_arg.on_error = tcp_client_on_error;
-
-	// init benchmark report
-	init_report();
-
-	// register callbacks
-	register_callbacks();
 
 	// event loop
 	muggle_socket_event_t ev;
@@ -186,7 +202,4 @@ void run_tcp_client(const char *host, const char *port)
 
 	// destroy bytes buffer
 	muggle_bytes_buffer_destroy(&bytes_buf);
-
-	// generate benchmark report
-	gen_report("tcp_latency");
 }

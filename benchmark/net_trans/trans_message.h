@@ -1,23 +1,18 @@
-/*
- *	author: muggle wei <mugglewei@gmail.com>
- *
- *	Use of this source code is governed by the MIT license that can be
- *	found in the LICENSE file.
- */
-
 #ifndef TRANS_MESSAGE_H_
 #define TRANS_MESSAGE_H_
 
 #include "muggle_benchmark/muggle_benchmark.h"
 
-#pragma pack(push, 1)
-
 enum
 {
-	TRANS_PKG_ROUND   = 1000,
-	PKG_PER_ROUND     = 1000,
-	ROUND_INTERVAL_MS = 1,
+	NET_TRANS_ACTION_WRITE_BEG,
+	NET_TRANS_ACTION_WRITE_END,
+	NET_TRANS_ACTION_READ,
+	MAX_NET_TRANS_ACTION,
 };
+
+;
+#pragma pack(push, 1)
 
 enum
 {
@@ -53,6 +48,16 @@ void genPkgHeader(struct pkg_header *header);
 
 void genPkgData(struct pkg_data *data, uint32_t idx);
 
-void sendPkgs(muggle_socket_peer_t *peer);
+void sendPkgs(
+	muggle_socket_peer_t *peer,
+	int flags,
+	muggle_benchmark_handle_t *handle,
+	muggle_benchmark_config_t *config);
 
-#endif
+int onRecvPkg(
+	muggle_socket_peer_t *peer,
+	struct pkg *pkg,
+	muggle_benchmark_handle_t *handle,
+	muggle_benchmark_config_t *config);
+
+#endif /* ifndef TRANS_MESSAGE_H_ */
