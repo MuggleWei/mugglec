@@ -1,4 +1,4 @@
-#include "muggle_benchmark_mempool.h"
+#include "muggle_benchmark_template_mempool.h"
 
 typedef struct muggle_benchmark_mempool_producer_args
 {

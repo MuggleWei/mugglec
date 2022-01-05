@@ -14,7 +14,8 @@
 #include "muggle_benchmark/muggle_benchmark_macro.h"
 #include "muggle_benchmark/muggle_benchmark_config.h"
 #include "muggle_benchmark/muggle_benchmark_handle.h"
-#include "muggle_benchmark/muggle_benchmark_thread_trans.h"
-#include "muggle_benchmark/muggle_benchmark_mempool.h"
+#include "muggle_benchmark/muggle_benchmark_template_thread_trans.h"
+#include "muggle_benchmark/muggle_benchmark_template_mempool.h"
+#include "muggle_benchmark/muggle_benchmark_template_func.h"
 
 #endif
