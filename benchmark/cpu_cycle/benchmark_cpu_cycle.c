@@ -1,8 +1,6 @@
 #include "muggle/c/muggle_c.h"
 #include "muggle_benchmark/muggle_benchmark.h"
 
-void *p = NULL;
-
 void func_cpu_cycle(void *args, uint64_t idx)
 {
 	muggle_get_cpu_cycle();
