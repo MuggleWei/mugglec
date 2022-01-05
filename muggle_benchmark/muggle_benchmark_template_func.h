@@ -32,7 +32,7 @@ enum
  *
  * @return 
  */
-typedef void* (*fn_muggle_benchmark_func)(void *args, uint64_t idx);
+typedef void (*fn_muggle_benchmark_func)(void *args, uint64_t idx);
 
 typedef struct muggle_benchmark_func
 {
