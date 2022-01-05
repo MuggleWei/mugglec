@@ -12,6 +12,27 @@
 
 #if MUGGLE_SUPPORT_FUTEX
 
+void muggle_futex_init(muggle_atomic_int *futex_addr)
+{
+	*futex_addr = MUGGLE_FUTEX_STATUS_UNLOCK;
+}
+
+void muggle_futex_lock(muggle_atomic_int *futex_addr)
+{
+	muggle_atomic_int expected = MUGGLE_FUTEX_STATUS_UNLOCK;
+	while (!muggle_atomic_cmp_exch_weak(futex_addr, &expected, MUGGLE_FUTEX_STATUS_LOCK, muggle_memory_order_acquire)
+			&& expected != MUGGLE_FUTEX_STATUS_UNLOCK)
+	{
+		muggle_futex_wait(futex_addr, expected, NULL);
+		expected = MUGGLE_FUTEX_STATUS_UNLOCK;
+	}
+}
+
+void muggle_futex_unlock(muggle_atomic_int *futex_addr)
+{
+	muggle_atomic_store(futex_addr, MUGGLE_FUTEX_STATUS_UNLOCK, muggle_memory_order_relaxed);
+}
+
 #if MUGGLE_PLATFORM_WINDOWS
 
 int muggle_futex_wait(muggle_atomic_int* futex_addr, muggle_atomic_int val, const struct timespec *timeout)

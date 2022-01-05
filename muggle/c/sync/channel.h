@@ -36,12 +36,6 @@ enum
 	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX    = 0x04, //!< write lock use futex if be support
 };
 
-enum
-{
-	MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK,
-	MUGGLE_CHANNEL_LOCK_STATUS_LOCK,
-};
-
 struct muggle_channel;
 typedef int (*fn_muggle_channel_write)(struct muggle_channel *chan, void *data);
 typedef void* (*fn_muggle_channel_read)(struct muggle_channel *chan);

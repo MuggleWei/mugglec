@@ -18,23 +18,6 @@
 
 #if MUGGLE_SUPPORT_FUTEX
 
-static void muggle_channel_lock_write(muggle_channel_t *chan)
-{
-	muggle_atomic_int expected = MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK;
-	while (!muggle_atomic_cmp_exch_weak(&chan->write_futex, &expected, MUGGLE_CHANNEL_LOCK_STATUS_LOCK, muggle_memory_order_acquire)
-			&& expected != MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK)
-	{
-		muggle_futex_wait(&chan->write_futex, expected, NULL);
-		expected = MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK;
-	}
-}
-
-static void muggle_channel_unlock_write(muggle_channel_t *chan)
-{
-	muggle_atomic_store(&chan->write_futex, MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK, muggle_memory_order_relaxed);
-	muggle_futex_wake_one(&chan->write_futex);
-}
-
 /***************** write *****************/
 static int muggle_channel_write_mutex(muggle_channel_t *chan, void *data)
 {
@@ -67,18 +50,19 @@ static int muggle_channel_write_single_writer(muggle_channel_t *chan, void *data
 }
 static int muggle_channel_write_futex(muggle_channel_t *chan, void *data)
 {
-	muggle_channel_lock_write(chan);
+	muggle_futex_lock(&chan->write_futex);
 
 	if (chan->write_cursor + 1 == chan->read_cursor)
 	{
-		muggle_channel_unlock_write(chan);
+		muggle_futex_unlock(&chan->write_futex);
 		return MUGGLE_ERR_FULL;
 	}
 
 	chan->blocks[IDX_IN_POW_OF_2_RING(chan->write_cursor, chan->capacity)].data = data;
 	muggle_atomic_store(&chan->write_cursor, chan->write_cursor + 1, muggle_memory_order_release);
 
-	muggle_channel_unlock_write(chan);
+	muggle_futex_unlock(&chan->write_futex);
+	muggle_futex_wake_one(&chan->write_futex);
 
 	return MUGGLE_OK;
 }
@@ -148,7 +132,7 @@ int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int 
 	chan->flags = flags;
 	chan->write_cursor = 0;
 	chan->read_cursor = capacity - 1;
-	chan->write_futex = MUGGLE_CHANNEL_LOCK_STATUS_UNLOCK;
+	muggle_futex_init(&chan->write_futex);
 
 	int ret = muggle_mutex_init(&chan->write_mutex);
 	if (ret != MUGGLE_OK)

@@ -21,6 +21,36 @@ EXTERN_C_BEGIN
 
 #if MUGGLE_SUPPORT_FUTEX
 
+enum
+{
+	MUGGLE_FUTEX_STATUS_UNLOCK,
+	MUGGLE_FUTEX_STATUS_LOCK,
+};
+
+/**
+ * @brief initialize futex status
+ *
+ * @param futex_addr
+ */
+MUGGLE_C_EXPORT
+void muggle_futex_init(muggle_atomic_int *futex_addr);
+
+/**
+ * @brief lock futex
+ *
+ * @param futex_addr  futex address
+ */
+MUGGLE_C_EXPORT
+void muggle_futex_lock(muggle_atomic_int *futex_addr);
+
+/**
+ * @brief unlock futex
+ *
+ * @param futex_addr  futex address
+ */
+MUGGLE_C_EXPORT
+void muggle_futex_unlock(muggle_atomic_int *futex_addr);
+
 /**
  * @brief futex wait
  *
