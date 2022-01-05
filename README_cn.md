@@ -64,13 +64,6 @@ NOTE: 本库的单元测试使用的是gtest, 若MUGGLE_BUILD_TESTING被设置�
 include(FetchContent)
 set(FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
 
-FetchContent_Declare(
-        mugglec
-        GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
-        GIT_TAG v0.0.2
-)
-FetchContent_MakeAvailable(mugglec)
-
 # set mugglec compile options
 set(MUGGLE_BUILD_TRACE OFF CACHE BOOL "")
 set(MUGGLE_BUILD_SHARED_LIB ON CACHE BOOL "")
@@ -78,6 +71,13 @@ set(MUGGLE_BUILD_STATIC_PIC ON CACHE BOOL "")
 set(MUGGLE_BUILD_BENCHMARK OFF CACHE BOOL "")
 set(MUGGLE_BUILD_TESTING OFF CACHE BOOL "")
 set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
+
+FetchContent_Declare(
+        mugglec
+        GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
+        GIT_TAG v0.0.2
+)
+FetchContent_MakeAvailable(mugglec)
 
 # link mugglec
 add_executable(example src/example.c)
@@ -129,11 +129,6 @@ if (result)
         message(FATAL_ERROR "build step for mugglec failed: ${result}")
 endif()
 
-# 将mugglec加入工程中
-add_subdirectory(
-        ${CMAKE_BINARY_DIR}/_deps/mugglec-src
-        ${CMAKE_BINARY_DIR}/_deps/mugglec-build)
-
 # 设置mugglec的编译变量, 可根据需要进行更改
 set(MUGGLE_BUILD_TRACE OFF CACHE BOOL "")
 set(MUGGLE_BUILD_SHARED_LIB ON CACHE BOOL "")
@@ -141,6 +136,11 @@ set(MUGGLE_BUILD_STATIC_PIC ON CACHE BOOL "")
 set(MUGGLE_BUILD_BENCHMARK OFF CACHE BOOL "")
 set(MUGGLE_BUILD_TESTING OFF CACHE BOOL "")
 set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
+
+# 将mugglec加入工程中
+add_subdirectory(
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-src
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-build)
 
 # 链接mugglec 并 包含mugglec的头文件路径
 add_executable(example src/example.c)

@@ -48,11 +48,6 @@ if (result)
         message(FATAL_ERROR "build step for mugglec failed: ${result}")
 endif()
 
-# add mugglec to build
-add_subdirectory(
-        ${CMAKE_BINARY_DIR}/_deps/mugglec-src
-        ${CMAKE_BINARY_DIR}/_deps/mugglec-build)
-
 # set mugglec compile options
 set(MUGGLE_BUILD_TRACE OFF CACHE BOOL "")
 set(MUGGLE_BUILD_SHARED_LIB ON CACHE BOOL "")
@@ -60,6 +55,11 @@ set(MUGGLE_BUILD_STATIC_PIC ON CACHE BOOL "")
 set(MUGGLE_BUILD_BENCHMARK OFF CACHE BOOL "")
 set(MUGGLE_BUILD_TESTING OFF CACHE BOOL "")
 set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
+
+# add mugglec to build
+add_subdirectory(
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-src
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-build)
 
 ################################
 # projects
