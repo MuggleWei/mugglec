@@ -151,4 +151,29 @@ func_finally:
 }
 
 void muggle_benchmark_func_gen_report(muggle_benchmark_func_t *benchmark, const char *name)
-{}
+{
+	// generate records report
+	char records_filepath[512];
+	memset(records_filepath, 0, sizeof(records_filepath));
+	snprintf(records_filepath, sizeof(records_filepath), "benchmark_%s_records.csv", name);
+	FILE *fp_records = fopen(records_filepath, "wb");
+	muggle_benchmark_handle_gen_records_report(&benchmark->handle, fp_records, benchmark->config->elapsed_unit);
+	fclose(fp_records);
+
+	// generate latency report
+	char latency_filepath[512];
+	memset(latency_filepath, 0, sizeof(latency_filepath));
+	snprintf(latency_filepath, sizeof(latency_filepath), "benchmark_%s_latency.csv", name);
+	FILE *fp_latency = fopen(latency_filepath, "wb");
+	muggle_benchmark_gen_latency_report_head(fp_latency, benchmark->config);
+	muggle_benchmark_gen_latency_report_body(
+		fp_latency, &benchmark->handle, benchmark->config,
+		MUGGLE_BENCHMARK_FUNC_ACTION_BEFORE,
+		MUGGLE_BENCHMARK_FUNC_ACTION_AFTER,
+		0);
+	muggle_benchmark_gen_latency_report_body(
+		fp_latency, &benchmark->handle, benchmark->config,
+		MUGGLE_BENCHMARK_FUNC_ACTION_BEFORE,
+		MUGGLE_BENCHMARK_FUNC_ACTION_AFTER,
+		1);
+}
