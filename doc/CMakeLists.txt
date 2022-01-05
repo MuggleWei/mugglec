@@ -33,20 +33,25 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Download and unpack mugglec at configure time
 configure_file(
-	${CMAKE_CURRENT_LIST_DIR}/cmake/mugglec.cmake.in
-	${CMAKE_CURRENT_BINARY_DIR}/mugglec-download/CMakeLists.txt)
+        ${CMAKE_CURRENT_LIST_DIR}/cmake/mugglec.cmake.in
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-	RESULT_VARIABLE result
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mugglec-download)
+        RESULT_VARIABLE result
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/_deps/mugglec-download)
 if (result)
-	message(FATAL_ERROR "cmake step for mugglec failed: ${result}")
+        message(FATAL_ERROR "cmake step for mugglec failed: ${result}")
 endif()
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
-	RESULT_VARIABLE result
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mugglec-download)
+        RESULT_VARIABLE result
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/_deps/mugglec-download)
 if (result)
-	message(FATAL_ERROR "build step for mugglec failed: ${result}")
+        message(FATAL_ERROR "build step for mugglec failed: ${result}")
 endif()
+
+# add mugglec to build
+add_subdirectory(
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-src
+        ${CMAKE_BINARY_DIR}/_deps/mugglec-build)
 
 # set mugglec compile options
 set(MUGGLE_BUILD_TRACE OFF CACHE BOOL "")
@@ -56,16 +61,11 @@ set(MUGGLE_BUILD_BENCHMARK OFF CACHE BOOL "")
 set(MUGGLE_BUILD_TESTING OFF CACHE BOOL "")
 set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
 
-# add mugglec to build
-add_subdirectory(
-	${CMAKE_CURRENT_BINARY_DIR}/mugglec-src
-    ${CMAKE_CURRENT_BINARY_DIR}/mugglec-build)
-
 ################################
 # projects
 
 # cmake
-include(${CMAKE_CURRENT_BINARY_DIR}/mugglec-src/cmake/muggle_utils.cmake)
+include(${CMAKE_BINARY_DIR}/_deps/mugglec-src/cmake/muggle_utils.cmake)
 
 set(muggle_c mugglec)
 
@@ -92,7 +92,7 @@ function(add_example name folder)
 	target_link_libraries(${name} ${muggle_c})
 	add_dependencies(${name} ${muggle_c})
 	target_include_directories(${name} PUBLIC
-		${CMAKE_CURRENT_BINARY_DIR}/mugglec-src
+		${CMAKE_BINARY_DIR}/_deps/mugglec-src
 	)
 endfunction()
 
@@ -123,7 +123,7 @@ function(add_example_net_foo ver folder)
 	add_dependencies(${foo} ${muggle_c})
 	target_include_directories(${foo} PUBLIC
 		${folder}
-		${CMAKE_CURRENT_BINARY_DIR}/mugglec-src
+		${CMAKE_BINARY_DIR}/_deps/mugglec-src
 	)
 	target_compile_definitions(${foo}
 		PUBLIC NET_FOO_USE_DLL
