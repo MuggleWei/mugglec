@@ -12,7 +12,7 @@ mugglec是一个纯c语言编写, 跨平台基础库, 提供了一系列常用�
   - [目录](#目录)
   - [特点](#特点)
   - [构建](#构建)
-  - [使用mugglec](#使用mugglec)
+  - [引入mugglec](#引入mugglec)
     - [融入进CMake工程 (推荐)](#融入进cmake工程-推荐)
       - [当前的风格](#当前的风格)
       - [老式的风格](#老式的风格)
@@ -52,8 +52,8 @@ cmake ..
 
 NOTE: 本库的单元测试使用的是gtest, 若MUGGLE_BUILD_TESTING被设置为ON, 构建时会首先寻找gtest库, 若在CMAKE_PREFIX_PATH的路径中没有发现gtest, 则会在第一次构建时, 自动下载gtest到构建目录中
 
-### 使用mugglec
-想要在自己的工程中使用mugglec, 有几种普遍的做法
+### 引入mugglec
+想要在自己的工程中引入mugglec, 有几种普遍的做法
 
 #### 融入进CMake工程 (推荐)
 如果你的工程也使用CMake来构建，那么可以在 CMake 阶段调用 mugglec 作为子构建。
