@@ -56,6 +56,9 @@ int main(int argc, char *argv[])
 	// initialize benchmark config
 	muggle_benchmark_config_t config;
 	muggle_benchmark_config_parse_cli(&config, argc, argv);
+
+	config.producer = 0;
+
 	muggle_benchmark_config_output(&config);
 
 	// channel must guarantee only one reader
@@ -68,29 +71,107 @@ int main(int argc, char *argv[])
 
 	int flags = 0;
 
-	// channel - futex write and wait read
-	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run channel - futex write and wait read");
-	flags = MUGGLE_CHANNEL_FLAG_WRITE_FUTEX | MUGGLE_CHANNEL_FLAG_READ_WAIT;
-	benchmark_chan(&config, flags, "channel_futex_wait");
+	int hc = (int)muggle_thread_hardware_concurrency();
+	if (hc <= 0)
+	{
+		hc = 2;
+	}
 
-	// channel - futex write and busy loop read
-	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run channel - futex write and busy read");
-	flags = MUGGLE_CHANNEL_FLAG_WRITE_FUTEX | MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP;
-	benchmark_chan(&config, flags, "channel_futex_busy");
+	int producer_nums[] = {
+		1, 2, 4, hc / 2, hc, hc * 2, hc * 4
+	};
 
-	// channel - mutex write and wait read
-	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run channel - mutex write and wait read");
-	flags = MUGGLE_CHANNEL_FLAG_WRITE_MUTEX | MUGGLE_CHANNEL_FLAG_READ_WAIT;
-	benchmark_chan(&config, flags, "channel_mutex_wait");
+	int w_flags[] = {
+		MUGGLE_CHANNEL_FLAG_WRITE_FUTEX,
+		MUGGLE_CHANNEL_FLAG_WRITE_MUTEX,
+		MUGGLE_CHANNEL_FLAG_WRITE_SPIN,
+		MUGGLE_CHANNEL_FLAG_WRITE_SINGLE,
+	};
 
-	// channel - mutex write and busy loop read
-	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run channel - mutex write and busy read");
-	flags = MUGGLE_CHANNEL_FLAG_WRITE_MUTEX | MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP;
-	benchmark_chan(&config, flags, "channel_mutex_busy");
+	int r_flags[] = {
+		MUGGLE_CHANNEL_FLAG_READ_FUTEX,
+		MUGGLE_CHANNEL_FLAG_READ_MUTEX,
+		MUGGLE_CHANNEL_FLAG_READ_BUSY,
+	};
+
+	const char *str_w_flags = NULL;
+	const char *str_r_flags = NULL;
+	char name[64];
+	for (int i = 0; i < sizeof(producer_nums) / sizeof(producer_nums[0]); i++)
+	{
+		for (int w = 0; w < sizeof(w_flags) / sizeof(w_flags[0]); w++)
+		{
+			for (int r = 0; r < sizeof(r_flags) / sizeof(r_flags[0]); r++)
+			{
+				int wflag = w_flags[w];
+				int rflag = r_flags[r];
+				int num_producer = producer_nums[i];
+
+				if (wflag == MUGGLE_CHANNEL_FLAG_WRITE_SINGLE && num_producer != 1)
+				{
+					continue;
+				}
+
+				switch (wflag)
+				{
+				case MUGGLE_CHANNEL_FLAG_WRITE_FUTEX:
+					{
+						str_w_flags = "futex";
+					}break;
+				case MUGGLE_CHANNEL_FLAG_WRITE_MUTEX:
+					{
+						str_w_flags = "mutex";
+					}break;
+				case MUGGLE_CHANNEL_FLAG_WRITE_SPIN:
+					{
+						str_w_flags = "spin";
+					}break;
+				case MUGGLE_CHANNEL_FLAG_WRITE_SINGLE:
+					{
+						str_w_flags = "single";
+					}break;
+				default:
+					{
+						MUGGLE_LOG_ERROR("unrecognized write flags: %d", w);
+						exit(EXIT_FAILURE);
+					}break;
+				}
+
+				switch (rflag)
+				{
+				case MUGGLE_CHANNEL_FLAG_READ_FUTEX:
+					{
+						str_r_flags = "futex";
+					}break;
+				case MUGGLE_CHANNEL_FLAG_READ_MUTEX:
+					{
+						str_r_flags = "mutex";
+					}break;
+				case MUGGLE_CHANNEL_FLAG_READ_BUSY:
+					{
+						str_r_flags = "busy";
+					}break;
+				default:
+					{
+						MUGGLE_LOG_ERROR("unrecognized read flags: %d", w);
+						exit(EXIT_FAILURE);
+					}break;
+				}
+
+				flags = wflag | rflag;
+				memset(name, 0, sizeof(name));
+				snprintf(name, sizeof(name), "channel_%d_%s_w_%s_r",
+					num_producer, str_w_flags, str_r_flags);
+
+				config.producer = num_producer;
+
+				MUGGLE_LOG_INFO("--------------------------------------------------------");
+				MUGGLE_LOG_INFO("run channel - %d %s write and %s read",
+					num_producer, str_w_flags, str_r_flags);
+				benchmark_chan(&config, flags, name);
+			}
+		}
+	}
 
 	return 0;
 }

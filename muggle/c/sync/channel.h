@@ -26,22 +26,41 @@
 
 EXTERN_C_BEGIN
 
+// channel write flags
 enum
 {
-	MUGGLE_CHANNEL_FLAG_WRITE_MUTEX    = 0x00, //!< write lock use mutex
-	MUGGLE_CHANNEL_FLAG_READ_WAIT      = 0x00, //!< reader wait
+	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX   = 0, //!< write lock use futex if be supported
+	MUGGLE_CHANNEL_FLAG_WRITE_MUTEX   = 1, //!< write lock use mutex
+	MUGGLE_CHANNEL_FLAG_WRITE_SPIN    = 2, //!< write lock use spinlock
+	MUGGLE_CHANNEL_FLAG_WRITE_SINGLE  = 3, //!< user guarantee only one writer use this channel
 
-	MUGGLE_CHANNEL_FLAG_SINGLE_WRITER  = 0x01, //!< user guarantee only one writer use this channel
-	MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP = 0x02, //!< reader busy loop until read message from channel
-	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX    = 0x04, //!< write lock use futex if be support
+	MUGGLE_CHANNEL_FLAG_SINGLE_WRITER = MUGGLE_CHANNEL_FLAG_WRITE_SINGLE,
+};
+
+// channel read flags
+enum
+{
+	MUGGLE_CHANNEL_FLAG_READ_FUTEX = 0 << 4, //!< reader with futex wait if supported
+	MUGGLE_CHANNEL_FLAG_READ_MUTEX = 1 << 4, //!< reader with mutex with
+	MUGGLE_CHANNEL_FLAG_READ_BUSY  = 2 << 4, //!< reader busy loop until read message from channel
+
+	MUGGLE_CHANNEL_FLAG_READ_WAIT      = MUGGLE_CHANNEL_FLAG_READ_FUTEX,
+	MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP = MUGGLE_CHANNEL_FLAG_READ_BUSY,
+};
+
+// channel flags mask
+enum
+{
+	MUGGLE_CHANNEL_FLAG_MASK_W = 0x0f,
+	MUGGLE_CHANNEL_FLAG_MASK_R = 0xf0
 };
 
 struct muggle_channel;
+typedef void (*fn_muggle_channel_lock)(struct muggle_channel *chan);
 typedef int (*fn_muggle_channel_write)(struct muggle_channel *chan, void *data);
-typedef void* (*fn_muggle_channel_read)(struct muggle_channel *chan);
+typedef void (*fn_muggle_channel_unlock)(struct muggle_channel *chan);
 typedef void (*fn_muggle_channel_wake)(struct muggle_channel *chan);
-
-#if MUGGLE_SUPPORT_FUTEX
+typedef void* (*fn_muggle_channel_read)(struct muggle_channel *chan);
 
 /**
  * @brief channel node block
@@ -58,58 +77,40 @@ typedef struct muggle_channel_block
 typedef struct muggle_channel
 {
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
-	muggle_atomic_int       capacity;
-	int                     flags;
-	fn_muggle_channel_write fn_write;
-	fn_muggle_channel_read  fn_read;
-	fn_muggle_channel_wake  fn_wake;
+	muggle_atomic_int       capacity;   //!< capacity of channel
+	int                     flags;      //!< channel flags
+	int                     init_flags; //!< initialized flags
+	fn_muggle_channel_lock  fn_lock;    //!< write lock function
+	fn_muggle_channel_lock  fn_unlock;  //!< write unlock function
+	fn_muggle_channel_write fn_write;   //!< write function
+	fn_muggle_channel_wake  fn_wake;    //!< wake function
+	fn_muggle_channel_read  fn_read;    //!< read function
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
 	muggle_atomic_int write_cursor;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
 	muggle_atomic_int read_cursor;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
-	muggle_atomic_int write_futex;
+	union {
+		// write lock
+		muggle_atomic_int write_futex;
+		muggle_mutex_t write_mutex;
+		muggle_atomic_int write_spinlock;
+	};
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(4);
-	muggle_mutex_t write_mutex;
+	// read lock
+	muggle_mutex_t read_mutex;
+	muggle_condition_variable_t read_cv;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(5);
 	muggle_channel_block_t *blocks;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(6);
 }muggle_channel_t;
-
-#else
-
-/**
- * @brief channel node block
- */
-typedef struct muggle_channel_block
-{
-	void *data;
-}muggle_channel_block_t;
-
-typedef struct muggle_channel
-{
-	muggle_atomic_int       capacity;
-	int                     flags;
-	fn_muggle_channel_write fn_write;
-	fn_muggle_channel_read  fn_read;
-	fn_muggle_channel_wake  fn_wake;
-
-	muggle_atomic_int write_cursor;
-	muggle_atomic_int read_cursor;
-	muggle_mutex_t write_mutex;
-	muggle_mutex_t read_mutex;
-	muggle_condition_variable_t read_cv;
-	muggle_channel_block_t *blocks;
-}muggle_channel_t;
-
-#endif
 
 /**
  * @brief init muggle_channel_t
  *
  * @param chan      pointer to muggle_channel_t
  * @param capacity  capacity of channel
- * @param flags     bitwise or of MUGGLE_CHANNEL_FLAG_*
+ * @param flags     bitwise or MUGGLE_CHANNEL_FLAG_WRITE_* and MUGGLE_CHANNEL_FLAG_READ_*
  *
  * @return
  *     - return 0 on success
