@@ -249,14 +249,14 @@ int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int 
 	// set write lock
 	switch (w_flags)
 	{
+#if MUGGLE_SUPPORT_FUTEX
 	case MUGGLE_CHANNEL_FLAG_WRITE_FUTEX:
 		{
-#if MUGGLE_SUPPORT_FUTEX
 			muggle_futex_init(&chan->write_futex);
 			chan->fn_lock = muggle_channel_write_futex_lock;
 			chan->fn_unlock = muggle_channel_write_futex_unlock;
-#endif
 		}break;
+#endif
 	case MUGGLE_CHANNEL_FLAG_WRITE_SPIN:
 		{
 			muggle_spinlock_init(&chan->write_spinlock);
@@ -290,14 +290,14 @@ int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int 
 	// set reader
 	switch (r_flags)
 	{
+#if MUGGLE_SUPPORT_FUTEX
 	case MUGGLE_CHANNEL_FLAG_READ_FUTEX:
 		{
-#if MUGGLE_SUPPORT_FUTEX
 			chan->fn_write = muggle_channel_write_futex;
 			chan->fn_wake = muggle_channel_wake_futex;
 			chan->fn_read = muggle_channel_read_futex;
-#endif
 		}break;
+#endif
 	case MUGGLE_CHANNEL_FLAG_READ_BUSY:
 		{
 			chan->fn_write = muggle_channel_write_busy;
