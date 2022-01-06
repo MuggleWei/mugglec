@@ -26,7 +26,9 @@
 
 EXTERN_C_BEGIN
 
-// channel write flags
+/**
+ * @brief channel write flags
+ */
 enum
 {
 	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX   = 0, //!< write lock use futex if be supported
@@ -37,7 +39,9 @@ enum
 	MUGGLE_CHANNEL_FLAG_SINGLE_WRITER = MUGGLE_CHANNEL_FLAG_WRITE_SINGLE,
 };
 
-// channel read flags
+/**
+ * @brief channel read flags
+ */
 enum
 {
 	MUGGLE_CHANNEL_FLAG_READ_FUTEX = 0 << 4, //!< reader with futex wait if supported
@@ -48,7 +52,9 @@ enum
 	MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP = MUGGLE_CHANNEL_FLAG_READ_BUSY,
 };
 
-// channel flags mask
+/**
+ * @brief channel flags mask
+ */
 enum
 {
 	MUGGLE_CHANNEL_FLAG_MASK_W = 0x0f,
@@ -56,6 +62,7 @@ enum
 };
 
 struct muggle_channel;
+
 typedef void (*fn_muggle_channel_lock)(struct muggle_channel *chan);
 typedef int (*fn_muggle_channel_write)(struct muggle_channel *chan, void *data);
 typedef void (*fn_muggle_channel_unlock)(struct muggle_channel *chan);
