@@ -30,7 +30,7 @@ void muggle_futex_lock(muggle_atomic_int *futex_addr)
 
 void muggle_futex_unlock(muggle_atomic_int *futex_addr)
 {
-	muggle_atomic_store(futex_addr, MUGGLE_FUTEX_STATUS_UNLOCK, muggle_memory_order_relaxed);
+	muggle_atomic_store(futex_addr, MUGGLE_FUTEX_STATUS_UNLOCK, muggle_memory_order_release);
 }
 
 #if MUGGLE_PLATFORM_WINDOWS

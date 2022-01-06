@@ -19,5 +19,5 @@ void muggle_spinlock_lock(muggle_atomic_int *spinlock)
 
 void muggle_spinlock_unlock(muggle_atomic_int *spinlock)
 {
-	muggle_atomic_store(spinlock, MUGGLE_SPINLOCK_STATUS_UNLOCK, muggle_memory_order_relaxed);
+	muggle_atomic_store(spinlock, MUGGLE_SPINLOCK_STATUS_UNLOCK, muggle_memory_order_release);
 }
