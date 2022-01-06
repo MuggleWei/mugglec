@@ -126,6 +126,7 @@ static int muggle_channel_write_mutex(muggle_channel_t *chan, void *data)
 
 	if (chan->write_cursor + 1 == chan->read_cursor)
 	{
+		muggle_mutex_unlock(&chan->read_mutex);
 		return MUGGLE_ERR_FULL;
 	}
 
