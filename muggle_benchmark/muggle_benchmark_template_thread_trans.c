@@ -1,4 +1,4 @@
-#include "muggle_benchmark_thread_trans.h"
+#include "muggle_benchmark_template_thread_trans.h"
 
 /**
  * @brief thread trans benchmark producer arguments

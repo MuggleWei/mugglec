@@ -1,5 +1,5 @@
 /******************************************************************************
- *  @file         muggle_benchmark_mempool.h
+ *  @file         muggle_benchmark_template_mempool.h
  *  @author       Muggle Wei
  *  @email        mugglewei@gmail.com
  *  @date         2022-01-04
@@ -8,8 +8,8 @@
  *  @brief        mugglec benchmark memory pool template
  *****************************************************************************/
 
-#ifndef MUGGLE_C_BENCHMARK_MEMPOOL_H_
-#define MUGGLE_C_BENCHMARK_MEMPOOL_H_
+#ifndef MUGGLE_C_BENCHMARK_TEMPLATE_MEMPOOL_H_
+#define MUGGLE_C_BENCHMARK_TEMPLATE_MEMPOOL_H_
 
 #include "muggle_benchmark/muggle_benchmark_macro.h"
 #include "muggle_benchmark/muggle_benchmark_config.h"

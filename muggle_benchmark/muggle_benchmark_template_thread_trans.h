@@ -1,5 +1,5 @@
 /******************************************************************************
- *  @file         muggle_benchmark_thread_trans.h
+ *  @file         muggle_benchmark_template_thread_trans.h
  *  @author       Muggle Wei
  *  @email        mugglewei@gmail.com
  *  @date         2022-01-02
@@ -8,8 +8,8 @@
  *  @brief        mugglec benchmark thread transfer template
  *****************************************************************************/
 
-#ifndef MUGGLE_C_BENCHMARK_THREAD_TRANS_H_
-#define MUGGLE_C_BENCHMARK_THREAD_TRANS_H_
+#ifndef MUGGLE_C_BENCHMARK_TEMPLATE_THREAD_TRANS_H_
+#define MUGGLE_C_BENCHMARK_TEMPLATE_THREAD_TRANS_H_
 
 #include "muggle_benchmark/muggle_benchmark_macro.h"
 #include "muggle_benchmark/muggle_benchmark_config.h"
