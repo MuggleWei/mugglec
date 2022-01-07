@@ -112,21 +112,23 @@ ExternalProject_Add(mugglec
 
 接着在工程的CMakeLists.txt中添加
 ```
+set(FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
+
 # 在配置阶段, 下载mugglec并解包
 configure_file(
-        ${CMAKE_CURRENT_LIST_DIR}/cmake/mugglec.cmake.in
-        ${CMAKE_BINARY_DIR}/_deps/mugglec-download/CMakeLists.txt)
+	${CMAKE_CURRENT_LIST_DIR}/cmake/mugglec.cmake.in
+	${FETCHCONTENT_BASE_DIR}/mugglec-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-        RESULT_VARIABLE result
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/_deps/mugglec-download)
+	RESULT_VARIABLE result
+	WORKING_DIRECTORY ${FETCHCONTENT_BASE_DIR}/mugglec-download)
 if (result)
-        message(FATAL_ERROR "cmake step for mugglec failed: ${result}")
+	message(FATAL_ERROR "cmake step for mugglec failed: ${result}")
 endif()
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
-        RESULT_VARIABLE result
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/_deps/mugglec-download)
+	RESULT_VARIABLE result
+	WORKING_DIRECTORY ${FETCHCONTENT_BASE_DIR}/mugglec-download)
 if (result)
-        message(FATAL_ERROR "build step for mugglec failed: ${result}")
+	message(FATAL_ERROR "build step for mugglec failed: ${result}")
 endif()
 
 # 设置mugglec的编译变量, 可根据需要进行更改
@@ -139,15 +141,15 @@ set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
 
 # 将mugglec加入工程中
 add_subdirectory(
-        ${CMAKE_BINARY_DIR}/_deps/mugglec-src
-        ${CMAKE_BINARY_DIR}/_deps/mugglec-build)
+	${FETCHCONTENT_BASE_DIR}/mugglec-src
+	${FETCHCONTENT_BASE_DIR}/mugglec-build)
 
 # 链接mugglec 并 包含mugglec的头文件路径
 add_executable(example src/example.c)
 add_dependencies(example mugglec)
 target_link_libraries(example mugglec)
 target_include_directories(example PUBLIC
-        ${CMAKE_BINARY_DIR}/_deps/mugglec-src)
+	${FETCHCONTENT_BASE_DIR}/mugglec-src)
 ```
 
 #### 发现并链接
