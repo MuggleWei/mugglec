@@ -41,7 +41,7 @@ typedef struct muggle_ring_buffer_block
 
 #if MUGGLE_SUPPORT_FUTEX
 
-typedef struct muggle_ring_buffer_tag
+typedef struct muggle_ring_buffer
 {
 	muggle_atomic_int capacity;
 	int flag;
@@ -70,7 +70,7 @@ typedef struct muggle_ring_buffer_tag
 
 #else
 
-typedef struct muggle_ring_buffer_tag
+typedef struct muggle_ring_buffer
 {
 	muggle_atomic_int capacity;
 	int flag;
@@ -81,7 +81,7 @@ typedef struct muggle_ring_buffer_tag
 	muggle_atomic_int read_cursor; // for MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE
 	muggle_mutex_t mtx;
 	muggle_condition_variable_t cv;
-	void **datas;
+	muggle_ring_buffer_block_t *blocks;
 }muggle_ring_buffer_t;
 
 #endif  /* #if MUGGLE_SUPPORT_FUTEX */
