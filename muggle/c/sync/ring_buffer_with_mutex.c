@@ -87,7 +87,7 @@ inline static void muggle_ring_buffer_write_lock(muggle_ring_buffer_t *r, void *
 	muggle_mutex_lock(&r->mtx);
 
 	// assignment
-	r->datas[IDX_IN_POW_OF_2_RING(r->cursor, r->capacity)] = data;
+	r->blocks[IDX_IN_POW_OF_2_RING(r->cursor, r->capacity)].data = data;
 
 	// move cursor
 	muggle_atomic_store(&r->cursor, r->cursor+1, muggle_memory_order_release);
@@ -98,7 +98,7 @@ inline static void muggle_ring_buffer_write_lock(muggle_ring_buffer_t *r, void *
 inline static void muggle_ring_buffer_write_single(muggle_ring_buffer_t *r, void *data)
 {
 	// assignment
-	r->datas[IDX_IN_POW_OF_2_RING(r->cursor, r->capacity)] = data;
+	r->blocks[IDX_IN_POW_OF_2_RING(r->cursor, r->capacity)].data = data;
 
 	// move cursor
 	muggle_atomic_store(&r->cursor, r->cursor+1, muggle_memory_order_release);
@@ -110,7 +110,7 @@ inline static void muggle_ring_buffer_write_busy_loop(muggle_ring_buffer_t *r, v
 	muggle_atomic_int idx = muggle_atomic_fetch_add(&r->next, 1, muggle_memory_order_relaxed);
 
 	// assignment
-	r->datas[IDX_IN_POW_OF_2_RING(idx, r->capacity)] = data;
+	r->blocks[IDX_IN_POW_OF_2_RING(idx, r->capacity)].data = data;
 
 	// move cursor
 	muggle_atomic_int cur_idx = idx;
@@ -160,7 +160,7 @@ inline static void* muggle_ring_buffer_read_wait(muggle_ring_buffer_t *r, muggle
 		w_cursor = muggle_atomic_load(&r->cursor, muggle_memory_order_acquire);
 		if (IDX_IN_POW_OF_2_RING(w_cursor, r->capacity) != r_pos)
 		{
-			void *data = r->datas[r_pos];
+			void *data = r->blocks[r_pos].data;
 			muggle_mutex_unlock(&r->mtx);
 			return data;
 		}
@@ -180,7 +180,7 @@ inline static void* muggle_ring_buffer_read_busy_loop(muggle_ring_buffer_t *r, m
 		w_cursor = muggle_atomic_load(&r->cursor, muggle_memory_order_acquire);
 		if (IDX_IN_POW_OF_2_RING(w_cursor, r->capacity) != r_pos)
 		{
-			return r->datas[r_pos];
+			return r->blocks[r_pos].data;
 		}
 
 		muggle_thread_yield();
@@ -198,7 +198,7 @@ inline static void* muggle_ring_buffer_read_lock(muggle_ring_buffer_t *r, muggle
 		muggle_atomic_int r_pos = IDX_IN_POW_OF_2_RING(r->read_cursor, r->capacity);
 		if (IDX_IN_POW_OF_2_RING(w_cursor, r->capacity) != r_pos)
 		{
-			ret = r->datas[r_pos];
+			ret = r->blocks[r_pos].data;
 			r->read_cursor++;
 			break;
 		}
@@ -270,8 +270,8 @@ int muggle_ring_buffer_init(muggle_ring_buffer_t *r, muggle_atomic_int capacity,
 		return ret;
 	}
 
-	r->datas = (void**)malloc(sizeof(void*) * r->capacity);
-	if (r->datas == NULL)
+	r->blocks = (muggle_ring_buffer_block_t*)malloc(sizeof(muggle_ring_buffer_block_t) * r->capacity);
+	if (r->blocks == NULL)
 	{
 		muggle_mutex_destroy(&r->mtx);
 		muggle_condition_variable_destroy(&r->cv);
@@ -283,7 +283,7 @@ int muggle_ring_buffer_init(muggle_ring_buffer_t *r, muggle_atomic_int capacity,
 
 int muggle_ring_buffer_destroy(muggle_ring_buffer_t *r)
 {
-	free(r->datas);
+	free(r->blocks);
 	muggle_mutex_destroy(&r->mtx);
 	muggle_condition_variable_destroy(&r->cv);
 	return MUGGLE_OK;

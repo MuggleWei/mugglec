@@ -31,6 +31,14 @@ enum
 	MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE   = 0x10, //!< every message will only be read once
 };
 
+typedef struct muggle_ring_buffer_block
+{
+	union {
+		void *data;
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
+	};
+} muggle_ring_buffer_block_t;
+
 #if MUGGLE_SUPPORT_FUTEX
 
 typedef struct muggle_ring_buffer_tag
@@ -54,7 +62,7 @@ typedef struct muggle_ring_buffer_tag
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(7);
 	muggle_condition_variable_t read_cv;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(8);
-	void **datas;
+	muggle_ring_buffer_block_t *blocks;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(9);
 }muggle_ring_buffer_t;
 
