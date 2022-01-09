@@ -74,8 +74,10 @@ typedef void* (*fn_muggle_channel_read)(struct muggle_channel *chan);
  */
 typedef struct muggle_channel_block
 {
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
-	void *data;
+	union {
+		void *data;
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
+	};
 }muggle_channel_block_t;
 
 /**
@@ -83,7 +85,6 @@ typedef struct muggle_channel_block
  */
 typedef struct muggle_channel
 {
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
 	muggle_atomic_int       capacity;   //!< capacity of channel
 	int                     flags;      //!< channel flags
 	int                     init_flags; //!< initialized flags
@@ -92,24 +93,25 @@ typedef struct muggle_channel
 	fn_muggle_channel_write fn_write;   //!< write function
 	fn_muggle_channel_wake  fn_wake;    //!< wake function
 	fn_muggle_channel_read  fn_read;    //!< read function
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
-	muggle_atomic_int write_cursor;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
-	muggle_atomic_int read_cursor;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
+	union {
+		muggle_atomic_int write_cursor;
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
+	};
+	union {
+		muggle_atomic_int read_cursor;
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
+	};
 	union {
 		// write lock
 		muggle_atomic_int write_futex;
 		muggle_mutex_t write_mutex;
 		muggle_atomic_int write_spinlock;
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
 	};
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(4);
 	// read lock
 	muggle_mutex_t read_mutex;
 	muggle_condition_variable_t read_cv;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(5);
 	muggle_channel_block_t *blocks;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(6);
 }muggle_channel_t;
 
 /**

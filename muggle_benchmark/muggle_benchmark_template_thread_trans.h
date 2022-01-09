@@ -22,7 +22,10 @@ EXTERN_C_BEGIN
  */
 typedef struct muggle_benchmark_thread_message
 {
-	uint64_t id;
+	union {
+		uint64_t id;
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
+	};
 } muggle_benchmark_thread_message_t;
 
 enum

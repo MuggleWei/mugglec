@@ -31,36 +31,46 @@ enum
 	MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE   = 0x10, //!< every message will only be read once
 };
 
+typedef struct muggle_ring_buffer_block
+{
+	union {
+		void *data;
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
+	};
+} muggle_ring_buffer_block_t;
+
 #if MUGGLE_SUPPORT_FUTEX
 
-typedef struct muggle_ring_buffer_tag
+typedef struct muggle_ring_buffer
 {
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
 	muggle_atomic_int capacity;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
 	int flag;
 	int write_mode;
 	int read_mode;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
-	muggle_atomic_int next;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
-	muggle_atomic_int cursor;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(4);
-	muggle_atomic_int read_cursor; // for MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(5);
-	muggle_mutex_t write_mutex;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(6);
+	union {
+		muggle_atomic_int next;
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
+	};
+	union {
+		muggle_atomic_int cursor;
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
+	};
+	union {
+		muggle_atomic_int read_cursor; // for MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
+	};
+	union {
+		muggle_mutex_t write_mutex;
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
+	};
 	muggle_mutex_t read_mutex;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(7);
 	muggle_condition_variable_t read_cv;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(8);
-	void **datas;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(9);
+	muggle_ring_buffer_block_t *blocks;
 }muggle_ring_buffer_t;
 
 #else
 
-typedef struct muggle_ring_buffer_tag
+typedef struct muggle_ring_buffer
 {
 	muggle_atomic_int capacity;
 	int flag;
@@ -71,7 +81,7 @@ typedef struct muggle_ring_buffer_tag
 	muggle_atomic_int read_cursor; // for MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE
 	muggle_mutex_t mtx;
 	muggle_condition_variable_t cv;
-	void **datas;
+	muggle_ring_buffer_block_t *blocks;
 }muggle_ring_buffer_t;
 
 #endif  /* #if MUGGLE_SUPPORT_FUTEX */
