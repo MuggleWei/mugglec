@@ -31,8 +31,8 @@ EXTERN_C_BEGIN
  */
 enum
 {
-	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX   = 0, //!< write lock use futex if be supported
-	MUGGLE_CHANNEL_FLAG_WRITE_MUTEX   = 1, //!< write lock use mutex
+	MUGGLE_CHANNEL_FLAG_WRITE_MUTEX   = 0, //!< write lock use mutex
+	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX   = 1, //!< write lock use futex if be supported
 	MUGGLE_CHANNEL_FLAG_WRITE_SPIN    = 2, //!< write lock use spinlock
 	MUGGLE_CHANNEL_FLAG_WRITE_SINGLE  = 3, //!< user guarantee only one writer use this channel
 
@@ -44,8 +44,8 @@ enum
  */
 enum
 {
-	MUGGLE_CHANNEL_FLAG_READ_FUTEX = 0 << 4, //!< reader with futex wait if supported
-	MUGGLE_CHANNEL_FLAG_READ_MUTEX = 1 << 4, //!< reader with mutex with
+	MUGGLE_CHANNEL_FLAG_READ_MUTEX = 0 << 4, //!< reader with mutex with
+	MUGGLE_CHANNEL_FLAG_READ_FUTEX = 1 << 4, //!< reader with futex wait if supported
 	MUGGLE_CHANNEL_FLAG_READ_BUSY  = 2 << 4, //!< reader busy loop until read message from channel
 
 	MUGGLE_CHANNEL_FLAG_READ_WAIT      = MUGGLE_CHANNEL_FLAG_READ_FUTEX,
