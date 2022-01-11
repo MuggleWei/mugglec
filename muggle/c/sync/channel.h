@@ -44,8 +44,8 @@ enum
  */
 enum
 {
-	MUGGLE_CHANNEL_FLAG_READ_MUTEX = 0 << 4, //!< reader with mutex with
-	MUGGLE_CHANNEL_FLAG_READ_FUTEX = 1 << 4, //!< reader with futex wait if supported
+	MUGGLE_CHANNEL_FLAG_READ_FUTEX = 0 << 4, //!< reader with futex wait if supported
+	MUGGLE_CHANNEL_FLAG_READ_MUTEX = 1 << 4, //!< reader with mutex with
 	MUGGLE_CHANNEL_FLAG_READ_BUSY  = 2 << 4, //!< reader busy loop until read message from channel
 
 	MUGGLE_CHANNEL_FLAG_READ_WAIT      = MUGGLE_CHANNEL_FLAG_READ_FUTEX,
