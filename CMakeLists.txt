@@ -6,13 +6,13 @@ message("-- use c compiler ${CMAKE_C_COMPILER}")
 message("-- use c++ compiler ${CMAKE_CXX_COMPILER}")
 
 # set compile parameter
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
+if (${CMAKE_C_COMPILER_ID} STREQUAL GNU)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native -Wall -Wextra")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -Wextra")
-elseif (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+elseif (${CMAKE_C_COMPILER_ID} MATCHES Clang)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native -Wall -Wextra -Wno-missing-field-initializers")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -Wextra -Wno-missing-field-initializers")
-elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+elseif (${CMAKE_C_COMPILER_ID} STREQUAL MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS=1 -D_UNICODE -DUNICODE)
 endif()
 
@@ -44,8 +44,8 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # options
 option(MUGGLE_BUILD_SHARED_LIB "build shared or static library" ON)
 option(MUGGLE_BUILD_STATIC_PIC "build static library with position independent code flag" ON)
-option(MUGGLE_BUILD_EXAMPLE "Build muggleCC example" OFF)
-option(MUGGLE_BUILD_TESTING "Build muggleCC test" OFF)
+option(MUGGLE_BUILD_EXAMPLE "Build mugglec example" OFF)
+option(MUGGLE_BUILD_TESTING "Build mugglec test" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build muggleCC benchmark" OFF)
 option(MUGGLE_BUILD_TRACE "If build type is debug then build with trace info in source codes" OFF)
 set(MUGGLE_EXTRA_PREFIX_PATH "" CACHE STRING "extra prefix path for cmake FIND_XXX")
@@ -54,6 +54,7 @@ set(MUGGLE_EXTRA_PREFIX_PATH "" CACHE STRING "extra prefix path for cmake FIND_X
 set(MUGGLE_CRYPT_OPTIMIZATION ON)
 # option(MUGGLE_CRYPT_COMPARE_OPENSSL "Link openssl in unittest for compare result" OFF)
 set(MUGGLE_CRYPT_COMPARE_OPENSSL ON)
+set(MUGGLE_BUILD_WITH_COV OFF)
 
 if (MUGGLE_BUILD_SHARED_LIB)
 	set(MUGGLE_LIB_TYPE SHARED)
@@ -61,11 +62,38 @@ else()
 	set(MUGGLE_LIB_TYPE STATIC)
 endif()
 
+# set coverage flag
+if (CMAKE_BUILD_TYPE MATCHES "[Cc]overage")
+	if (${CMAKE_C_COMPILER_ID} MATCHES Clang)
+		message("-- CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}, set MUGGLE_BUILD_WITH_COV ON")
+		set(MUGGLE_BUILD_WITH_COV ON)
+		set(COVERAGE_COMPILER_FLAGS "-fprofile-instr-generate -fcoverage-mapping")
+	elseif(${CMAKE_C_COMPILER_ID} STREQUAL GNU)
+		message("-- CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE} and find gcov in ${GCOV_PATH}, set MUGGLE_BUILD_WITH_COV ON")
+		set(MUGGLE_BUILD_WITH_COV ON)
+		set(COVERAGE_COMPILER_FLAGS "--coverage")
+	else()
+		message("-- Use compiler ${CMAKE_C_COMPILER_ID}, set MUGGLE_BUILD_WITH_COV OFF")
+		set(MUGGLE_BUILD_WITH_COV OFF)
+	endif()
+else()
+	message("-- CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}, set MUGGLE_BUILD_WITH_COV OFF")
+	set(MUGGLE_BUILD_WITH_COV OFF)
+endif()
+
+if (MUGGLE_BUILD_WITH_COV)
+	message("-- muggle build with cov, add compiler flags: ${COVERAGE_COMPILER_FLAGS}")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COVERAGE_COMPILER_FLAGS}")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COVERAGE_COMPILER_FLAGS}")
+	set(MUGGLE_BUILD_TESTING ON)
+endif()
+
+# set build testing
 if (MUGGLE_BUILD_TESTING)
 	set(BUILD_TESTING ON)
 endif()
 
-#if (MUGGLE_BUILD_EXAMPLE OR MUGGLE_BUILD_TESTING OR MUGGLE_BUILD_BENCHMARK)
+# set build benchmark
 if (MUGGLE_BUILD_BENCHMARK)
 	set(MUGGLE_BUILD_LIB_BENCHMARK ON)
 else()
@@ -91,6 +119,8 @@ set(MUGGLE_C_VERSION "${mugglec_version}")
 set(MUGGLE_C_SOVERSION "${MUGGLE_C_VER_MAJOR}")
 
 # output options
+message("-- c compiler flags: ${CMAKE_C_FLAGS}")
+message("-- cxx compiler flags: ${CMAKE_CXX_FLAGS}")
 message("-- mugglec version ${MUGGLE_C_VERSION}")
 message("-- option MUGGLE_BUILD_TRACE ${MUGGLE_BUILD_TRACE}")
 message("-- option MUGGLE_BUILD_SHARED_LIB ${MUGGLE_BUILD_SHARED_LIB}")
@@ -98,6 +128,7 @@ message("-- option MUGGLE_BUILD_STATIC_PIC ${MUGGLE_BUILD_STATIC_PIC}")
 message("-- option MUGGLE_BUILD_EXAMPLE ${MUGGLE_BUILD_EXAMPLE}")
 message("-- option MUGGLE_BUILD_TESTING ${MUGGLE_BUILD_TESTING}")
 message("-- option MUGGLE_BUILD_BENCHMARK ${MUGGLE_BUILD_BENCHMARK}")
+message("-- option MUGGLE_BUILD_WITH_COV ${MUGGLE_BUILD_WITH_COV}")
 message("-- option MUGGLE_EXTRA_PREFIX_PATH ${MUGGLE_EXTRA_PREFIX_PATH}")
 message("-- option MUGGLE_CRYPT_OPTIMIZATION ${MUGGLE_CRYPT_OPTIMIZATION}")
 message("-- option MUGGLE_CRYPT_COMPARE_OPENSSL ${MUGGLE_CRYPT_COMPARE_OPENSSL}")
@@ -421,4 +452,47 @@ if (MUGGLE_BUILD_BENCHMARK)
 	FOREACH(subdir ${benchmark_root_dir})
 		add_benchmark(${subdir} ${CMAKE_CURRENT_LIST_DIR}/benchmark/${subdir})
 	ENDFOREACH()
+endif()
+
+# coverage
+if (MUGGLE_BUILD_WITH_COV)
+	if (${CMAKE_C_COMPILER_ID} MATCHES Clang)
+		find_program(LLVM_PROFDATA llvm-profdata)
+		find_program(LLVM_COV_PATH llvm-cov)
+		if (LLVM_PROFDATA AND LLVM_COV_PATH)
+			set(COV_OUT_NAME mugglec_coverage)
+			add_custom_target(
+				coverage
+				COMMAND echo "run converage"
+				COMMAND rm -rf ${COV_OUT_NAME}
+				COMMAND rm -rf mugglec-*profraw
+				COMMAND rm -rf mugglec.profdata
+				COMMAND LLVM_PROFILE_FILE=mugglec-%m.profraw make test
+				COMMAND ${LLVM_PROFDATA} merge mugglec-*.profraw -o mugglec.profdata
+				COMMAND ${LLVM_COV_PATH} report ./lib/libmugglec.* -instr-profile=mugglec.profdata
+				COMMAND ${LLVM_COV_PATH} show ./lib/libmugglec.* -instr-profile=mugglec.profdata -output-dir=${COV_OUT_NAME} -format=html
+				)
+		else()
+			message("failed generate coverage report, llvm-profdata or llvm-cov not found")
+		endif()
+	elseif(${CMAKE_C_COMPILER_ID} STREQUAL GNU)
+		find_program(LCOV_PATH lcov)
+		find_program(GENHTML_PATH genhtml)
+		if (LCOV_PATH AND GENHTML_PATH)
+			set(COV_OUT_NAME mugglec_coverage)
+			set(COV_DIR ./CMakeFiles/mugglec.dir)
+			add_custom_target(
+				coverage
+				COMMAND echo "run converage"
+				COMMAND rm -rf ${COV_OUT_NAME}.info ${COV_OUT_NAME}
+				COMMAND ${LCOV_PATH} --zerocounters -d ${COV_DIR}
+				COMMAND rm -rf ${COV_OUT_NAME} ${COV_OUT_NAME}.info
+				COMMAND make test
+				COMMAND ${LCOV_PATH} -d ${COV_DIR} -c -o ${COV_OUT_NAME}.info
+				COMMAND ${GENHTML_PATH} ${COV_OUT_NAME}.info -o ${COV_OUT_NAME}
+				)
+		else()
+			message("failed generate coverage report, lcov or genhtml not found")
+		endif()
+	endif()
 endif()
