@@ -48,13 +48,13 @@ option(MUGGLE_BUILD_EXAMPLE "Build mugglec example" OFF)
 option(MUGGLE_BUILD_TESTING "Build mugglec test" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build muggleCC benchmark" OFF)
 option(MUGGLE_BUILD_TRACE "If build type is debug then build with trace info in source codes" OFF)
-option(MUGGLE_BUILD_WITH_COV "Build mugglec with coverage" OFF)
 set(MUGGLE_EXTRA_PREFIX_PATH "" CACHE STRING "extra prefix path for cmake FIND_XXX")
 
 # option(MUGGLE_CRYPT_OPTIMIZATION "Enable crypt optimization(use source codes extract from openssl)" ON)
 set(MUGGLE_CRYPT_OPTIMIZATION ON)
 # option(MUGGLE_CRYPT_COMPARE_OPENSSL "Link openssl in unittest for compare result" OFF)
 set(MUGGLE_CRYPT_COMPARE_OPENSSL ON)
+set(MUGGLE_BUILD_WITH_COV OFF)
 
 if (MUGGLE_BUILD_SHARED_LIB)
 	set(MUGGLE_LIB_TYPE SHARED)
@@ -65,24 +65,18 @@ endif()
 # set coverage flag
 if (CMAKE_BUILD_TYPE MATCHES "[Cc]overage")
 	if (${CMAKE_C_COMPILER_ID} MATCHES Clang)
-		# TODO: support clang
-		message("-- Currently not supported clang code coverage, set MUGGLE_BUILD_WITH_COV OFF")
-		set(MUGGLE_BUILD_WITH_COV OFF)
+		message("-- CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}, set MUGGLE_BUILD_WITH_COV ON")
+		set(MUGGLE_BUILD_WITH_COV ON)
+		set(COVERAGE_COMPILER_FLAGS "-fprofile-instr-generate -fcoverage-mapping")
 	elseif(${CMAKE_C_COMPILER_ID} STREQUAL GNU)
-		find_program(GCOV_PATH gcov)
-		if (NOT GCOV_PATH)
-			message("-- Failed find gcov, set MUGGLE_BUILD_WITH_COV OFF")
-			set(MUGGLE_BUILD_WITH_COV OFF)
-		else()
-			message("-- CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE} and find gcov in ${GCOV_PATH}, set MUGGLE_BUILD_WITH_COV ON")
-			set(MUGGLE_BUILD_WITH_COV ON)
-			set(COVERAGE_COMPILER_FLAGS "--coverage")
-		endif()
+		message("-- CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE} and find gcov in ${GCOV_PATH}, set MUGGLE_BUILD_WITH_COV ON")
+		set(MUGGLE_BUILD_WITH_COV ON)
+		set(COVERAGE_COMPILER_FLAGS "--coverage")
 	else()
 		message("-- Use compiler ${CMAKE_C_COMPILER_ID}, set MUGGLE_BUILD_WITH_COV OFF")
 		set(MUGGLE_BUILD_WITH_COV OFF)
 	endif()
-elseif(CMAKE_BUILD_TYPE MATCHES "[Rr]elease")
+else()
 	message("-- CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}, set MUGGLE_BUILD_WITH_COV OFF")
 	set(MUGGLE_BUILD_WITH_COV OFF)
 endif()
@@ -462,22 +456,43 @@ endif()
 
 # coverage
 if (MUGGLE_BUILD_WITH_COV)
-	find_program(LCOV_PATH lcov)
-	find_program(GENHTML_PATH genhtml)
-	if (LCOV_PATH AND GENHTML_PATH)
-		set(COV_OUT_NAME mugglec_coverage)
-		set(COV_DIR ./CMakeFiles/mugglec.dir)
-		add_custom_target(
-			coverage
-			COMMAND echo "run converage"
-			COMMAND rm -rf 
-			COMMAND lcov --zerocounters -d ${COV_DIR}
-			COMMAND rm -rf ${COV_OUT_NAME} ${COV_OUT_NAME}.info
-			COMMAND make test
-			COMMAND lcov -d ${COV_DIR} -c -o ${COV_OUT_NAME}.info
-			COMMAND genhtml ${COV_OUT_NAME}.info -o ${COV_OUT_NAME}
-		)
-	else()
-		message("failed generate coverage report, lcov or genhtml not found")
+	if (${CMAKE_C_COMPILER_ID} MATCHES Clang)
+		find_program(LLVM_PROFDATA llvm-profdata)
+		find_program(LLVM_COV_PATH llvm-cov)
+		if (LLVM_PROFDATA AND LLVM_COV_PATH)
+			set(COV_OUT_NAME mugglec_coverage)
+			add_custom_target(
+				coverage
+				COMMAND echo "run converage"
+				COMMAND rm -rf ${COV_OUT_NAME}
+				COMMAND rm -rf mugglec-*profraw
+				COMMAND rm -rf mugglec.profdata
+				COMMAND LLVM_PROFILE_FILE=mugglec-%m.profraw make test
+				COMMAND ${LLVM_PROFDATA} merge mugglec-*.profraw -o mugglec.profdata
+				COMMAND ${LLVM_COV_PATH} report ./lib/libmugglec.* -instr-profile=mugglec.profdata
+				COMMAND ${LLVM_COV_PATH} show ./lib/libmugglec.* -instr-profile=mugglec.profdata -output-dir=${COV_OUT_NAME} -format=html
+				)
+		else()
+			message("failed generate coverage report, llvm-profdata or llvm-cov not found")
+		endif()
+	elseif(${CMAKE_C_COMPILER_ID} STREQUAL GNU)
+		find_program(LCOV_PATH lcov)
+		find_program(GENHTML_PATH genhtml)
+		if (LCOV_PATH AND GENHTML_PATH)
+			set(COV_OUT_NAME mugglec_coverage)
+			set(COV_DIR ./CMakeFiles/mugglec.dir)
+			add_custom_target(
+				coverage
+				COMMAND echo "run converage"
+				COMMAND rm -rf ${COV_OUT_NAME}.info ${COV_OUT_NAME}
+				COMMAND ${LCOV_PATH} --zerocounters -d ${COV_DIR}
+				COMMAND rm -rf ${COV_OUT_NAME} ${COV_OUT_NAME}.info
+				COMMAND make test
+				COMMAND ${LCOV_PATH} -d ${COV_DIR} -c -o ${COV_OUT_NAME}.info
+				COMMAND ${GENHTML_PATH} ${COV_OUT_NAME}.info -o ${COV_OUT_NAME}
+				)
+		else()
+			message("failed generate coverage report, lcov or genhtml not found")
+		endif()
 	endif()
 endif()
