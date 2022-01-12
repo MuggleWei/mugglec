@@ -64,25 +64,26 @@ endif()
 
 # set coverage flag
 if (CMAKE_BUILD_TYPE MATCHES "[Cc]overage")
-	message("-- CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}, set MUGGLE_BUILD_WITH_COV ON")
-	set(MUGGLE_BUILD_WITH_COV ON)
+	if (${CMAKE_C_COMPILER_ID} MATCHES Clang)
+		# TODO: support clang
+		message("-- Currently not supported clang code coverage, set MUGGLE_BUILD_WITH_COV OFF")
+		set(MUGGLE_BUILD_WITH_COV OFF)
+	elseif(${CMAKE_C_COMPILER_ID} STREQUAL GNU)
+		find_program(GCOV_PATH gcov)
+		if (NOT GCOV_PATH)
+			message("-- Failed find gcov, set MUGGLE_BUILD_WITH_COV OFF")
+			set(MUGGLE_BUILD_WITH_COV OFF)
+		else()
+			message("-- CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE} and find gcov in ${GCOV_PATH}, set MUGGLE_BUILD_WITH_COV ON")
+			set(MUGGLE_BUILD_WITH_COV ON)
+			set(COVERAGE_COMPILER_FLAGS "--coverage")
+		endif()
+	else()
+		message("-- Use compiler ${CMAKE_C_COMPILER_ID}, set MUGGLE_BUILD_WITH_COV OFF")
+		set(MUGGLE_BUILD_WITH_COV OFF)
+	endif()
 elseif(CMAKE_BUILD_TYPE MATCHES "[Rr]elease")
 	message("-- CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}, set MUGGLE_BUILD_WITH_COV OFF")
-	set(MUGGLE_BUILD_WITH_COV OFF)
-endif()
-
-if (${CMAKE_C_COMPILER_ID} MATCHES Clang)
-	# TODO: support clang
-	message("-- Currently not supported clang code coverage, set MUGGLE_BUILD_WITH_COV OFF")
-elseif(${CMAKE_C_COMPILER_ID} STREQUAL GNU)
-	find_program(GCOV_PATH gcov)
-	if (NOT GCOV_PATH)
-		message("-- Failed find gcov, set MUGGLE_BUILD_WITH_COV OFF")
-	else()
-		set(COVERAGE_COMPILER_FLAGS "--coverage")
-	endif()
-else()
-	message("-- Use compiler ${CMAKE_C_COMPILER_ID}, set MUGGLE_BUILD_WITH_COV OFF")
 	set(MUGGLE_BUILD_WITH_COV OFF)
 endif()
 
@@ -465,14 +466,15 @@ if (MUGGLE_BUILD_WITH_COV)
 	find_program(GENHTML_PATH genhtml)
 	if (LCOV_PATH AND GENHTML_PATH)
 		set(COV_OUT_NAME mugglec_coverage)
+		set(COV_DIR ./CMakeFiles/mugglec.dir)
 		add_custom_target(
 			coverage
 			COMMAND echo "run converage"
 			COMMAND rm -rf 
-			COMMAND lcov --zerocounters -d .
+			COMMAND lcov --zerocounters -d ${COV_DIR}
 			COMMAND rm -rf ${COV_OUT_NAME} ${COV_OUT_NAME}.info
 			COMMAND make test
-			COMMAND lcov -d . -c -o ${COV_OUT_NAME}.info
+			COMMAND lcov -d ${COV_DIR} -c -o ${COV_OUT_NAME}.info
 			COMMAND genhtml ${COV_OUT_NAME}.info -o ${COV_OUT_NAME}
 		)
 	else()
