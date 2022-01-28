@@ -301,7 +301,9 @@ void example_async_logger()
 
 void example_simple_log()
 {
-	muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_TRACE);
+	// muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_TRACE);
+	muggle_log_complicated_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_TRACE, "log/example_log.log");
+	// muggle_log_complicated_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_TRACE, NULL);
 
 	MUGGLE_LOG_INFO("mugglec version: %s", mugglec_version());
 
