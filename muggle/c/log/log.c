@@ -192,7 +192,7 @@ int muggle_log_complicated_init(
 
 		muggle_log_file_time_rot_handler_init(
 			&file_time_rot_handler, log_path,
-			MUGGLE_LOG_TIME_ROTATE_UNIT_DAY, 1, true);
+			MUGGLE_LOG_TIME_ROTATE_UNIT_DAY, 1, false);
 		muggle_log_handler_set_level(
 			(muggle_log_handler_t*)&file_time_rot_handler, level_file_time_rotating);
 		muggle_log_handler_set_fmt((muggle_log_handler_t*)&file_time_rot_handler, &formatter);
