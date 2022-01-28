@@ -1,7 +1,6 @@
-#include "muggle/c/base/sleep.h"
-#include "muggle/c/log/log_sync_logger.h"
+#define MUGGLE_HOLD_LOG_MACRO 1  // enable muggle hold log macro
+
 #include "muggle/c/muggle_c.h"
-#include "muggle/c/version/version.h"
 
 #define GEN_TMP_LOG_MSG(msg, s) \
 muggle_log_msg_t msg = { \
@@ -301,7 +300,9 @@ void example_async_logger()
 
 void example_simple_log()
 {
-	muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_TRACE);
+	// muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_TRACE);
+	muggle_log_complicated_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_TRACE, "log/example_log.log");
+	// muggle_log_complicated_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_TRACE, NULL);
 
 	MUGGLE_LOG_INFO("mugglec version: %s", mugglec_version());
 
@@ -319,6 +320,14 @@ void example_simple_log()
 	MUGGLE_LOG_INFO("%s info", word);
 	MUGGLE_LOG_WARNING("%s warning", word);
 	MUGGLE_LOG_ERROR("%s error", word);
+
+#if MUGGLE_HOLD_LOG_MACRO
+	LOG_TRACE("muggle hold log macro, %s trace", word);
+	LOG_DEBUG("muggle hold log macro, %s debug", word);
+	LOG_INFO("muggle hold log macro, %s info", word);
+	LOG_WARNING("muggle hold log macro, %s warning", word);
+	LOG_ERROR("muggle hold log macro, %s error", word);
+#endif
 }
 
 muggle_logger_t* customize_async_logger()

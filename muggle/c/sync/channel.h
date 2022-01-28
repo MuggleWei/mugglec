@@ -31,8 +31,8 @@ EXTERN_C_BEGIN
  */
 enum
 {
-	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX   = 0, //!< write lock use futex if be supported
-	MUGGLE_CHANNEL_FLAG_WRITE_MUTEX   = 1, //!< write lock use mutex
+	MUGGLE_CHANNEL_FLAG_WRITE_MUTEX   = 0, //!< write lock use mutex
+	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX   = 1, //!< write lock use futex if be supported
 	MUGGLE_CHANNEL_FLAG_WRITE_SPIN    = 2, //!< write lock use spinlock
 	MUGGLE_CHANNEL_FLAG_WRITE_SINGLE  = 3, //!< user guarantee only one writer use this channel
 

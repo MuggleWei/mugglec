@@ -102,7 +102,7 @@ muggle_socket_t muggle_socket_create(int family, int type, int protocol);
  *
  * @return 
  *     - returns 0 on success
- *     - on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
 int muggle_socket_close(muggle_socket_t fd);
@@ -115,7 +115,7 @@ int muggle_socket_close(muggle_socket_t fd);
  *
  * @return 
  *     - returns 0 on success
- *     - on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
 int muggle_socket_shutdown(muggle_socket_t fd, int how);
@@ -143,7 +143,7 @@ int muggle_socket_strerror(int errnum, char *buf, size_t bufsize);
  *
  * @return 
  *     - returns 0 on success
- *     - on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
 int muggle_setsockopt(
@@ -161,7 +161,7 @@ int muggle_setsockopt(
  *
  * @return 
  *     - returns 0 on success
- *     - on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
 int muggle_getsockopt(
@@ -176,7 +176,7 @@ int muggle_getsockopt(
  *
  * @return 
  *     - returns 0 on success
- *     - on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
 int muggle_socket_set_nonblock(muggle_socket_t socket, int on);
@@ -191,7 +191,7 @@ int muggle_socket_set_nonblock(muggle_socket_t socket, int on);
  *
  * @return 
  *     - on success, return the number of bytes sent
- *     - on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
 int muggle_socket_send(muggle_socket_t fd, const void *buf, size_t len, int flags);
@@ -208,7 +208,7 @@ int muggle_socket_send(muggle_socket_t fd, const void *buf, size_t len, int flag
  *
  * @return 
  *     - on success, return the number of bytes sent
- *     - on error, -1 is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
 int muggle_socket_sendto(muggle_socket_t fd, const void *buf, size_t len, int flags,
@@ -223,8 +223,9 @@ int muggle_socket_sendto(muggle_socket_t fd, const void *buf, size_t len, int fl
  * @param flags  flags
  *
  * @return
- * return the number of bytes received, or -1 if an error occurred.
- * if error occurred, MUGGLE_SOCKET_LAST_ERRNO is set.
+ *     - return positive value, the number of bytes received
+ *     - return 0, the connction has been closed
+ *     - return MUGGLE_SOCKET_ERROR, an error occurred, MUGGLE_SOCKET_LAST_ERRNO is set.
  */
 MUGGLE_C_EXPORT
 int muggle_socket_recv(muggle_socket_t fd, void *buf, size_t len, int flags);
@@ -240,8 +241,9 @@ int muggle_socket_recv(muggle_socket_t fd, void *buf, size_t len, int flags);
  * @param addrlen  store socket address length
  *
  * @return 
- * return the number of bytes received, or -1 if an error occurred.
- * if error occurred, MUGGLE_SOCKET_LAST_ERRNO is set.
+ *     - return positive value, the number of bytes received
+ *     - return 0, the connction has been closed
+ *     - return MUGGLE_SOCKET_ERROR, an error occurred, MUGGLE_SOCKET_LAST_ERRNO is set.
  */
 MUGGLE_C_EXPORT
 int muggle_socket_recvfrom(muggle_socket_t fd, void *buf, size_t len, int flags,
