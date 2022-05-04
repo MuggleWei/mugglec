@@ -1,4 +1,5 @@
 #include "log_file_handler.h"
+#include <string.h>
 #include "muggle/c/log/log_handler.h"
 #include "muggle/c/base/err.h"
 #include "muggle/c/os/os.h"
