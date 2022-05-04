@@ -248,6 +248,8 @@ int muggle_log_file_time_rot_handler_init(
 	unsigned int rotate_mod,
 	bool use_local_time)
 {
+	memset(handler, 0, sizeof(*handler));
+
 	int ret = muggle_log_handler_init_default((muggle_log_handler_t*)handler);
 	if (ret != 0)
 	{

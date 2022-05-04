@@ -78,6 +78,8 @@ int muggle_log_file_handler_init(
 	const char *filepath,
 	const char *mode)
 {
+	memset(handler, 0, sizeof(*handler));
+
 	int ret = muggle_log_handler_init_default((muggle_log_handler_t*)handler);
 	if (ret != 0)
 	{

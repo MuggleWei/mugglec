@@ -387,5 +387,8 @@ int main()
 	example_simple_log();
 	example_customize_log();
 
+	// wait for async log flush
+	muggle_msleep(500);
+
 	return 0;
 }
