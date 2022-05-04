@@ -138,6 +138,8 @@ int muggle_log_file_rotate_handler_init(
 	unsigned int max_bytes,
 	unsigned int backup_count)
 {
+	memset(handler, 0, sizeof(*handler));
+
 	int ret = muggle_log_handler_init_default((muggle_log_handler_t*)handler);
 	if (ret != 0)
 	{

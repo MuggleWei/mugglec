@@ -133,6 +133,8 @@ int muggle_log_console_handler_init(
 	muggle_log_console_handler_t *handler,
 	int enable_color)
 {
+	memset(handler, 0, sizeof(*handler));
+
 	int ret = muggle_log_handler_init_default((muggle_log_handler_t*)handler);
 	if (ret != 0)
 	{
