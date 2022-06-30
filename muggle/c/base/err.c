@@ -13,7 +13,7 @@
 #include <string.h>
 
 #if MUGGLE_PLATFORM_WINDOWS
-#include <errhandlingapi.h>
+#include <windows.h>
 #endif
 
 int muggle_sys_lasterror()
