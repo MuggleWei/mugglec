@@ -27,6 +27,7 @@ int muggle_sys_lasterror()
 
 int muggle_sys_strerror(int errnum, char *buf, size_t bufsize)
 {
+	memset(buf, 0, bufsize);
 #if MUGGLE_PLATFORM_WINDOWS
 	return strerror_s(buf, bufsize, errnum);
 #else

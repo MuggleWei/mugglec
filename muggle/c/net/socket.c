@@ -42,8 +42,18 @@ int muggle_socket_shutdown(muggle_socket_t fd, int how)
 	return shutdown(fd, how);
 }
 
+int muggle_socket_lasterror()
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	return WSAGetLastError();
+#else
+	return errno;
+#endif
+}
+
 int muggle_socket_strerror(int errnum, char *buf, size_t bufsize)
 {
+	memset(buf, 0, bufsize);
 #if MUGGLE_PLATFORM_WINDOWS
 	DWORD ret = FormatMessageA(
 			FORMAT_MESSAGE_FROM_SYSTEM, NULL, errnum,

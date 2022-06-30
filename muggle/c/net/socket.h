@@ -25,7 +25,7 @@ EXTERN_C_BEGIN
 
 #define MUGGLE_INVALID_SOCKET INVALID_SOCKET
 #define MUGGLE_SOCKET_ERROR SOCKET_ERROR
-#define MUGGLE_SOCKET_LAST_ERRNO WSAGetLastError()
+#define MUGGLE_SOCKET_LAST_ERRNO muggle_socket_lasterror()
 #define MUGGLE_SOCKET_ADDR_STRLEN (INET6_ADDRSTRLEN + 9)
 
 #define MUGGLE_SOCKET_SHUT_RD     SD_RECEIVE
@@ -56,7 +56,7 @@ typedef int muggle_socklen_t;
 
 #define MUGGLE_INVALID_SOCKET     (-1)
 #define MUGGLE_SOCKET_ERROR       (-1)
-#define MUGGLE_SOCKET_LAST_ERRNO  errno
+#define MUGGLE_SOCKET_LAST_ERRNO  muggle_socket_lasterror()
 #define MUGGLE_SOCKET_ADDR_STRLEN (INET6_ADDRSTRLEN + 9)
 
 #define MUGGLE_SOCKET_SHUT_RD     SHUT_RD
@@ -119,6 +119,14 @@ int muggle_socket_close(muggle_socket_t fd);
  */
 MUGGLE_C_EXPORT
 int muggle_socket_shutdown(muggle_socket_t fd, int how);
+
+/**
+ * @brief socket function last error no
+ *
+ * @return error no
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_lasterror();
 
 /**
  * @brief get string describing MUGGLE_SOCKET_LAST_ERRNO
