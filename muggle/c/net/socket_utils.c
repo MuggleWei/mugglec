@@ -31,7 +31,7 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 			if (!host_only)
 			{
 				size_t offset = strlen(buf);
-				if (bufsize - offset < 8)
+				if ((int)bufsize - (int)offset < 8)
 				{
 					MUGGLE_LOG_ERROR("buffer size(%d) is not enough for socket address presentation string", (int)bufsize);
 					return NULL;
@@ -44,7 +44,16 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 	case AF_INET6:
 		{
 			const struct sockaddr_in6 *sin6 = (struct sockaddr_in6*)sa;
-			if (inet_ntop(AF_INET6, (void*)&sin6->sin6_addr, buf, (socklen_t)bufsize) == NULL)
+
+			int offset = 0;
+			char *cbuf = (char*)buf;
+			if (!host_only)
+			{
+				cbuf[0] = '[';
+				offset += 1;
+			}
+
+			if (inet_ntop(AF_INET6, (void*)&sin6->sin6_addr, cbuf + offset, (socklen_t)bufsize) == NULL)
 			{
 				char err_msg[1024] = {0};
 				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
@@ -54,13 +63,14 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 
 			if (!host_only)
 			{
-				size_t offset = strlen(buf);
-				if (bufsize - offset < 8)
+				size_t offset = strlen(cbuf);
+				int remain = (int)bufsize - (int)offset;
+				if (remain < 8)
 				{
 					MUGGLE_LOG_ERROR("buffer size(%d) is not enough for socket address presentation string", (int)bufsize);
 					return NULL;
 				}
-				snprintf((char*)buf + offset, bufsize - offset, ":%d", (int)ntohs(sin6->sin6_port));
+				snprintf(cbuf + offset, remain, "]:%d", (int)ntohs(sin6->sin6_port));
 			}
 
 			return (const char*)buf;
