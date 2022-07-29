@@ -8,7 +8,7 @@
  *  @brief        mugglec sys
  *****************************************************************************/
 
-#include "err.h"
+#include "sys.h"
 #include <errno.h>
 #include <string.h>
 
