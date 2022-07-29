@@ -21,6 +21,8 @@ typedef unsigned int muggle_thread_ret_t;
 typedef void* muggle_thread_ret_t;
 #endif
 
+#include <stdbool.h>
+
 EXTERN_C_BEGIN
 
 typedef struct muggle_thread_tag
@@ -104,6 +106,17 @@ int muggle_thread_hardware_concurrency();
  */
 MUGGLE_C_EXPORT
 void muggle_thread_yield();
+
+/**
+ * @brief check if thread ids are equal
+ *
+ * @param t1  thread id 1
+ * @param t2  thread id 2
+ *
+ * @return boolean value
+ */
+MUGGLE_C_EXPORT
+bool muggle_thread_equal(muggle_thread_id t1, muggle_thread_id t2);
 
 EXTERN_C_END
 
