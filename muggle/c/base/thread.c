@@ -64,6 +64,11 @@ void muggle_thread_yield()
 	SwitchToThread();
 }
 
+bool muggle_thread_equal(muggle_thread_id t1, muggle_thread_id t2)
+{
+	return t1 == t2;
+}
+
 #else
 
 #include <unistd.h>
@@ -96,6 +101,11 @@ int muggle_thread_hardware_concurrency()
 void muggle_thread_yield()
 {
 	sched_yield();
+}
+
+bool muggle_thread_equal(muggle_thread_id t1, muggle_thread_id t2)
+{
+	return pthread_equal(t1, t2);
 }
 
 #endif
