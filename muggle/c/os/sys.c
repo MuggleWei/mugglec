@@ -1,11 +1,11 @@
 /******************************************************************************
- *  @file         err.c
+ *  @file         sys.c
  *  @author       Muggle Wei
  *  @email        mugglewei@gmail.com
  *  @date         2022-06-30
  *  @copyright    Copyright 2022 Muggle Wei
  *  @license      MIT License
- *  @brief        mugglec err message
+ *  @brief        mugglec sys
  *****************************************************************************/
 
 #include "err.h"

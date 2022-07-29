@@ -12,7 +12,6 @@
 #define MUGGLE_C_ERR_H_
 
 #include "muggle/c/base/macro.h"
-#include <stddef.h>
 
 EXTERN_C_BEGIN
 
@@ -36,26 +35,6 @@ enum
 
 	MUGGLE_ERR_MAX,
 };
-
-/**
- * @brief system last error no
- *
- * @return err no
- */
-MUGGLE_C_EXPORT
-int muggle_sys_lasterror();
-
-/**
- * @brief get string description for system error num
- *
- * @param errnum   system error number
- * @param buf      buffer that stores error string
- * @param bufsize  size of buffer
- *
- * @return returns 0 on success, otherwise failed
- */
-MUGGLE_C_EXPORT
-int muggle_sys_strerror(int errnum, char *buf, size_t bufsize);
 
 EXTERN_C_END
 
