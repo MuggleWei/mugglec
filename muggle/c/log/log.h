@@ -104,6 +104,13 @@ do \
 #define LOG_ERROR(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_ERROR, format, ##__VA_ARGS__)
 #define LOG_FATAL(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_FATAL, format, ##__VA_ARGS__)
 
+#define DEBUG_LOG_TRACE(format, ...) MUGGLE_DEBUG_LOG_TRACE(format, ##__VA_ARGS__)
+#define DEBUG_LOG_DEBUG(format, ...) MUGGLE_DEBUG_LOG_DEBUG(format, ##__VA_ARGS__)
+#define DEBUG_LOG_INFO(format, ...) MUGGLE_DEBUG_LOG_INFO(format, ##__VA_ARGS__)
+#define DEBUG_LOG_WARNING(format, ...) MUGGLE_DEBUG_LOG_WARNING(format, ##__VA_ARGS__)
+#define DEBUG_LOG_ERROR(format, ...) MUGGLE_DEBUG_LOG_ERROR(format, ##__VA_ARGS__)
+#define DEBUG_LOG_FATAL(format, ...) MUGGLE_DEBUG_LOG_FATAL(format, ##__VA_ARGS__)
+
 #define LOG_LEVEL_TRACE MUGGLE_LOG_LEVEL_TRACE
 #define LOG_LEVEL_DEBUG MUGGLE_LOG_LEVEL_DEBUG
 #define LOG_LEVEL_INFO MUGGLE_LOG_LEVEL_INFO

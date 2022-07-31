@@ -276,6 +276,8 @@ function(add_example name folder)
 	endif(WIN32)
 	add_dependencies(${name} ${muggle_c})
 	target_link_libraries(${name} ${muggle_c})
+
+	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
 endfunction()
 
 function(add_benchmark name folder)

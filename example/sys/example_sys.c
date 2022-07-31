@@ -9,5 +9,7 @@ int main()
 
 	MUGGLE_LOG_SYS_ERR(MUGGLE_LOG_LEVEL_INFO, "failed close socket fd");
 
+	LOG_SYS_ERR(MUGGLE_LOG_LEVEL_INFO, "failed close socket fd");
+
 	return 0;
 }
