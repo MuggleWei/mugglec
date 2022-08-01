@@ -12,30 +12,25 @@
 #define MUGGLE_C_SOCKET_H_
 
 #include "muggle/c/base/macro.h"
+#include "muggle/c/event/event.h"
 
 EXTERN_C_BEGIN
 
+typedef muggle_event_fd muggle_socket_t;
+
+#define MUGGLE_INVALID_SOCKET MUGGLE_INVALID_EVENT_FD
+
+#define MUGGLE_SOCKET_SHUT_RD     MUGGLE_EVENT_FD_SHUT_RD
+#define MUGGLE_SOCKET_SHUT_WR     MUGGLE_EVENT_FD_SHUT_WR
+#define MUGGLE_SOCKET_SHUT_RDWR   MUGGLE_EVENT_FD_SHUT_RDWR
+
+#define MUGGLE_SOCKET_LAST_ERRNO  muggle_socket_lasterror()
+
 #if MUGGLE_PLATFORM_WINDOWS
 
-// NOTE: if without WIN32_LEAN_AND_MEAN defined, must
-// include winsock2.h before windows.h
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
-
-#define MUGGLE_INVALID_SOCKET INVALID_SOCKET
 #define MUGGLE_SOCKET_ERROR SOCKET_ERROR
-#define MUGGLE_SOCKET_LAST_ERRNO muggle_socket_lasterror()
 #define MUGGLE_SOCKET_ADDR_STRLEN (INET6_ADDRSTRLEN + 9)
 
-#define MUGGLE_SOCKET_SHUT_RD     SD_RECEIVE
-#define MUGGLE_SOCKET_SHUT_WR     SD_SEND
-#define MUGGLE_SOCKET_SHUT_RDWR   SD_BOTH
-
-#define MUGGLE_SYS_ERRNO_INTR       WSAEINTR
-#define MUGGLE_SYS_ERRNO_WOULDBLOCK WSAEWOULDBLOCK
-
-typedef SOCKET muggle_socket_t;
 typedef int muggle_socklen_t;
 
 #else // MUGGLE_PLATFORM_WINDOWS
@@ -54,19 +49,9 @@ typedef int muggle_socklen_t;
 #include <net/if.h>
 #include <sys/ioctl.h>
 
-#define MUGGLE_INVALID_SOCKET     (-1)
 #define MUGGLE_SOCKET_ERROR       (-1)
-#define MUGGLE_SOCKET_LAST_ERRNO  muggle_socket_lasterror()
 #define MUGGLE_SOCKET_ADDR_STRLEN (INET6_ADDRSTRLEN + 9)
 
-#define MUGGLE_SOCKET_SHUT_RD     SHUT_RD
-#define MUGGLE_SOCKET_SHUT_WR     SHUT_WR
-#define MUGGLE_SOCKET_SHUT_RDWR   SHUT_RDWR
-
-#define MUGGLE_SYS_ERRNO_INTR       EINTR
-#define MUGGLE_SYS_ERRNO_WOULDBLOCK EWOULDBLOCK
-
-typedef int muggle_socket_t;
 typedef socklen_t muggle_socklen_t;
 
 #endif // MUGGLE_PLATFORM_WINDOWS
