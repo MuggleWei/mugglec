@@ -8,8 +8,13 @@
 
 TEST(event_signal, wakeup_clearup)
 {
+	// init event lib
+	muggle_event_lib_init();
+
+	// init event signal
 	muggle_event_signal ev_signal;
-	muggle_event_signal_init(&ev_signal);
+	int ret = muggle_event_signal_init(&ev_signal);
+	ASSERT_EQ(ret, 0);
 
 	muggle_atomic_int completed = 0;
 

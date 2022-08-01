@@ -72,24 +72,157 @@ int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
 
 #elif MUGGLE_PLATFORM_WINDOWS
 
+#include <stdint.h>
+#include <stdlib.h>
+
+#define MUGGLE_EVENT_SIGNAL_SOCK_READ_END 0
+#define MUGGLE_EVENT_SIGNAL_SOCK_WRITE_END 1
+
 int muggle_event_signal_init(muggle_event_signal_t *ev_signal)
 {
-	// TODO:
+	memset(ev_signal, 0, sizeof(*ev_signal));
+	ev_signal->socket_fds[0] = MUGGLE_INVALID_EVENT_FD;
+	ev_signal->socket_fds[1] = MUGGLE_INVALID_EVENT_FD;
+
+	// create udp read end socket
+	ev_signal->socket_fds[MUGGLE_EVENT_SIGNAL_SOCK_READ_END] = socket(AF_INET, SOCK_DGRAM, 0);
+	if (ev_signal->socket_fds[MUGGLE_EVENT_SIGNAL_SOCK_READ_END] == MUGGLE_INVALID_EVENT_FD)
+	{
+		goto event_signal_init_except;
+	}
+	SOCKET read_end = ev_signal->socket_fds[MUGGLE_EVENT_SIGNAL_SOCK_READ_END];
+
+	struct sockaddr_in sin;
+	memset(&sin, 0, sizeof(sin));
+	sin.sin_family = AF_INET;
+	inet_pton(AF_INET, "127.0.0.1", &sin.sin_addr);
+	sin.sin_port = 0;
+
+	int ret = bind(read_end, (struct sockaddr*)&sin, sizeof(sin));
+	if (ret == SOCKET_ERROR)
+	{
+		goto event_signal_init_except;
+	}
+
+	if (muggle_event_set_nonblock(read_end, 1) != 0)
+	{
+		goto event_signal_init_except;
+	}
+
+	// create udp write end socket
+	ev_signal->socket_fds[MUGGLE_EVENT_SIGNAL_SOCK_WRITE_END] = socket(AF_INET, SOCK_DGRAM, 0);
+	if (ev_signal->socket_fds[MUGGLE_EVENT_SIGNAL_SOCK_WRITE_END] == MUGGLE_INVALID_EVENT_FD)
+	{
+		goto event_signal_init_except;
+	}
+	SOCKET write_end = ev_signal->socket_fds[MUGGLE_EVENT_SIGNAL_SOCK_WRITE_END];
+
+	memset(&sin, 0, sizeof(sin));
+	int addrlen = sizeof(sin);
+	ret = getsockname(read_end, (struct sockaddr *)&sin, &addrlen);
+	if (ret != 0)
+	{
+		goto event_signal_init_except;
+	}
+
+	ret = connect(write_end, (struct sockaddr*)&sin, sizeof(sin));
+	if (ret == SOCKET_ERROR)
+	{
+		goto event_signal_init_except;
+	}
+
+	if (muggle_event_set_nonblock(write_end, 1) != 0)
+	{
+		goto event_signal_init_except;
+	}
+
+	// init mutex
+	ev_signal->mtx = (muggle_mutex_t*)malloc(sizeof(muggle_mutex_t));
+	if (ev_signal->mtx == NULL)
+	{
+		goto event_signal_init_except;
+	}
+
+	if (muggle_mutex_init(ev_signal->mtx) != 0)
+	{
+		free(ev_signal->mtx);
+		ev_signal->mtx = NULL;
+		goto event_signal_init_except;
+	}
+
+	return 0;
+
+event_signal_init_except:
+	muggle_event_signal_destroy(ev_signal);
+	return MUGGLE_EVENT_ERROR;
 }
 
 void muggle_event_signal_destroy(muggle_event_signal_t *ev_signal)
 {
-	// TODO:
+	if (ev_signal->mtx)
+	{
+		muggle_mutex_destroy(ev_signal->mtx);
+		free(ev_signal->mtx);
+		ev_signal->mtx = NULL;
+	}
+
+	if (ev_signal->socket_fds[0] != INVALID_SOCKET)
+	{
+		closesocket(ev_signal->socket_fds[0]);
+		ev_signal->socket_fds[0] = INVALID_SOCKET;
+	}
+
+	if (ev_signal->socket_fds[1] != INVALID_SOCKET)
+	{
+		closesocket(ev_signal->socket_fds[1]);
+		ev_signal->socket_fds[1] = INVALID_SOCKET;
+	}
 }
 
 int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal)
 {
-	// TODO:
+	uint64_t v = 0;
+	muggle_mutex_lock(ev_signal->mtx);
+	int n = send(ev_signal->socket_fds[MUGGLE_EVENT_SIGNAL_SOCK_WRITE_END], (const char*)&v, sizeof(v), 0);
+	muggle_mutex_unlock(ev_signal->mtx);
+
+	return n == sizeof(v) ? 0 : MUGGLE_EVENT_ERROR;
 }
 
 int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
 {
-	// TODO:
+	// NOTE: cause use UDP, unlike pipe, this use a uint64_t variable replace uint64_t array
+	uint64_t v;
+	int n = 0;
+	int cnt = 0;
+	do {
+		n = recv(ev_signal->socket_fds[MUGGLE_EVENT_SIGNAL_SOCK_READ_END], (char*)&v, sizeof(v), 0);
+		if (n == SOCKET_ERROR)
+		{
+			int errnum = MUGGLE_EVENT_LAST_ERRNO;
+			if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK ||
+				MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERROR_AGAIN)
+			{
+				break;
+			}
+			else if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+			{
+				continue;
+			}
+			else
+			{
+				return MUGGLE_EVENT_ERROR;
+			}
+		}
+
+		cnt += n;
+		if (n < (int)sizeof(v))
+		{
+			break;
+		}
+	} while(1);
+
+	return (int)(cnt/ sizeof(uint64_t));
 }
 
 #else
@@ -138,7 +271,12 @@ static int muggle_event_signal_readall(muggle_event_fd fd)
 		n = read(fd, buf, sizeof(buf));
 		if (n < 0)
 		{
-			if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+			if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK ||
+				MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERROR_AGAIN)
+			{
+				break;
+			}
+			else if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
 			{
 				continue;
 			}
@@ -240,10 +378,7 @@ int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal)
 
 int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
 {
-	muggle_mutex_lock(ev_signal->mtx);
 	int n = muggle_event_signal_readall(ev_signal->pipe_fds[MUGGLE_EVENT_SIGNAL_PIPE_READ_END]);
-	muggle_mutex_unlock(ev_signal->mtx);
-
 	if (n == MUGGLE_EVENT_ERROR)
 	{
 		if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK ||

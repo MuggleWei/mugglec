@@ -28,8 +28,8 @@ typedef struct muggle_event_signal
 #if MUGGLE_PLATFORM_LINUX && MUGGLE_EVENT_SIGNAL_LINUX_USE_EVENTFD 
 	muggle_event_fd evfd;  //!< eventfd
 #elif MUGGLE_PLATFORM_WINDOWS
-	muggle_event_fd socket_fds[2]; //!< socket fds
-	muggle_mutex_t  *mtx;          //!< socket write mutex
+	muggle_event_fd    socket_fds[2]; //!< socket fds
+	muggle_mutex_t     *mtx;          //!< socket write mutex
 #else
 	muggle_event_fd pipe_fds[2];  //!< pipe fds
 	muggle_mutex_t  *mtx;         //!< pipe write mutex
@@ -75,6 +75,10 @@ int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal);
  *
  * @return 
  * number of times be wakeup, on failed return MUGGLE_EVENT_ERROR and MUGGLE_EVENT_LAST_ERRNO is set
+ * 
+ * @note
+ * clearup not guarantee thread-safe, when multiple thread clearup in the same time, user need 
+ * guarantee thread-safe
  */
 MUGGLE_C_EXPORT
 int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal);
