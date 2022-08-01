@@ -74,6 +74,10 @@
 #include "muggle/c/log/log_async_logger.h"
 #include "muggle/c/log/log.h"
 
+// event
+#include "muggle/c/event/event.h"
+#include "muggle/c/event/event_signal.h"
+
 // net
 #include "muggle/c/net/socket.h"
 #include "muggle/c/net/socket_peer.h"

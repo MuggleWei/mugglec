@@ -13,6 +13,11 @@
 #include <string.h>
 #include "muggle/c/log/log.h"
 
+#if MUGGLE_PLATFORM_WINDOWS
+#else
+#include <fcntl.h>
+#endif
+
 const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufsize, int host_only)
 {
 	switch (sa->sa_family)
@@ -103,7 +108,6 @@ int muggle_socket_getaddrinfo(const char *host, const char *serv, struct addrinf
 		return -1;
 	}
 
-	int ret = -1;
 	if (res)
 	{
 		memcpy(addrinfo, res, sizeof(struct addrinfo));

@@ -18,6 +18,7 @@ EXTERN_C_BEGIN
 
 typedef muggle_event_fd muggle_socket_t;
 
+#define MUGGLE_SOCKET_ERROR MUGGLE_EVENT_ERROR
 #define MUGGLE_INVALID_SOCKET MUGGLE_INVALID_EVENT_FD
 
 #define MUGGLE_SOCKET_SHUT_RD     MUGGLE_EVENT_FD_SHUT_RD
@@ -28,7 +29,6 @@ typedef muggle_event_fd muggle_socket_t;
 
 #if MUGGLE_PLATFORM_WINDOWS
 
-#define MUGGLE_SOCKET_ERROR SOCKET_ERROR
 #define MUGGLE_SOCKET_ADDR_STRLEN (INET6_ADDRSTRLEN + 9)
 
 typedef int muggle_socklen_t;
@@ -36,20 +36,14 @@ typedef int muggle_socklen_t;
 #else // MUGGLE_PLATFORM_WINDOWS
 
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <errno.h>
 #include <netdb.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
-#include <signal.h>
-#include <fcntl.h>
 #include <sys/select.h>
 #include <poll.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
 
-#define MUGGLE_SOCKET_ERROR       (-1)
 #define MUGGLE_SOCKET_ADDR_STRLEN (INET6_ADDRSTRLEN + 9)
 
 typedef socklen_t muggle_socklen_t;
