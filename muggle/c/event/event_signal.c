@@ -10,7 +10,7 @@
 
 #include "event_signal.h"
 
-#if MUGGLE_PLATFORM_LINUX
+#if MUGGLE_PLATFORM_LINUX && MUGGLE_EVENT_SIGNAL_LINUX_USE_EVENTFD 
 
 #include <unistd.h>
 #include <sys/eventfd.h>
@@ -94,6 +94,15 @@ int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
 
 #else
 
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#define MUGGLE_EVENT_SIGNAL_PIPE_READ_END 0
+#define MUGGLE_EVENT_SIGNAL_PIPE_WRITE_END 1
+
 static int muggle_event_signal_writen(muggle_event_fd fd, void *ptr, size_t numbytes)
 {
 	size_t nleft = numbytes;
@@ -109,7 +118,7 @@ static int muggle_event_signal_writen(muggle_event_fd fd, void *ptr, size_t numb
 			}
 			else
 			{
-				return -1;
+				return MUGGLE_EVENT_ERROR;
 			}
 		}
 
@@ -129,54 +138,125 @@ static int muggle_event_signal_readall(muggle_event_fd fd)
 		n = read(fd, buf, sizeof(buf));
 		if (n < 0)
 		{
-			int errnum = MUGGLE_EVENT_LAST_ERRNO;
-			if (errnum == EWOULDBLOCK || errnum == EAGAIN)
-			{
-				break;
-			}
-			else if (errnum == EINTR)
+			if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
 			{
 				continue;
 			}
 			else
 			{
-				return -1;
+				return MUGGLE_EVENT_ERROR;
 			}
 		}
 		else if (n == 0)
 		{
 			// EOF
-			return -1;
+			return MUGGLE_EVENT_ERROR;
 		}
 
-		cnt += n / sizeof(uint64_t);
-		if (n < sizeof(buf))
+		cnt += n;
+		if (n < (int)sizeof(buf))
 		{
 			break;
 		}
 	} while (1);
 
-	return cnt;
+	return (int)(cnt / sizeof(uint64_t));
 }
 
 int muggle_event_signal_init(muggle_event_signal_t *ev_signal)
 {
-	// TODO:
+	memset(ev_signal, 0, sizeof(*ev_signal));
+	ev_signal->pipe_fds[0] = -1;
+	ev_signal->pipe_fds[1] = -1;
+
+	if (pipe(ev_signal->pipe_fds) == -1)
+	{
+		goto event_signal_init_except;
+	}
+
+	if (muggle_event_set_nonblock(ev_signal->pipe_fds[0], 1) != 0)
+	{
+		goto event_signal_init_except;
+	}
+
+	if (muggle_event_set_nonblock(ev_signal->pipe_fds[1], 1) != 0)
+	{
+		goto event_signal_init_except;
+	}
+
+	ev_signal->mtx = (muggle_mutex_t*)malloc(sizeof(muggle_mutex_t));
+	if (ev_signal->mtx == NULL)
+	{
+		goto event_signal_init_except;
+	}
+
+	if (muggle_mutex_init(ev_signal->mtx) != 0)
+	{
+		free(ev_signal->mtx);
+		ev_signal->mtx = NULL;
+		goto event_signal_init_except;
+	}
+
+	return 0;
+
+event_signal_init_except:
+	muggle_event_signal_destroy(ev_signal);
+	return MUGGLE_EVENT_ERROR;
 }
 
 void muggle_event_signal_destroy(muggle_event_signal_t *ev_signal)
 {
-	// TODO:
+	if (ev_signal->mtx)
+	{
+		muggle_mutex_destroy(ev_signal->mtx);
+		free(ev_signal->mtx);
+		ev_signal->mtx = NULL;
+	}
+
+	if (ev_signal->pipe_fds[0] != -1)
+	{
+		close(ev_signal->pipe_fds[0]);
+		ev_signal->pipe_fds[0] = -1;
+	}
+
+	if (ev_signal->pipe_fds[1] != -1)
+	{
+		close(ev_signal->pipe_fds[1]);
+		ev_signal->pipe_fds[1] = -1;
+	}
 }
 
 int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal)
 {
-	// TODO:
+	uint64_t v = 0;
+	muggle_mutex_lock(ev_signal->mtx);
+	int n = muggle_event_signal_writen(
+		ev_signal->pipe_fds[MUGGLE_EVENT_SIGNAL_PIPE_WRITE_END],
+		&v, sizeof(v));
+	muggle_mutex_unlock(ev_signal->mtx);
+
+	return n == sizeof(v) ? 0 : MUGGLE_EVENT_ERROR;
 }
 
 int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
 {
-	// TODO:
+	muggle_mutex_lock(ev_signal->mtx);
+	int n = muggle_event_signal_readall(ev_signal->pipe_fds[MUGGLE_EVENT_SIGNAL_PIPE_READ_END]);
+	muggle_mutex_unlock(ev_signal->mtx);
+
+	if (n == MUGGLE_EVENT_ERROR)
+	{
+		if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK ||
+			MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERROR_AGAIN)
+		{
+			return 0;
+		}
+		else
+		{
+			return MUGGLE_EVENT_ERROR;
+		}
+	}
+	return n;
 }
 
 #endif
