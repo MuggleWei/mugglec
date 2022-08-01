@@ -378,20 +378,7 @@ int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal)
 
 int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
 {
-	int n = muggle_event_signal_readall(ev_signal->pipe_fds[MUGGLE_EVENT_SIGNAL_PIPE_READ_END]);
-	if (n == MUGGLE_EVENT_ERROR)
-	{
-		if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK ||
-			MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERROR_AGAIN)
-		{
-			return 0;
-		}
-		else
-		{
-			return MUGGLE_EVENT_ERROR;
-		}
-	}
-	return n;
+	return muggle_event_signal_readall(ev_signal->pipe_fds[MUGGLE_EVENT_SIGNAL_PIPE_READ_END]);
 }
 
 #endif
