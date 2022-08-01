@@ -215,14 +215,14 @@ int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
 			}
 		}
 
-		cnt += n;
+		cnt += 1;
 		if (n < (int)sizeof(v))
 		{
 			break;
 		}
 	} while(1);
 
-	return (int)(cnt/ sizeof(uint64_t));
+	return cnt;
 }
 
 #else
