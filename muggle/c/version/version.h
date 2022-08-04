@@ -34,10 +34,15 @@ const char* mugglec_compile_time();
 /**
  * @brief get mugglec compile datetime in format yyyy-mm-ddTHH:MM:SS
  *
- * @return mugglec compile datetime
+ * @param buf      buffer for store datetime string, at least 21 bytes in size
+ * @param bufsize  size of buffer
+ *
+ * @return
+ *     on success, return buf that store mugglec compile datetime string
+ *     on failed, return NULL
  */
 MUGGLE_C_EXPORT
-const char* mugglec_compile_dt();
+const char* mugglec_compile_time_iso8601(char *buf, int bufsize);
 
 EXTERN_C_END
 

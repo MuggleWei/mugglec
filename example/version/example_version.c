@@ -6,7 +6,10 @@ int main()
 
 	LOG_INFO("mugglec version: %s", mugglec_version());
 	LOG_INFO("mugglec compile time(preprocessor macro): %s", mugglec_compile_time());
-	LOG_INFO("mugglec compile datetime(ISO 8601): %s", mugglec_compile_dt());
+
+	char buf[21];
+	const char *compile_dt = mugglec_compile_time_iso8601(buf, sizeof(buf));
+	LOG_INFO("mugglec compile datetime(ISO 8601): %s", compile_dt);
 
 	return 0;
 }
