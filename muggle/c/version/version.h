@@ -24,12 +24,20 @@ MUGGLE_C_EXPORT
 const char* mugglec_version();
 
 /**
- * @brief get mugglec compile time
+ * @brief get mugglec compile time in preprocessor macro format
  *
  * @return mugglec compile time
  */
 MUGGLE_C_EXPORT
 const char* mugglec_compile_time();
+
+/**
+ * @brief get mugglec compile datetime in format yyyy-mm-ddTHH:MM:SS
+ *
+ * @return mugglec compile datetime
+ */
+MUGGLE_C_EXPORT
+const char* mugglec_compile_dt();
 
 EXTERN_C_END
 
