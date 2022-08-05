@@ -72,6 +72,9 @@ bool muggle_linked_list_init(muggle_linked_list_t *p_linked_list, size_t capacit
 {
 	memset(p_linked_list, 0, sizeof(*p_linked_list));
 
+	p_linked_list->head.next = &p_linked_list->tail;
+	p_linked_list->tail.prev = &p_linked_list->head;
+
 	if (capacity > 0)
 	{
 		if (!MUGGLE_DS_CAP_IS_VALID(capacity))
@@ -91,9 +94,6 @@ bool muggle_linked_list_init(muggle_linked_list_t *p_linked_list, size_t capacit
 			return false;
 		}
 	}
-
-	p_linked_list->head.next = &p_linked_list->tail;
-	p_linked_list->tail.prev = &p_linked_list->head;
 
 	return true;
 }
