@@ -83,6 +83,16 @@ int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal);
 MUGGLE_C_EXPORT
 int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal);
 
+/**
+ * @brief get read fd from event signal
+ *
+ * @param ev_signal  event signal
+ *
+ * @return read fd of event signal
+ */
+MUGGLE_C_EXPORT
+muggle_event_fd muggle_event_signal_rfd(muggle_event_signal_t *ev_signal);
+
 EXTERN_C_END
 
 #endif /* ifndef MUGGLE_C_EVENT_SIGNAL_H_ */

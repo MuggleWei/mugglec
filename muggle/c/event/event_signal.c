@@ -70,6 +70,11 @@ int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
 	return (int)v;
 }
 
+muggle_event_fd muggle_event_signal_rfd(muggle_event_signal_t *ev_signal)
+{
+	return ev_signal->evfd;
+}
+
 #elif MUGGLE_PLATFORM_WINDOWS
 
 #include <stdint.h>
@@ -223,6 +228,11 @@ int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
 	} while(1);
 
 	return cnt;
+}
+
+muggle_event_fd muggle_event_signal_rfd(muggle_event_signal_t *ev_signal)
+{
+	return ev_signal->socket_fds[MUGGLE_EVENT_SIGNAL_SOCK_READ_END];
 }
 
 #else
@@ -379,6 +389,11 @@ int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal)
 int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
 {
 	return muggle_event_signal_readall(ev_signal->pipe_fds[MUGGLE_EVENT_SIGNAL_PIPE_READ_END]);
+}
+
+muggle_event_fd muggle_event_signal_rfd(muggle_event_signal_t *ev_signal)
+{
+	return ev_signal->pipe_fds[MUGGLE_EVENT_SIGNAL_PIPE_READ_END];
 }
 
 #endif
