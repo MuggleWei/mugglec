@@ -13,6 +13,7 @@
 
 #include "muggle/c/base/macro.h"
 #include "muggle/c/event/event.h"
+#include "muggle/c/event/event_fd.h"
 
 #define MUGGLE_EVENT_SIGNAL_LINUX_USE_EVENTFD 1
 

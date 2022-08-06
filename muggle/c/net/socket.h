@@ -13,6 +13,7 @@
 
 #include "muggle/c/base/macro.h"
 #include "muggle/c/event/event.h"
+#include "muggle/c/event/event_fd.h"
 
 EXTERN_C_BEGIN
 

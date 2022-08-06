@@ -28,18 +28,9 @@
 
 #endif
 
-EXTERN_C_BEGIN
-
 #if MUGGLE_PLATFORM_WINDOWS
 
-typedef SOCKET muggle_event_fd;
-
 #define MUGGLE_EVENT_ERROR SOCKET_ERROR
-#define MUGGLE_INVALID_EVENT_FD INVALID_SOCKET
-
-#define MUGGLE_EVENT_FD_SHUT_RD     SD_RECEIVE
-#define MUGGLE_EVENT_FD_SHUT_WR     SD_SEND
-#define MUGGLE_EVENT_FD_SHUT_RDWR   SD_BOTH
 
 #define MUGGLE_SYS_ERRNO_INTR       WSAEINTR
 #define MUGGLE_SYS_ERRNO_WOULDBLOCK WSAEWOULDBLOCK
@@ -47,20 +38,15 @@ typedef SOCKET muggle_event_fd;
 
 #else
 
-typedef int muggle_event_fd;
-
 #define MUGGLE_EVENT_ERROR (-1)
-#define MUGGLE_INVALID_EVENT_FD (-1)
-
-#define MUGGLE_EVENT_FD_SHUT_RD     SHUT_RD
-#define MUGGLE_EVENT_FD_SHUT_WR     SHUT_WR
-#define MUGGLE_EVENT_FD_SHUT_RDWR   SHUT_RDWR
 
 #define MUGGLE_SYS_ERRNO_INTR       EINTR
 #define MUGGLE_SYS_ERRNO_WOULDBLOCK EWOULDBLOCK
 #define MUGGLE_SYS_ERROR_AGAIN      EAGAIN
 
 #endif
+
+EXTERN_C_BEGIN
 
 #define MUGGLE_EVENT_LAST_ERRNO muggle_event_lasterror()
 
@@ -76,31 +62,6 @@ typedef int muggle_event_fd;
  */
 MUGGLE_C_EXPORT
 int muggle_event_lib_init();
-
-/**
- * @brief close event fd
- *
- * @param fd  event file descriptor
- *
- * @return 
- *     - returns 0 on success
- *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
- */
-MUGGLE_C_EXPORT
-int muggle_event_close(muggle_event_fd fd);
-
-/**
- * @brief shutdown event fd
- *
- * @param fd   event file descriptor
- * @param how  MUGGLE_EVENT_FD_SHUT_*
- *
- * @return 
- *     - returns 0 on success
- *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
- */
-MUGGLE_C_EXPORT
-int muggle_event_shutdown(muggle_event_fd fd, int how);
 
 /**
  * @brief event function last error no
@@ -121,19 +82,6 @@ int muggle_event_lasterror();
  */
 MUGGLE_C_EXPORT
 int muggle_event_strerror(int errnum, char *buf, size_t bufsize);
-
-/**
- * @brief set event fd block or non-block
- *
- * @param fd  event file descriptor
- * @param on  if 0, set block, otherwise set non-block
- *
- * @return 
- *     - returns 0 on success
- *     - on error
- */
-MUGGLE_C_EXPORT
-int muggle_event_set_nonblock(muggle_event_fd fd, int on);
 
 EXTERN_C_END
 
