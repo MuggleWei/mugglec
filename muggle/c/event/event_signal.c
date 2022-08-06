@@ -109,7 +109,7 @@ int muggle_ev_signal_init(muggle_event_signal_t *ev_signal)
 		goto event_signal_init_except;
 	}
 
-	if (muggle_event_set_nonblock(read_end, 1) != 0)
+	if (muggle_ev_fd_set_nonblock(read_end, 1) != 0)
 	{
 		goto event_signal_init_except;
 	}
@@ -136,7 +136,7 @@ int muggle_ev_signal_init(muggle_event_signal_t *ev_signal)
 		goto event_signal_init_except;
 	}
 
-	if (muggle_event_set_nonblock(write_end, 1) != 0)
+	if (muggle_ev_fd_set_nonblock(write_end, 1) != 0)
 	{
 		goto event_signal_init_except;
 	}
@@ -322,12 +322,12 @@ int muggle_ev_signal_init(muggle_event_signal_t *ev_signal)
 		goto event_signal_init_except;
 	}
 
-	if (muggle_event_set_nonblock(ev_signal->pipe_fds[0], 1) != 0)
+	if (muggle_ev_fd_set_nonblock(ev_signal->pipe_fds[0], 1) != 0)
 	{
 		goto event_signal_init_except;
 	}
 
-	if (muggle_event_set_nonblock(ev_signal->pipe_fds[1], 1) != 0)
+	if (muggle_ev_fd_set_nonblock(ev_signal->pipe_fds[1], 1) != 0)
 	{
 		goto event_signal_init_except;
 	}

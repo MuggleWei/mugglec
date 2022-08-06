@@ -17,6 +17,8 @@ EXTERN_C_BEGIN
 
 #if MUGGLE_PLATFORM_WINDOWS
 
+#include <WinSock2.h>
+
 typedef SOCKET muggle_event_fd;
 
 #define MUGGLE_INVALID_EVENT_FD INVALID_SOCKET
@@ -26,6 +28,8 @@ typedef SOCKET muggle_event_fd;
 #define MUGGLE_EVENT_FD_SHUT_RDWR   SD_BOTH
 
 #else
+
+#include <sys/socket.h>
 
 typedef int muggle_event_fd;
 

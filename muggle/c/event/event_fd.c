@@ -13,7 +13,6 @@
 #if MUGGLE_PLATFORM_WINDOWS
 #else
 #include <unistd.h>
-#include <sys/socket.h>
 #include <fcntl.h>
 #endif
 
