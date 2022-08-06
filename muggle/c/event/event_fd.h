@@ -12,7 +12,6 @@
 #define MUGGLE_C_EVENT_FD_H_
 
 #include "muggle/c/base/macro.h"
-#include "muggle/c/event/event.h"
 
 EXTERN_C_BEGIN
 

@@ -12,6 +12,7 @@
 #define MUGGLE_C_EVENT_H_
 
 #include "muggle/c/base/macro.h"
+#include "muggle/c/event/event_fd.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 
@@ -25,6 +26,7 @@
 
 #include <stddef.h>
 #include <errno.h>
+#include <sys/socket.h>
 
 #endif
 

@@ -31,7 +31,6 @@ int muggle_event_shutdown(muggle_event_fd fd, int how)
 	return shutdown(fd, how);
 }
 
-
 int muggle_event_set_nonblock(muggle_event_fd fd, int on)
 {
 #if MUGGLE_PLATFORM_WINDOWS
