@@ -78,6 +78,7 @@
 #include "muggle/c/event/event.h"
 #include "muggle/c/event/event_fd.h"
 #include "muggle/c/event/event_signal.h"
+#include "muggle/c/event/event_context.h"
 
 // net
 #include "muggle/c/net/socket.h"
