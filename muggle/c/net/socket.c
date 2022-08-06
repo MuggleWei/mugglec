@@ -23,7 +23,7 @@ muggle_socket_t muggle_socket_create(int family, int type, int protocol)
 
 int muggle_socket_close(muggle_socket_t fd)
 {
-	return muggle_event_close(fd);
+	return muggle_ev_fd_close(fd);
 }
 
 int muggle_socket_shutdown(muggle_socket_t fd, int how)
@@ -65,7 +65,7 @@ int muggle_getsockopt(
 
 int muggle_socket_set_nonblock(muggle_socket_t socket, int on)
 {
-	return muggle_event_set_nonblock(socket, on);
+	return muggle_ev_fd_set_nonblock(socket, on);
 }
 
 int muggle_socket_send(muggle_socket_t fd, const void *buf, size_t len, int flags)

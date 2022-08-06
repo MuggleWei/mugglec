@@ -18,7 +18,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-int muggle_event_signal_init(muggle_event_signal_t *ev_signal)
+int muggle_ev_signal_init(muggle_event_signal_t *ev_signal)
 {
 	memset(ev_signal, 0, sizeof(*ev_signal));
 	ev_signal->evfd = -1;
@@ -32,16 +32,16 @@ int muggle_event_signal_init(muggle_event_signal_t *ev_signal)
 	return 0;
 }
 
-void muggle_event_signal_destroy(muggle_event_signal_t *ev_signal)
+void muggle_ev_signal_destroy(muggle_event_signal_t *ev_signal)
 {
 	if (ev_signal->evfd != -1)
 	{
-		muggle_event_close(ev_signal->evfd);
+		muggle_ev_fd_close(ev_signal->evfd);
 		ev_signal->evfd = -1;
 	}
 }
 
-int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal)
+int muggle_ev_signal_wakeup(muggle_event_signal_t *ev_signal)
 {
 	uint64_t v = 1;
 	if (write(ev_signal->evfd, &v, sizeof(v)) != sizeof(v))
@@ -51,7 +51,7 @@ int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal)
 	return 0;
 }
 
-int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
+int muggle_ev_signal_clearup(muggle_event_signal_t *ev_signal)
 {
 	uint64_t v = 0;
 	ssize_t n = read(ev_signal->evfd, &v, sizeof(v));
@@ -70,7 +70,7 @@ int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
 	return (int)v;
 }
 
-muggle_event_fd muggle_event_signal_rfd(muggle_event_signal_t *ev_signal)
+muggle_event_fd muggle_ev_signal_rfd(muggle_event_signal_t *ev_signal)
 {
 	return ev_signal->evfd;
 }
@@ -83,7 +83,7 @@ muggle_event_fd muggle_event_signal_rfd(muggle_event_signal_t *ev_signal)
 #define MUGGLE_EVENT_SIGNAL_SOCK_READ_END 0
 #define MUGGLE_EVENT_SIGNAL_SOCK_WRITE_END 1
 
-int muggle_event_signal_init(muggle_event_signal_t *ev_signal)
+int muggle_ev_signal_init(muggle_event_signal_t *ev_signal)
 {
 	memset(ev_signal, 0, sizeof(*ev_signal));
 	ev_signal->socket_fds[0] = MUGGLE_INVALID_EVENT_FD;
@@ -158,11 +158,11 @@ int muggle_event_signal_init(muggle_event_signal_t *ev_signal)
 	return 0;
 
 event_signal_init_except:
-	muggle_event_signal_destroy(ev_signal);
+	muggle_ev_signal_destroy(ev_signal);
 	return MUGGLE_EVENT_ERROR;
 }
 
-void muggle_event_signal_destroy(muggle_event_signal_t *ev_signal)
+void muggle_ev_signal_destroy(muggle_event_signal_t *ev_signal)
 {
 	if (ev_signal->mtx)
 	{
@@ -184,7 +184,7 @@ void muggle_event_signal_destroy(muggle_event_signal_t *ev_signal)
 	}
 }
 
-int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal)
+int muggle_ev_signal_wakeup(muggle_event_signal_t *ev_signal)
 {
 	uint64_t v = 0;
 	muggle_mutex_lock(ev_signal->mtx);
@@ -194,7 +194,7 @@ int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal)
 	return n == sizeof(v) ? 0 : MUGGLE_EVENT_ERROR;
 }
 
-int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
+int muggle_ev_signal_clearup(muggle_event_signal_t *ev_signal)
 {
 	// NOTE: cause use UDP, unlike pipe, this use a uint64_t variable replace uint64_t array
 	uint64_t v;
@@ -230,7 +230,7 @@ int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
 	return cnt;
 }
 
-muggle_event_fd muggle_event_signal_rfd(muggle_event_signal_t *ev_signal)
+muggle_event_fd muggle_ev_signal_rfd(muggle_event_signal_t *ev_signal)
 {
 	return ev_signal->socket_fds[MUGGLE_EVENT_SIGNAL_SOCK_READ_END];
 }
@@ -246,7 +246,7 @@ muggle_event_fd muggle_event_signal_rfd(muggle_event_signal_t *ev_signal)
 #define MUGGLE_EVENT_SIGNAL_PIPE_READ_END 0
 #define MUGGLE_EVENT_SIGNAL_PIPE_WRITE_END 1
 
-static int muggle_event_signal_writen(muggle_event_fd fd, void *ptr, size_t numbytes)
+static int muggle_ev_signal_writen(muggle_event_fd fd, void *ptr, size_t numbytes)
 {
 	size_t nleft = numbytes;
 	const char *p = (const char*)ptr;
@@ -272,7 +272,7 @@ static int muggle_event_signal_writen(muggle_event_fd fd, void *ptr, size_t numb
 	return numbytes;
 }
 
-static int muggle_event_signal_readall(muggle_event_fd fd)
+static int muggle_ev_signal_readall(muggle_event_fd fd)
 {
 	uint64_t buf[128];
 	int n = 0;
@@ -311,7 +311,7 @@ static int muggle_event_signal_readall(muggle_event_fd fd)
 	return (int)(cnt / sizeof(uint64_t));
 }
 
-int muggle_event_signal_init(muggle_event_signal_t *ev_signal)
+int muggle_ev_signal_init(muggle_event_signal_t *ev_signal)
 {
 	memset(ev_signal, 0, sizeof(*ev_signal));
 	ev_signal->pipe_fds[0] = -1;
@@ -348,11 +348,11 @@ int muggle_event_signal_init(muggle_event_signal_t *ev_signal)
 	return 0;
 
 event_signal_init_except:
-	muggle_event_signal_destroy(ev_signal);
+	muggle_ev_signal_destroy(ev_signal);
 	return MUGGLE_EVENT_ERROR;
 }
 
-void muggle_event_signal_destroy(muggle_event_signal_t *ev_signal)
+void muggle_ev_signal_destroy(muggle_event_signal_t *ev_signal)
 {
 	if (ev_signal->mtx)
 	{
@@ -374,11 +374,11 @@ void muggle_event_signal_destroy(muggle_event_signal_t *ev_signal)
 	}
 }
 
-int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal)
+int muggle_ev_signal_wakeup(muggle_event_signal_t *ev_signal)
 {
 	uint64_t v = 0;
 	muggle_mutex_lock(ev_signal->mtx);
-	int n = muggle_event_signal_writen(
+	int n = muggle_ev_signal_writen(
 		ev_signal->pipe_fds[MUGGLE_EVENT_SIGNAL_PIPE_WRITE_END],
 		&v, sizeof(v));
 	muggle_mutex_unlock(ev_signal->mtx);
@@ -386,12 +386,12 @@ int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal)
 	return n == sizeof(v) ? 0 : MUGGLE_EVENT_ERROR;
 }
 
-int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal)
+int muggle_ev_signal_clearup(muggle_event_signal_t *ev_signal)
 {
-	return muggle_event_signal_readall(ev_signal->pipe_fds[MUGGLE_EVENT_SIGNAL_PIPE_READ_END]);
+	return muggle_ev_signal_readall(ev_signal->pipe_fds[MUGGLE_EVENT_SIGNAL_PIPE_READ_END]);
 }
 
-muggle_event_fd muggle_event_signal_rfd(muggle_event_signal_t *ev_signal)
+muggle_event_fd muggle_ev_signal_rfd(muggle_event_signal_t *ev_signal)
 {
 	return ev_signal->pipe_fds[MUGGLE_EVENT_SIGNAL_PIPE_READ_END];
 }

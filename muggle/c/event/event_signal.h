@@ -47,7 +47,7 @@ typedef struct muggle_event_signal
  *     otherwise - return MUGGLE_EVENT_ERROR and MUGGLE_EVENT_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
-int muggle_event_signal_init(muggle_event_signal_t *ev_signal);
+int muggle_ev_signal_init(muggle_event_signal_t *ev_signal);
 
 /**
  * @brief destroy event signal
@@ -55,7 +55,7 @@ int muggle_event_signal_init(muggle_event_signal_t *ev_signal);
  * @param ev_signal  event signal
  */
 MUGGLE_C_EXPORT
-void muggle_event_signal_destroy(muggle_event_signal_t *ev_signal);
+void muggle_ev_signal_destroy(muggle_event_signal_t *ev_signal);
 
 /**
  * @brief event signal wake up
@@ -67,7 +67,7 @@ void muggle_event_signal_destroy(muggle_event_signal_t *ev_signal);
  *     otherwise - return MUGGLE_EVENT_ERROR and MUGGLE_EVENT_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
-int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal);
+int muggle_ev_signal_wakeup(muggle_event_signal_t *ev_signal);
 
 /**
  * @brief clearup event signal
@@ -82,7 +82,7 @@ int muggle_event_signal_wakeup(muggle_event_signal_t *ev_signal);
  * guarantee thread-safe
  */
 MUGGLE_C_EXPORT
-int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal);
+int muggle_ev_signal_clearup(muggle_event_signal_t *ev_signal);
 
 /**
  * @brief get read fd from event signal
@@ -92,7 +92,7 @@ int muggle_event_signal_clearup(muggle_event_signal_t *ev_signal);
  * @return read fd of event signal
  */
 MUGGLE_C_EXPORT
-muggle_event_fd muggle_event_signal_rfd(muggle_event_signal_t *ev_signal);
+muggle_event_fd muggle_ev_signal_rfd(muggle_event_signal_t *ev_signal);
 
 EXTERN_C_END
 

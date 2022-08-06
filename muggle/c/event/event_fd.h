@@ -47,7 +47,7 @@ typedef int muggle_event_fd;
  *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
-int muggle_event_close(muggle_event_fd fd);
+int muggle_ev_fd_close(muggle_event_fd fd);
 
 /**
  * @brief shutdown event fd
@@ -60,7 +60,7 @@ int muggle_event_close(muggle_event_fd fd);
  *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
-int muggle_event_shutdown(muggle_event_fd fd, int how);
+int muggle_ev_fd_shutdown(muggle_event_fd fd, int how);
 
 /**
  * @brief set event fd block or non-block
@@ -73,7 +73,7 @@ int muggle_event_shutdown(muggle_event_fd fd, int how);
  *     - on error
  */
 MUGGLE_C_EXPORT
-int muggle_event_set_nonblock(muggle_event_fd fd, int on);
+int muggle_ev_fd_set_nonblock(muggle_event_fd fd, int on);
 
 EXTERN_C_END
 

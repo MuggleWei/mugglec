@@ -13,7 +13,7 @@ TEST(event_signal, wakeup_clearup)
 
 	// init event signal
 	muggle_event_signal ev_signal;
-	int ret = muggle_event_signal_init(&ev_signal);
+	int ret = muggle_ev_signal_init(&ev_signal);
 	ASSERT_EQ(ret, 0);
 
 	muggle_atomic_int completed = 0;
@@ -28,7 +28,7 @@ TEST(event_signal, wakeup_clearup)
 		threads.push_back(new std::thread([i, &producer_cnt, &completed, &ev_signal]{
 			int &cnt = producer_cnt[i];
 			do {
-				int ret = muggle_event_signal_wakeup(&ev_signal);
+				int ret = muggle_ev_signal_wakeup(&ev_signal);
 				ASSERT_NE(ret, MUGGLE_EVENT_ERROR);
 				++cnt;
 				std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -41,7 +41,7 @@ TEST(event_signal, wakeup_clearup)
 	int consumer_cnt = 0;
 	while (1)
 	{
-		n = muggle_event_signal_clearup(&ev_signal);
+		n = muggle_ev_signal_clearup(&ev_signal);
 
 		ASSERT_NE(n, MUGGLE_EVENT_ERROR);
 		consumer_cnt += n;
@@ -64,7 +64,7 @@ TEST(event_signal, wakeup_clearup)
 	threads.clear();
 
 	// clearup event signal
-	n = muggle_event_signal_clearup(&ev_signal);
+	n = muggle_ev_signal_clearup(&ev_signal);
 	ASSERT_NE(n, MUGGLE_EVENT_ERROR);
 	consumer_cnt += n;
 
@@ -76,5 +76,5 @@ TEST(event_signal, wakeup_clearup)
 	ASSERT_EQ(total_producer_cnt, consumer_cnt);
 
 	// destroy event signal
-	muggle_event_signal_destroy(&ev_signal);
+	muggle_ev_signal_destroy(&ev_signal);
 }

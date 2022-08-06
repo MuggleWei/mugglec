@@ -57,14 +57,14 @@ int muggle_ev_ctx_ref_release(muggle_event_context_t *ctx)
 int muggle_ev_ctx_shutdown(muggle_event_context_t *ctx)
 {
 	ctx->flags |= MUGGLE_EV_CTX_FLAG_CLOSED;
-	return muggle_event_shutdown(ctx->fd, MUGGLE_EVENT_FD_SHUT_RDWR);
+	return muggle_ev_fd_shutdown(ctx->fd, MUGGLE_EVENT_FD_SHUT_RDWR);
 }
 
 int muggle_ev_ctx_close(muggle_event_context_t *ctx)
 {
 	ctx->flags |= MUGGLE_EV_CTX_FLAG_CLOSED;
 
-	int ret = muggle_event_close(ctx->fd);
+	int ret = muggle_ev_fd_close(ctx->fd);
 	ctx->fd = MUGGLE_INVALID_EVENT_FD;
 	return ret;
 }

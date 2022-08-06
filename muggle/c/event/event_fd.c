@@ -17,7 +17,7 @@
 #include <fcntl.h>
 #endif
 
-int muggle_event_close(muggle_event_fd fd)
+int muggle_ev_fd_close(muggle_event_fd fd)
 {
 #if MUGGLE_PLATFORM_WINDOWS
 	return closesocket(fd);
@@ -26,12 +26,12 @@ int muggle_event_close(muggle_event_fd fd)
 #endif
 }
 
-int muggle_event_shutdown(muggle_event_fd fd, int how)
+int muggle_ev_fd_shutdown(muggle_event_fd fd, int how)
 {
 	return shutdown(fd, how);
 }
 
-int muggle_event_set_nonblock(muggle_event_fd fd, int on)
+int muggle_ev_fd_set_nonblock(muggle_event_fd fd, int on)
 {
 #if MUGGLE_PLATFORM_WINDOWS
 	u_long iMode = (u_long)on;

@@ -45,6 +45,7 @@ typedef struct muggle_event_context
  *     0 - success
  *     otherwise - failed
  */
+MUGGLE_C_EXPORT
 int muggle_ev_ctx_init(muggle_event_context_t *ctx, muggle_event_fd fd, void *data);
 
 /**
@@ -63,6 +64,7 @@ int muggle_ev_ctx_init(muggle_event_context_t *ctx, muggle_event_fd fd, void *da
  * and muggle_ev_ctx_ref_release control reference count of event context, when the reference
  * count reaches 0, use can close fd and release context resources
  */
+MUGGLE_C_EXPORT
 int muggle_ev_ctx_ref_retain(muggle_event_context_t *ctx);
 
 /**
@@ -81,6 +83,7 @@ int muggle_ev_ctx_ref_retain(muggle_event_context_t *ctx);
  * and muggle_ev_ctx_ref_release control reference count of event context, when the reference
  * count reaches 0, use can close fd and release context resources
  */
+MUGGLE_C_EXPORT
 int muggle_ev_ctx_ref_release(muggle_event_context_t *ctx);
 
 /**
@@ -92,6 +95,7 @@ int muggle_ev_ctx_ref_release(muggle_event_context_t *ctx);
  *     - returns 0 on success
  *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
  */
+MUGGLE_C_EXPORT
 int muggle_ev_ctx_shutdown(muggle_event_context_t *ctx);
 
 /**
@@ -102,7 +106,11 @@ int muggle_ev_ctx_shutdown(muggle_event_context_t *ctx);
  * @return 
  *     - returns 0 on success
  *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
+ *
+ * @note
+ * don't close ctx twice
  */
+MUGGLE_C_EXPORT
 int muggle_ev_ctx_close(muggle_event_context_t *ctx);
 
 EXTERN_C_END
