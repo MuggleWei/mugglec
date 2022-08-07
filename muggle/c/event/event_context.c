@@ -90,11 +90,6 @@ int muggle_ev_ctx_recv(muggle_event_context_t *ctx, void *buf, size_t len, int f
 		{
 			break;
 		}
-		else if (n == 0)
-		{
-			// fd read closed
-			muggle_ev_ctx_shutdown(ctx);
-		}
 		else
 		{
 			if (n < 0)
@@ -115,6 +110,8 @@ int muggle_ev_ctx_recv(muggle_event_context_t *ctx, void *buf, size_t len, int f
 #endif
 			}
 
+			// event fd closed(n == 0) or
+			// error(n == -1 && errno != MUGGLE_SYS_ERRNO_WOULDBLOCK or MUGGLE_SYS_ERRNO_INTR)
 			muggle_ev_ctx_shutdown(ctx);
 			break;
 		}
