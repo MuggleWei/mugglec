@@ -11,6 +11,7 @@
 #include "event_context.h"
 #include <string.h>
 #include "muggle/c/log/log.h"
+#include "muggle/c/os/sys.h"
 
 int muggle_ev_ctx_init(muggle_event_context_t *ctx, muggle_event_fd fd, void *data)
 {
@@ -67,4 +68,77 @@ int muggle_ev_ctx_close(muggle_event_context_t *ctx)
 	int ret = muggle_ev_fd_close(ctx->fd);
 	ctx->fd = MUGGLE_INVALID_EVENT_FD;
 	return ret;
+}
+
+int muggle_ev_ctx_read(muggle_event_context_t *ctx, void *buf, size_t len)
+{
+	return muggle_ev_ctx_recv(ctx, buf, len, 0);
+}
+
+int muggle_ev_ctx_write(muggle_event_context_t *ctx, void *buf, size_t len)
+{
+	return muggle_ev_ctx_send(ctx, buf, len, 0);
+}
+
+int muggle_ev_ctx_recv(muggle_event_context_t *ctx, void *buf, size_t len, int flags)
+{
+	int n = 0;
+	while (1)
+	{
+		n = muggle_ev_fd_recv(ctx->fd, buf, len, flags);
+		if (n > 0)
+		{
+			break;
+		}
+		else if (n == 0)
+		{
+			// fd read closed
+			muggle_ev_ctx_shutdown(ctx);
+		}
+		else
+		{
+			if (n < 0)
+			{
+				if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
+				{
+					break;
+				}
+				else if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+				{
+					continue;
+				}
+#if MUGGLE_ENABLE_TRACE
+				else
+				{
+					MUGGLE_LOG_SYS_ERR(MUGGLE_LOG_LEVEL_TRACE, "failed ev_fd_recv");
+				}
+#endif
+			}
+
+			muggle_ev_ctx_shutdown(ctx);
+			break;
+		}
+	}
+
+	return n;
+}
+
+int muggle_ev_ctx_send(muggle_event_context_t *ctx, void *buf, size_t len, int flags)
+{
+	int n = muggle_ev_fd_send(ctx->fd, buf, len, flags);
+	if (n != (int)len)
+	{
+#if MUGGLE_ENABLE_TRACE
+		if (n == MUGGLE_EVENT_ERROR)
+		{
+			MUGGLE_LOG_SYS_ERR(MUGGLE_LOG_LEVEL_TRACE, "failed ev_fd_send");
+		}
+		else
+		{
+			MUGGLE_LOG_TRACE("send buffer full");
+		}
+#endif
+	}
+
+	return n;
 }

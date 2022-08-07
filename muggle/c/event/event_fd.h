@@ -79,6 +79,36 @@ int muggle_ev_fd_shutdown(muggle_event_fd fd, int how);
 MUGGLE_C_EXPORT
 int muggle_ev_fd_set_nonblock(muggle_event_fd fd, int on);
 
+/**
+ * @brief event fd recv, the same as recv
+ *
+ * @param fd     event file descriptor
+ * @param buf    buffer used to store receive bytes
+ * @param len    size of buffer
+ * @param flags  flags
+ *
+ * @return
+ *     - on success, return the number of bytes received, 0 indicates end of event fd
+ *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
+ */
+MUGGLE_C_EXPORT
+int muggle_ev_fd_recv(muggle_event_fd fd, void *buf, size_t len, int flags);
+
+/**
+ * @brief event fd send, the same as unix send
+ *
+ * @param fd    event file descriptor
+ * @param buf   pointer to the data need to send
+ * @param len   length of bytes in buf
+ * @param flags send flag
+ *
+ * @return 
+ *     - on success, return the number of bytes sent
+ *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
+ */
+MUGGLE_C_EXPORT
+int muggle_ev_fd_send(muggle_event_fd fd, const void *buf, size_t len, int flags);
+
 EXTERN_C_END
 
 #endif /* ifndef MUGGLE_C_EVENT_FD_H_ */

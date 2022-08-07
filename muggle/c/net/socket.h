@@ -120,6 +120,87 @@ MUGGLE_C_EXPORT
 int muggle_socket_strerror(int errnum, char *buf, size_t bufsize);
 
 /**
+ * @brief set socket block or non-block
+ *
+ * @param socket socket file descriptor
+ * @param on     if 0, set block, otherwise set non block
+ *
+ * @return 
+ *     - returns 0 on success
+ *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_set_nonblock(muggle_socket_t socket, int on);
+
+/**
+ * @brief socket recv, the same as recv
+ *
+ * @param fd     socket file descriptor
+ * @param buf    buffer used to store receive bytes
+ * @param len    size of buffer
+ * @param flags  flags
+ *
+ * @return
+ *     - return positive value, the number of bytes received
+ *     - return 0, the connction has been closed
+ *     - return MUGGLE_SOCKET_ERROR, an error occurred, MUGGLE_SOCKET_LAST_ERRNO is set.
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_recv(muggle_socket_t fd, void *buf, size_t len, int flags);
+
+/**
+ * @brief socket send, the same as unix send
+ *
+ * @param fd    socket file descriptor
+ * @param buf   pointer to the data need to send
+ * @param len   length of bytes in buf
+ * @param flags send flag
+ *
+ * @return 
+ *     - on success, return the number of bytes sent
+ *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_send(muggle_socket_t fd, const void *buf, size_t len, int flags);
+
+/**
+ * @brief socket recvfrom ,the same as unix recvfrom
+ *
+ * @param fd       socket file descriptor
+ * @param buf      buffer used to store receive bytes
+ * @param len      size of buffer
+ * @param flags    flags
+ * @param addr     store socket address
+ * @param addrlen  store socket address length
+ *
+ * @return 
+ *     - return positive value, the number of bytes received
+ *     - return 0, the connction has been closed
+ *     - return MUGGLE_SOCKET_ERROR, an error occurred, MUGGLE_SOCKET_LAST_ERRNO is set.
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_recvfrom(muggle_socket_t fd, void *buf, size_t len, int flags,
+	struct sockaddr *addr, muggle_socklen_t *addrlen);
+
+/**
+ * @brief socket sendto, the same as unix sendto
+ *
+ * @param fd         socket file descriptor
+ * @param buf        pointer to the data need to send
+ * @param len        length of bytes in buf
+ * @param flags      send flag
+ * @param dest_addr  dest address
+ * @param addrlen    dest address length
+ *
+ * @return 
+ *     - on success, return the number of bytes sent
+ *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_sendto(muggle_socket_t fd, const void *buf, size_t len, int flags,
+	const struct sockaddr *dest_addr, muggle_socklen_t addrlen);
+
+/**
  * @brief set socket opt
  *
  * @param socket   socket file descriptor
@@ -154,87 +235,6 @@ MUGGLE_C_EXPORT
 int muggle_getsockopt(
 	muggle_socket_t socket, int level, int optname,
 	void *optval, muggle_socklen_t *optlen);
-
-/**
- * @brief set socket block or non-block
- *
- * @param socket socket file descriptor
- * @param on     if 0, set block, otherwise set non block
- *
- * @return 
- *     - returns 0 on success
- *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
- */
-MUGGLE_C_EXPORT
-int muggle_socket_set_nonblock(muggle_socket_t socket, int on);
-
-/**
- * @brief socket send, the same as unix send
- *
- * @param fd    socket file descriptor
- * @param buf   pointer to the data need to send
- * @param len   length of bytes in buf
- * @param flags send flag
- *
- * @return 
- *     - on success, return the number of bytes sent
- *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
- */
-MUGGLE_C_EXPORT
-int muggle_socket_send(muggle_socket_t fd, const void *buf, size_t len, int flags);
-
-/**
- * @brief socket sendto, the same as unix sendto
- *
- * @param fd         socket file descriptor
- * @param buf        pointer to the data need to send
- * @param len        length of bytes in buf
- * @param flags      send flag
- * @param dest_addr  dest address
- * @param addrlen    dest address length
- *
- * @return 
- *     - on success, return the number of bytes sent
- *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
- */
-MUGGLE_C_EXPORT
-int muggle_socket_sendto(muggle_socket_t fd, const void *buf, size_t len, int flags,
-	const struct sockaddr *dest_addr, muggle_socklen_t addrlen);
-
-/**
- * @brief socket recv, the same as recv
- *
- * @param fd     socket file descriptor
- * @param buf    buffer used to store receive bytes
- * @param len    size of buffer
- * @param flags  flags
- *
- * @return
- *     - return positive value, the number of bytes received
- *     - return 0, the connction has been closed
- *     - return MUGGLE_SOCKET_ERROR, an error occurred, MUGGLE_SOCKET_LAST_ERRNO is set.
- */
-MUGGLE_C_EXPORT
-int muggle_socket_recv(muggle_socket_t fd, void *buf, size_t len, int flags);
-
-/**
- * @brief socket recvfrom ,the same as unix recvfrom
- *
- * @param fd       socket file descriptor
- * @param buf      buffer used to store receive bytes
- * @param len      size of buffer
- * @param flags    flags
- * @param addr     store socket address
- * @param addrlen  store socket address length
- *
- * @return 
- *     - return positive value, the number of bytes received
- *     - return 0, the connction has been closed
- *     - return MUGGLE_SOCKET_ERROR, an error occurred, MUGGLE_SOCKET_LAST_ERRNO is set.
- */
-MUGGLE_C_EXPORT
-int muggle_socket_recvfrom(muggle_socket_t fd, void *buf, size_t len, int flags,
-	struct sockaddr *addr, muggle_socklen_t *addrlen);
 
 EXTERN_C_END
 

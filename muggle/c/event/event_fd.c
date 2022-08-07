@@ -52,3 +52,21 @@ int muggle_ev_fd_set_nonblock(muggle_event_fd fd, int on)
 	return fcntl(fd, F_SETFL, flags);
 #endif
 }
+
+int muggle_ev_fd_recv(muggle_event_fd fd, void *buf, size_t len, int flags)
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	return recv(fd, (char*)buf, (int)len, flags);
+#else
+	return (int)recv(fd, buf, len, flags);
+#endif
+}
+
+int muggle_ev_fd_send(muggle_event_fd fd, const void *buf, size_t len, int flags)
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	return send(fd, (const char*)buf, (int)len, flags);
+#else
+	return (int)send(fd, buf, len, flags);
+#endif
+}

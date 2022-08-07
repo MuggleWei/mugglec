@@ -113,6 +113,64 @@ int muggle_ev_ctx_shutdown(muggle_event_context_t *ctx);
 MUGGLE_C_EXPORT
 int muggle_ev_ctx_close(muggle_event_context_t *ctx);
 
+/**
+ * @brief read bytes from event context
+ *
+ * @param ctx  event context
+ * @param buf  buffer store received bytes
+ * @param len  buffer size
+ *
+ * @return 
+ *     - on success, thre number of bytes read is returned, 0 indicates end of event context
+ *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
+ */
+MUGGLE_C_EXPORT
+int muggle_ev_ctx_read(muggle_event_context_t *ctx, void *buf, size_t len);
+
+/**
+ * @brief write len bytes from buffer to event context
+ *
+ * @param ctx  event context
+ * @param buf  buffer store the bytes that need to send
+ * @param len  number of bytes be written
+ *
+ * @return 
+ *     - on success, thre number of bytes sent is returned, 0 indicates end of event context
+ *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
+ */
+MUGGLE_C_EXPORT
+int muggle_ev_ctx_write(muggle_event_context_t *ctx, void *buf, size_t len);
+
+/**
+ * @brief read bytes from event context
+ *
+ * @param ctx    event context
+ * @param buf    buffer store received bytes
+ * @param len    buffer size
+ * @param flags  recv flags
+ *
+ * @return 
+ *     - on success, thre number of bytes read is returned, 0 indicates end of event context
+ *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
+ */
+MUGGLE_C_EXPORT
+int muggle_ev_ctx_recv(muggle_event_context_t *ctx, void *buf, size_t len, int flags);
+
+/**
+ * @brief read bytes from event context
+ *
+ * @param ctx    event context
+ * @param buf    buffer store received bytes
+ * @param len    buffer size
+ * @param flags  send flags
+ *
+ * @return 
+ *     - on success, thre number of bytes sent is returned, 0 indicates end of event context
+ *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
+ */
+MUGGLE_C_EXPORT
+int muggle_ev_ctx_send(muggle_event_context_t *ctx, void *buf, size_t len, int flags);
+
 EXTERN_C_END
 
 #endif /* ifndef MUGGLE_C_EVENT_CONTEXT_H_ */
