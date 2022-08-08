@@ -48,12 +48,20 @@ int muggle_socket_set_nonblock(muggle_socket_t socket, int on)
 
 int muggle_socket_recv(muggle_socket_t fd, void *buf, size_t len, int flags)
 {
-	return muggle_ev_fd_recv(fd, buf, len, flags);
+#if MUGGLE_PLATFORM_WINDOWS
+	return recv(fd, (char*)buf, (int)len, flags);
+#else
+	return (int)recv(fd, buf, len, flags);
+#endif
 }
 
 int muggle_socket_send(muggle_socket_t fd, const void *buf, size_t len, int flags)
 {
-	return muggle_ev_fd_send(fd, buf, len, flags);
+#if MUGGLE_PLATFORM_WINDOWS
+	return send(fd, (const char*)buf, (int)len, flags);
+#else
+	return (int)send(fd, buf, len, flags);
+#endif
 }
 
 int muggle_socket_recvfrom(muggle_socket_t fd, void *buf, size_t len, int flags,

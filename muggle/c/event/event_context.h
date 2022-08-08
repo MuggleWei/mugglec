@@ -49,6 +49,35 @@ MUGGLE_C_EXPORT
 int muggle_ev_ctx_init(muggle_event_context_t *ctx, muggle_event_fd fd, void *data);
 
 /**
+ * @brief get event fd in context
+ *
+ * @param ctx  event context
+ *
+ * @return event fd
+ */
+MUGGLE_C_EXPORT
+muggle_event_fd muggle_ev_ctx_fd(muggle_event_context_t *ctx);
+
+/**
+ * @brief get user data in context
+ *
+ * @param ctx  event context
+ *
+ * @return user data
+ */
+MUGGLE_C_EXPORT
+void* muggle_ev_ctx_data(muggle_event_context_t *ctx);
+
+/**
+ * @brief event context flags bitwise or flag
+ *
+ * @param ctx   event context
+ * @param flag  flag, see MUGGLE_EV_CTX_FLAG_*
+ */
+MUGGLE_C_EXPORT
+void muggle_ev_ctx_set_flag(muggle_event_context_t *ctx, int flag);
+
+/**
  * @brief
  * increases the reference count of context by 1
  *
@@ -140,36 +169,6 @@ int muggle_ev_ctx_read(muggle_event_context_t *ctx, void *buf, size_t len);
  */
 MUGGLE_C_EXPORT
 int muggle_ev_ctx_write(muggle_event_context_t *ctx, void *buf, size_t len);
-
-/**
- * @brief read bytes from event context
- *
- * @param ctx    event context
- * @param buf    buffer store received bytes
- * @param len    buffer size
- * @param flags  recv flags
- *
- * @return 
- *     - on success, thre number of bytes read is returned, 0 indicates end of event context
- *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
- */
-MUGGLE_C_EXPORT
-int muggle_ev_ctx_recv(muggle_event_context_t *ctx, void *buf, size_t len, int flags);
-
-/**
- * @brief read bytes from event context
- *
- * @param ctx    event context
- * @param buf    buffer store received bytes
- * @param len    buffer size
- * @param flags  send flags
- *
- * @return 
- *     - on success, thre number of bytes sent is returned, 0 indicates end of event context
- *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
- */
-MUGGLE_C_EXPORT
-int muggle_ev_ctx_send(muggle_event_context_t *ctx, void *buf, size_t len, int flags);
 
 EXTERN_C_END
 

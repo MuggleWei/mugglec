@@ -53,20 +53,20 @@ int muggle_ev_fd_set_nonblock(muggle_event_fd fd, int on)
 #endif
 }
 
-int muggle_ev_fd_recv(muggle_event_fd fd, void *buf, size_t len, int flags)
+int muggle_ev_fd_read(muggle_event_fd fd, void *buf, size_t len)
 {
 #if MUGGLE_PLATFORM_WINDOWS
-	return recv(fd, (char*)buf, (int)len, flags);
+	return recv(fd, (char*)buf, (int)len, 0);
 #else
-	return (int)recv(fd, buf, len, flags);
+	return read(fd, buf, len);
 #endif
 }
 
-int muggle_ev_fd_send(muggle_event_fd fd, const void *buf, size_t len, int flags)
+int muggle_ev_fd_write(muggle_event_fd fd, void *buf, size_t len)
 {
 #if MUGGLE_PLATFORM_WINDOWS
-	return send(fd, (const char*)buf, (int)len, flags);
+	return send(fd, (const char*)buf, (int)len, 0);
 #else
-	return (int)send(fd, buf, len, flags);
+	return write(fd, buf, len);
 #endif
 }

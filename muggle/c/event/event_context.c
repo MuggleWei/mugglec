@@ -23,6 +23,21 @@ int muggle_ev_ctx_init(muggle_event_context_t *ctx, muggle_event_fd fd, void *da
 	return 0;
 }
 
+muggle_event_fd muggle_ev_ctx_fd(muggle_event_context_t *ctx)
+{
+	return ctx->fd;
+}
+
+void* muggle_ev_ctx_get_data(muggle_event_context_t *ctx)
+{
+	return ctx->data;
+}
+
+void muggle_ev_ctx_set_flag(muggle_event_context_t *ctx, int flag)
+{
+	ctx->flags |= flag;
+}
+
 int muggle_ev_ctx_ref_retain(muggle_event_context_t *ctx)
 {
 	muggle_atomic_int ref_cnt = 0, desired = 0;
@@ -57,13 +72,14 @@ int muggle_ev_ctx_ref_release(muggle_event_context_t *ctx)
 
 int muggle_ev_ctx_shutdown(muggle_event_context_t *ctx)
 {
-	ctx->flags |= MUGGLE_EV_CTX_FLAG_CLOSED;
+	muggle_ev_ctx_set_flag(ctx, MUGGLE_EV_CTX_FLAG_CLOSED);
+
 	return muggle_ev_fd_shutdown(ctx->fd, MUGGLE_EVENT_FD_SHUT_RDWR);
 }
 
 int muggle_ev_ctx_close(muggle_event_context_t *ctx)
 {
-	ctx->flags |= MUGGLE_EV_CTX_FLAG_CLOSED;
+	muggle_ev_ctx_set_flag(ctx, MUGGLE_EV_CTX_FLAG_CLOSED);
 
 	int ret = muggle_ev_fd_close(ctx->fd);
 	ctx->fd = MUGGLE_INVALID_EVENT_FD;
@@ -72,20 +88,10 @@ int muggle_ev_ctx_close(muggle_event_context_t *ctx)
 
 int muggle_ev_ctx_read(muggle_event_context_t *ctx, void *buf, size_t len)
 {
-	return muggle_ev_ctx_recv(ctx, buf, len, 0);
-}
-
-int muggle_ev_ctx_write(muggle_event_context_t *ctx, void *buf, size_t len)
-{
-	return muggle_ev_ctx_send(ctx, buf, len, 0);
-}
-
-int muggle_ev_ctx_recv(muggle_event_context_t *ctx, void *buf, size_t len, int flags)
-{
 	int n = 0;
 	while (1)
 	{
-		n = muggle_ev_fd_recv(ctx->fd, buf, len, flags);
+		n = muggle_ev_fd_read(ctx->fd, buf, len);
 		if (n > 0)
 		{
 			break;
@@ -112,7 +118,7 @@ int muggle_ev_ctx_recv(muggle_event_context_t *ctx, void *buf, size_t len, int f
 
 			// event fd closed(n == 0) or
 			// error(n == -1 && errno != MUGGLE_SYS_ERRNO_WOULDBLOCK or MUGGLE_SYS_ERRNO_INTR)
-			muggle_ev_ctx_shutdown(ctx);
+			muggle_ev_ctx_set_flag(ctx, MUGGLE_EV_CTX_FLAG_CLOSED);
 			break;
 		}
 	}
@@ -120,9 +126,9 @@ int muggle_ev_ctx_recv(muggle_event_context_t *ctx, void *buf, size_t len, int f
 	return n;
 }
 
-int muggle_ev_ctx_send(muggle_event_context_t *ctx, void *buf, size_t len, int flags)
+int muggle_ev_ctx_write(muggle_event_context_t *ctx, void *buf, size_t len)
 {
-	int n = muggle_ev_fd_send(ctx->fd, buf, len, flags);
+	int n = muggle_ev_fd_write(ctx->fd, buf, len);
 	if (n != (int)len)
 	{
 #if MUGGLE_ENABLE_TRACE
@@ -139,3 +145,4 @@ int muggle_ev_ctx_send(muggle_event_context_t *ctx, void *buf, size_t len, int f
 
 	return n;
 }
+
