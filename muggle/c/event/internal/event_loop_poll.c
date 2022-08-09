@@ -126,12 +126,11 @@ void muggle_evloop_run_poll(muggle_event_loop_t *evloop)
 						{
 							evloop->cb_close(evloop, ctx);
 						}
+						muggle_linked_list_remove(evloop->ctx_list, nodes[i], NULL, NULL);
 
 						if (i != evloop_poll->nfd - 1)
 						{
-							muggle_linked_list_node_t *p_tmp = nodes[i];
 							nodes[i] = nodes[evloop_poll->nfd - 1];
-							nodes[evloop_poll->nfd - 1] = p_tmp;
 							memcpy(&fds[i], &fds[evloop_poll->nfd-1], sizeof(struct pollfd));
 						}
 						nodes[evloop_poll->nfd-1] = NULL;

@@ -83,7 +83,9 @@ void muggle_evloop_run_epoll(muggle_event_loop_t *evloop)
 	// add event signal into epoll
 	muggle_event_context_t signal_ctx;
 	muggle_ev_ctx_init(&signal_ctx, muggle_ev_signal_rfd(evloop->ev_signal), NULL);
-	muggle_evloop_add_ctx_epoll(evloop, &signal_ctx, NULL);
+	muggle_linked_list_node_t signal_node;
+	signal_node.data = &signal_ctx;
+	muggle_evloop_add_ctx_epoll(evloop, &signal_ctx, &signal_node);
 
 	muggle_event_fd epfd = evloop_epoll->epfd;
 	struct epoll_event *events = evloop_epoll->events;
@@ -93,7 +95,8 @@ void muggle_evloop_run_epoll(muggle_event_loop_t *evloop)
 		int nfds = epoll_wait(epfd, events, capacity, evloop->timeout);
 		for (int i = 0; i < nfds; i++)
 		{
-			muggle_event_context_t *ctx = (muggle_event_context_t*)events[i].data.ptr;
+			muggle_linked_list_node_t *node = (muggle_linked_list_node_t*)events[i].data.ptr;
+			muggle_event_context_t *ctx = (muggle_event_context_t*)node->data;
 			if (ctx == &signal_ctx)
 			{
 				muggle_evloop_epoll_handle_wakeup(evloop, &events[i]);
@@ -119,6 +122,7 @@ void muggle_evloop_run_epoll(muggle_event_loop_t *evloop)
 					{
 						evloop->cb_close(evloop, ctx);
 					}
+					muggle_linked_list_remove(evloop->ctx_list, node, NULL, NULL);
 				}
 			}
 		}
@@ -146,7 +150,7 @@ int muggle_evloop_add_ctx_epoll(muggle_event_loop_t *evloop, muggle_event_contex
 {
 	struct epoll_event event;
 	memset(&event, 0, sizeof(event));
-	event.data.ptr = ctx;
+	event.data.ptr = node;
 	event.events = EPOLLIN | EPOLLET;
 
 	muggle_event_loop_epoll_t *evloop_epoll = (muggle_event_loop_epoll_t*)evloop;
