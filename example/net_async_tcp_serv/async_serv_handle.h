@@ -3,10 +3,8 @@
 
 #include "muggle/c/muggle_c.h"
 
-void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
+void on_read(muggle_event_loop_t *evloop, muggle_event_context_t *ctx);
 
-void on_close(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
-
-void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer);
+void on_close(muggle_event_loop_t *evloop, muggle_event_context_t *ctx);
 
 #endif

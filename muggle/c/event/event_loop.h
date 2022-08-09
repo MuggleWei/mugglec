@@ -86,8 +86,6 @@ typedef struct muggle_event_loop
 	struct timespec last_ts;  //!< last timer trigger
 	int             timeout;  //!< timeout expires in milliseconds
 
-	void *sys_data;  //!< middleware data, user don't use it
-
 	fn_muggle_evloop_cb1 cb_read;  //!< on event context read callback
 	fn_muggle_evloop_cb1 cb_close; //!< on event context close callback
 
@@ -95,6 +93,7 @@ typedef struct muggle_event_loop
 	fn_muggle_evloop_cb2 cb_timer; //!< on event loop timer callback
 	fn_muggle_evloop_cb1 cb_clear; //!< on event loop exit and clear context callback
 
+	void *sys_data;   //!< middleware data
 	void *user_data;  //!< user data
 } muggle_event_loop_t;
 

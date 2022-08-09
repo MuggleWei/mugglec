@@ -35,10 +35,12 @@ static struct muggle_evloop_fn s_evloop_fn[] = {
 		muggle_evloop_destroy_epoll,
 		muggle_evloop_run_epoll,
 		muggle_evloop_add_ctx_epoll
-	}
+	},
 #else
-	{NULL, NULL, NULL, NULL}
+	{NULL, NULL, NULL, NULL},
 #endif
+	// kqueue
+	{NULL, NULL, NULL, NULL}
 };
 
 void muggle_evloop_handle_timer(muggle_event_loop_t *evloop)

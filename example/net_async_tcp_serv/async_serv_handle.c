@@ -84,3 +84,12 @@ void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 		muggle_thread_detach(&thread);
 	}
 }
+
+void on_read(muggle_event_loop_t *evloop, muggle_event_context_t *ctx)
+{
+	if (ctx == NULL)
+	{
+		LOG_ERROR("failed get socket context");
+		return;
+	}
+}

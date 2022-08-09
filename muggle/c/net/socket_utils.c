@@ -121,6 +121,34 @@ int muggle_socket_getaddrinfo(const char *host, const char *serv, struct addrinf
 	return -1;
 }
 
+const char* muggle_socket_local_addr(muggle_socket_t fd, char *buf, size_t bufsize, int host_only)
+{
+	struct sockaddr_storage sin;
+	memset(&sin, 0, sizeof(sin));
+	muggle_socklen_t len = sizeof(sin);
+
+	if (getsockname(fd, (struct sockaddr*)&sin, &len) != 0)
+	{
+		return NULL;
+	}
+
+	return muggle_socket_ntop((struct sockaddr*)&sin, buf, bufsize, host_only);
+}
+
+const char* muggle_socket_remote_addr(muggle_socket_t fd, char *buf, size_t bufsize, int host_only)
+{
+	struct sockaddr_storage sin;
+	memset(&sin, 0, sizeof(sin));
+	muggle_socklen_t len = sizeof(sin);
+
+	if (getpeername(fd, (struct sockaddr*)&sin, &len) != 0)
+	{
+		return NULL;
+	}
+
+	return muggle_socket_ntop((struct sockaddr*)&sin, buf, bufsize, host_only);
+}
+
 muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlog)
 {
 	muggle_socket_t listen_socket = MUGGLE_INVALID_SOCKET;

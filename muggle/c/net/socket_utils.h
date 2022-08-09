@@ -43,6 +43,32 @@ MUGGLE_C_EXPORT
 int muggle_socket_getaddrinfo(const char *host, const char *serv, struct addrinfo *hints, struct addrinfo *addrinfo, struct sockaddr *addr);
 
 /**
+ * @brief get socket local address info in presentation string
+ *
+ * @param fd          socket fd
+ * @param buf         buffer that store presentation string
+ * @param bufsize     size of buffer
+ * @param host_only   if 1, only show ip address without port
+ *
+ * @return return presentation string if success, otherwise return NULL
+ */
+MUGGLE_C_EXPORT
+const char* muggle_socket_local_addr(muggle_socket_t fd, char *buf, size_t bufsize, int host_only);
+
+/**
+ * @brief get socket remote address info in presentation string
+ *
+ * @param fd          socket fd
+ * @param buf         buffer that store presentation string
+ * @param bufsize     size of buffer
+ * @param host_only   if 1, only show ip address without port
+ *
+ * @return return presentation string if success, otherwise return NULL
+ */
+MUGGLE_C_EXPORT
+const char* muggle_socket_remote_addr(muggle_socket_t fd, char *buf, size_t bufsize, int host_only);
+
+/**
  * @brief tcp listen
  *
  * @param host    internet host
