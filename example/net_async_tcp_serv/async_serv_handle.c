@@ -4,84 +4,127 @@ static muggle_atomic_int s_task_id = 1;
 
 struct async_args
 {
-	struct muggle_socket_peer *peer;
+	muggle_socket_context_t *ctx;
 	int task_id;
 };
+
+typedef struct user_data
+{
+	char str_addr[MUGGLE_SOCKET_ADDR_STRLEN];
+} user_data_t;
+
+static void ctx_release(muggle_socket_context_t *ctx)
+{
+	user_data_t *user_data = muggle_socket_ctx_data(ctx);
+	int ref_cnt = muggle_socket_ctx_ref_release(ctx);
+	LOG_INFO("context[%s] release, reference count=%d", user_data->str_addr, ref_cnt);
+	if (ref_cnt == 0)
+	{
+		user_data_t *user_data = muggle_socket_ctx_data(ctx);
+		free(user_data);
+		muggle_socket_ctx_close(ctx);
+		free(ctx);
+	}
+}
 
 muggle_thread_ret_t async_worker(void *arg)
 {
 	struct async_args *p = (struct async_args*)arg;
-	struct muggle_socket_peer *peer = p->peer;
+	muggle_socket_context_t *ctx = p->ctx;
 	int task_id = (int)p->task_id;
 	free(arg);
 
-	char str_addr[128];
-	muggle_socket_ntop((struct sockaddr*)&peer->addr, str_addr, sizeof(str_addr), 0);
-	MUGGLE_LOG_INFO("peer[%s] task[%d] start", str_addr, task_id);
+	user_data_t *user_data = muggle_socket_ctx_data(ctx);
+	MUGGLE_LOG_INFO("context[%s] task[%d] start", user_data->str_addr, task_id);
 
 	if (task_id % 3 == 0)
 	{
-		muggle_socket_peer_close(peer);
-		MUGGLE_LOG_INFO("close peer[%s]", str_addr);
+		muggle_socket_ctx_shutdown(ctx);
+		MUGGLE_LOG_INFO("close context[%s]", user_data->str_addr);
 	}
 	else
 	{
 		// do somthing
 		muggle_msleep(3 * 1000);
-		MUGGLE_LOG_INFO("peer[%s] task[%d] completed", str_addr, task_id);
+		LOG_INFO("context[%s] task[%d] completed", user_data->str_addr, task_id);
 
 		char buf[128];
 		snprintf(buf, sizeof(buf), "task[%d] completed", task_id);
-		muggle_socket_peer_send(peer, buf, strlen(buf), 0);
+		muggle_socket_ctx_write(ctx, buf, strlen(buf));
 	}
 
-	// release socket peer
-	int ref_cnt = muggle_socket_peer_release(peer);
-	MUGGLE_LOG_INFO("peer[%s] release, reference count=%d", str_addr, ref_cnt);
+	// release ref count
+	ctx_release(ctx);
 
 	return 0;
 }
 
-void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
+static void tcp_on_accept(muggle_event_loop_t *evloop, muggle_socket_context_t *listen_ctx)
 {
-	char str_addr[128];
-	muggle_socket_ntop((struct sockaddr*)&peer->addr, str_addr, sizeof(str_addr), 0);
-	MUGGLE_LOG_INFO("peer[%s] error", str_addr);
-}
+	do {
+		struct sockaddr_storage addr;
+		memset(&addr, 0, sizeof(addr));
+		muggle_socklen_t addrlen = sizeof(addr);
 
-void on_close(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
-{
-	char str_addr[128];
-	muggle_socket_ntop((struct sockaddr*)&peer->addr, str_addr, sizeof(str_addr), 0);
-	MUGGLE_LOG_INFO("peer[%s] closing soon, safe to free peer's data here", str_addr);
-}
-
-void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
-{
-	char buf[4096];
-	while (muggle_socket_peer_recv(peer, buf, sizeof(buf), 0) > 0)
-	{
-		// retain socket peer
-		int ref_cnt = muggle_socket_peer_retain(peer);
-		if (ref_cnt == 0)
+		muggle_socket_t fd = accept(listen_ctx->base.fd, (struct sockaddr*)&addr, &addrlen);
+		if (fd == MUGGLE_INVALID_SOCKET)
 		{
-			MUGGLE_LOG_WARNING("failed retain peer");
-			return;
+			if (MUGGLE_SOCKET_LAST_ERRNO != MUGGLE_SYS_ERRNO_INTR &&
+				MUGGLE_SOCKET_LAST_ERRNO != MUGGLE_SYS_ERRNO_WOULDBLOCK)
+			{
+				LOG_SYS_ERR(LOG_LEVEL_ERROR, "failed accept");
+				muggle_evloop_exit(evloop);
+			}
+			break;
 		}
 
-		char buf[128];
-		muggle_socket_ntop((struct sockaddr*)&peer->addr, buf, sizeof(buf), 0);
-		MUGGLE_LOG_INFO("peer[%s] retain, reference count=%d", buf, ref_cnt);
+		user_data_t *user_data = (user_data_t*)malloc(sizeof(user_data_t));
+		memset(user_data, 0, sizeof(*user_data));
+		muggle_socket_ntop((struct sockaddr*)&addr, user_data->str_addr, sizeof(user_data->str_addr), 0);
 
+		LOG_INFO("on connection: %s", user_data->str_addr);
+
+		muggle_socket_context_t *ctx =
+			(muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
+		muggle_socket_ctx_init(ctx, fd, user_data, MUGGLE_SOCKET_CTX_TYPE_TCP_CLIENT);
+
+		int ret = muggle_evloop_add_ctx(evloop, (muggle_event_context_t*)ctx);
+		if (ret != 0)
+		{
+			LOG_ERROR("failed add context: %s", user_data->str_addr);
+			free(user_data);
+			free(ctx);
+			muggle_socket_close(fd);
+		}
+	} while(1);
+}
+
+static void tcp_on_message(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
+{
+	user_data_t *user_data = muggle_socket_ctx_data(ctx);
+
+	char buf[4096];
+	while (muggle_socket_ctx_read(ctx, buf, sizeof(buf)) > 0)
+	{
+		// retain socket peer
+		int ref_cnt = muggle_socket_ctx_ref_retain(ctx);
+		if (ref_cnt < 0)
+		{
+			LOG_WARNING("failed retain peer");
+			break;
+		}
+		LOG_INFO("context[%s] retain, reference count=%d", user_data->str_addr, ref_cnt);
+
+		// run async thread
 		struct async_args *args = (struct async_args*)malloc(sizeof(struct async_args));
-		args->peer = peer;
+		args->ctx = ctx;
 		args->task_id = muggle_atomic_fetch_add(&s_task_id, 1, muggle_memory_order_relaxed);
 
-		MUGGLE_LOG_INFO("peer[%s] task[%d] launch", buf, (int)args->task_id);
+		LOG_INFO("context[%s] task[%d] launch", user_data->str_addr, args->task_id);
 
-		muggle_thread_t thread;
-		muggle_thread_create(&thread, async_worker, (void*)args);
-		muggle_thread_detach(&thread);
+		muggle_thread_t th;
+		muggle_thread_create(&th, async_worker, (void*)args);
+		muggle_thread_detach(&th);
 	}
 }
 
@@ -92,4 +135,23 @@ void on_read(muggle_event_loop_t *evloop, muggle_event_context_t *ctx)
 		LOG_ERROR("failed get socket context");
 		return;
 	}
+
+	muggle_socket_context_t *socket_ctx = (muggle_socket_context_t*)ctx;
+	switch (socket_ctx->sock_type)
+	{
+		case MUGGLE_SOCKET_CTX_TYPE_TCP_LISTEN:
+		{
+			tcp_on_accept(evloop, socket_ctx);
+		}break;
+		case MUGGLE_SOCKET_CTX_TYPE_TCP_CLIENT:
+		{
+			tcp_on_message(evloop, socket_ctx);
+		}break;
+	}
+}
+
+void on_close(muggle_event_loop_t *evloop, muggle_event_context_t *ctx)
+{
+	LOG_INFO("on disconnection");
+	ctx_release((muggle_socket_context_t*)ctx);
 }

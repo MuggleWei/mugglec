@@ -28,7 +28,7 @@ muggle_event_fd muggle_ev_ctx_fd(muggle_event_context_t *ctx)
 	return ctx->fd;
 }
 
-void* muggle_ev_ctx_get_data(muggle_event_context_t *ctx)
+void* muggle_ev_ctx_data(muggle_event_context_t *ctx)
 {
 	return ctx->data;
 }

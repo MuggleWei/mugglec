@@ -32,7 +32,7 @@ void tcp_server_run(sys_args_t *args)
 	muggle_evloop_set_data(evloop, &user_data);
 
 	// create linsten socket and add into event loop
-	muggle_socket_t listenfd = muggle_tcp_listen(args->host, args->port, 512, NULL);
+	muggle_socket_t listenfd = muggle_tcp_listen(args->host, args->port, 512);
 	if (listenfd == MUGGLE_INVALID_SOCKET)
 	{
 		LOG_ERROR("failed listen %s:%s", args->host, args->port);
