@@ -31,7 +31,7 @@ enum
  */
 typedef struct muggle_socket_context
 {
-	muggle_event_context_t ev_ctx;    //!< event context
+	muggle_event_context_t base;      //!< event context
 	int                    sock_type; //!< socket context type, see MUGGLE_SOCKET_CTX_TYPE_*
 } muggle_socket_context_t;
 
@@ -51,15 +51,32 @@ int muggle_socket_ctx_init(
 	muggle_socket_t fd,
 	void *data, int sock_type);
 
-#define muggle_socket_ctx_fd          muggle_ev_ctx_fd
-#define muggle_socket_ctx_data        muggle_ev_ctx_data
-#define muggle_socket_ctx_set_flag    muggle_ev_ctx_set_flag
-#define muggle_socket_ctx_ref_retain  muggle_ev_ctx_ref_retain
-#define muggle_socket_ctx_ref_release muggle_ev_ctx_ref_release
-#define muggle_socket_ctx_shutdown    muggle_ev_ctx_shutdown
-#define muggle_socket_ctx_close       muggle_ev_ctx_close
-#define muggle_socket_ctx_read        muggle_ev_ctx_read
-#define muggle_socket_ctx_write       muggle_ev_ctx_write
+#define muggle_socket_ctx_fd(ctx) \
+	muggle_ev_ctx_fd((muggle_event_context_t*)ctx)
+
+#define muggle_socket_ctx_data(ctx) \
+	muggle_ev_ctx_data((muggle_event_context_t*)ctx)
+
+#define muggle_socket_ctx_set_flag(ctx, flag) \
+	muggle_ev_ctx_set_flag((muggle_event_context_t*)ctx, flag)
+
+#define muggle_socket_ctx_ref_retain(ctx) \
+	muggle_ev_ctx_ref_retain((muggle_event_context_t*)ctx)
+
+#define muggle_socket_ctx_ref_release(ctx) \
+	muggle_ev_ctx_ref_release((muggle_event_context_t*)ctx)
+
+#define muggle_socket_ctx_shutdown(ctx) \
+	muggle_ev_ctx_shutdown((muggle_event_context_t*)ctx)
+
+#define muggle_socket_ctx_close(ctx) \
+	muggle_ev_ctx_close((muggle_event_context_t*)ctx)
+
+#define muggle_socket_ctx_read(ctx, buf, len) \
+	muggle_ev_ctx_read((muggle_event_context_t*)ctx, buf, len)
+
+#define muggle_socket_ctx_write(ctx, buf, len) \
+	muggle_ev_ctx_write((muggle_event_context_t*)ctx, buf, len)
 
 /**
  * @brief get socket context type
@@ -69,12 +86,12 @@ int muggle_socket_ctx_init(
  * @return socket context type
  */
 MUGGLE_C_EXPORT
-int muggle_socket_ctx_type(muggle_event_context_t *ctx);
+int muggle_socket_ctx_type(muggle_socket_context_t *ctx);
 
 /**
  * @brief read bytes from socket event context
  *
- * @param ctx    event context
+ * @param ctx    socket context
  * @param buf    buffer store received bytes
  * @param len    buffer size
  * @param flags  recv flags
@@ -84,12 +101,12 @@ int muggle_socket_ctx_type(muggle_event_context_t *ctx);
  *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
-int muggle_socket_ctx_recv(muggle_event_context_t *ctx, void *buf, size_t len, int flags);
+int muggle_socket_ctx_recv(muggle_socket_context_t *ctx, void *buf, size_t len, int flags);
 
 /**
  * @brief read bytes from socket event context
  *
- * @param ctx    event context
+ * @param ctx    socket context
  * @param buf    pointer to the data need to send
  * @param len    buffer size
  * @param flags  send flags
@@ -99,12 +116,12 @@ int muggle_socket_ctx_recv(muggle_event_context_t *ctx, void *buf, size_t len, i
  *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
-int muggle_socket_ctx_send(muggle_event_context_t *ctx, void *buf, size_t len, int flags);
+int muggle_socket_ctx_send(muggle_socket_context_t *ctx, void *buf, size_t len, int flags);
 
 /**
  * @brief receive messages from a socket
  *
- * @param ctx      event context
+ * @param ctx      socket context
  * @param buf      buffer store received bytes
  * @param len      buffer size
  * @param flags    send flags
@@ -118,13 +135,13 @@ int muggle_socket_ctx_send(muggle_event_context_t *ctx, void *buf, size_t len, i
  */
 MUGGLE_C_EXPORT
 int muggle_socket_ctx_recvfrom(
-	muggle_event_context_t *ctx, void *buf, size_t len, int flags,
+	muggle_socket_context_t *ctx, void *buf, size_t len, int flags,
 	struct sockaddr *addr, muggle_socklen_t *addrlen);
 
 /**
  * @brief socket send message
  *
- * @param ctx    event context
+ * @param ctx    socket context
  * @param buf    pointer to the data need to send
  * @param len    buffer size
  * @param flags  send flags
@@ -137,7 +154,7 @@ int muggle_socket_ctx_recvfrom(
  */
 MUGGLE_C_EXPORT
 int muggle_socket_ctx_sendto(
-	muggle_event_context_t *ctx, void *buf, size_t len, int flags,
+	muggle_socket_context_t *ctx, void *buf, size_t len, int flags,
 	const struct sockaddr *dest_addr, socklen_t addrlen);
 
 EXTERN_C_END

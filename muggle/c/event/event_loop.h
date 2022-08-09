@@ -92,6 +92,8 @@ typedef struct muggle_event_loop
 	fn_muggle_evloop_cb2 cb_wake;  //!< on event loop wakeup callback
 	fn_muggle_evloop_cb2 cb_timer; //!< on event loop timer callback
 	fn_muggle_evloop_cb1 cb_clear; //!< on event loop exit and clear context callback
+
+	void *user_data;  //!< user data
 } muggle_event_loop_t;
 
 /**
@@ -173,6 +175,25 @@ void muggle_evloop_set_cb_timer(muggle_event_loop_t *evloop, fn_muggle_evloop_cb
  */
 MUGGLE_C_EXPORT
 void muggle_evloop_set_cb_clear(muggle_event_loop_t *evloop, fn_muggle_evloop_cb1 cb);
+
+/**
+ * @brief set user data
+ *
+ * @param evloop  event loop
+ * @param data    user data
+ */
+MUGGLE_C_EXPORT
+void muggle_evloop_set_data(muggle_event_loop_t *evloop, void *data);
+
+/**
+ * @brief get user data
+ *
+ * @param evloop  event loop
+ *
+ * @return user data
+ */
+MUGGLE_C_EXPORT
+void* muggle_evloop_get_data(muggle_event_loop_t *evloop);
 
 /**
  * @brief wakeup event loop

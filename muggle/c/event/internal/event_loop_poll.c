@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void evloop_handle_timer(muggle_event_loop_t *evloop);
+void muggle_evloop_handle_timer(muggle_event_loop_t *evloop);
 
 static void muggle_evloop_poll_handle_wakeup(muggle_event_loop_poll_t *evloop_poll)
 {
@@ -148,12 +148,12 @@ void muggle_evloop_run_poll(muggle_event_loop_t *evloop)
 			// when loop is busy, timeout will not trigger, use customize timer handle avoid that
 			if (evloop->timeout >= 0)
 			{
-				evloop_handle_timer(evloop);
+				muggle_evloop_handle_timer(evloop);
 			}
 		}
 		else if (n == 0)
 		{
-			evloop_handle_timer(evloop);
+			muggle_evloop_handle_timer(evloop);
 		}
 		else
 		{
@@ -167,7 +167,7 @@ void muggle_evloop_run_poll(muggle_event_loop_t *evloop)
 	}
 }
 
-int evloop_add_ctx_poll(muggle_event_loop_t *evloop, muggle_event_context_t *ctx, void *node)
+int muggle_evloop_add_ctx_poll(muggle_event_loop_t *evloop, muggle_event_context_t *ctx, void *node)
 {
 	muggle_event_loop_poll_t *evloop_poll = (muggle_event_loop_poll_t*)evloop;
 	if (evloop_poll->nfd == evloop_poll->capcity)

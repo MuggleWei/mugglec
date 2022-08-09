@@ -79,12 +79,15 @@
 #include "muggle/c/event/event_fd.h"
 #include "muggle/c/event/event_signal.h"
 #include "muggle/c/event/event_context.h"
+#include "muggle/c/event/event_loop.h"
 
 // net
-#include "muggle/c/net/socket.h"
 #include "muggle/c/net/socket_peer.h"
 #include "muggle/c/net/socket_utils.h"
 #include "muggle/c/net/socket_event.h"
+
+#include "muggle/c/net/socket.h"
+#include "muggle/c/net/socket_context.h"
 
 // crypt
 #include "muggle/c/crypt/crypt_utils.h"

@@ -290,6 +290,16 @@ void muggle_evloop_set_cb_clear(muggle_event_loop_t *evloop, fn_muggle_evloop_cb
 	evloop->cb_clear = cb;
 }
 
+void muggle_evloop_set_data(muggle_event_loop_t *evloop, void *data)
+{
+	evloop->user_data = data;
+}
+
+void* muggle_evloop_get_data(muggle_event_loop_t *evloop)
+{
+	return evloop->user_data;
+}
+
 int muggle_evloop_wakeup(muggle_event_loop_t *evloop)
 {
 	return muggle_ev_signal_wakeup(evloop->ev_signal);
@@ -336,10 +346,16 @@ int muggle_evloop_add_ctx(muggle_event_loop_t *evloop, muggle_event_context_t *c
 
 void muggle_evloop_run(muggle_event_loop_t *evloop)
 {
+	// get thread id
+	evloop->tid = muggle_thread_current_id();
+
+	// reset timer last tick
 	timespec_get(&evloop->last_ts, TIME_UTC);
 
+	// run
 	s_evloop_fn[evloop->evloop_type].fn_run(evloop);
 
+	// clear
 	if (evloop->cb_clear)
 	{
 		muggle_linked_list_t *linked_list = evloop->ctx_list;

@@ -17,30 +17,30 @@ int muggle_socket_ctx_init(
 	return ret;
 }
 
-int muggle_socket_ctx_type(muggle_event_context_t *ctx)
+int muggle_socket_ctx_type(muggle_socket_context_t *ctx)
 {
 	muggle_socket_context_t *sock_ev_ctx = (muggle_socket_context_t*)ctx;
 	return sock_ev_ctx->sock_type;
 }
 
-int muggle_socket_ctx_recv(muggle_event_context_t *ctx, void *buf, size_t len, int flags)
+int muggle_socket_ctx_recv(muggle_socket_context_t *ctx, void *buf, size_t len, int flags)
 {
 	return muggle_socket_ctx_recvfrom(ctx, buf, len, flags, NULL, NULL);
 }
 
-int muggle_socket_ctx_send(muggle_event_context_t *ctx, void *buf, size_t len, int flags)
+int muggle_socket_ctx_send(muggle_socket_context_t *ctx, void *buf, size_t len, int flags)
 {
 	return muggle_socket_ctx_sendto(ctx, buf, len, flags, NULL, 0);
 }
 
 int muggle_socket_ctx_recvfrom(
-	muggle_event_context_t *ctx, void *buf, size_t len, int flags,
+	muggle_socket_context_t *ctx, void *buf, size_t len, int flags,
 	struct sockaddr *addr, muggle_socklen_t *addrlen)
 {
 	int n = 0;
 	while (1)
 	{
-		n = muggle_socket_recvfrom(ctx->fd, buf, len, flags, addr, addrlen);
+		n = muggle_socket_recvfrom(ctx->base.fd, buf, len, flags, addr, addrlen);
 		if (n > 0)
 		{
 			break;
@@ -67,7 +67,7 @@ int muggle_socket_ctx_recvfrom(
 
 			// event fd closed(n == 0) or
 			// error(n == -1 && errno != MUGGLE_SYS_ERRNO_WOULDBLOCK or MUGGLE_SYS_ERRNO_INTR)
-			muggle_ev_ctx_set_flag(ctx, MUGGLE_EV_CTX_FLAG_CLOSED);
+			muggle_socket_ctx_set_flag(ctx, MUGGLE_EV_CTX_FLAG_CLOSED);
 			break;
 		}
 	}
@@ -76,10 +76,10 @@ int muggle_socket_ctx_recvfrom(
 }
 
 int muggle_socket_ctx_sendto(
-	muggle_event_context_t *ctx, void *buf, size_t len, int flags,
+	muggle_socket_context_t *ctx, void *buf, size_t len, int flags,
 	const struct sockaddr *dest_addr, socklen_t addrlen)
 {
-	int n = muggle_socket_sendto(ctx->fd, buf, len, flags, dest_addr, addrlen);
+	int n = muggle_socket_sendto(ctx->base.fd, buf, len, flags, dest_addr, addrlen);
 	if (n != (int)len)
 	{
 #if MUGGLE_ENABLE_TRACE
