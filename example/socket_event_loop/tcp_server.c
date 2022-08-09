@@ -1,8 +1,17 @@
 #include "tcp_server.h"
 
-void tcp_server_run(sys_args_t *args, void *user_data)
+struct tcp_server_user_data
+{
+	const char *msg;
+};
+
+void tcp_server_run(sys_args_t *args)
 {
 	LOG_INFO("run tcp server in %s:%s", args->host, args->port);
+
+	// prepare user data
+	struct tcp_server_user_data user_data;
+	user_data.msg = "TCP Server";
 
 	// init event loop
 	LOG_INFO("initialize event loop");
@@ -20,10 +29,7 @@ void tcp_server_run(sys_args_t *args, void *user_data)
 	muggle_evloop_set_cb_wake(evloop, tcp_server_on_wake);
 	muggle_evloop_set_cb_timer(evloop, tcp_server_on_timer);
 	muggle_evloop_set_cb_clear(evloop, tcp_server_on_clear);
-	muggle_evloop_set_data(evloop, user_data);
-
-	// set user data evloop
-	((evloop_user_data_t*)user_data)->evloop = evloop;
+	muggle_evloop_set_data(evloop, &user_data);
 
 	// create linsten socket and add into event loop
 	muggle_socket_t listenfd = muggle_tcp_listen(args->host, args->port, 512, NULL);
@@ -35,7 +41,7 @@ void tcp_server_run(sys_args_t *args, void *user_data)
 	LOG_INFO("create TCP socket listen %s:%s", args->host, args->port);
 
 	muggle_socket_context_t ctx;
-	muggle_socket_ctx_init(&ctx, listenfd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_CLIENT);
+	muggle_socket_ctx_init(&ctx, listenfd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_LISTEN);
 	if (muggle_evloop_add_ctx(evloop, (muggle_event_context_t*)&ctx) != 0)
 	{
 		LOG_ERROR("failed add listen socket context into event loop");
@@ -84,7 +90,7 @@ void tcp_server_on_read(muggle_event_loop_t *evloop, muggle_event_context_t *ctx
 }
 void tcp_server_on_close(muggle_event_loop_t *evloop, muggle_event_context_t *ctx)
 {
-	LOG_INFO("remove socket ctx");
+	LOG_INFO("on disconnection");
 	if (muggle_socket_ctx_ref_release(ctx) == 0)
 	{
 		muggle_socket_ctx_close(ctx);
@@ -93,12 +99,12 @@ void tcp_server_on_close(muggle_event_loop_t *evloop, muggle_event_context_t *ct
 }
 void tcp_server_on_wake(muggle_event_loop_t *evloop)
 {
-	evloop_user_data_t *user_data = (evloop_user_data_t*)muggle_evloop_get_data(evloop);
-	LOG_INFO("on wake: %s", user_data->msg);
+	LOG_INFO("on wake");
 }
 void tcp_server_on_timer(muggle_event_loop_t *evloop)
 {
-	LOG_INFO("on timer");
+	struct tcp_server_user_data *data = muggle_evloop_get_data(evloop);
+	LOG_INFO("on timer: %s", data->msg);
 }
 void tcp_server_on_clear(muggle_event_loop_t *evloop, muggle_event_context_t *ctx)
 {

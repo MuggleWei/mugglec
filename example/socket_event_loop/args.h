@@ -14,9 +14,8 @@ enum
 
 typedef struct evloop_user_data
 {
-	const char          *msg;            //!< wakeup output message
-	int                 wakeup_interval; //!< wakeup in second interval
-	muggle_event_loop_t *evloop;         //!< event loop
+	muggle_event_loop_t *evloop; //!< event loop
+	void                *data;   //!< data
 } evloop_user_data_t;
 
 typedef struct sys_args

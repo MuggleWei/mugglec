@@ -3,7 +3,7 @@
 
 #include "args.h"
 
-void tcp_server_run(sys_args_t *args, void *user_data);
+void tcp_server_run(sys_args_t *args);
 
 // event callback
 void tcp_server_on_read(muggle_event_loop_t *evloop, muggle_event_context_t *ctx);
