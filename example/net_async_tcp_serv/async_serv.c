@@ -29,6 +29,33 @@ int get_event_loop_type(const char *str)
 	return evloop_type;
 }
 
+muggle_socket_context_t* tcp_listen(const char *host, const char *serv)
+{
+	// tcp listen
+	muggle_socket_t listen_fd = MUGGLE_INVALID_SOCKET;
+	do {
+		listen_fd = muggle_tcp_listen(host, serv, 512);
+		if (listen_fd == MUGGLE_INVALID_SOCKET)
+		{
+			LOG_ERROR("failed create tcp listen for %s:%s", host, serv);
+			muggle_msleep(3000);
+		}
+	} while(listen_fd == MUGGLE_INVALID_SOCKET);
+	LOG_INFO("success listen %s %s", host, serv);
+
+	// new context
+	muggle_socket_context_t *listen_ctx =
+		(muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
+	if (muggle_socket_ctx_init(listen_ctx, listen_fd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_LISTEN) != 0)
+	{
+		muggle_socket_close(listen_fd);
+		LOG_ERROR("failed create socket context");
+		return NULL;
+	}
+
+	return listen_ctx;
+}
+
 int main(int argc, char *argv[])
 {
 	if (muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_INFO) != 0)
@@ -36,12 +63,14 @@ int main(int argc, char *argv[])
 		LOG_ERROR("failed initalize log");
 		exit(EXIT_FAILURE);
 	}
+	LOG_INFO("success init log");
 
 	if (muggle_socket_lib_init() != 0)
 	{
 		LOG_ERROR("failed initalize socket library");
 		exit(EXIT_FAILURE);
 	}
+	LOG_INFO("success init socket lib");
 
 	if (argc < 3)
 	{
@@ -72,28 +101,29 @@ int main(int argc, char *argv[])
 		LOG_ERROR("failed new event loop");
 		exit(EXIT_FAILURE);
 	}
+	LOG_INFO("success new event loop");
 
-	// set event loop callback
-	muggle_evloop_set_cb_read(evloop, on_read);
-	muggle_evloop_set_cb_close(evloop, on_close);
+	// init socket event loop handle
+	muggle_socket_evloop_handle_t handle;
+	muggle_socket_evloop_handle_init(&handle);
+	muggle_socket_evloop_handle_set_cb_conn(&handle, on_connect);
+	muggle_socket_evloop_handle_set_cb_msg(&handle, on_message);
+	muggle_socket_evloop_handle_set_cb_close(&handle, on_close);
+	muggle_socket_evloop_handle_set_cb_release(&handle, on_release);
+	muggle_socket_evloop_handle_set_cb_add_ctx(&handle, on_add_ctx);
+	muggle_socket_evloop_handle_attach(&handle, evloop);
+	LOG_INFO("socket handle attached event loop");
 
 	// create tcp listen socket
-	muggle_socket_t listen_fd = muggle_tcp_listen(host, serv, 512);
-	if (listen_fd == MUGGLE_INVALID_SOCKET)
-	{
-		LOG_ERROR("failed create tcp listen for %s:%s", host, serv);
-		exit(EXIT_FAILURE);
-	}
-	muggle_socket_context_t listen_ctx;
-	if (muggle_socket_ctx_init(&listen_ctx, listen_fd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_LISTEN) != 0)
-	{
-		LOG_ERROR("failed create socket context");
-		exit(EXIT_FAILURE);
-	}
-	muggle_evloop_add_ctx(evloop, (muggle_event_context_t*)&listen_ctx);
+	muggle_socket_context_t *listen_ctx = tcp_listen(host, serv);
+	muggle_socket_evloop_add_ctx(evloop, listen_ctx);
 
 	// run event loop
+	LOG_INFO("run event loop");
 	muggle_evloop_run(evloop);
+
+	// destroy socket event loop handle
+	muggle_socket_evloop_handle_destroy(&handle);
 
 	// delete event loop
 	muggle_evloop_delete(evloop);

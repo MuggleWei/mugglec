@@ -51,11 +51,29 @@ int muggle_socket_ctx_init(
 	muggle_socket_t fd,
 	void *data, int sock_type);
 
-#define muggle_socket_ctx_fd(ctx) \
+#define muggle_socket_ctx_get_fd(ctx) \
 	muggle_ev_ctx_fd((muggle_event_context_t*)ctx)
 
-#define muggle_socket_ctx_data(ctx) \
+/**
+ * @brief set socket context fd
+ *
+ * @param ctx  socket context
+ * @param fd   socket fd
+ */
+MUGGLE_C_EXPORT
+void muggle_socket_ctx_set_fd(muggle_socket_context_t *ctx, muggle_socket_t fd);
+
+#define muggle_socket_ctx_get_data(ctx) \
 	muggle_ev_ctx_data((muggle_event_context_t*)ctx)
+
+/**
+ * @brief set socket context data
+ *
+ * @param ctx   socket context
+ * @param data  user data
+ */
+MUGGLE_C_EXPORT
+void muggle_socket_ctx_set_data(muggle_socket_context_t *ctx, void *data);
 
 #define muggle_socket_ctx_set_flag(ctx, flag) \
 	muggle_ev_ctx_set_flag((muggle_event_context_t*)ctx, flag)

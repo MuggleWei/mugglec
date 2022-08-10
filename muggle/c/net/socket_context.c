@@ -17,6 +17,16 @@ int muggle_socket_ctx_init(
 	return ret;
 }
 
+void muggle_socket_ctx_set_fd(muggle_socket_context_t *ctx, muggle_socket_t fd)
+{
+	ctx->base.fd = fd;
+}
+
+void muggle_socket_ctx_set_data(muggle_socket_context_t *ctx, void *data)
+{
+	ctx->base.data = data;
+}
+
 int muggle_socket_ctx_type(muggle_socket_context_t *ctx)
 {
 	muggle_socket_context_t *sock_ev_ctx = (muggle_socket_context_t*)ctx;

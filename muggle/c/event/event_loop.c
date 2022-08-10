@@ -292,6 +292,11 @@ void muggle_evloop_set_cb_clear(muggle_event_loop_t *evloop, fn_muggle_evloop_cb
 	evloop->cb_clear = cb;
 }
 
+void muggle_evloop_set_cb_exit(muggle_event_loop_t *evloop, fn_muggle_evloop_cb2 cb)
+{
+	evloop->cb_exit = cb;
+}
+
 void muggle_evloop_set_data(muggle_event_loop_t *evloop, void *data)
 {
 	evloop->user_data = data;
@@ -367,5 +372,11 @@ void muggle_evloop_run(muggle_event_loop_t *evloop)
 			muggle_event_context_t *ctx = (muggle_event_context_t*)node->data;
 			evloop->cb_clear(evloop, ctx);
 		}
+	}
+
+	// exit
+	if (evloop->cb_exit)
+	{
+		evloop->cb_exit(evloop);
 	}
 }
