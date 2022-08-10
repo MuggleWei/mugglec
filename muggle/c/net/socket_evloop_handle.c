@@ -38,6 +38,15 @@ static muggle_socket_t muggle_socket_evloop_on_accept(muggle_socket_context_t *c
 	return fd;
 }
 
+muggle_socket_context_t* muggle_socket_evloop_handle_alloc(void *pool)
+{
+	return (muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
+}
+void muggle_socket_evloop_handle_free(void *pool, muggle_socket_context_t *data)
+{
+	free(data);
+}
+
 static void muggle_socket_evloop_release_ctx(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
 {
 	muggle_socket_evloop_handle_t *handle = (muggle_socket_evloop_handle_t*)evloop->sys_data;
@@ -47,8 +56,10 @@ static void muggle_socket_evloop_release_ctx(muggle_event_loop_t *evloop, muggle
 		{
 			handle->cb_release(evloop, ctx);
 		}
+
 		muggle_socket_ctx_close(ctx);
-		free(ctx);
+
+		handle->cb_free(handle->mempool, ctx);
 	}
 }
 
@@ -130,6 +141,7 @@ static void muggle_socket_evloop_on_wake(muggle_event_loop_t *evloop)
 	while (muggle_queue_size(handle->ctx_queue) > 0)
 	{
 		muggle_queue_node_t *node = muggle_queue_front(handle->ctx_queue);
+
 		muggle_socket_context_t *ctx = (muggle_socket_context_t*)node->data;
 
 		muggle_evloop_add_ctx(evloop, (muggle_event_context_t*)ctx);
@@ -215,6 +227,10 @@ int muggle_socket_evloop_handle_init(muggle_socket_evloop_handle_t *handle)
 		goto muggle_socket_evloop_handle_init_except;
 	}
 
+	// set default alloc and free
+	handle->cb_alloc = muggle_socket_evloop_handle_alloc;
+	handle->cb_free = muggle_socket_evloop_handle_free;
+
 	return 0;
 
 muggle_socket_evloop_handle_init_except:
@@ -298,6 +314,17 @@ void muggle_socket_evloop_handle_set_cb_release(
 	fn_muggle_socket_evloop_cb1 cb)
 {
 	handle->cb_release = cb;
+}
+
+void muggle_socket_evloop_handle_set_alloc_free(
+	muggle_socket_evloop_handle_t *handle,
+	void *mempool,
+	fn_muggle_socket_evloop_alloc cb_alloc,
+	fn_muggle_socket_evloop_free cb_free)
+{
+	handle->mempool = mempool;
+	handle->cb_alloc = cb_alloc;
+	handle->cb_free = cb_free;
 }
 
 void muggle_socket_evloop_handle_set_cb_add_ctx(

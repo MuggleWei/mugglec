@@ -19,27 +19,29 @@
 
 EXTERN_C_BEGIN
 
+// callback prototypes
 typedef void (*fn_muggle_socket_evloop_cb1)(
 	muggle_event_loop_t *evloop, muggle_socket_context_t *ctx);
-
 typedef void (*fn_muggle_socket_evloop_cb2)(muggle_event_loop_t *evloop);
+typedef muggle_socket_context_t* (*fn_muggle_socket_evloop_alloc)(void *pool);
+typedef void (*fn_muggle_socket_evloop_free)(void *pool, muggle_socket_context_t *data);
 
 /**
  * @brief socket event loop handle
  *
  * @note
- *     - Note the difference between cb_close and cb_release:
+ *     - The difference between cb_close and cb_release:
  *       When cb_close be called, it's mean ctx will remove from event loop soon.
  *       When cb_release be called, it's mean safe to release user data in context.
  *       If context ref_retain and move to other thread, cb_release maybe not be
  *       called by event loop. user need to invoke ref_release in other thread, if
- *       return value is 0, user need manual free user data, close socket and free context
+ *       return value is 0, user need manual free user data, close and free context
  */
 typedef struct muggle_socket_evloop_handle
 {
 	muggle_event_loop_t *evloop;
 
-	muggle_queue_t *ctx_queue; //!< new context queue that from other thread
+	muggle_queue_t *ctx_queue; //!< new context queue
 	muggle_mutex_t *mtx;       //!< mutex for new_ctx_queue
 
 	int timeout;  //!< timer interval
@@ -48,6 +50,10 @@ typedef struct muggle_socket_evloop_handle
 	fn_muggle_socket_evloop_cb1 cb_msg;     //!< on socket message callback
 	fn_muggle_socket_evloop_cb1 cb_close;   //!< on close socket callback
 	fn_muggle_socket_evloop_cb1 cb_release; //!< on safe to release context resource
+
+	void *mempool;  //!< memory pool
+	fn_muggle_socket_evloop_alloc cb_alloc; //!< alloc callback
+	fn_muggle_socket_evloop_free  cb_free;  //!< free callback
 
 	fn_muggle_socket_evloop_cb1 cb_add_ctx; //!< on add context from outside
 
@@ -151,6 +157,21 @@ MUGGLE_C_EXPORT
 void muggle_socket_evloop_handle_set_cb_release(
 	muggle_socket_evloop_handle_t *handle,
 	fn_muggle_socket_evloop_cb1 cb);
+
+/**
+ * @brief set context alloc and free function
+ *
+ * @param handle    socket event loop handle
+ * @param pool      memory pool
+ * @param cb_alloc  allocate callback function
+ * @param cb_free   free callback function
+ */
+MUGGLE_C_EXPORT
+void muggle_socket_evloop_handle_set_alloc_free(
+	muggle_socket_evloop_handle_t *handle,
+	void *mempool,
+	fn_muggle_socket_evloop_alloc cb_alloc,
+	fn_muggle_socket_evloop_free cb_free);
 
 /**
  * @brief set on add context from outside callback

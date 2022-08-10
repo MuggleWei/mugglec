@@ -22,7 +22,7 @@ int get_event_loop_type(const char *str)
 	}
 	else
 	{
-		MUGGLE_LOG_ERROR("invalid socket event loop type: %s", str);
+		LOG_ERROR("invalid socket event loop type: %s", str);
 		exit(EXIT_FAILURE);
 	}
 
