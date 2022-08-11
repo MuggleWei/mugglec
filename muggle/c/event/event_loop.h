@@ -12,6 +12,7 @@
 #define MUGGLE_C_EVENT_LOOP_H_
 
 #include "muggle/c/base/macro.h"
+#include <time.h>
 #include "muggle/c/base/thread.h"
 #include "muggle/c/dsaa/linked_list.h"
 #include "muggle/c/event/event.h"
