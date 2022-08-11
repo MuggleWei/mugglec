@@ -114,8 +114,7 @@ static void muggle_socket_evloop_on_read(muggle_event_loop_t *evloop, muggle_eve
 			else
 			{
 				char buf[1024];
-				while (muggle_socket_ctx_read(ctx, buf, sizeof(buf)) != MUGGLE_SOCKET_ERROR)
-				{}
+				while (muggle_socket_ctx_read(ctx, buf, sizeof(buf)) > 0);
 			}
 		}break;
 	}

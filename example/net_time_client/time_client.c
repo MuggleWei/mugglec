@@ -39,7 +39,11 @@ int main(int argc, char *argv[])
 	}
 
 	// initialize socket library
-	muggle_socket_lib_init();
+	if (muggle_socket_lib_init() != 0)
+	{
+		LOG_ERROR("failed initialize socket library");
+		exit(EXIT_FAILURE);
+	}
 
 	// prepare connection info
 	conn_thread_args_t args;
