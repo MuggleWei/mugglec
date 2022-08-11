@@ -132,6 +132,10 @@ int muggle_socket_strerror(int errnum, char *buf, size_t bufsize);
 MUGGLE_C_EXPORT
 int muggle_socket_set_nonblock(muggle_socket_t socket, int on);
 
+#define muggle_socket_read(fd, buf, len) muggle_ev_fd_read(fd, buf, len)
+
+#define muggle_socket_write(fd, buf, len) muggle_ev_fd_write(fd, buf, len)
+
 /**
  * @brief socket recv, the same as recv
  *

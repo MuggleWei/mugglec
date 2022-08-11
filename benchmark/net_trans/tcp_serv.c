@@ -2,7 +2,6 @@
 
 struct tcp_serv_user_data
 {
-	int flags;
 	muggle_benchmark_handle_t *handle;
 	muggle_benchmark_config_t *config;
 };
@@ -12,7 +11,7 @@ static void tcp_serv_on_connect(
 {
 	struct tcp_serv_user_data *data =
 		(struct tcp_serv_user_data*)muggle_evloop_get_data(evloop);
-	sendPkgs(ctx, data->flags, data->handle, data->config);
+	sendPkgs(ctx, data->handle, data->config);
 }
 
 static void tcp_serv_on_close(
@@ -23,7 +22,7 @@ static void tcp_serv_on_close(
 
 void run_tcp_serv(
 	const char *host, const char *port,
-	int flags,
+	int busy_mode,
 	muggle_benchmark_handle_t *handle,
 	muggle_benchmark_config_t *config)
 {
@@ -42,7 +41,6 @@ void run_tcp_serv(
 	// user data
 	struct tcp_serv_user_data user_data;
 	memset(&user_data, 0, sizeof(user_data));
-	user_data.flags = flags;
 	user_data.handle = handle;
 	user_data.config = config;
 

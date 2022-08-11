@@ -5,7 +5,7 @@
 
 void run_tcp_serv(
 	const char *host, const char *port,
-	int flags,
+	int busy_mode,
 	muggle_benchmark_handle_t *handle,
 	muggle_benchmark_config_t *config);
 

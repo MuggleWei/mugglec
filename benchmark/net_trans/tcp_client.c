@@ -139,7 +139,7 @@ static void tcp_client_on_close(muggle_event_loop_t *evloop, muggle_socket_conte
 
 void run_tcp_client(
 	const char *host, const char *port,
-	int flags,
+	int busy_mode,
 	muggle_benchmark_handle_t *handle,
 	muggle_benchmark_config_t *config)
 {
@@ -154,13 +154,13 @@ void run_tcp_client(
 	// set TCP_NODELAY
 	int enable = 1;
 	muggle_setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
+
+	// set event loop timeout
 	int timeout_ms = -1;
-#if ! defined(MUGGLE_PLATFORM_WINDOWS)
-	if (flags & MSG_DONTWAIT)
+	if (busy_mode)
 	{
 		timeout_ms = 0;
 	}
-#endif
 
 	// init bytes buffer
 	muggle_bytes_buffer_t bytes_buf;
@@ -173,7 +173,6 @@ void run_tcp_client(
 	// user data
 	struct tcp_client_user_data user_data;
 	memset(&user_data, 0, sizeof(user_data));
-	user_data.flags = flags;
 	user_data.handle = handle;
 	user_data.config = config;
 	user_data.bytes_buf = &bytes_buf;
