@@ -97,6 +97,12 @@ void muggle_socket_evloop_handle_attach(
  *
  * @param handle  socket event loop handle
  * @param ctx     socket context
+ *
+ * @note
+ * By default, the context is in heap, which is returned by malloc. Because
+ * when release context, socket_evloop_handle will use 'free()' to destroy 
+ * context. If user wanna add context that in stack or allocate by memory pool,
+ * please set callback by muggle_socket_evloop_handle_set_alloc_free
  */
 MUGGLE_C_EXPORT
 void muggle_socket_evloop_add_ctx(
