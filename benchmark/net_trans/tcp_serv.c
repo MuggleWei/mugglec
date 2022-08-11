@@ -82,5 +82,6 @@ void run_tcp_serv(
 	muggle_evloop_run(evloop);
 
 	// clear
+	muggle_socket_evloop_handle_destroy(&evloop_handle);
 	muggle_evloop_delete(evloop);
 }

@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
 	muggle_evloop_run(evloop);
 
 	// clear
+	muggle_socket_evloop_handle_destroy(&handle);
 	muggle_evloop_delete(evloop);
 
 	return 0;

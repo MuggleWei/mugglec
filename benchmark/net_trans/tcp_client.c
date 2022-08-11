@@ -217,5 +217,6 @@ void run_tcp_client(
 	muggle_evloop_delete(evloop);
 
 	// destroy bytes buffer
+	muggle_socket_evloop_handle_destroy(&evloop_handle);
 	muggle_bytes_buffer_destroy(&bytes_buf);
 }
