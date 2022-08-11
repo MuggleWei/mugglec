@@ -90,9 +90,9 @@ int muggle_socket_ctx_sendto(
 	const struct sockaddr *dest_addr, socklen_t addrlen)
 {
 	int n = muggle_socket_sendto(ctx->base.fd, buf, len, flags, dest_addr, addrlen);
+#if MUGGLE_ENABLE_TRACE
 	if (n != (int)len)
 	{
-#if MUGGLE_ENABLE_TRACE
 		if (n == MUGGLE_EVENT_ERROR)
 		{
 			MUGGLE_LOG_SYS_ERR(MUGGLE_LOG_LEVEL_TRACE, "failed socket send");
@@ -101,8 +101,8 @@ int muggle_socket_ctx_sendto(
 		{
 			MUGGLE_LOG_TRACE("send buffer full");
 		}
-#endif
 	}
+#endif
 
 	return n;
 }

@@ -49,13 +49,13 @@ void genPkgHeader(struct pkg_header *header);
 void genPkgData(struct pkg_data *data, uint32_t idx);
 
 void sendPkgs(
-	muggle_socket_peer_t *peer,
+	muggle_socket_context_t *ctx,
 	int flags,
 	muggle_benchmark_handle_t *handle,
 	muggle_benchmark_config_t *config);
 
 int onRecvPkg(
-	muggle_socket_peer_t *peer,
+	muggle_socket_context_t *ctx,
 	struct pkg *pkg,
 	muggle_benchmark_handle_t *handle,
 	muggle_benchmark_config_t *config);

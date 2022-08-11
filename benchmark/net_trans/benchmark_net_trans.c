@@ -73,7 +73,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-
 	// benchmark config
 	muggle_benchmark_config_t config;
 	memset(&config, 0, sizeof(config));

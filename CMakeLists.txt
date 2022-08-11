@@ -302,6 +302,7 @@ function(add_benchmark name folder)
 	endif(WIN32)
 	add_dependencies(${name} muggle_benchmark)
 	target_link_libraries(${name} muggle_benchmark)
+	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
 endfunction()
 
 function(add_gtest name folder)
