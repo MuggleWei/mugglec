@@ -432,12 +432,26 @@ if (BUILD_TESTING)
 	endif()
 endif()
 
+# # example
+# if (${MUGGLE_BUILD_EXAMPLE})
+# 	message("---------------------- example ----------------------")
+# 	SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/example)
+# 	FOREACH(subdir ${example_dirs})
+# 		add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/example/${subdir})
+# 	ENDFOREACH()
+# endif()
+
 # example
 if (${MUGGLE_BUILD_EXAMPLE})
-	message("---------------------- example ----------------------")
-	SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/example)
-	FOREACH(subdir ${example_dirs})
-		add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/example/${subdir})
+	message("---------------------- examples ----------------------")
+	SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/examples/src)
+	FOREACH(example_dir ${example_dirs})
+		message("find example section directory: ${example_dir}")
+		SUBDIRLIST(sub_example_dirs ${CMAKE_CURRENT_LIST_DIR}/examples/src/${example_dir})
+		FOREACH(sub_example_dir ${sub_example_dirs})
+			add_example(${sub_example_dir}
+				${CMAKE_CURRENT_LIST_DIR}/examples/src/${example_dir}/${sub_example_dir})
+		ENDFOREACH()
 	ENDFOREACH()
 endif()
 

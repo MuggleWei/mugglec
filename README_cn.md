@@ -4,7 +4,7 @@
 * [readme 中文](./README_cn.md)
 
 
-mugglec是一个纯c语言编写, 跨平台基础库, 提供了一系列常用的功能, 比如基础的数据结构, 网络, 并发, 日志, 密码学, 内存池, 常用路径操作等等
+mugglec是一个c语言编写, 跨平台基础库, 提供了一系列常用的功能, 比如基础的数据结构, 网络, 并发, 日志, 密码学, 内存池, 常用路径操作等等
 
 ### 目录
 
@@ -17,11 +17,12 @@ mugglec是一个纯c语言编写, 跨平台基础库, 提供了一系列常用�
       - [当前的风格](#当前的风格)
       - [老式的风格](#老式的风格)
     - [发现并链接](#发现并链接)
-    - [使用git子模块](#使用git子模块)
+    - [使用git子模块(不推荐)](#使用git子模块不推荐)
+  - [教程和示例](#教程和示例)
 
 ### 特点
 * 提供常用的基础功能
-* 跨平台, Linux/Windows(主要目标)
+* 跨平台
 * 无第三方依赖
 * 易于使用
 * 尽可能的保持体积小
@@ -185,9 +186,8 @@ add_executable(example src/example.c)
 target_link_libraries(example ${MUGGLEC_LIBRARIES})
 ```
 
-
-#### 使用git子模块
-可以将mugglec直接作为git子模块引入工程当中, 之后在构建工具中引入mugglec
+#### 使用git子模块(不推荐)
+除了上面的两中方法外, 还可以将mugglec直接作为git子模块引入工程当中
 ```
 git submodule add https://github.com/MuggleWei/mugglec.git thirdparty/mugglec
 ```
@@ -205,3 +205,6 @@ add_executable(example src/example.c)
 add_dependencies(example mugglec)
 target_link_libraries(example mugglec)
 ```
+
+### 教程和示例
+可以通过查看[examples](./examples/readme_cn.md)文件夹来发现使用示例. 当编译开启了 MUGGLE_BUILD_EXAMPLE 选项时, 会自动编译example文件夹中的应用. 该文件夹中包含一个独立的CMakeLists.txt文件, 如果用户想要体验一下在工程中引入mugglec, 可以将example文件夹拷贝到任意地点并进行构建, 它将在构建过程中, 自动下载mugglec的代码.  

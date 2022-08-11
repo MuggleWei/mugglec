@@ -3,7 +3,7 @@
 * [readme EN](./README.md)
 * [readme 中文](./README_cn.md)
 
-mugglec is a cross platform pure C base library, contains utilities like basic data structure, network, concurrency, log, crypt, memory pool, path operation and so on.
+mugglec is a cross platform C base library, contains utilities like basic data structure, network, concurrency, log, crypt, memory pool, path operation and so on.
 
 ### Table of content
 - [mugglec](#mugglec)
@@ -15,11 +15,11 @@ mugglec is a cross platform pure C base library, contains utilities like basic d
       - [current style](#current-style)
       - [old style](#old-style)
     - [Find and link](#find-and-link)
-    - [Use git submodule](#use-git-submodule)
+    - [Use git submodule(Not recommended)](#use-git-submodulenot-recommended)
 
 ### Feature
 * Provide common basic functions
-* Cross platform (mostly), Linux/Windows(main target)
+* Cross platform
 * No dependencies
 * Easy to use
 * As tiny as possible
@@ -182,8 +182,8 @@ add_executable(example src/example.c)
 target_link_libraries(example ${MUGGLEC_LIBRARIES})
 ```
 
-#### Use git submodule
-Invoke mugglec as git submodule
+#### Use git submodule(Not recommended)
+In addition to the two methods mentioned above, import mugglec as git submodule is another option
 ```
 git submodule add https://github.com/MuggleWei/mugglec.git thirdparty/mugglec
 ```

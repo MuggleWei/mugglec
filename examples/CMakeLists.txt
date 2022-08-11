@@ -3,9 +3,11 @@ project(mugglec_doc_codes)
 
 # set compile parameter
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -Wextra")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native -Wall -Wextra")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -Wextra")
 elseif (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -Wextra -Wno-missing-field-initializers")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native -Wall -Wextra -Wno-missing-field-initializers")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -Wextra -Wno-missing-field-initializers")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS=1 -D_UNICODE -DUNICODE)
 endif()
@@ -69,7 +71,7 @@ add_subdirectory(
 # cmake
 include(${FETCHCONTENT_BASE_DIR}/mugglec-src/cmake/muggle_utils.cmake)
 
-set(muggle_c mugglec)
+set(mugglec mugglec)
 
 function(add_example name folder)
 	message("add example ${name} ${folder}")
@@ -91,77 +93,20 @@ function(add_example name folder)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
-	target_link_libraries(${name} ${muggle_c})
-	add_dependencies(${name} ${muggle_c})
+	target_link_libraries(${name} ${mugglec})
+	add_dependencies(${name} ${mugglec})
 	target_include_directories(${name} PUBLIC
 		${FETCHCONTENT_BASE_DIR}/mugglec-src
 	)
+	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
 endfunction()
 
-message("---------------------- network unix only ----------------------")
-if (UNIX)
-	SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/codes/network_unix)
-	FOREACH(subdir ${example_dirs})
-		add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/codes/network_unix/${subdir})
+# examples
+SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/src)
+FOREACH(example_dir ${example_dirs})
+	message("find example section directory: ${example_dir}")
+	SUBDIRLIST(sub_example_dirs ${CMAKE_CURRENT_LIST_DIR}/src/${example_dir})
+	FOREACH(sub_example_dir ${sub_example_dirs})
+		add_example(${sub_example_dir} ${CMAKE_CURRENT_LIST_DIR}/src/${example_dir}/${sub_example_dir})
 	ENDFOREACH()
-endif()
-
-message("---------------------- network simple ----------------------")
-SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/codes/network_simple)
-FOREACH(subdir ${example_dirs})
-	add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/codes/network_simple/${subdir})
 ENDFOREACH()
-
-message("---------------------- network foo ----------------------")
-function(add_example_net_foo ver folder)
-	message("add example net foo_${ver} ${folder}")
-
-	set(foo example_net_foo_${ver})
-	set(foo_srv example_net_foo_srv_${ver})
-	set(foo_cli example_net_foo_cli_${ver})
-
-	muggle_add_project(${foo} ${folder}/foo SHARED)
-	target_link_libraries(${foo} ${muggle_c})
-	add_dependencies(${foo} ${muggle_c})
-	target_include_directories(${foo} PUBLIC
-		${folder}
-		${CMAKE_BINARY_DIR}/_deps/mugglec-src
-	)
-	target_compile_definitions(${foo}
-		PUBLIC NET_FOO_USE_DLL
-		PRIVATE NET_FOO_EXPORTS 
-	)
-
-	muggle_add_project(${foo_srv} ${folder}/foo_srv EXE)
-	target_link_libraries(${foo_srv} ${foo})
-	add_dependencies(${foo_srv} ${foo})
-
-	muggle_add_project(${foo_cli} ${folder}/foo_cli EXE)
-	target_link_libraries(${foo_cli} ${foo})
-	add_dependencies(${foo_cli} ${foo})
-
-	if (WIN32)
-		set_target_properties(${foo} ${foo_srv} ${foo_cli}
-			PROPERTIES
-			FOLDER "example"
-			VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
-		)
-	endif(WIN32)
-endfunction()
-
-add_example_net_foo(1 ${CMAKE_CURRENT_LIST_DIR}/codes/network_foo_v1)
-add_example_net_foo(2 ${CMAKE_CURRENT_LIST_DIR}/codes/network_foo_v2)
-
-# srv v3
-set(foo example_net_foo_2)
-set(foo_srv example_net_foo_srv_3)
-muggle_add_project(${foo_srv} ${CMAKE_CURRENT_LIST_DIR}/codes/network_foo_v3/foo_srv EXE)
-target_link_libraries(${foo_srv} ${foo})
-add_dependencies(${foo_srv} ${foo})
-if (WIN32)
-	set_target_properties(${foo_srv}
-		PROPERTIES
-		FOLDER "example"
-		VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
-	)
-endif(WIN32)
