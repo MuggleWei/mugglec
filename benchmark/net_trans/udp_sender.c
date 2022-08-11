@@ -6,13 +6,17 @@ void run_udp_sender(
 	muggle_benchmark_handle_t *handle,
 	muggle_benchmark_config_t *config)
 {
-	muggle_socket_peer_t udp_peer;
-	udp_peer.fd = muggle_udp_connect(host, port, &udp_peer);
-	if (udp_peer.fd == MUGGLE_INVALID_SOCKET)
+	muggle_socket_t fd = muggle_udp_connect(host, port);
+	if (fd == MUGGLE_INVALID_SOCKET)
 	{
 		MUGGLE_LOG_ERROR("failed connect udp sender target");
 		exit(EXIT_FAILURE);
 	}
 
-	sendPkgs(&udp_peer, flags, handle, config);
+	muggle_socket_context_t ctx;
+	muggle_socket_ctx_init(&ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_UDP);
+
+	sendPkgs(&ctx, flags, handle, config);
+
+	muggle_socket_ctx_close(&ctx);
 }

@@ -1,102 +1,132 @@
 #include "async_serv_handle.h"
 
-int get_event_loop_type(const char *str_loop_type)
+int get_event_loop_type(const char *str)
 {
 	// get socket event loop type
-	int event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_NULL;
-	if (strcmp(str_loop_type, "thread") == 0)
+	int evloop_type = MUGGLE_EVLOOP_TYPE_NULL;
+	if (strcmp(str, "select") == 0)
 	{
-		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_MULTHREAD;
+		evloop_type = MUGGLE_EVLOOP_TYPE_SELECT;
 	}
-	else if (strcmp(str_loop_type, "select") == 0)
+	else if (strcmp(str, "poll") == 0)
 	{
-		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT;
+		evloop_type = MUGGLE_EVLOOP_TYPE_POLL;
 	}
-	else if (strcmp(str_loop_type, "poll") == 0)
+	else if (strcmp(str, "epoll") == 0)
 	{
-		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_POLL;
+		evloop_type = MUGGLE_EVLOOP_TYPE_EPOLL;
 	}
-	else if (strcmp(str_loop_type, "epoll") == 0)
+	else if (strcmp(str, "kqueue") == 0)
 	{
-		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL;
-	}
-	else if (strcmp(str_loop_type, "iocp") == 0)
-	{
-		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_IOCP;
-	}
-	else if (strcmp(str_loop_type, "kqueue") == 0)
-	{
-		event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_KQUEUE;
+		evloop_type = MUGGLE_EVLOOP_TYPE_KQUEUE;
 	}
 	else
 	{
-		MUGGLE_LOG_ERROR("invalid socket event loop type: %s", str_loop_type);
+		LOG_ERROR("invalid socket event loop type: %s", str);
 		exit(EXIT_FAILURE);
 	}
 
-	return event_loop_type;
+	return evloop_type;
+}
+
+muggle_socket_context_t* tcp_listen(const char *host, const char *serv)
+{
+	// tcp listen
+	muggle_socket_t listen_fd = MUGGLE_INVALID_SOCKET;
+	do {
+		listen_fd = muggle_tcp_listen(host, serv, 512);
+		if (listen_fd == MUGGLE_INVALID_SOCKET)
+		{
+			LOG_ERROR("failed create tcp listen for %s:%s", host, serv);
+			muggle_msleep(3000);
+		}
+	} while(listen_fd == MUGGLE_INVALID_SOCKET);
+	LOG_INFO("success listen %s %s", host, serv);
+
+	// new context
+	muggle_socket_context_t *listen_ctx =
+		(muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
+	if (muggle_socket_ctx_init(listen_ctx, listen_fd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_LISTEN) != 0)
+	{
+		muggle_socket_close(listen_fd);
+		LOG_ERROR("failed create socket context");
+		return NULL;
+	}
+
+	return listen_ctx;
 }
 
 int main(int argc, char *argv[])
 {
 	if (muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_INFO) != 0)
 	{
-		MUGGLE_LOG_ERROR("failed initalize log");
+		LOG_ERROR("failed initalize log");
 		exit(EXIT_FAILURE);
 	}
+	LOG_INFO("success init log");
 
 	if (muggle_socket_lib_init() != 0)
 	{
-		MUGGLE_LOG_ERROR("failed initalize socket library");
+		LOG_ERROR("failed initalize socket library");
 		exit(EXIT_FAILURE);
 	}
+	LOG_INFO("success init socket lib");
 
 	if (argc < 3)
 	{
-		MUGGLE_LOG_ERROR("usage: %s <IP> <Port> [thread|select|poll|epoll|iocp|kqueue]", argv[0]);
+		LOG_ERROR("usage: %s <IP> <Port> [select|poll|epoll|kqueue]", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
 	const char *host = argv[1];
 	const char *serv = argv[2];
 
-	// create tcp listen socket
-	muggle_socket_peer_t peer;
-	if (muggle_tcp_listen(host, serv, 512, &peer) == MUGGLE_INVALID_SOCKET)
-	{
-		MUGGLE_LOG_ERROR("failed create tcp listen for %s:%s", host, serv);
-		exit(EXIT_FAILURE);
-	}
-
 	// get event loop type
-	int event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_NULL;
+	int evloop_type = MUGGLE_EVLOOP_TYPE_NULL;
 	if (argc > 3)
 	{
-		event_loop_type = get_event_loop_type(argv[3]);
+		evloop_type = get_event_loop_type(argv[3]);
 	}
 
-	// fill up event loop input arguments
-	muggle_socket_event_init_arg_t ev_init_arg;
-	memset(&ev_init_arg, 0, sizeof(ev_init_arg));
-	ev_init_arg.ev_loop_type = event_loop_type;
-	ev_init_arg.hints_max_peer = 1024;
-	ev_init_arg.cnt_peer = 1;
-	ev_init_arg.peers = &peer;
-	ev_init_arg.p_peers = NULL;
-	ev_init_arg.timeout_ms = -1;
-	ev_init_arg.datas = NULL;
-	ev_init_arg.on_error = on_error;
-	ev_init_arg.on_close = on_close;
-	ev_init_arg.on_message = on_message;
+	// init event loop
+	muggle_event_loop_init_args_t ev_init_args;
+	memset(&ev_init_args, 0, sizeof(ev_init_args));
+	ev_init_args.evloop_type = evloop_type;
+	ev_init_args.hints_max_fd = 32;
+	ev_init_args.use_mem_pool = 0;
 
-	// event loop
-	muggle_socket_event_t ev;
-	if (muggle_socket_event_init(&ev_init_arg, &ev) != 0)
+	muggle_event_loop_t *evloop = muggle_evloop_new(&ev_init_args);
+	if (evloop == NULL)
 	{
-		MUGGLE_LOG_ERROR("failed init socket event");
+		LOG_ERROR("failed new event loop");
 		exit(EXIT_FAILURE);
 	}
-	muggle_socket_event_loop(&ev);
+	LOG_INFO("success new event loop");
+
+	// init socket event loop handle
+	muggle_socket_evloop_handle_t handle;
+	muggle_socket_evloop_handle_init(&handle);
+	muggle_socket_evloop_handle_set_cb_conn(&handle, on_connect);
+	muggle_socket_evloop_handle_set_cb_msg(&handle, on_message);
+	muggle_socket_evloop_handle_set_cb_close(&handle, on_close);
+	muggle_socket_evloop_handle_set_cb_release(&handle, on_release);
+	muggle_socket_evloop_handle_set_cb_add_ctx(&handle, on_add_ctx);
+	muggle_socket_evloop_handle_attach(&handle, evloop);
+	LOG_INFO("socket handle attached event loop");
+
+	// create tcp listen socket
+	muggle_socket_context_t *listen_ctx = tcp_listen(host, serv);
+	muggle_socket_evloop_add_ctx(evloop, listen_ctx);
+
+	// run event loop
+	LOG_INFO("run event loop");
+	muggle_evloop_run(evloop);
+
+	// destroy socket event loop handle
+	muggle_socket_evloop_handle_destroy(&handle);
+
+	// delete event loop
+	muggle_evloop_delete(evloop);
 
 	return 0;
 }

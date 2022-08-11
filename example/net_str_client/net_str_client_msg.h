@@ -9,9 +9,9 @@ enum
 {
 	MSG_TYPE_EXIT = 0,
 	MSG_TYPE_CONSOLE_INPUT,
-	MSG_TYPE_PEER_RECV,
-	MSG_TYPE_PEER_CONNECT,
-	MSG_TYPE_PEER_DISCONNECT,
+	MSG_TYPE_SOCKET_RECV,
+	MSG_TYPE_SOCKET_CONNECT,
+	MSG_TYPE_SOCKET_DISCONNECT,
 };
 
 struct message_block
@@ -25,10 +25,10 @@ struct message_text
 	char buf[SND_RCV_BUF_SIZE + 1];
 };
 
-struct message_peer_event
+struct message_socket_event
 {
 	int msg_type;
-	muggle_socket_peer_t *peer;
+	muggle_socket_context_t *ctx;
 };
 
 

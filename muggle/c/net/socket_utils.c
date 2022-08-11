@@ -13,6 +13,11 @@
 #include <string.h>
 #include "muggle/c/log/log.h"
 
+#if MUGGLE_PLATFORM_WINDOWS
+#else
+#include <fcntl.h>
+#endif
+
 const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufsize, int host_only)
 {
 	switch (sa->sa_family)
@@ -103,7 +108,6 @@ int muggle_socket_getaddrinfo(const char *host, const char *serv, struct addrinf
 		return -1;
 	}
 
-	int ret = -1;
 	if (res)
 	{
 		memcpy(addrinfo, res, sizeof(struct addrinfo));
@@ -117,7 +121,35 @@ int muggle_socket_getaddrinfo(const char *host, const char *serv, struct addrinf
 	return -1;
 }
 
-muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlog, muggle_socket_peer_t *peer)
+const char* muggle_socket_local_addr(muggle_socket_t fd, char *buf, size_t bufsize, int host_only)
+{
+	struct sockaddr_storage sin;
+	memset(&sin, 0, sizeof(sin));
+	muggle_socklen_t len = sizeof(sin);
+
+	if (getsockname(fd, (struct sockaddr*)&sin, &len) != 0)
+	{
+		return NULL;
+	}
+
+	return muggle_socket_ntop((struct sockaddr*)&sin, buf, bufsize, host_only);
+}
+
+const char* muggle_socket_remote_addr(muggle_socket_t fd, char *buf, size_t bufsize, int host_only)
+{
+	struct sockaddr_storage sin;
+	memset(&sin, 0, sizeof(sin));
+	muggle_socklen_t len = sizeof(sin);
+
+	if (getpeername(fd, (struct sockaddr*)&sin, &len) != 0)
+	{
+		return NULL;
+	}
+
+	return muggle_socket_ntop((struct sockaddr*)&sin, buf, bufsize, host_only);
+}
+
+muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlog)
 {
 	muggle_socket_t listen_socket = MUGGLE_INVALID_SOCKET;
 
@@ -193,20 +225,12 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 		return MUGGLE_INVALID_SOCKET;
 	}
 
-	// set peer
-	if (peer)
-	{
-		muggle_socket_peer_init(
-			peer, listen_socket, MUGGLE_SOCKET_PEER_TYPE_TCP_LISTEN, 
-			res->ai_addr, (muggle_socklen_t)res->ai_addrlen);
-	}
-
 	freeaddrinfo(ressave);
 
 	return listen_socket;
 }
 
-muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeout_sec, muggle_socket_peer_t *peer)
+muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeout_sec)
 {
     muggle_socket_t client = MUGGLE_INVALID_SOCKET;
 
@@ -280,14 +304,6 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
             return MUGGLE_INVALID_SOCKET;
         }
     }
-
-	// set peer
-	if (peer)
-	{
-		muggle_socket_peer_init(
-			peer, client, MUGGLE_SOCKET_PEER_TYPE_TCP_PEER,
-			res->ai_addr, (muggle_socklen_t)res->ai_addrlen);
-	}
 
     freeaddrinfo(ressave);
 
@@ -378,7 +394,7 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
     return client;
 }
 
-muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socket_peer_t *peer)
+muggle_socket_t muggle_udp_bind(const char *host, const char *serv)
 {
 	muggle_socket_t udp_socket = MUGGLE_INVALID_SOCKET;
 
@@ -443,20 +459,12 @@ muggle_socket_t muggle_udp_bind(const char *host, const char *serv, muggle_socke
 		return MUGGLE_INVALID_SOCKET;
 	}
 
-	// set peer
-	if (peer)
-	{
-		muggle_socket_peer_init(
-			peer, udp_socket, MUGGLE_SOCKET_PEER_TYPE_UDP_PEER,
-			res->ai_addr, (muggle_socklen_t)res->ai_addrlen);
-	}
-
 	freeaddrinfo(ressave);
 
 	return udp_socket;
 }
 
-muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_socket_peer_t *peer)
+muggle_socket_t muggle_udp_connect(const char *host, const char *serv)
 {
 	muggle_socket_t udp_socket = MUGGLE_INVALID_SOCKET;
 
@@ -506,14 +514,6 @@ muggle_socket_t muggle_udp_connect(const char *host, const char *serv, muggle_so
 		return MUGGLE_INVALID_SOCKET;
 	}
 
-	// set peer
-	if (peer)
-	{
-		muggle_socket_peer_init(
-			peer, udp_socket, MUGGLE_SOCKET_PEER_TYPE_UDP_PEER,
-			res->ai_addr, (muggle_socklen_t)res->ai_addrlen);
-	}
-
 	freeaddrinfo(ressave);
 
 	return udp_socket;
@@ -523,8 +523,7 @@ muggle_socket_t muggle_mcast_join(
 	const char *host,
 	const char *serv,
 	const char *iface,
-	const char *src_grp,
-	muggle_socket_peer_t *peer)
+	const char *src_grp)
 {
 	muggle_socket_t fd = MUGGLE_INVALID_SOCKET;
 
@@ -768,14 +767,6 @@ muggle_socket_t muggle_mcast_join(
 	{
 		muggle_socket_close(fd);
 		return MUGGLE_INVALID_SOCKET;
-	}
-
-	// set peer
-	if (peer)
-	{
-		muggle_socket_peer_init(
-			peer, fd, MUGGLE_SOCKET_PEER_TYPE_UDP_PEER,
-			bind_addrinfo->ai_addr, (muggle_socklen_t)bind_addrinfo->ai_addrlen);
 	}
 
 	return fd;

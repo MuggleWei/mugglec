@@ -73,13 +73,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
-
 	// benchmark config
 	muggle_benchmark_config_t config;
 	memset(&config, 0, sizeof(config));
 	config.rounds = 1000;
 	config.record_per_round = 1;
-	config.round_interval_ms = 1;
+	config.round_interval_ms = 5;
 	config.elapsed_unit = MUGGLE_BENCHMARK_ELAPSED_UNIT_NS;
 	config.producer = 1;
 	config.consumer = 1;

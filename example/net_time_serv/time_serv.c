@@ -1,93 +1,90 @@
 #include "time_serv_handle.h"
 
-int main(int argc, char *argv[])
+muggle_event_loop_t* create_evloop(evloop_data_t *args)
 {
-	if (muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_INFO) != 0)
+	// new event loop
+	muggle_event_loop_init_args_t ev_init_args;
+	memset(&ev_init_args, 0, sizeof(ev_init_args));
+	ev_init_args.evloop_type = MUGGLE_EVLOOP_TYPE_NULL;
+	ev_init_args.hints_max_fd = 32;
+	ev_init_args.use_mem_pool = 0;
+
+	muggle_event_loop_t *evloop = muggle_evloop_new(&ev_init_args);
+	if (evloop == NULL)
 	{
-		MUGGLE_LOG_ERROR("failed initalize log");
+		LOG_ERROR("failed new event loop");
 		exit(EXIT_FAILURE);
 	}
+	LOG_INFO("success new event loop");
 
-	if (muggle_socket_lib_init() != 0)
+	muggle_evloop_set_data(evloop, args);
+	args->evloop = evloop;
+
+	return evloop;
+}
+
+int main(int argc, char *argv[])
+{
+	// initialize log
+	if (muggle_log_simple_init(LOG_LEVEL_INFO, LOG_LEVEL_INFO) != 0)
 	{
-		MUGGLE_LOG_ERROR("failed initalize socket library");
+		LOG_ERROR("failed initalize log");
 		exit(EXIT_FAILURE);
 	}
 
 	if (argc < 3)
 	{
-		MUGGLE_LOG_ERROR("usage: %s <IP> <Port> [udp-ip] [udp-port]", argv[0]);
+		LOG_ERROR("usage: %s <IP> <Port> [udp-ip] [udp-port]", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
-	const char *host = argv[1];
-	const char *serv = argv[2];
-	const char *multicast_host = NULL;
-	const char *multicast_serv = NULL;
+	// initialize socket library
+	if (muggle_socket_lib_init() != 0)
+	{
+		LOG_ERROR("failed initialize socket library");
+		exit(EXIT_FAILURE);
+	}
 
-	// udp peer
-	muggle_socket_peer_t udp_peer, *p_udp_peer = NULL;
+	// prepare aruments
+	evloop_data_t args;
+	memset(&args, 0, sizeof(args));
+	args.host = argv[1];
+	args.serv = argv[2];
 	if (argc >= 5)
 	{
-		multicast_host = argv[3];
-		multicast_serv = argv[4];
-		udp_peer.fd = muggle_udp_connect(multicast_host, multicast_serv, &udp_peer);
-		if (udp_peer.fd == MUGGLE_INVALID_SOCKET)
-		{
-			MUGGLE_LOG_ERROR("failed connect multicast target");
-			exit(EXIT_FAILURE);
-		}
-		p_udp_peer = &udp_peer;
+		args.multicast_host = argv[3];
+		args.multicast_serv = argv[4];
 	}
+	muggle_linked_list_init(&args.conn_list, 0);
 
-	// listen peer
-	muggle_socket_peer_t listen_peer;
-	listen_peer.fd = muggle_tcp_listen(host, serv, 512, &listen_peer);
-	if (listen_peer.fd == MUGGLE_INVALID_SOCKET)
-	{
-		MUGGLE_LOG_ERROR("failed create tcp listen for %s:%s", host, serv);
-		exit(EXIT_FAILURE);
-	}
+	// init event loop
+	muggle_event_loop_t *evloop = create_evloop(&args);
 
-	// ev datas
-	int max_peer = 1024;
-	struct peer_container container;
-	memset(&container, 0, sizeof(container));
-	container.udp_peer = p_udp_peer;
-	container.peers = (muggle_socket_peer_t**)malloc(max_peer * sizeof(muggle_socket_peer_t*));
-	container.max_peer = max_peer;
-	container.cnt_peer = 0;
+	// bind socket event loop handle
+	muggle_socket_evloop_handle_t handle;
+	muggle_socket_evloop_handle_init(&handle);
+	muggle_socket_evloop_handle_set_timer_interval(&handle, 1000);
+	muggle_socket_evloop_handle_set_cb_add_ctx(&handle, on_add_ctx);
+	muggle_socket_evloop_handle_set_cb_conn(&handle, on_connect);
+	muggle_socket_evloop_handle_set_cb_close(&handle, on_close);
+	muggle_socket_evloop_handle_set_cb_timer(&handle, on_timer);
+	muggle_socket_evloop_handle_set_cb_release(&handle, on_release);
+	muggle_socket_evloop_handle_attach(&handle, evloop);
+	LOG_INFO("socket handle attached to event loop");
 
-	// event init arguments
-	muggle_socket_event_init_arg_t ev_init_arg;
-	memset(&ev_init_arg, 0, sizeof(ev_init_arg));
-	ev_init_arg.ev_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_NULL;
-	ev_init_arg.hints_max_peer = max_peer;
-	ev_init_arg.cnt_peer = 1;
-	ev_init_arg.peers = &listen_peer;
-	ev_init_arg.p_peers = NULL;
-	ev_init_arg.timeout_ms = 1000;
-	ev_init_arg.datas = (void*)&container;
-	ev_init_arg.on_connect = on_connect;
-	ev_init_arg.on_error = on_error;
-	ev_init_arg.on_message = NULL;
-	ev_init_arg.on_timer = on_timer;
+	// run listen and mcast thread
+	run_tcp_listen(&args);
+	run_mcast_conn(&args);
 
-	// event loop
-	muggle_socket_event_t ev;
-	if (muggle_socket_event_init(&ev_init_arg, &ev) != 0)
-	{
-		MUGGLE_LOG_ERROR("failed init socket event");
-		exit(EXIT_FAILURE);
-	}
-	muggle_socket_event_loop(&ev);
+	// run
+	muggle_evloop_run(evloop);
 
 	// clear
-	if (p_udp_peer)
-	{
-		muggle_socket_close(p_udp_peer->fd);
-	}
-	free(container.peers);
+	muggle_socket_evloop_handle_destroy(&handle);
+	muggle_evloop_delete(evloop);
+
+	// destroy conn list
+	muggle_linked_list_destroy(&args.conn_list, NULL, NULL);
 
 	return 0;
 }

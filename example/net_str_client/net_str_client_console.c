@@ -18,7 +18,7 @@ muggle_thread_ret_t thread_get_console_input(void *arg)
 		msg = (struct message_text*)muggle_sowr_memory_pool_alloc(&sowr_pool);
 		if (msg == NULL)
 		{
-			MUGGLE_LOG_WARNING("failed allocate memory for console input message");
+			LOG_WARNING("failed allocate memory for console input message");
 			break;
 		}
 	}

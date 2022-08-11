@@ -7,22 +7,23 @@ void run_udp_receiver(
 	muggle_benchmark_config_t *config)
 {
 	// bind address
-	muggle_socket_peer_t udp_peer;
-	udp_peer.fd = muggle_udp_bind(host, port, &udp_peer);
-	if (udp_peer.fd == MUGGLE_INVALID_SOCKET)
+	muggle_socket_t fd = muggle_udp_bind(host, port);
+	if (fd == MUGGLE_INVALID_SOCKET)
 	{
 		MUGGLE_LOG_ERROR("failed create udp bind for %s:%s", host, port);
 		exit(EXIT_FAILURE);
 	}
 
-	muggle_benchmark_record_t record;
+	muggle_socket_context_t ctx;
+	muggle_socket_ctx_init(&ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_UDP);
+
 	char buf[65536];
 	while (1)
 	{
-		int n = recv(udp_peer.fd, buf, sizeof(buf), flags);
+		int n = muggle_socket_recv(fd, buf, sizeof(buf), flags);
 		if (n > 0)
 		{
-			if (onRecvPkg(&udp_peer, (struct pkg*)buf, handle, config) != 0)
+			if (onRecvPkg(&ctx, (struct pkg*)buf, handle, config) != 0)
 			{
 				break;
 			}
@@ -38,4 +39,6 @@ void run_udp_receiver(
 			break;
 		}
 	}
+
+	muggle_socket_ctx_close(&ctx);
 }

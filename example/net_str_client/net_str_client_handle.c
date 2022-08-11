@@ -1,42 +1,91 @@
 #include "net_str_client_handle.h"
 
-struct client_event_data
+struct thread_connect_args
 {
-	muggle_ring_buffer_t      *ring;
-	muggle_sowr_memory_pool_t *peer_event_sowr_pool;
-	muggle_sowr_memory_pool_t *text_sowr_pool;
+	const char *host;
+	const char *serv;
+	const char *socket_type;
+	muggle_event_loop_t *evloop;
 };
 
-void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
+struct client_event_data
 {
-	struct client_event_data *ev_data = ev->datas;
-	muggle_ring_buffer_t *ring = (muggle_ring_buffer_t*)ev_data->ring;
-	struct message_peer_event *msg = (struct message_peer_event*)muggle_sowr_memory_pool_alloc(ev_data->peer_event_sowr_pool);
-	msg->msg_type = MSG_TYPE_PEER_DISCONNECT;
-	msg->peer = peer;
-	muggle_ring_buffer_write(ring, msg);
+	muggle_ring_buffer_t       *ring;                   //!< message ring buffer
+	muggle_sowr_memory_pool_t  *socket_event_sowr_pool; //!< socket context memory pool
+	muggle_sowr_memory_pool_t  *text_sowr_pool;         //!< string message memory pool
+	struct thread_connect_args *conn_args;              //!< connect arguments
+};
 
-	muggle_socket_event_loop_exit(ev);
-}
-void on_close(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
+muggle_thread_ret_t thread_connect(void *arg)
 {
-	char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
-	if (muggle_socket_ntop((struct sockaddr*)&peer->addr, straddr, MUGGLE_SOCKET_ADDR_STRLEN, 0) == NULL)
+	struct thread_connect_args *th_arg = (struct thread_connect_args*)arg;
+
+	muggle_socket_t fd = MUGGLE_INVALID_SOCKET;
+	muggle_socket_context_t *ctx = NULL;
+	while (1)
 	{
-		snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "unknown:unknown");
-	}
-	MUGGLE_LOG_WARNING("%s closing soon, safe to delete user data here", straddr);
-}
-void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
-{
-	struct client_event_data *ev_data = ev->datas;
-	muggle_ring_buffer_t *ring = (muggle_ring_buffer_t*)ev_data->ring;
+		if (strcmp(th_arg->socket_type, "tcp") == 0)
+		{
+			fd = muggle_tcp_connect(th_arg->host, th_arg->serv, 3);
+			if (fd != MUGGLE_INVALID_SOCKET)
+			{
+				ctx = (muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
+				muggle_socket_ctx_init(ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_CLIENT);
+			}
+		}
+		else if (strcmp(th_arg->socket_type, "udp") == 0)
+		{
+			fd = muggle_udp_connect(th_arg->host, th_arg->serv);
+			if (fd != MUGGLE_INVALID_SOCKET)
+			{
+				ctx = (muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
+				muggle_socket_ctx_init(ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_UDP);
+			}
+		}
+		else
+		{
+			LOG_ERROR("invalid socket context type: %s", th_arg->socket_type);
+			exit(EXIT_FAILURE);
+		}
 
+		if (ctx == NULL)
+		{
+			LOG_ERROR("%s failed connect: %s:%s", th_arg->socket_type, th_arg->host, th_arg->serv);
+			muggle_msleep(3000);
+			LOG_INFO("reconnect...");
+			continue;
+		}
+
+		muggle_socket_evloop_add_ctx(th_arg->evloop, ctx);
+		break;
+	}
+
+	return 0;
+}
+
+void on_add_ctx(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
+{
+	struct client_event_data *ev_data = (struct client_event_data*)muggle_evloop_get_data(evloop);
+	muggle_ring_buffer_t *ring = (muggle_ring_buffer_t*)ev_data->ring;
+	muggle_sowr_memory_pool_t *socket_event_sowr_pool = ev_data->socket_event_sowr_pool;
+
+	// retain peer
+	muggle_socket_ctx_ref_retain(ctx);
+	struct message_socket_event *msg = (struct message_socket_event*)muggle_sowr_memory_pool_alloc(socket_event_sowr_pool);
+	msg->msg_type = MSG_TYPE_SOCKET_CONNECT;
+	msg->ctx = ctx;
+	muggle_ring_buffer_write(ring, msg);
+}
+
+void on_message(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
+{
+	struct client_event_data *ev_data = (struct client_event_data*)muggle_evloop_get_data(evloop);
+	muggle_ring_buffer_t *ring = (muggle_ring_buffer_t*)ev_data->ring;
 	while (1)
 	{
 		struct message_text *msg = (struct message_text*)muggle_sowr_memory_pool_alloc(ev_data->text_sowr_pool);
-		msg->msg_type = MSG_TYPE_PEER_RECV;
-		int n = muggle_socket_peer_recv(peer, msg->buf, sizeof(msg->buf) - 1, 0);
+		msg->msg_type = MSG_TYPE_SOCKET_RECV;
+		int n = muggle_socket_ctx_read(ctx, msg->buf, sizeof(msg->buf) - 1);
 		if (n > 0)
 		{
 			msg->buf[n] = '\0';
@@ -51,6 +100,25 @@ void on_message(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
 	}
 }
 
+void on_close(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
+{
+	struct client_event_data *ev_data = (struct client_event_data*)muggle_evloop_get_data(evloop);
+	muggle_ring_buffer_t *ring = (muggle_ring_buffer_t*)ev_data->ring;
+	struct thread_connect_args *conn_args = ev_data->conn_args;
+
+	// write disconnect message
+	muggle_sowr_memory_pool_t *socket_event_sowr_pool = ev_data->socket_event_sowr_pool;
+	struct message_socket_event *msg = (struct message_socket_event*)muggle_sowr_memory_pool_alloc(socket_event_sowr_pool);
+	msg->msg_type = MSG_TYPE_SOCKET_DISCONNECT;
+	msg->ctx = ctx;
+	muggle_ring_buffer_write(ring, msg);
+
+	// run reconnect thread
+	muggle_thread_t th;
+	muggle_thread_create(&th, thread_connect, conn_args);
+	muggle_thread_detach(&th);
+}
+
 muggle_thread_ret_t thread_socket_event(void *arg)
 {
 	struct client_thread_arg *th_arg = (struct client_thread_arg*)arg;
@@ -59,91 +127,71 @@ muggle_thread_ret_t thread_socket_event(void *arg)
 	muggle_ring_buffer_t *ring = (muggle_ring_buffer_t*)th_arg->ring;
 
 	// get message pool
-	muggle_sowr_memory_pool_t peer_event_sowr_pool;
-	muggle_sowr_memory_pool_init(&peer_event_sowr_pool, 16, sizeof(struct message_peer_event));
+	muggle_sowr_memory_pool_t socket_event_sowr_pool;
+	muggle_sowr_memory_pool_init(&socket_event_sowr_pool, 16, sizeof(struct message_socket_event));
 
 	muggle_sowr_memory_pool_t text_sowr_pool;
 	muggle_sowr_memory_pool_init(&text_sowr_pool, 16, sizeof(struct message_text));
 
+	// init event loop
+	muggle_event_loop_init_args_t ev_init_args;
+	memset(&ev_init_args, 0, sizeof(ev_init_args));
+	ev_init_args.evloop_type = MUGGLE_EVLOOP_TYPE_NULL;
+	ev_init_args.hints_max_fd = 32;
+	ev_init_args.use_mem_pool = 0;
+
+	muggle_event_loop_t *evloop = muggle_evloop_new(&ev_init_args);
+	if (evloop == NULL)
+	{
+		LOG_ERROR("failed new event loop");
+		exit(EXIT_FAILURE);
+	}
+	LOG_INFO("success new event loop");
+
+	// init socket event loop handle
+	muggle_socket_evloop_handle_t handle;
+	muggle_socket_evloop_handle_init(&handle);
+	muggle_socket_evloop_handle_set_cb_add_ctx(&handle, on_add_ctx);
+	muggle_socket_evloop_handle_set_cb_msg(&handle, on_message);
+	muggle_socket_evloop_handle_set_cb_close(&handle, on_close);
+	muggle_socket_evloop_handle_attach(&handle, evloop);
+	LOG_INFO("socket handle attached event loop");
+
 	// event data
+	struct thread_connect_args conn_args;
+	conn_args.host = th_arg->host;
+	conn_args.serv = th_arg->serv;
+	conn_args.socket_type = th_arg->socket_type;
+	conn_args.evloop = evloop;
+
 	struct client_event_data ev_data;
 	ev_data.ring = ring;
-	ev_data.peer_event_sowr_pool = &peer_event_sowr_pool;
+	ev_data.socket_event_sowr_pool = &socket_event_sowr_pool;
 	ev_data.text_sowr_pool = &text_sowr_pool;
+	ev_data.conn_args = &conn_args;
 
-	while (1)
-	{
-		// create socket
-		muggle_socket_peer_t peer;
-		muggle_socket_t ret_fd;
-		if (strcmp(th_arg->socket_type, "tcp") == 0)
-		{
-			ret_fd = muggle_tcp_connect(th_arg->host, th_arg->serv, 3, &peer);
-		}
-		else if (strcmp(th_arg->socket_type, "udp") == 0)
-		{
-			ret_fd = muggle_udp_connect(th_arg->host, th_arg->serv, &peer);
-		}
-		else
-		{
-			MUGGLE_LOG_ERROR("invalid socket peer type: %s", th_arg->socket_type);
-			exit(EXIT_FAILURE);
-		}
+	muggle_evloop_set_data(evloop, &ev_data);
 
-		if (ret_fd == MUGGLE_INVALID_SOCKET)
-		{
-			MUGGLE_LOG_ERROR("%s failed connect: %s:%s", th_arg->socket_type, th_arg->host, th_arg->serv);
-			muggle_msleep(3000);
-			MUGGLE_LOG_INFO("reconnect...");
-			continue;
-		}
+	// run connect thread
+	muggle_thread_t th;
+	muggle_thread_create(&th, thread_connect, &conn_args);
+	muggle_thread_detach(&th);
 
-		// fill up event loop input arguments
-		muggle_socket_peer_t *p_peer = NULL;
+	// run event loop
+	muggle_evloop_run(evloop);
 
-		muggle_socket_event_init_arg_t ev_init_arg;
-		memset(&ev_init_arg, 0, sizeof(ev_init_arg));
-		ev_init_arg.ev_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_NULL;
-		ev_init_arg.hints_max_peer = 1024;
-		ev_init_arg.cnt_peer = 1;
-		ev_init_arg.peers = &peer;
-		ev_init_arg.p_peers = &p_peer;
-		ev_init_arg.timeout_ms = -1;
-		ev_init_arg.datas = NULL;
-		ev_init_arg.on_error = on_error;
-		ev_init_arg.on_close = on_close;
-		ev_init_arg.on_message = on_message;
-		ev_init_arg.datas = &ev_data;
+	// destroy socket event handle
+	muggle_socket_evloop_handle_destroy(&handle);
 
-		// init event loop
-		muggle_socket_event_t ev;
-		if (muggle_socket_event_init(&ev_init_arg, &ev) != 0)
-		{
-			MUGGLE_LOG_ERROR("failed init socket event");
-			exit(EXIT_FAILURE);
-		}
-
-		// retain peer
-		muggle_socket_peer_retain(p_peer);
-		struct message_peer_event *msg = (struct message_peer_event*)muggle_sowr_memory_pool_alloc(&peer_event_sowr_pool);
-		msg->msg_type = MSG_TYPE_PEER_CONNECT;
-		msg->peer = p_peer;
-		muggle_ring_buffer_write(ring, msg);
-
-		// run event loop
-		muggle_socket_event_loop(&ev);
-
-		// sleep 3s
-		muggle_msleep(3000);
-		MUGGLE_LOG_INFO("reconnect...");
-	}
+	// delete event loop
+	muggle_evloop_delete(evloop);
 
 	// wait for all message consumed, destroy sowr pool
-	while (!muggle_sowr_memory_pool_is_all_free(&peer_event_sowr_pool))
+	while (!muggle_sowr_memory_pool_is_all_free(&socket_event_sowr_pool))
 	{
 		muggle_msleep(100);
 	}
-	muggle_sowr_memory_pool_destroy(&peer_event_sowr_pool);
+	muggle_sowr_memory_pool_destroy(&socket_event_sowr_pool);
 
 	while (!muggle_sowr_memory_pool_is_all_free(&text_sowr_pool))
 	{

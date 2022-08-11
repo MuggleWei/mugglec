@@ -1,88 +1,120 @@
 #include "time_serv_handle.h"
 
-#if defined(MUGGLE_BUILD_TRACE)
-
-void trace_output_peers(struct peer_container *container)
+static muggle_thread_ret_t mcast_conn_routine(void *p_args)
 {
-	char buf[4096];
-	int offset = 0;
+	evloop_data_t *args = (evloop_data_t*)p_args;
 
-	char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
-	offset += snprintf(buf + offset, sizeof(buf) - offset, "peer container: ");
-	int cnt = 0;
-	for (int i = 0; i < container->cnt_peer; ++i)
-	{
-		if (cnt >= 8)
+	muggle_socket_t fd = MUGGLE_INVALID_SOCKET;
+	do {
+		LOG_INFO("multicast connect: %s %s", args->multicast_host, args->multicast_serv);
+		fd = muggle_udp_connect(args->multicast_host, args->multicast_serv);
+		if (fd == MUGGLE_INVALID_SOCKET)
 		{
-			offset += snprintf(buf + offset, sizeof(buf) - offset, " ...");
-			break;
+			LOG_SYS_ERR(LOG_LEVEL_ERROR, "failed connect multicast addr");
+			muggle_msleep(3000);
+			continue;
 		}
-		muggle_socket_peer_t *tmp_peer = container->peers[i];
-		muggle_socket_ntop((struct sockaddr*)&tmp_peer->addr, straddr, MUGGLE_SOCKET_ADDR_STRLEN, 0);
-#if MUGGLE_PLATFORM_WINDOWS
-		offset += snprintf(buf + offset, sizeof(buf) - offset, "[%s]<%d> | ", straddr, (int)(intptr_t)tmp_peer->data);
-#else
-		offset += snprintf(buf + offset, sizeof(buf) - offset, "%d[%s]<%d> | ", tmp_peer->fd, straddr, (int)(intptr_t)tmp_peer->data);
-#endif
-		++cnt;
-	}
-    MUGGLE_LOG_INFO(buf);
+		break;
+	} while(1);
+
+	LOG_INFO("success multicast connect");
+
+	muggle_socket_context_t *ctx =
+		(muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
+	muggle_socket_ctx_init(ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_UDP);
+
+	muggle_socket_evloop_add_ctx(args->evloop, ctx);
+
+	return 0;
 }
 
-#endif
-
-void on_connect(
-	struct muggle_socket_event *ev, struct muggle_socket_peer *listen_peer, struct muggle_socket_peer *peer)
+static muggle_thread_ret_t tcp_listen_routine(void *p_args)
 {
-	// output connection address string
-	char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
-	if (muggle_socket_ntop((struct sockaddr*)&peer->addr, straddr, MUGGLE_SOCKET_ADDR_STRLEN, 0) == NULL)
-	{
-		snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "unknown:unknown");
-	}
-	MUGGLE_LOG_INFO("connect - %s", straddr);
+	evloop_data_t *args = (evloop_data_t*)p_args;
 
-	// save peer into container
-	struct peer_container *container = (struct peer_container*)ev->datas;
-	container->peers[container->cnt_peer] = peer;
-	peer->data = (void*)(intptr_t)container->cnt_peer;
-	++container->cnt_peer;
+	muggle_socket_t fd = MUGGLE_INVALID_SOCKET;
+	do {
+		LOG_INFO("tcp listen: %s %s", args->host, args->serv);
+		fd = muggle_tcp_listen(args->host, args->serv, 512);
+		if (fd == MUGGLE_INVALID_SOCKET)
+		{
+			LOG_SYS_ERR(LOG_LEVEL_ERROR, "failed listen");
+			muggle_msleep(3000);
+			continue;
+		}
+		break;
+	} while(1);
 
-#if defined(MUGGLE_BUILD_TRACE)
-	trace_output_peers(container);
-#endif
+	LOG_INFO("success tcp listen");
+
+	muggle_socket_context_t *ctx =
+		(muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
+	muggle_socket_ctx_init(ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_LISTEN);
+
+	muggle_socket_evloop_add_ctx(args->evloop, ctx);
+
+	return 0;
 }
 
-void on_error(struct muggle_socket_event *ev, struct muggle_socket_peer *peer)
+void run_tcp_listen(evloop_data_t *args)
 {
-	// output disconnection address string
-	char straddr[MUGGLE_SOCKET_ADDR_STRLEN];
-	if (muggle_socket_ntop((struct sockaddr*)&peer->addr, straddr, MUGGLE_SOCKET_ADDR_STRLEN, 0) == NULL)
+	if (args->host && args->serv)
 	{
-		snprintf(straddr, MUGGLE_SOCKET_ADDR_STRLEN, "unknown:unknown");
+		muggle_thread_t th;
+		muggle_thread_create(&th, tcp_listen_routine, args);
+		muggle_thread_detach(&th);
 	}
-	MUGGLE_LOG_INFO("disconnect - %s", straddr);
-
-	// remove peer from container
-	struct peer_container *container = (struct peer_container*)ev->datas;
-	int idx = (int)(intptr_t)peer->data;
-	if (idx != container->cnt_peer - 1)
-	{
-		container->peers[idx] = container->peers[container->cnt_peer - 1];
-		container->peers[idx]->data = (void*)(intptr_t)idx;
-	}
-	--container->cnt_peer;
-
-	// close peer
-	muggle_socket_peer_close(peer);
-
-#if defined(MUGGLE_BUILD_TRACE)
-	trace_output_peers(container);
-#endif
 }
 
-void on_timer(struct muggle_socket_event *ev)
+void run_mcast_conn(evloop_data_t *args)
 {
+	if (args->multicast_host && args->multicast_serv)
+	{
+		muggle_thread_t th;
+		muggle_thread_create(&th, mcast_conn_routine, args);
+		muggle_thread_detach(&th);
+	}
+}
+
+void on_add_ctx(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
+{
+	evloop_data_t *data = muggle_evloop_get_data(evloop);
+
+	switch (ctx->sock_type)
+	{
+		case MUGGLE_SOCKET_CTX_TYPE_TCP_LISTEN:
+		{
+			LOG_INFO("on add socket context: listen");
+			data->listen_ctx = ctx;
+		} break;
+		case MUGGLE_SOCKET_CTX_TYPE_UDP:
+		{
+			LOG_INFO("on add socket context: mcast");
+			data->mcast_ctx = ctx;
+		} break;
+		default:
+		{
+			LOG_ERROR("something wrong");
+		}break;
+	}
+}
+
+void on_connect(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
+{
+	evloop_data_t *data = muggle_evloop_get_data(evloop);
+
+	char addr[MUGGLE_SOCKET_ADDR_STRLEN];
+	muggle_socket_remote_addr(ctx->base.fd, addr, sizeof(addr), 0);
+	LOG_INFO("new TCP connection: %s", addr);
+
+	muggle_linked_list_node_t *node = muggle_linked_list_append(&data->conn_list, NULL, ctx);
+	muggle_socket_ctx_set_data(ctx, node);
+}
+
+void on_timer(muggle_event_loop_t *evloop)
+{
+	evloop_data_t *data = muggle_evloop_get_data(evloop);
+
 	// get timestamp
 	char buf[65536];
 	time_t ts = time(NULL);
@@ -95,17 +127,60 @@ void on_timer(struct muggle_socket_event *ev)
 	n += 1;
 	*(uint32_t*)buf = htonl(n);
 
-	struct peer_container *container = (struct peer_container*)ev->datas;
+	size_t len = 4 + n;
 
-	// udp send
-	if (container->udp_peer)
+	// send to mcast
+	if (data->mcast_ctx)
 	{
-		send(container->udp_peer->fd, buf, n + 4, 0);
+		muggle_socket_ctx_write(data->mcast_ctx, buf, len);
 	}
 
-	// all tcp connection
-	for (int i = 0; i < container->cnt_peer; ++i)
+	// send to TCP client
+	muggle_linked_list_node_t *node = muggle_linked_list_first(&data->conn_list);
+	for (; node; node = muggle_linked_list_next(&data->conn_list, node))
 	{
-		send(container->peers[i]->fd, buf, n + 4, 0);
+		muggle_socket_context_t *ctx = (muggle_socket_context_t*)node->data;
+		muggle_socket_ctx_write(ctx, buf, len);
 	}
+}
+
+void on_close(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
+{
+	evloop_data_t *data = muggle_evloop_get_data(evloop);
+
+	if (ctx == data->mcast_ctx)
+	{
+		LOG_INFO("mcast closed");
+		data->mcast_ctx = NULL;
+		run_mcast_conn(data);
+	}
+	else if (ctx == data->listen_ctx)
+	{
+		LOG_INFO("listen closed");
+		data->listen_ctx = NULL;
+		run_tcp_listen(data);
+	}
+	else
+	{
+		char addr[MUGGLE_SOCKET_ADDR_STRLEN];
+		muggle_socket_remote_addr(ctx->base.fd, addr, sizeof(addr), 0);
+		LOG_INFO("TCP disconnection: %s", addr);
+	}
+}
+
+void on_release(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
+{
+	evloop_data_t *data = muggle_evloop_get_data(evloop);
+
+	if (ctx == data->mcast_ctx || ctx == data->listen_ctx)
+	{
+		return;
+	}
+
+	char addr[MUGGLE_SOCKET_ADDR_STRLEN];
+	muggle_socket_remote_addr(ctx->base.fd, addr, sizeof(addr), 0);
+	LOG_INFO("TCP context release user data: %s", addr);
+
+	muggle_linked_list_node_t *node = (muggle_linked_list_node_t*)muggle_socket_ctx_get_data(ctx);
+	muggle_linked_list_remove(&data->conn_list, node, NULL, NULL);
 }

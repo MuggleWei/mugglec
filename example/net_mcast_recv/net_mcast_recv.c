@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	}
 
 	MUGGLE_LOG_INFO("join multicast group");
-	muggle_socket_t fd = muggle_mcast_join(grp_host, grp_serv, iface, src_grp, NULL);
+	muggle_socket_t fd = muggle_mcast_join(grp_host, grp_serv, iface, src_grp);
 	if (fd == MUGGLE_INVALID_SOCKET)
 	{
 		MUGGLE_LOG_ERROR("failed multicast join %s:%s", grp_host, grp_serv);

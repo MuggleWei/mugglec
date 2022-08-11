@@ -1,5 +1,28 @@
 #include "time_client_handle.h"
 
+muggle_event_loop_t* create_evloop(conn_thread_args_t *args)
+{
+	// new event loop
+	muggle_event_loop_init_args_t ev_init_args;
+	memset(&ev_init_args, 0, sizeof(ev_init_args));
+	ev_init_args.evloop_type = MUGGLE_EVLOOP_TYPE_NULL;
+	ev_init_args.hints_max_fd = 32;
+	ev_init_args.use_mem_pool = 0;
+
+	muggle_event_loop_t *evloop = muggle_evloop_new(&ev_init_args);
+	if (evloop == NULL)
+	{
+		LOG_ERROR("failed new event loop");
+		exit(EXIT_FAILURE);
+	}
+	LOG_INFO("success new event loop");
+
+	muggle_evloop_set_data(evloop, args);
+	args->evloop = evloop;
+
+	return evloop;
+}
+
 int main(int argc, char *argv[])
 {
 	// initialize log
@@ -16,100 +39,40 @@ int main(int argc, char *argv[])
 	}
 
 	// initialize socket library
-	muggle_socket_lib_init();
-
-	// reconnect 3 times
-	int tcp_contiguous_failed = 0;
-	while (1)
+	if (muggle_socket_lib_init() != 0)
 	{
-		// create peer
-		muggle_socket_peer_t peer;
-		if (strcmp(argv[3], "tcp") == 0)
-		{
-			muggle_tcp_connect(argv[1], argv[2], 3, &peer);
-		}
-		else if (strcmp(argv[3], "udp") == 0)
-		{
-			muggle_udp_bind(argv[1], argv[2], &peer);
-		}
-		else if (strcmp(argv[3], "mcast") == 0)
-		{
-			muggle_mcast_join(argv[1], argv[2], NULL, NULL, &peer);
-		}
-		else
-		{
-			MUGGLE_LOG_ERROR("invalid socket peer type: %s", argv[3]);
-			exit(EXIT_FAILURE);
-		}
-
-		if (peer.fd == MUGGLE_INVALID_SOCKET)
-		{
-			if (strcmp(argv[3], "tcp") == 0)
-			{
-				MUGGLE_LOG_ERROR("failed connect %s:%s", argv[1], argv[2]);
-				if (++tcp_contiguous_failed >= 3)
-				{
-					exit(EXIT_FAILURE);
-				}
-				else
-				{
-					muggle_msleep(3000);
-					MUGGLE_LOG_INFO("try to reconnect %s:%s", argv[1], argv[2]);
-				}
-				continue;
-			}
-			else
-			{
-				MUGGLE_LOG_ERROR("%s failed create socket for: %s:%s", argv[3], argv[1], argv[2]);
-				exit(EXIT_FAILURE);
-			}
-		}
-		else if (strcmp(argv[3], "tcp") == 0)
-		{
-			MUGGLE_LOG_INFO("%s success connect %s:%s", argv[3], argv[1], argv[2]);
-		}
-
-		// reset tcp contiguous connection failed count
-		tcp_contiguous_failed = 0;
-
-		// create bytes buffer for socket
-		muggle_bytes_buffer_t bytes_buf;
-		muggle_bytes_buffer_init(&bytes_buf, 16 * 1024 * 1024);
-		peer.data = &bytes_buf;
-
-		// fill up event loop input arguments
-#if MUGGLE_PLATFORM_LINUX
-		int event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_EPOLL;
-#else
-		int event_loop_type = MUGGLE_SOCKET_EVENT_LOOP_TYPE_SELECT;
-#endif
-
-		// fill up event loop input arguments
-		muggle_socket_event_init_arg_t ev_init_arg;
-		memset(&ev_init_arg, 0, sizeof(ev_init_arg));
-		ev_init_arg.ev_loop_type = event_loop_type;
-		ev_init_arg.hints_max_peer = 1024;
-		ev_init_arg.cnt_peer = 1;
-		ev_init_arg.peers = &peer;
-		ev_init_arg.timeout_ms = -1;
-		ev_init_arg.datas = NULL;
-		ev_init_arg.on_connect = NULL;
-		ev_init_arg.on_error = on_error;
-		ev_init_arg.on_message = on_message;
-		ev_init_arg.on_timer = NULL;
-
-		// event loop
-		muggle_socket_event_t ev;
-		if (muggle_socket_event_init(&ev_init_arg, &ev) != 0)
-		{
-			MUGGLE_LOG_ERROR("failed init socket event");
-			exit(EXIT_FAILURE);
-		}
-		muggle_socket_event_loop(&ev);
-
-		// free bytes buffer
-		muggle_bytes_buffer_destroy(&bytes_buf);
+		LOG_ERROR("failed initialize socket library");
+		exit(EXIT_FAILURE);
 	}
+
+	// prepare connection info
+	conn_thread_args_t args;
+	args.host = argv[1];
+	args.serv = argv[2];
+	args.sock_type = argv[3];
+
+	// init event loop
+	muggle_event_loop_t *evloop = create_evloop(&args);
+
+	// bind socket event loop handle
+	muggle_socket_evloop_handle_t handle;
+	muggle_socket_evloop_handle_init(&handle);
+	muggle_socket_evloop_handle_set_cb_add_ctx(&handle, on_add_ctx);
+	muggle_socket_evloop_handle_set_cb_msg(&handle, on_message);
+	muggle_socket_evloop_handle_set_cb_close(&handle, on_close);
+	muggle_socket_evloop_handle_set_cb_release(&handle, on_release);
+	muggle_socket_evloop_handle_attach(&handle, evloop);
+	LOG_INFO("socket handle attached to event loop");
+
+	// run connect thread
+	run_conn_thread(&args);
+
+	// run
+	muggle_evloop_run(evloop);
+
+	// clear
+	muggle_socket_evloop_handle_destroy(&handle);
+	muggle_evloop_delete(evloop);
 
 	return 0;
 }
