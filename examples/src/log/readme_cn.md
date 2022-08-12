@@ -4,6 +4,7 @@
 		- [简单的初始化](#简单的初始化)
 		- [简单的初始化2](#简单的初始化2)
 		- [Debug日志](#debug日志)
+		- [Assert](#assert)
 	- [配置handler](#配置handler)
 		- [console handler](#console-handler)
 		- [file handler](#file-handler)
@@ -92,6 +93,13 @@ LOG_WARNING("debug & release warning");
 此时设置的命令行过滤等级为INFO, 文件过滤等级为DEBUG, 并且6条日志当中有3条是`DEBUG_LOG_{等级}`打印的, 因此
 * 当编译Debug版本时, 命令行可以看到4条输出, 文件可以看到6条输出
 * 当编译Release版本时, 命令行可以看到2条输出, 文件可以看到3条输出
+
+### Assert
+在开发阶段, 经常会使用到assert, 在mugglec的日志库中提供了两种断言, 分别是`MUGGLE_ASSERT`和`MUGGLE_ASSERT_MSG`, 其中`MUGGLE_ASSERT_MSG`在断言中断时, 会打印出用户的附加信息
+```
+int v = 0;
+MUGGLE_ASSERT_MSG(v == 1, "v must equal 1");
+```
 
 ## 配置handler
 用户也可以自定义的日志初始化, 让我们从`handler`开始逐个说明

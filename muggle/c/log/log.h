@@ -80,7 +80,7 @@ do \
 			__FILE__, __LINE__, __FUNCTION__ \
 		}; \
 		muggle_logger_t *logger = muggle_logger_default(); \
-		logger->log(logger, MUGGLE_LOG_LEVEL_FATAL, &loc_arg##__LINE__, "Assertion: "#x format, ##__VA_ARGS__); \
+		logger->log(logger, MUGGLE_LOG_LEVEL_FATAL, &loc_arg##__LINE__, "Assertion: "#x ", " format, ##__VA_ARGS__); \
 	} \
 } while (0)
 
