@@ -12,13 +12,13 @@ mugglec是一个c语言编写, 跨平台基础库, 提供了一系列常用的�
   - [目录](#目录)
   - [特点](#特点)
   - [构建](#构建)
+  - [教程和示例](#教程和示例)
   - [引入mugglec](#引入mugglec)
     - [融入进CMake工程 (推荐)](#融入进cmake工程-推荐)
       - [当前的风格](#当前的风格)
       - [老式的风格](#老式的风格)
     - [发现并链接](#发现并链接)
     - [使用git子模块(不推荐)](#使用git子模块不推荐)
-  - [教程和示例](#教程和示例)
 
 ### 特点
 * 提供常用的基础功能
@@ -52,6 +52,10 @@ cmake ..
 | MUGGLE_EXTRA_PREFIX_PATH | "" | 指定寻找库函数的路径, 它将会被添加到CMAKE_PREFIX_PATH |
 
 NOTE: 本库的单元测试使用的是gtest, 若MUGGLE_BUILD_TESTING被设置为ON, 构建时会首先寻找gtest库, 若在CMAKE_PREFIX_PATH的路径中没有发现gtest, 则会在第一次构建时, 自动下载gtest到构建目录中
+
+### 教程和示例
+可以通过查看[examples](./examples/readme_cn.md)文件夹来发现教程与使用示例.  
+当cmake构建时开启了`MUGGLE_BUILD_EXAMPLE`选项时, 则[examples](./examples/readme_cn.md)文件夹中的程序将被纳入工程构建当中. 此外, 该文件夹中包含一个独立的CMakeLists.txt文件, 如果用户想要体验一下在工程中引入mugglec, 可以将[examples](./examples/readme_cn.md)文件夹拷贝到任意地点并进行构建, 它将在构建过程中, 自动下载mugglec的代码.  
 
 ### 引入mugglec
 想要在自己的工程中引入mugglec, 有几种普遍的做法
@@ -205,6 +209,3 @@ add_executable(example src/example.c)
 add_dependencies(example mugglec)
 target_link_libraries(example mugglec)
 ```
-
-### 教程和示例
-可以通过查看[examples](./examples/readme_cn.md)文件夹来发现使用示例. 当编译开启了 MUGGLE_BUILD_EXAMPLE 选项时, 会自动编译example文件夹中的应用. 该文件夹中包含一个独立的CMakeLists.txt文件, 如果用户想要体验一下在工程中引入mugglec, 可以将example文件夹拷贝到任意地点并进行构建, 它将在构建过程中, 自动下载mugglec的代码.  
