@@ -44,6 +44,7 @@ int main()
 	{
 		task_t *task = (task_t*)node.key;
 		LOG_INFO("highest priority task: idx=%d, priority=%d", task->idx, task->priority);
+		free(task);
 	}
 
 	muggle_heap_destroy(&heap, NULL, NULL, NULL, NULL);

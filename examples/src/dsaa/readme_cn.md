@@ -478,13 +478,14 @@ muggle_heap_destroy(&heap, NULL, NULL, NULL, NULL);
 **注意: 这里堆的实现只会对优先级进行排序, 并不会对插入顺序进行排序**
 
 ### 插入与提取2
-像上一小节的例子中, 每次使用完二叉堆的根节点之后都将其释放, 可以将提取与删除合并成为一步: [heap_insert_extract.c](./heap_insert_extract/heap_insert_extract.c)
+像上一小节的例子中, 每次使用完二叉堆的根节点之后都将其释放, 可以将提取与删除节点合并成为一步: [heap_insert_extract.c](./heap_insert_extract/heap_insert_extract.c)
 ```
 muggle_heap_node_t node;
 while (muggle_heap_extract(&heap, &node))
 {
 	task_t *task = (task_t*)node.key;
 	LOG_INFO("highest priority task: idx=%d, priority=%d", task->idx, task->priority);
+	free(task);
 }
 ```
 * 这里删除了`muggle_heap_root`与`muggle_heap_remove`代码, 取而代之的是`muggle_heap_extract`, 它将每次提取优先级最高的节点信息并同时从堆中将此节点删除
