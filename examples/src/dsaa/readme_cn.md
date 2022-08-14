@@ -18,6 +18,25 @@
 		- [销毁时清理](#销毁时清理-1)
 		- [查找](#查找-1)
 		- [大小](#大小-1)
+	- [队列](#队列)
+		- [初始化](#初始化-2)
+		- [销毁](#销毁-2)
+		- [添加与删除](#添加与删除-2)
+		- [清空](#清空-2)
+		- [销毁时清理](#销毁时清理-2)
+		- [大小](#大小-2)
+	- [栈](#栈)
+		- [初始化](#初始化-3)
+		- [销毁](#销毁-3)
+		- [进栈出栈](#进栈出栈)
+		- [清空](#清空-3)
+		- [销毁时清理](#销毁时清理-3)
+		- [大小](#大小-3)
+	- [堆](#堆)
+		- [初始化](#初始化-4)
+		- [销毁](#销毁-4)
+		- [插入与提取](#插入与提取)
+		- [插入与提取2](#插入与提取2)
 
 # DSAA(数据结构与算法)
 本节讲解mugglec的dsaa(数据结构与算法)模块.   
@@ -26,7 +45,7 @@
 * 所有的数据结构返回数据时, 并不是直接返回存储在其中的指针, 而是返回数据所在的数据结构节点
 
 ## 数组列表
-`array_list`是一个典型的数组列表, 列表中的节点在内存上是连续的.  
+`muggle_array_list_t`是一个典型的数组列表, 列表中的节点在内存上是连续的.  
 
 ### 初始化
 `muggle_array_list_init`用于初始化数组列表
@@ -137,13 +156,13 @@ while((idx = muggle_array_list_find(&array_list, idx + 1, &v, cmp_int)) != -1)
 * 通过上面的循环, 找出所有数据为1的索引
 
 ### 大小
-`muggle_array_list_size`用于查询获取数组列表中有多少数据
+`muggle_array_list_size`用于查询数组列表中有多少数据
 
 ### 预先分配容量
 `muggle_array_list_ensure_capacity`用于确保数组列表的容量大小, 当遇到要插入较多数据时, 可预先使用该函数分配容量, 从而避免插入过程中的自动扩容操作
 
 ## 链表
-`linked_list`是一个双向链表的实现  
+`muggle_linked_list_t`是一个双向链表的实现  
 
 ### 初始化
 `muggle_linked_list_init`用于初始化链表
@@ -225,6 +244,7 @@ muggle_linked_list_destroy(&linked_list, NULL, NULL);
 ```
 muggle_linked_list_clear(&linked_list, do_free, NULL);
 ```
+* 其中的第2个参数, 指定了在清空链表时用于释放其中数据的函数
 
 ### 销毁时清理
 如果清空数组后不在使用, 那么可以直接在`muggle_linked_list_destroy`指定释放数据的回调函数: [linked_list_destroy.c](./linked_list_destroy/linked_list_destroy.c)  
@@ -251,4 +271,222 @@ while ((node = muggle_linked_list_find(&linked_list, node, &v, cmp_int)) != NULL
 * 通过上面的循环, 找出`linked_list`中所有数据为1的节点
 
 ### 大小
-`muggle_linked_list_size`用于查询获取链表中有多少数据
+`muggle_linked_list_size`用于查询链表中有多少数据
+
+## 队列
+`muggle_queue_t`是一个典型的队列实现, 通常用于先进先出(FIFO - first in first out)的场景
+
+### 初始化
+`muggle_queue_init`用于队列的初始化
+```
+bool muggle_queue_init(muggle_queue_t *p_queue, size_t capacity);
+```
+* p_queue: 指向一个队列的指针
+* capacity:
+  * 非0时, 表示用于队列节点内存分配的内存池的大小
+  * 为0时, 表示不使用内存池来分配队列节点
+
+### 销毁
+`muggle_queue_destroy`用于销毁队列
+```
+void muggle_queue_destroy(muggle_queue_t *p_queue, muggle_dsaa_data_free func_free, void *pool);
+```
+* p_queue: 指向一个队列的指针
+* func_free: 销毁时用于释放数据的函数, 指定为NULL, 代表销毁时不对队列中存储的数据做释放操作
+* pool: 传给释放函数的附加数据, 一般为NULL或者内存池, 当func_free为NULL时, 此字段无意义
+
+### 添加与删除
+队列是一个操作受限的列表, 只允许在尾部插入数据, 并从头部取出数据, 也就是只能执行先进先出操作: [queue_enqueue_dequeue.c](./queue_enqueue_dequeue/queue_enqueue_dequeue.c)
+```
+muggle_queue_t queue;
+muggle_queue_init(&queue, 8);
+
+for (int i = 0; i < 16; i++)
+{
+	user_data_t *data = (user_data_t*)malloc(sizeof(user_data_t));
+	data->value = i * 2;
+	if (!muggle_queue_enqueue(&queue, data))
+	{
+		LOG_ERROR("failed enqueue data: %d", data->value);
+	}
+}
+
+int i = 0;
+muggle_queue_node_t *node = NULL;
+while (!muggle_queue_is_empty(&queue))
+{
+	node = muggle_queue_front(&queue);
+	user_data_t *data = (user_data_t*)node->data;
+	muggle_queue_dequeue(&queue, NULL, NULL);
+	
+	LOG_INFO("#%d: %d", i++, data->value);
+	free(data);
+}
+
+muggle_queue_destroy(&queue, NULL, NULL);
+```
+* 第1个for循环将数据逐个放入队列的末尾
+* 第2个for循环从队头逐个取出数据, 释放队头, 打印数据之后将其释放
+
+### 清空
+当想要一次性清空整个队列, 可以直接调用`muggle_queue_clear`来实现: [queue_clear.c](./queue_clear/queue_clear.c)
+```
+muggle_queue_clear(&queue, do_free, NULL);
+```
+* 其中的第2个参数, 指定了在清空队列时用于释放其中数据的函数
+
+### 销毁时清理
+如果清空数组后不在使用, 那么可以直接在`muggle_queue_destroy`指定释放数据的回调函数: [queue_destroy.c](./queue_destroy/queue_destroy.c)
+```
+muggle_queue_destroy(&queue, do_free, NULL);
+```
+
+### 大小
+`muggle_queue_size`用于查询队列中有多少数据
+
+## 栈
+`muggle_stack_t`是一个栈的实现, 通常用于后进先出(LIFO - last in first out)的场景
+
+### 初始化
+`muggle_stack_init`用于初始化栈
+```
+bool muggle_stack_init(muggle_stack_t *p_stack, size_t capacity);
+```
+* p_stack: 指向一个栈的指针
+* capacity:
+  * 非0时, 表示用于栈节点内存分配的内存池的大小
+  * 为0时, 表示不使用内存池来分配栈节点
+
+### 销毁
+`muggle_stack_destroy`用于销毁栈
+```
+void muggle_stack_destroy(muggle_stack_t *p_stack, muggle_dsaa_data_free func_free, void *pool);
+```
+* p_stack: 指向一个栈的指针
+* func_free: 销毁时用于释放数据的函数, 指定为NULL, 代表销毁时不对栈中存储的数据做释放操作
+* pool: 传给释放函数的附加数据, 一般为NULL或者内存池, 当func_free为NULL时, 此字段无意义
+
+### 进栈出栈
+栈和队列相似, 也是一个操作受限的列表, 不同的是, 越后被压入栈中的数据将在越先被返回: [stack_push_pop.c](./stack_push_pop/stack_push_pop.c)
+```
+muggle_stack_t stack;
+muggle_stack_init(&stack, 8);
+
+for (int i = 0; i < 16; i++)
+{
+	user_data_t *data = (user_data_t*)malloc(sizeof(user_data_t));
+	data->value = i * 2;
+	if (!muggle_stack_push(&stack, data))
+	{
+		LOG_ERROR("failed push data: %d", data->value);
+	}
+}
+
+int i = 0;
+muggle_stack_node_t *node = NULL;
+while (!muggle_stack_is_empty(&stack))
+{
+	node = muggle_stack_top(&stack);
+	user_data_t *data = (user_data_t*)node->data;
+	muggle_stack_pop(&stack, NULL, NULL);
+	LOG_INFO("#%d: %d", i++, data->value);
+	free(data);
+}
+
+muggle_stack_destroy(&stack, NULL, NULL);
+```
+* 第1个for循环, 将数据压入栈中
+* 第2个for循环, 从栈顶读取数据并出栈, 再打印之后释放数据
+
+### 清空
+当想要一次性清空整个栈, 可以直接调用muggle_stack_clear来实现: [stack_clear.c](./stack_clear/stack_clear.c)
+```
+muggle_stack_clear(&stack, do_free, NULL);
+```
+* 其中的第2个参数, 指定了在清空栈时用于释放其中数据的函数
+
+### 销毁时清理
+如果清空栈后不在使用, 那么可以直接在`muggle_stack_destroy`指定释放数据的回调函数: [stack_destroy.c](./stack_destroy/stack_destroy.c)
+```
+muggle_stack_destroy(&stack, do_free, NULL);
+```
+
+### 大小
+`muggle_stack_size`用于查询栈中有多少数据
+
+## 堆
+`muggle_heap_t`是一个最小二叉堆的实现
+
+### 初始化
+`muggle_heap_init`用于初始化一个堆
+```
+bool muggle_heap_init(muggle_heap_t *p_heap, muggle_dsaa_data_cmp cmp, size_t capacity);
+```
+* p_heap: 指向一个堆的指针
+* cmp: 用于比较插入数据优先级的函数, 越小的值(也就是cmp返回负数的值)优先级越高
+* capacity:
+  * 非0时, 表示用于堆节点内存分配的内存池的大小
+  * 为0时, 表示不使用内存池来分配堆节点
+
+### 销毁
+`muggle_heap_destroy`用于销毁一个堆
+```
+void muggle_heap_destroy(muggle_heap_t *p_heap,
+	muggle_dsaa_data_free key_func_free, void *key_pool,
+	muggle_dsaa_data_free value_func_free, void *value_pool);
+```
+* p_heap: 指向一个堆的指针
+* key_func_free: 用于释放堆节点中key值数据的函数
+* key_pool: 传给key_func_free的附加参数, 一般为内存池指针或者NULL, 当key_func_free为NULL时, 此参数无意义
+* value_func_free: 用于释放堆节点中value值数据的函数
+* value_pool: 传给value_func_free的附加参数, 一般为内存池指针或者NULL, 当value_func_free为NULL时, 此参数无意义
+
+### 插入与提取
+可以通过`heap`可以轻松的实现一个优先队列的逻辑: [heap_insert_remove.c](./heap_insert_remove/heap_insert_remove.c)
+```
+srand((unsigned int)time(NULL));
+
+muggle_heap_t heap;
+muggle_heap_init(&heap, priority_cmp, 8);
+
+for (int i = 0; i < 16; i++)
+{
+	task_t *task = (task_t*)malloc(sizeof(task_t));
+	task->idx = i;
+	task->priority = 1 + rand() % 8;
+	LOG_INFO("generate task: idx=%d, priority=%d", task->idx, task->priority);
+	if (!muggle_heap_insert(&heap, task, NULL))
+	{
+		LOG_ERROR("failed add task: %d", i);
+	}
+}
+
+muggle_heap_node_t *node = NULL;
+while ((node = muggle_heap_root(&heap)) != NULL)
+{
+	task_t *task = (task_t*)node->key;
+	LOG_INFO("highest priority task: idx=%d, priority=%d", task->idx, task->priority);
+	muggle_heap_remove(&heap, node, do_free, NULL, NULL, NULL);
+}
+
+muggle_heap_destroy(&heap, NULL, NULL, NULL, NULL);
+```
+* 在第1个for循环中, 将产生任务, 并随机赋予任务优先级
+* priority_cmp决定优先级, 由于`muggle_heap_t`默认是一个最小二叉堆, 所以这里值越小优先级越高; 当然也可以通过在对比函数的最终结果取反, 来得到一个最大二叉堆
+* 在第2个for循环中, 通过`muggle_heap_root`每次取得剩余优先级最高的任务, 打印出任务信息并将其从堆中删除
+
+**注意: 这里堆的实现只会对优先级进行排序, 并不会对插入顺序进行排序**
+
+### 插入与提取2
+像上一小节的例子中, 每次使用完二叉堆的根节点之后都将其释放, 可以将提取与删除合并成为一步: [heap_insert_extract.c](./heap_insert_extract/heap_insert_extract.c)
+```
+muggle_heap_node_t node;
+while (muggle_heap_extract(&heap, &node))
+{
+	task_t *task = (task_t*)node.key;
+	LOG_INFO("highest priority task: idx=%d, priority=%d", task->idx, task->priority);
+}
+```
+* 这里删除了`muggle_heap_root`与`muggle_heap_remove`代码, 取而代之的是`muggle_heap_extract`, 它将每次提取优先级最高的节点信息并同时从堆中将此节点删除
+
+TODO: to be contineud......

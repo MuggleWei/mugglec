@@ -116,6 +116,18 @@ MUGGLE_C_EXPORT
 bool muggle_heap_insert(muggle_heap_t *p_heap, void *key, void *value);
 
 /**
+ * @brief fetch root from the heap
+ *
+ * @param p_heap  pointer to heap
+ *
+ * @return
+ *     - on success, return root node
+ *     - on failed, return NULL
+ */
+MUGGLE_C_EXPORT
+muggle_heap_node_t* muggle_heap_root(muggle_heap_t *p_heap);
+
+/**
  * @brief delete the root from the heap and return deleted node
  *
  * @param p_heap     pointer to heap

@@ -163,6 +163,16 @@ bool muggle_heap_insert(muggle_heap_t *p_heap, void *key, void *value)
 	return true;
 }
 
+muggle_heap_node_t* muggle_heap_root(muggle_heap_t *p_heap)
+{
+	if (muggle_heap_is_empty(p_heap))
+	{
+		return NULL;
+	}
+
+	return &p_heap->nodes[1];
+}
+
 bool muggle_heap_extract(muggle_heap_t *p_heap, muggle_heap_node_t *node)
 {
 	if (muggle_heap_is_empty(p_heap))
