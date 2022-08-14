@@ -95,10 +95,10 @@ LOG_WARNING("debug & release warning");
 * 当编译Release版本时, 命令行可以看到2条输出, 文件可以看到3条输出
 
 ### Assert
-在开发阶段, 经常会使用到assert, 在mugglec的日志库中提供了两种断言, 分别是`MUGGLE_ASSERT`和`MUGGLE_ASSERT_MSG`, 其中`MUGGLE_ASSERT_MSG`在断言中断时, 会打印出用户的附加信息
+在开发阶段, 经常会使用到assert, 它们只会在Debug下运行. 在mugglec的日志库中提供了两种断言, 分别是`MUGGLE_ASSERT`和`MUGGLE_ASSERT_MSG`, 其中`MUGGLE_ASSERT_MSG`在断言中断时, 会打印出用户的附加信息 [log_assert.c](./assert/log_assert.c)
 ```
 int v = 0;
-MUGGLE_ASSERT_MSG(v == 1, "v must equal 1");
+MUGGLE_ASSERT_MSG(v == 1, "current v = %d", v);
 ```
 
 ## 配置handler

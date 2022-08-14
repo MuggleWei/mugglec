@@ -13,6 +13,7 @@ mugglec是一个c语言编写, 跨平台基础库, 提供了一系列常用的�
   - [特点](#特点)
   - [构建](#构建)
   - [教程和示例](#教程和示例)
+  - [接口文档](#接口文档)
   - [引入mugglec](#引入mugglec)
     - [融入进CMake工程 (推荐)](#融入进cmake工程-推荐)
       - [当前的风格](#当前的风格)
@@ -56,6 +57,9 @@ NOTE: 本库的单元测试使用的是gtest, 若MUGGLE_BUILD_TESTING被设置�
 ### 教程和示例
 可以通过查看[examples](./examples/readme_cn.md)文件夹来发现教程与使用示例.  
 当cmake构建时开启了`MUGGLE_BUILD_EXAMPLE`选项时, 则[examples](./examples/readme_cn.md)文件夹中的程序将被纳入工程构建当中. 此外, 该文件夹中包含一个独立的CMakeLists.txt文件, 如果用户想要体验一下在工程中引入mugglec, 可以将[examples](./examples/readme_cn.md)文件夹拷贝到任意地点并进行构建, 它将在构建过程中, 自动下载mugglec的代码.  
+
+### 接口文档
+在工程根目录中有Doxyfile, 用户可安装[doxygen](https://doxygen.nl/)后, 运行根目录中的`gen_doxygen_doc.sh`脚本, 生成项目文档
 
 ### 引入mugglec
 想要在自己的工程中引入mugglec, 有几种普遍的做法

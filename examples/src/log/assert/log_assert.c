@@ -5,7 +5,7 @@ int main()
 	muggle_log_complicated_init(LOG_LEVEL_INFO, LOG_LEVEL_DEBUG, "log/assert.log");
 
 	int v = 0;
-	MUGGLE_ASSERT_MSG(v == 1, "ohh!");
+	MUGGLE_ASSERT_MSG(v == 1, "current v = %d", v);
 
 	return 0;
 }
