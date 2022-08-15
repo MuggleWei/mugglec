@@ -37,9 +37,23 @@
 		- [销毁](#销毁-4)
 		- [插入与提取](#插入与提取)
 		- [插入与提取2](#插入与提取2)
+		- [清空](#清空-4)
+		- [销毁时清理](#销毁时清理-4)
+	- [哈希表](#哈希表)
+		- [初始化](#初始化-5)
+		- [销毁](#销毁-5)
+		- [添加、查询与删除](#添加查询与删除)
+		- [清空](#清空-5)
+		- [销毁时清理](#销毁时清理-5)
+	- [AVL树](#avl树)
+		- [初始化](#初始化-6)
+		- [销毁](#销毁-6)
+		- [添加、查询与删除](#添加查询与删除-1)
+		- [清空](#清空-6)
+		- [销毁时清理](#销毁时清理-6)
 
 # DSAA(数据结构与算法)
-本节讲解mugglec的dsaa(数据结构与算法)模块.   
+本节讲解**mugglec**的dsaa(数据结构与算法)模块.   
 该模块用于实现一些经典的基础数据结构与算法, 使用时需要注意:
 * 所有的数据结构中节点存储的数据是指针
 * 所有的数据结构返回数据时, 并不是直接返回存储在其中的指针, 而是返回数据所在的数据结构节点
@@ -136,7 +150,7 @@ muggle_array_list_clear(&array_list, do_free, NULL);
 ```
 
 ### 销毁时清理
-如果清空数组后不在使用, 那么可以直接在`muggle_array_list_destroy`指定释放数据的回调函数: [array_list_destroy.c](./array_list_destroy/array_list_destroy.c)  
+如果清空数组后不再使用, 那么可以直接在`muggle_array_list_destroy`指定释放数据的回调函数: [array_list_destroy.c](./array_list_destroy/array_list_destroy.c)  
 我们删除上面的`muggle_array_list_clear`代码, 接着修改最后的destroy函数为
 ```
 muggle_array_list_destroy(&array_list, do_free, NULL);
@@ -247,7 +261,7 @@ muggle_linked_list_clear(&linked_list, do_free, NULL);
 * 其中的第2个参数, 指定了在清空链表时用于释放其中数据的函数
 
 ### 销毁时清理
-如果清空数组后不在使用, 那么可以直接在`muggle_linked_list_destroy`指定释放数据的回调函数: [linked_list_destroy.c](./linked_list_destroy/linked_list_destroy.c)  
+如果清空数组后不再使用, 那么可以直接在`muggle_linked_list_destroy`指定释放数据的回调函数: [linked_list_destroy.c](./linked_list_destroy/linked_list_destroy.c)  
 我们删除上面的`muggle_linked_list_clear`代码, 接着修改最后的destroy函数为
 ```
 muggle_linked_list_destroy(&linked_list, do_free, NULL);
@@ -336,7 +350,7 @@ muggle_queue_clear(&queue, do_free, NULL);
 * 其中的第2个参数, 指定了在清空队列时用于释放其中数据的函数
 
 ### 销毁时清理
-如果清空数组后不在使用, 那么可以直接在`muggle_queue_destroy`指定释放数据的回调函数: [queue_destroy.c](./queue_destroy/queue_destroy.c)
+如果清空数组后不再使用, 那么可以直接在`muggle_queue_destroy`指定释放数据的回调函数: [queue_destroy.c](./queue_destroy/queue_destroy.c)
 ```
 muggle_queue_destroy(&queue, do_free, NULL);
 ```
@@ -406,7 +420,7 @@ muggle_stack_clear(&stack, do_free, NULL);
 * 其中的第2个参数, 指定了在清空栈时用于释放其中数据的函数
 
 ### 销毁时清理
-如果清空栈后不在使用, 那么可以直接在`muggle_stack_destroy`指定释放数据的回调函数: [stack_destroy.c](./stack_destroy/stack_destroy.c)
+如果清空栈后不再使用, 那么可以直接在`muggle_stack_destroy`指定释放数据的回调函数: [stack_destroy.c](./stack_destroy/stack_destroy.c)
 ```
 muggle_stack_destroy(&stack, do_free, NULL);
 ```
@@ -490,4 +504,185 @@ while (muggle_heap_extract(&heap, &node))
 ```
 * 这里删除了`muggle_heap_root`与`muggle_heap_remove`代码, 取而代之的是`muggle_heap_extract`, 它将每次提取优先级最高的节点信息并同时从堆中将此节点删除
 
-TODO: to be contineud......
+### 清空
+想要清空堆, 可以使用`muggle_heap_clear`: [heap_clear.c](./heap_clear/heap_clear.c)
+```
+muggle_heap_clear(&heap, do_free, NULL, NULL, NULL);
+```
+
+### 销毁时清理
+如果堆清空后不再使用, 那么可以直接在`muggle_heap_destroy`指定释放数据的回调函数: [heap_destroy.c](./heap_destroy/heap_destroy.c)
+```
+muggle_heap_destroy(&heap, do_free, NULL, NULL, NULL);
+```
+
+## 哈希表
+`muggle_hash_table_t`是一个哈希表
+
+### 初始化
+`muggle_hash_table_init`用于初始化哈希表
+```
+bool muggle_hash_table_init(
+	muggle_hash_table_t *p_hash_table,
+	size_t table_size,
+	hash_func hash,
+	muggle_dsaa_data_cmp cmp,
+	size_t capacity);
+```
+* p_hash_table: 指向一个哈希表的指针
+* table_size: 哈希表的长度, 当设为0时, 会取默认值, 当前是取10007
+* hash_func: 哈希函数, 用于计算key的哈希值, 当为NULL时, 默认是一个计算字符串哈希值的函数
+* cmp: 用于对比key值大小的函数, 当两个key对应的哈希值相同时, 由这个函数决定两个值是否相同
+* capacity: 指定哈希表中节点内存分配使用的内存池大小, 为0时不使用内存池
+
+### 销毁
+`muggle_hash_table_destroy`用于销毁哈希表
+```
+void muggle_hash_table_destroy(muggle_hash_table_t *p_hash_table,
+	muggle_dsaa_data_free key_func_free, void *key_pool,
+	muggle_dsaa_data_free value_func_free, void *value_pool)
+```
+* p_hash_table: 指向一个哈希表的指针
+* key_func_free: 销毁时用于释放key数据的函数, 指定为NULL, 代表销毁时不对key中存储的数据做释放操作
+* key_pool: 传给key释放函数的附加数据, 一般为NULL或者内存池, 当key_func_free为NULL时, 此字段无意义
+* value_func_free: 销毁时用于释放value数据的函数, 指定为NULL, 代表销毁时不对value中存储的数据做释放操作
+* value_pool: 传给value释放函数的附加数据, 一般为NULL或者内存池, 当value_func_free为NULL时, 此字段无意义
+
+### 添加、查询与删除
+下面展示用哈希表添加、查询与删除数据: [hash_table_put_remove.c](./hash_table_put_remove/hash_table_put_remove.c)
+```
+const char **key_array = (const char**)malloc(sizeof(const char*) * TOTAL_DATA);
+
+muggle_hash_table_t table;
+muggle_hash_table_init(&table, 0, NULL, cmp_str, 0);
+
+for (int i = 0; i < TOTAL_DATA; i++)
+{
+	user_data_t *data = (user_data_t*)malloc(sizeof(user_data_t));
+	memset(data, 0, sizeof(*data));
+	data->val = i;
+	for (int j = 0; j < 31; ++j)
+	{
+		data->key[j] = (char)('A' + rand() % 26);
+	}
+
+	LOG_INFO("put data: key=%s, val=%d", data->key, data->val);
+	if (muggle_hash_table_put(&table, data->key, data) == NULL)
+	{
+		free(data);
+		LOG_WARNING("failed put data: %s", data->key);
+		key_array[i] = NULL;
+		continue;
+	}
+
+	key_array[i] = data->key;
+}
+
+for (int i = 0; i < TOTAL_DATA; i++)
+{
+	if (key_array[i] == NULL)
+	{
+		continue;
+	}
+
+	muggle_hash_table_node_t *node = muggle_hash_table_find(&table, key_array[i]);
+	const char *key = (const char*)node->key;
+	int value = ((user_data_t*)node->value)->val;
+	LOG_INFO("found data: key=%s, value=%d", (const char*)node->key, value);
+
+	muggle_hash_table_remove(&table, node, NULL, NULL, do_free, NULL);
+}
+
+muggle_hash_table_destroy(&table, NULL, NULL, NULL, NULL);
+
+free(key_array);
+```
+* 第1个for循环中, 随机生成了key值, 并将其存储至哈希表中; **注意: 当插入相同的key值时, 哈希表的行为并不是覆盖, 而是拒绝插入, 返回NULL**
+* 第2个for循环中, 按照key值获取数据, 打印出信息之后将其删除
+
+### 清空
+上一小节中每次取出一个数据后删除, 我们也可以直接调用`muggle_hash_table_clear`来一次性清空哈希表: [hash_table_clear.c](./hash_table_clear/hash_table_clear.c)
+```
+muggle_hash_table_clear(&table, NULL, NULL, do_free, NULL);
+```
+
+### 销毁时清理
+如果清空哈希表后不再使用, 那么可以直接在`muggle_hash_table_destroy`指定释放数据的回调函数: [hash_table_destroy.c](./hash_table_destroy/hash_table_destroy.c)
+```
+muggle_hash_table_destroy(&table, NULL, NULL, do_free, NULL);
+```
+
+## AVL树
+`muggle_avl_tree_t`是一个AVL树
+
+### 初始化
+`muggle_avl_tree_init`用于初始化AVL树
+```
+bool muggle_avl_tree_init(muggle_avl_tree_t *p_avl_tree, muggle_dsaa_data_cmp cmp, size_t capacity);
+```
+* p_avl_tree: 指向一个AVL树的指针
+* cmp: 用于比较key大小的函数
+* capacity:
+  * 非0时, 表示用于AVL树节点内存分配的内存池的大小
+  * 为0时, 表示不使用内存池来分配AVL树节点
+
+### 销毁
+`muggle_avl_tree_destroy`用于销毁AVL树
+```
+void muggle_avl_tree_destroy(muggle_avl_tree_t *p_avl_tree,
+	muggle_dsaa_data_free key_func_free, void *key_pool,
+	muggle_dsaa_data_free value_func_free, void *value_pool);
+```
+* p_avl_tree: 指向一个AVL树的指针
+* key_func_free: 销毁时用于释放key数据的函数, 指定为NULL, 代表销毁时不对key中存储的数据做释放操作
+* key_pool: 传给key释放函数的附加数据, 一般为NULL或者内存池, 当key_func_free为NULL时, 此字段无意义
+* value_func_free: 销毁时用于释放value数据的函数, 指定为NULL, 代表销毁时不对value中存储的数据做释放操作
+* value_pool: 传给value释放函数的附加数据, 一般为NULL或者内存池, 当value_func_free为NULL时, 此字段无意义
+
+### 添加、查询与删除
+下面展示使用AVL树添加、查询与删除数据: [avl_tree_add_remove.c](./avl_tree_add_remove/avl_tree_add_remove.c)
+```
+muggle_avl_tree_t tree;
+muggle_avl_tree_init(&tree, cmp_int, 0);
+
+for (int i = 0; i < 16; i++)
+{
+	user_data_t *data = (user_data_t*)malloc(sizeof(user_data_t));
+	data->idx = i;
+	data->val = i / 2;
+	muggle_avl_tree_insert(&tree, &data->idx, data);
+	LOG_INFO("insert data: [%d]%d", data->idx, data->val);
+}
+
+for (int i = 0; i < 16; i++)
+{
+	muggle_avl_tree_node_t *node = muggle_avl_tree_find(&tree, &i);
+	MUGGLE_ASSERT(node != NULL);
+	user_data_t *data = (user_data_t*)node->value;
+	LOG_INFO("found data: [%d]%d", *(int*)node->key, data->val);
+}
+
+for (int i = 0; i < 16; i++)
+{
+	muggle_avl_tree_node_t *node = muggle_avl_tree_find(&tree, &i);
+	MUGGLE_ASSERT(node != NULL);
+	muggle_avl_tree_remove(&tree, node, NULL, NULL, do_free, NULL);
+}
+
+muggle_avl_tree_destroy(&tree, NULL, NULL, NULL, NULL);
+```
+* 第1个for循环往AVL树中插入数据; **注意: 当插入相同的key值时, AVL树的行为并不是覆盖, 而是拒绝插入, 返回NULL**
+* 第2个for循环通过`muggle_avl_tree_find`查询数据
+* 第3个for循环逐个删除AVL树中的节点并释放其中存储的数据
+
+### 清空
+当想要一次性清空整个AVL树, 可以直接调用`muggle_avl_tree_clear`: [avl_tree_clear.c](./avl_tree_clear/avl_tree_clear.c)
+```
+muggle_avl_tree_clear(&tree, NULL, NULL, do_free, NULL);
+```
+
+### 销毁时清理
+如果清空AVL树后不再使用, 那么可以直接在`muggle_avl_tree_destroy`指定释放数据的回调函数: [avl_tree_destroy.c](./avl_tree_destroy/avl_tree_destroy.c)
+```
+muggle_avl_tree_destroy(&tree, NULL, NULL, do_free, NULL);
+```
