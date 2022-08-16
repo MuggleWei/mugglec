@@ -12,7 +12,7 @@
 此目录展示了mugglec中的内存池, 字节缓存等对象, 具体信息可参考[memory](./src/memory/readme_cn.md)
 
 ### sync
-此目录展示了mugglec中线程间同步的对象, 具体信息可参考[sync](./src/sync/readme_cn.md)
+此目录展示了mugglec中线程, 原子操作以及线程间同步的对象, 具体信息可参考[sync](./src/sync/readme_cn.md)
 
 ### network
 此目录展示了mugglec中的网络模块, 包含了基础套接字的使用以及多路复用, 具体信息可参考[network](./src/network/readme_cn.md)
