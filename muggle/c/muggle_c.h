@@ -108,4 +108,7 @@
 #include "muggle/c/dsaa/heap.h"
 #include "muggle/c/dsaa/sort.h"
 
+// encoding
+#include "muggle/c/encoding/hex.h"
+
 #endif
