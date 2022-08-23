@@ -42,7 +42,13 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/muggle_utils.cmake)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # options
-option(MUGGLE_BUILD_SHARED_LIB "build shared or static library" ON)
+if (BUILD_SHARED_LIBS)
+	option(MUGGLE_BUILD_SHARED_LIB_DEFAULT ON)
+else(BUILD_SHARED_LIBS)
+	option(MUGGLE_BUILD_SHARED_LIB_DEFAULT OFF)
+endif()
+
+option(MUGGLE_BUILD_SHARED_LIB "build shared or static library" ${MUGGLE_BUILD_SHARED_LIB_DEFAULT})
 option(MUGGLE_BUILD_STATIC_PIC "build static library with position independent code flag" ON)
 option(MUGGLE_BUILD_EXAMPLE "Build mugglec example" OFF)
 option(MUGGLE_BUILD_TESTING "Build mugglec test" OFF)
