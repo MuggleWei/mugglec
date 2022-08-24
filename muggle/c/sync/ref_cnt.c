@@ -12,6 +12,11 @@
 
 int muggle_ref_cnt_init(muggle_ref_cnt_t *ref, int init_val)
 {
+	if (init_val <= 0)
+	{
+		return -1;
+	}
+
 	*ref = init_val;
 	return 0;
 }
