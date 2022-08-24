@@ -15,6 +15,7 @@
 #include "muggle/c/base/atomic.h"
 #include "muggle/c/event/event.h"
 #include "muggle/c/event/event_fd.h"
+#include "muggle/c/sync/ref_cnt.h"
 
 EXTERN_C_BEGIN
 
@@ -30,7 +31,7 @@ typedef struct muggle_event_context
 {
 	muggle_event_fd   fd;      //!< event file descriptor
 	int               flags;   //!< event flags, see MUGGLE_EV_CTX_FLAG_*
-	muggle_atomic_int ref_cnt; //!< reference count of this context
+	muggle_ref_cnt_t  ref_cnt; //!< reference count of this context
 	void              *data;   //!< user data
 } muggle_event_context_t;
 

@@ -17,7 +17,10 @@ int muggle_ev_ctx_init(muggle_event_context_t *ctx, muggle_event_fd fd, void *da
 {
 	memset(ctx, 0, sizeof(*ctx));
 	ctx->fd = fd;
-	ctx->ref_cnt = 1;
+	if (muggle_ref_cnt_init(&ctx->ref_cnt, 1) != 0)
+	{
+		return -1;
+	}
 	ctx->data = data;
 
 	return 0;
@@ -40,34 +43,12 @@ void muggle_ev_ctx_set_flag(muggle_event_context_t *ctx, int flag)
 
 int muggle_ev_ctx_ref_retain(muggle_event_context_t *ctx)
 {
-	muggle_atomic_int ref_cnt = 0, desired = 0;
-	do {
-		ref_cnt = ctx->ref_cnt;
-		if (ref_cnt == 0)
-		{
-			// try to retain released ctx
-			return -1;
-		}
-		desired = ref_cnt + 1;
-	} while (!muggle_atomic_cmp_exch_weak(&ctx->ref_cnt, &ref_cnt, desired, muggle_memory_order_relaxed));
-
-	return desired;
+	return muggle_ref_cnt_retain(&ctx->ref_cnt);
 }
 
 int muggle_ev_ctx_ref_release(muggle_event_context_t *ctx)
 {
-	muggle_atomic_int ref_cnt = 0, desired = 0;
-	do {
-		ref_cnt = ctx->ref_cnt;
-		if (ref_cnt == 0)
-		{
-			// repeated release error
-			return -1;
-		}
-		desired = ref_cnt - 1;
-	} while (!muggle_atomic_cmp_exch_weak(&ctx->ref_cnt, &ref_cnt, desired, muggle_memory_order_relaxed));
-
-	return desired;
+	return muggle_ref_cnt_release(&ctx->ref_cnt);
 }
 
 int muggle_ev_ctx_shutdown(muggle_event_context_t *ctx)
