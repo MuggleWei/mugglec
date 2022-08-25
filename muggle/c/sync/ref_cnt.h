@@ -28,6 +28,7 @@ typedef muggle_atomic_int muggle_ref_cnt_t;
  *     - return 0 on success
  *     - otherwise failed
  */
+MUGGLE_C_EXPORT
 int muggle_ref_cnt_init(muggle_ref_cnt_t *ref, int init_val);
 
 /**
