@@ -14,8 +14,8 @@
 ### sync
 此目录展示了mugglec中线程, 原子操作以及线程间同步的对象, 具体信息可参考[sync](./src/sync/readme_cn.md)
 
-### network
-此目录展示了mugglec中的网络模块, 包含了基础套接字的使用以及多路复用, 具体信息可参考[network](./src/network/readme_cn.md)
+### event & network
+此目录展示了mugglec中的事件模块和网络模块, 具体信息可参考[event & network](./src/network/readme_cn.md)
 
 ### crypt
 此目录展示了mugglec中的密码学模块, 具体信息可参考[crypt](./src/crypt/readme_cn.md)
