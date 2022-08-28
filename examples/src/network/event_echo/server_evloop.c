@@ -16,7 +16,7 @@ static muggle_event_loop_t* new_echo_server_evloop()
 	muggle_evloop_set_timer_interval(evloop, 3000);
 	muggle_evloop_set_cb_read(evloop, on_read);
 	muggle_evloop_set_cb_close(evloop, on_close);
-	muggle_evloop_set_cb_exit(evloop, on_exit);
+	muggle_evloop_set_cb_exit(evloop, on_evloop_exit);
 	muggle_evloop_set_data(evloop, data);
 
 	return evloop;
@@ -77,7 +77,7 @@ void on_close(muggle_event_loop_t *evloop, muggle_event_context_t *ctx)
 	}
 }
 
-void on_exit(muggle_event_loop_t *evloop)
+void on_evloop_exit(muggle_event_loop_t *evloop)
 {
 	evloop_data_t *data = muggle_evloop_get_data(evloop);
 	if (data)
