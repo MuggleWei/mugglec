@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 	char buf[65536];
 	struct sockaddr_storage addr;
 	muggle_socklen_t addrlen;
+	int count = 0;
 	while (1)
 	{
 		addrlen = sizeof(addr);
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
 		}
 		MUGGLE_LOG_INFO("recv %d bytes from %s", n, straddr);
 
-		if (n > 10)
+		if (++count > 10)
 		{
 			MUGGLE_LOG_INFO("leave multicast group");
 			if (muggle_mcast_leave(fd, grp_host, grp_serv, iface, src_grp) != 0)
@@ -65,6 +66,7 @@ int main(int argc, char *argv[])
 				MUGGLE_LOG_ERROR("failed leave multicast group");
 			}
 			muggle_socket_close(fd);
+			break;
 		}
 	}
 

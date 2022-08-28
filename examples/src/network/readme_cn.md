@@ -14,6 +14,9 @@
 			- [cb_add_ctx](#cb_add_ctx)
 			- [cb_wake](#cb_wake)
 			- [cb_timer](#cb_timer)
+		- [简单的时间服务](#简单的时间服务)
+		- [组播](#组播)
+		- [多线程](#多线程)
 
 # Event & Network
 本节讲解**mugglec**中的事件与网络模块
@@ -285,10 +288,106 @@ void on_cb_release(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx);
 * **注意: 若`socket上下文`在事件循环被关闭时, 在其他线程还有引用, `cb_release`回调不被调用, 用户需要在合适的时机(`socket上下文`的引用计数降为0时), 自己控制`socket上下文`的释放**  
 
 #### cb_add_ctx
-TODO:
+`cb_add_ctx` 当`socket上下文`被加入到事件循环时的回调函数
+```
+// 设置
+muggle_socket_evloop_handle_set_cb_add_ctx(handle, cb);
+
+// 函数原型
+void on_cb_add_ctx(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx);
+```
+* `evloop`: 指向事件循环对象的指针
+* `ctx`: 被加入进事件循环的`socket上下文`
 
 #### cb_wake
-TODO:
+`cb_wake` 当事件循环被用户主动唤醒时的回调函数
+```
+// 设置
+muggle_socket_evloop_handle_set_cb_wake(handle, cb);
+
+// 函数原型
+void on_cb_wake(muggle_event_loop_t *evloop);
+```
+* `evloop`: 指向事件循环对象的指针
 
 #### cb_timer
-TODO:
+`cb_timer` 当定时器触发时的回调函数
+```
+// 设置
+muggle_socket_evloop_handle_set_timer_interval(handle, timeout);
+muggle_socket_evloop_handle_set_cb_timer(handle, cb);
+
+// 函数原型
+void on_cb_timer(muggle_event_loop_t *evloop);
+```
+* `evloop`: 指向事件循环对象的指针
+* `muggle_socket_evloop_handle_set_timer_interval`: 设置事件循环中的定时器触发时间间隔
+
+### 简单的时间服务
+上一小节提到了一些**Socket事件回调**, 那么现在我们就用一个简单的时间服务来展示一下这些回调函数的用法吧  
+* 时间服务器: [time_serv.c](./time_serv/time_serv.c)
+* 时间客户端: [time_client.c](./time_client/time_client.c)
+
+每隔一段时间, 时间服务器就向已连接上的TCP客户端或指定的UDP或组播地址发送当前的时间字符串. 而客户端可选择TCP/UDP/组播模式, 从而接收从时间服务器发送出来的信息
+
+### 组播
+上一节我们同时展现了TCP/UDP/组播的使用, 平时在互联网上通讯, 几乎用不到组播, 但是如果在一个局域网内, 有一条相同的消息需要发送给n个接收端, 这是组播就是相当合适的一个选择了.  
+使用**mugglec**, 实现组播的接收是十分方便的, 还是使用上面的[time_serv.c](./time_serv/time_serv.c)作为服务器, 每次时间消息都只会发送一次, 这里我们使用[net_mcast_recv.c](./mcast_recv/net_mcast_recv.c)作为组播的接收者, 读者可以试着开启多个接收者看看实际的效果  
+
+加入组播
+```
+muggle_socket_t fd = muggle_mcast_join(grp_host, grp_serv, iface, src_grp);
+if (fd == MUGGLE_INVALID_SOCKET)
+{
+	MUGGLE_LOG_ERROR("failed multicast join %s:%s", grp_host, grp_serv);
+	exit(EXIT_FAILURE);
+}
+```
+
+使用**mugglec**加入组播组十分简单, 只需调用`muggle_mcast_join`即可, 而离开组播组则调用`muggle_mcast_leave`  
+```
+muggle_socket_t muggle_mcast_join(
+	const char *host,
+	const char *serv,
+	const char *iface,
+	const char *src_grp);
+```
+* mcast-IP           加入的组播组ip
+* mcast-Port         加入的组播组端口
+* net-iface
+	* 在*nix上, 此参数填写ifconfig命令结果中的名称
+	* 在Windows上, 此参数填写ip地址
+* mcast-source-group 过滤组播的源(发送者的ip地址)
+
+### 多线程
+到目前位置, 我们所有的消息处理都直接在事件循环的回调函数当中, 这在许多情况下正是我们想要的
+* 所有回调函数都在事件循环的同一线程当中, 无需考虑资源竞争, 互斥操作, 降低了代码编写的心智负担
+* 避免了跨线程拷贝数据的问题
+* 用户还不用考虑`socket上下文`的引用计数问题
+
+但有些时候需要进行一些比较耗时操作, 这时如果都在事件循环的回调函数当中处理就不太合适了.  
+
+[async_serv.c](./async_tcp_serv/async_serv.c)是一个展示多线程处理的例子, 当收到消息时, 会新开启一个工作线程, 并将`socket上下文`传给新的工作线程. 这个例子中需要特别注意的是关于`socket上下文`的引用计数操作  
+
+当要把`socket上下文`传给其他线程使用时, 我们需要增加其引用计数
+```
+int ref_cnt = muggle_socket_ctx_ref_retain(ctx);
+```
+
+在事件循环的释放资源的回调函数中, 依然和之前的例子一样操作即可. 但需要注意的是, 在异步执行的线程当中, 当`socket上下文`不再被使用时, 要扣减其引用计数, 并且当扣减为0时, 需要用户手动执行释放`socket上下文`及其资源的操作
+```
+static void ctx_release(muggle_socket_context_t *ctx)
+{
+	user_data_t *user_data = muggle_socket_ctx_get_data(ctx);
+	int ref_cnt = muggle_socket_ctx_ref_release(ctx);
+	LOG_INFO("context[%s] release, ref_cnt=%d", user_data->str_addr, ref_cnt);
+	if (ref_cnt == 0)
+	{
+		LOG_INFO("context[%s] release", user_data->str_addr);
+		free(user_data);
+
+		muggle_socket_ctx_close(ctx);
+		free(ctx);
+	}
+}
+```
