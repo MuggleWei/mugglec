@@ -21,8 +21,7 @@ void genPkgData(struct pkg_data *data, uint32_t idx)
 }
 
 void sendPkgs(
-	muggle_socket_peer_t *peer,
-	int flags,
+	muggle_socket_context_t *ctx,
 	muggle_benchmark_handle_t *handle,
 	muggle_benchmark_config_t *config)
 {
@@ -39,17 +38,16 @@ void sendPkgs(
 	fn_muggle_benchmark_record fn_record = muggle_benchmark_get_fn_record(config->elapsed_unit);
 
 	uint32_t idx = 0;
-	for (int i = 0; i < config->rounds; i++)
+	for (int i = 0; i < (int)config->rounds; i++)
 	{
-		for (int j = 0; j < config->record_per_round; j++)
+		for (int j = 0; j < (int)config->record_per_round; j++)
 		{
 			genPkgData((struct pkg_data*)&msg.placeholder, idx);
 
 			fn_record(&write_beg_records[idx]);
-			muggle_socket_send(
-				peer->fd, &msg,
-				sizeof(struct pkg_header) + (size_t)msg.header.data_len,
-				flags);
+			muggle_socket_ctx_write(
+				ctx, &msg, 
+				sizeof(struct pkg_header) + (size_t)msg.header.data_len);
 			fn_record(&write_end_records[idx]);
 
 			++idx;
@@ -64,18 +62,18 @@ void sendPkgs(
 	timespec_get(&ts_end, TIME_UTC);
 	uint64_t elapsed_ns = (ts_end.tv_sec - ts_start.tv_sec) * 1000000000 + ts_end.tv_nsec - ts_start.tv_nsec;
 
-	MUGGLE_LOG_INFO("send %u pkg completed, use %llu ns", (unsigned int)idx, (unsigned long long)elapsed_ns);
+	LOG_INFO("send %u pkg completed, use %llu ns", (unsigned int)idx, (unsigned long long)elapsed_ns);
 
 	muggle_msleep(5);
 
 	memset(&msg, 0, sizeof(msg));
 	msg.header.msg_type = MSG_TYPE_END;
-	muggle_socket_send(peer->fd, &msg, sizeof(struct pkg_header) + (size_t)msg.header.data_len, 0);
-	MUGGLE_LOG_INFO("send end pkg");
+	muggle_socket_ctx_send(ctx, &msg, sizeof(struct pkg_header) + (size_t)msg.header.data_len, 0);
+	LOG_INFO("send end pkg");
 }
 
 int onRecvPkg(
-	muggle_socket_peer_t *peer,
+	muggle_socket_context_t *ctx,
 	struct pkg *pkg,
 	muggle_benchmark_handle_t *handle,
 	muggle_benchmark_config_t *config)
@@ -107,7 +105,7 @@ int onRecvPkg(
 			}break;
 		case MSG_TYPE_END:
 			{
-				MUGGLE_LOG_INFO("recv end message");
+				LOG_INFO("recv end message");
 				return 1;
 			}break;
 	}

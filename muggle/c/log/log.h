@@ -80,7 +80,7 @@ do \
 			__FILE__, __LINE__, __FUNCTION__ \
 		}; \
 		muggle_logger_t *logger = muggle_logger_default(); \
-		logger->log(logger, MUGGLE_LOG_LEVEL_FATAL, &loc_arg##__LINE__, "Assertion: "#x format, ##__VA_ARGS__); \
+		logger->log(logger, MUGGLE_LOG_LEVEL_FATAL, &loc_arg##__LINE__, "Assertion: "#x ", " format, ##__VA_ARGS__); \
 	} \
 } while (0)
 
@@ -103,6 +103,13 @@ do \
 #define LOG_WARNING(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_WARNING, format, ##__VA_ARGS__)
 #define LOG_ERROR(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_ERROR, format, ##__VA_ARGS__)
 #define LOG_FATAL(format, ...) MUGGLE_LOG_DEFAULT(MUGGLE_LOG_LEVEL_FATAL, format, ##__VA_ARGS__)
+
+#define DEBUG_LOG_TRACE(format, ...) MUGGLE_DEBUG_LOG_TRACE(format, ##__VA_ARGS__)
+#define DEBUG_LOG_DEBUG(format, ...) MUGGLE_DEBUG_LOG_DEBUG(format, ##__VA_ARGS__)
+#define DEBUG_LOG_INFO(format, ...) MUGGLE_DEBUG_LOG_INFO(format, ##__VA_ARGS__)
+#define DEBUG_LOG_WARNING(format, ...) MUGGLE_DEBUG_LOG_WARNING(format, ##__VA_ARGS__)
+#define DEBUG_LOG_ERROR(format, ...) MUGGLE_DEBUG_LOG_ERROR(format, ##__VA_ARGS__)
+#define DEBUG_LOG_FATAL(format, ...) MUGGLE_DEBUG_LOG_FATAL(format, ##__VA_ARGS__)
 
 #define LOG_LEVEL_TRACE MUGGLE_LOG_LEVEL_TRACE
 #define LOG_LEVEL_DEBUG MUGGLE_LOG_LEVEL_DEBUG

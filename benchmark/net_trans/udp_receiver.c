@@ -2,40 +2,52 @@
 
 void run_udp_receiver(
 	const char *host, const char *port,
-	int flags,
+	int busy_mode,
 	muggle_benchmark_handle_t *handle,
 	muggle_benchmark_config_t *config)
 {
 	// bind address
-	muggle_socket_peer_t udp_peer;
-	udp_peer.fd = muggle_udp_bind(host, port, &udp_peer);
-	if (udp_peer.fd == MUGGLE_INVALID_SOCKET)
+	muggle_socket_t fd = muggle_udp_bind(host, port);
+	if (fd == MUGGLE_INVALID_SOCKET)
 	{
 		MUGGLE_LOG_ERROR("failed create udp bind for %s:%s", host, port);
 		exit(EXIT_FAILURE);
 	}
 
-	muggle_benchmark_record_t record;
+	if (busy_mode)
+	{
+		muggle_socket_set_nonblock(fd, 1);
+	}
+
+	muggle_socket_context_t ctx;
+	muggle_socket_ctx_init(&ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_UDP);
+
 	char buf[65536];
 	while (1)
 	{
-		int n = recv(udp_peer.fd, buf, sizeof(buf), flags);
+		int n = muggle_socket_read(fd, buf, sizeof(buf));
 		if (n > 0)
 		{
-			if (onRecvPkg(&udp_peer, (struct pkg*)buf, handle, config) != 0)
+			if (onRecvPkg(&ctx, (struct pkg*)buf, handle, config) != 0)
 			{
 				break;
 			}
 		}
 		else
 		{
-#if ! defined(MUGGLE_PLATFORM_WINDOWS)
-			if ((flags & MSG_DONTWAIT) && MUGGLE_SOCKET_LAST_ERRNO == EWOULDBLOCK)
+			int errnum = MUGGLE_SOCKET_LAST_ERRNO;
+			if (busy_mode && errnum == MUGGLE_SYS_ERRNO_WOULDBLOCK)
 			{
 				continue;
 			}
-#endif
+			else
+			{
+				muggle_event_strerror(errnum, buf, sizeof(buf));
+				LOG_ERROR("failed socket read: %s", buf);
+			}
 			break;
 		}
 	}
+
+	muggle_socket_ctx_close(&ctx);
 }

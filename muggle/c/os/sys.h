@@ -56,6 +56,17 @@ int muggle_sys_strerror(int errnum, char *buf, size_t bufsize);
 	} \
 }
 
+#if MUGGLE_RELEASE
+#define MUGGLE_DEBUG_LOG_SYS_ERR(log_level, msg)
+#else
+#define MUGGLE_DEBUG_LOG_SYS_ERR(log_level, msg) MUGGLE_LOG_SYS_ERR(log_level, msg)
+#endif
+
+#if MUGGLE_HOLD_LOG_MACRO
+#define LOG_SYS_ERR(log_level, msg) MUGGLE_LOG_SYS_ERR(log_level, msg)
+#define DEBUG_LOG_SYS_ERR(log_level, msg) MUGGLE_DEBUG_LOG_SYS_ERR(log_level, msg)
+#endif
+
 EXTERN_C_END
 
 #endif /* ifndef MUGGLE_C_SYS_H_ */

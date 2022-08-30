@@ -4,7 +4,7 @@
 * [readme 中文](./README_cn.md)
 
 
-mugglec是一个纯c语言编写, 跨平台基础库, 提供了一系列常用的功能, 比如基础的数据结构, 网络, 并发, 日志, 密码学, 内存池, 常用路径操作等等
+mugglec是一个c语言编写, 跨平台基础库, 提供了一系列常用的功能, 比如基础的数据结构, 网络, 并发, 日志, 密码学, 内存池, 常用路径操作等等
 
 ### 目录
 
@@ -12,16 +12,18 @@ mugglec是一个纯c语言编写, 跨平台基础库, 提供了一系列常用�
   - [目录](#目录)
   - [特点](#特点)
   - [构建](#构建)
+  - [教程和示例](#教程和示例)
+  - [接口文档](#接口文档)
   - [引入mugglec](#引入mugglec)
     - [融入进CMake工程 (推荐)](#融入进cmake工程-推荐)
       - [当前的风格](#当前的风格)
       - [老式的风格](#老式的风格)
     - [发现并链接](#发现并链接)
-    - [使用git子模块](#使用git子模块)
+    - [使用git子模块(不推荐)](#使用git子模块不推荐)
 
 ### 特点
 * 提供常用的基础功能
-* 跨平台, Linux/Windows(主要目标)
+* 跨平台
 * 无第三方依赖
 * 易于使用
 * 尽可能的保持体积小
@@ -52,6 +54,13 @@ cmake ..
 
 NOTE: 本库的单元测试使用的是gtest, 若MUGGLE_BUILD_TESTING被设置为ON, 构建时会首先寻找gtest库, 若在CMAKE_PREFIX_PATH的路径中没有发现gtest, 则会在第一次构建时, 自动下载gtest到构建目录中
 
+### 教程和示例
+可以通过查看[examples](./examples/readme_cn.md)文件夹来发现教程与使用示例.  
+当cmake构建时开启了`MUGGLE_BUILD_EXAMPLE`选项时, 则[examples](./examples/readme_cn.md)文件夹中的程序将被纳入工程构建当中. 此外, 该文件夹中包含一个独立的CMakeLists.txt文件, 如果用户想要体验一下在工程中引入mugglec, 可以将[examples](./examples/readme_cn.md)文件夹拷贝到任意地点并进行构建, 它将在构建过程中, 自动下载mugglec的代码.  
+
+### 接口文档
+在工程根目录中有Doxyfile, 用户可安装[doxygen](https://doxygen.nl/)后, 运行根目录中的`gen_doxygen_doc.sh`脚本, 生成项目文档
+
 ### 引入mugglec
 想要在自己的工程中引入mugglec, 有几种普遍的做法
 
@@ -75,7 +84,7 @@ set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
 FetchContent_Declare(
         mugglec
         GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
-        GIT_TAG v0.2.1
+        GIT_TAG v1.0.0-alpha.1
 )
 FetchContent_MakeAvailable(mugglec)
 
@@ -99,7 +108,7 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        GIT_TAG           v0.2.1
+        GIT_TAG           v1.0.0-alpha.1
         GIT_SHALLOW       TRUE
         SOURCE_DIR        "${CMAKE_BINARY_DIR}/_deps/mugglec-src"
         BINARY_DIR        "${CMAKE_BINARY_DIR}/_deps/mugglec-build"
@@ -185,9 +194,8 @@ add_executable(example src/example.c)
 target_link_libraries(example ${MUGGLEC_LIBRARIES})
 ```
 
-
-#### 使用git子模块
-可以将mugglec直接作为git子模块引入工程当中, 之后在构建工具中引入mugglec
+#### 使用git子模块(不推荐)
+除了上面的两中方法外, 还可以将mugglec直接作为git子模块引入工程当中
 ```
 git submodule add https://github.com/MuggleWei/mugglec.git thirdparty/mugglec
 ```

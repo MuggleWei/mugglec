@@ -59,6 +59,7 @@
 #include "muggle/c/sync/array_blocking_queue.h"
 #include "muggle/c/sync/double_buffer.h"
 #include "muggle/c/sync/channel.h"
+#include "muggle/c/sync/ref_cnt.h"
 
 // log
 #include "muggle/c/log/log_level.h"
@@ -74,11 +75,18 @@
 #include "muggle/c/log/log_async_logger.h"
 #include "muggle/c/log/log.h"
 
+// event
+#include "muggle/c/event/event.h"
+#include "muggle/c/event/event_fd.h"
+#include "muggle/c/event/event_signal.h"
+#include "muggle/c/event/event_context.h"
+#include "muggle/c/event/event_loop.h"
+
 // net
 #include "muggle/c/net/socket.h"
-#include "muggle/c/net/socket_peer.h"
+#include "muggle/c/net/socket_context.h"
 #include "muggle/c/net/socket_utils.h"
-#include "muggle/c/net/socket_event.h"
+#include "muggle/c/net/socket_evloop_handle.h"
 
 // crypt
 #include "muggle/c/crypt/crypt_utils.h"
@@ -100,5 +108,8 @@
 #include "muggle/c/dsaa/hash_table.h"
 #include "muggle/c/dsaa/heap.h"
 #include "muggle/c/dsaa/sort.h"
+
+// encoding
+#include "muggle/c/encoding/hex.h"
 
 #endif

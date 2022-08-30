@@ -42,7 +42,13 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/muggle_utils.cmake)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # options
-option(MUGGLE_BUILD_SHARED_LIB "build shared or static library" ON)
+if (BUILD_SHARED_LIBS)
+	option(MUGGLE_BUILD_SHARED_LIB_DEFAULT ON)
+else(BUILD_SHARED_LIBS)
+	option(MUGGLE_BUILD_SHARED_LIB_DEFAULT OFF)
+endif()
+
+option(MUGGLE_BUILD_SHARED_LIB "build shared or static library" ${MUGGLE_BUILD_SHARED_LIB_DEFAULT})
 option(MUGGLE_BUILD_STATIC_PIC "build static library with position independent code flag" ON)
 option(MUGGLE_BUILD_EXAMPLE "Build mugglec example" OFF)
 option(MUGGLE_BUILD_TESTING "Build mugglec test" OFF)
@@ -259,10 +265,10 @@ function(add_example name folder)
 	
 	set(name example_${name})
 
-	file(GLOB tmp_h ${folder}/*.h)
-	file(GLOB tmp_c ${folder}/*.c)
-	file(GLOB tmp_cpp ${folder}/*.cpp)
-	file(GLOB tmp_cc ${folder}/*.cc)
+	file(GLOB_RECURSE tmp_h ${folder}/*.h)
+	file(GLOB_RECURSE tmp_c ${folder}/*.c)
+	file(GLOB_RECURSE tmp_cpp ${folder}/*.cpp)
+	file(GLOB_RECURSE tmp_cc ${folder}/*.cc)
 
 	if (WIN32)
 		add_executable(${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
@@ -275,7 +281,13 @@ function(add_example name folder)
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 	endif(WIN32)
 	add_dependencies(${name} ${muggle_c})
+	target_include_directories(${name} PUBLIC
+		${folder}
+		${FETCHCONTENT_BASE_DIR}/mugglec-src
+	)
 	target_link_libraries(${name} ${muggle_c})
+
+	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
 endfunction()
 
 function(add_benchmark name folder)
@@ -300,6 +312,7 @@ function(add_benchmark name folder)
 	endif(WIN32)
 	add_dependencies(${name} muggle_benchmark)
 	target_link_libraries(${name} muggle_benchmark)
+	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
 endfunction()
 
 function(add_gtest name folder)
@@ -365,6 +378,8 @@ function(add_gtest name folder)
 		endif()
 	endif()
 
+	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
+
 	add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
@@ -429,10 +444,15 @@ endif()
 
 # example
 if (${MUGGLE_BUILD_EXAMPLE})
-	message("---------------------- example ----------------------")
-	SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/example)
-	FOREACH(subdir ${example_dirs})
-		add_example(${subdir} ${CMAKE_CURRENT_LIST_DIR}/example/${subdir})
+	message("---------------------- examples ----------------------")
+	SUBDIRLIST(example_dirs ${CMAKE_CURRENT_LIST_DIR}/examples/src)
+	FOREACH(example_dir ${example_dirs})
+		message("find example section directory: ${example_dir}")
+		SUBDIRLIST(sub_example_dirs ${CMAKE_CURRENT_LIST_DIR}/examples/src/${example_dir})
+		FOREACH(sub_example_dir ${sub_example_dirs})
+			add_example(${example_dir}_${sub_example_dir}
+				${CMAKE_CURRENT_LIST_DIR}/examples/src/${example_dir}/${sub_example_dir})
+		ENDFOREACH()
 	ENDFOREACH()
 endif()
 

@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
 	if (argc < 4)
 	{
-		MUGGLE_LOG_ERROR("usage: %s <udp-send|udp-recv|tcp-serv|tcp-client> <host> <port> [busy_read|wait_read]", argv[0]);
+		MUGGLE_LOG_ERROR("usage: %s <udp-send|udp-recv|tcp-serv|tcp-client> <host> <port> [busy|wait]", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -62,24 +62,21 @@ int main(int argc, char *argv[])
 	const char *host = argv[2];
 	const char *port = argv[3];
 
-	int read_flags = 0;
+	int busy_mode = 0;
 	if (argc >= 5)
 	{
-		if (strcmp(argv[4], "busy_read") == 0)
+		if (strcmp(argv[4], "busy") == 0)
 		{
-#if ! defined(MUGGLE_PLATFORM_WINDOWS)
-			read_flags |= MSG_DONTWAIT;
-#endif
+			busy_mode = 1;
 		}
 	}
-
 
 	// benchmark config
 	muggle_benchmark_config_t config;
 	memset(&config, 0, sizeof(config));
 	config.rounds = 1000;
 	config.record_per_round = 1;
-	config.round_interval_ms = 1;
+	config.round_interval_ms = 5;
 	config.elapsed_unit = MUGGLE_BENCHMARK_ELAPSED_UNIT_NS;
 	config.producer = 1;
 	config.consumer = 1;
@@ -92,25 +89,22 @@ int main(int argc, char *argv[])
 	muggle_benchmark_handle_t handle;
 	muggle_benchmark_handle_init(&handle, record_count, MAX_NET_TRANS_ACTION);
 
-	int flags = 0;
 	if (strcmp(app_type, "udp-send") == 0)
 	{
 		muggle_benchmark_handle_set_action(&handle, NET_TRANS_ACTION_WRITE_BEG, "write_beg");
 		muggle_benchmark_handle_set_action(&handle, NET_TRANS_ACTION_WRITE_END, "write_end");
 
-		run_udp_sender(host, port, flags, &handle, &config);
+		run_udp_sender(host, port, busy_mode, &handle, &config);
 		gen_report(
 			&handle, &config,
 			NET_TRANS_ACTION_WRITE_BEG, NET_TRANS_ACTION_WRITE_END, "udp_send");
 	}
 	else if (strcmp(app_type, "udp-recv") == 0)
 	{
-		flags = read_flags;
-
 		muggle_benchmark_handle_set_action(&handle, NET_TRANS_ACTION_WRITE_BEG, "write_beg");
 		muggle_benchmark_handle_set_action(&handle, NET_TRANS_ACTION_READ, "read");
 
-		run_udp_receiver(host, port, flags, &handle, &config);
+		run_udp_receiver(host, port, busy_mode, &handle, &config);
 		gen_report(
 			&handle, &config,
 			NET_TRANS_ACTION_WRITE_BEG, NET_TRANS_ACTION_READ, "udp_recv");
@@ -120,19 +114,17 @@ int main(int argc, char *argv[])
 		muggle_benchmark_handle_set_action(&handle, NET_TRANS_ACTION_WRITE_BEG, "write_beg");
 		muggle_benchmark_handle_set_action(&handle, NET_TRANS_ACTION_WRITE_END, "write_end");
 
-		run_tcp_serv(host, port, flags, &handle, &config);
+		run_tcp_serv(host, port, busy_mode, &handle, &config);
 		gen_report(
 			&handle, &config,
 			NET_TRANS_ACTION_WRITE_BEG, NET_TRANS_ACTION_WRITE_END, "tcp_send");
 	}
 	else if (strcmp(app_type, "tcp-client") == 0)
 	{
-		flags = read_flags;
-
 		muggle_benchmark_handle_set_action(&handle, NET_TRANS_ACTION_WRITE_BEG, "write_beg");
 		muggle_benchmark_handle_set_action(&handle, NET_TRANS_ACTION_READ, "read");
 
-		run_tcp_client(host, port, flags, &handle, &config);
+		run_tcp_client(host, port, busy_mode, &handle, &config);
 		gen_report(
 			&handle, &config,
 			NET_TRANS_ACTION_WRITE_BEG, NET_TRANS_ACTION_READ, "tcp_recv");

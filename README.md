@@ -3,23 +3,25 @@
 * [readme EN](./README.md)
 * [readme 中文](./README_cn.md)
 
-mugglec is a cross platform pure C base library, contains utilities like basic data structure, network, concurrency, log, crypt, memory pool, path operation and so on.
+mugglec is a cross platform C base library, contains utilities like basic data structure, network, concurrency, log, crypt, memory pool, path operation and so on.
 
 ### Table of content
 - [mugglec](#mugglec)
   - [Table of content](#table-of-content)
   - [Feature](#feature)
   - [Build](#build)
+  - [tutorial and examples](#tutorial-and-examples)
+  - [doc](#doc)
   - [import mugglec library](#import-mugglec-library)
     - [Incorporating Into CMake project(recommended)](#incorporating-into-cmake-projectrecommended)
       - [current style](#current-style)
       - [old style](#old-style)
     - [Find and link](#find-and-link)
-    - [Use git submodule](#use-git-submodule)
+    - [Use git submodule(Not recommended)](#use-git-submodulenot-recommended)
 
 ### Feature
 * Provide common basic functions
-* Cross platform (mostly), Linux/Windows(main target)
+* Cross platform
 * No dependencies
 * Easy to use
 * As tiny as possible
@@ -50,6 +52,13 @@ There are some cmake build options to decide build this library as shared or sta
 
 NOTE: mugglec unittest use gtest, so if MUGGLE_BUILD_TESTING is ON, it will try find gtest first, if gtest not found, will download gtest in first time automaticlly.  
 
+### tutorial and examples
+See [examples](./examples/readme_cn.md) to find tutorial and examples.  
+If cmake build with option `MUGGLE_BUILD_EXAMPLE` ON, then [examples](./examples/readme_cn.md) folder will be build automatically.  
+
+### doc
+There are `Doxyfile` in the project root directory, user can install [doxygen](https://doxygen.nl/), and run `gen_doxygen_doc.sh` that in the project root directory to generate project doc.   
+
 ### import mugglec library
 If you want to import mugglec into your project, there are several methods: 
 
@@ -73,7 +82,7 @@ set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
 FetchContent_Declare(
         mugglec
         GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
-        GIT_TAG v0.2.1
+        GIT_TAG v1.0.0-alpha.1
 )
 FetchContent_MakeAvailable(mugglec)
 
@@ -96,7 +105,7 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        GIT_TAG           v0.2.1
+        GIT_TAG           v1.0.0-alpha.1
         GIT_SHALLOW       TRUE
         SOURCE_DIR        "${FETCHCONTENT_BASE_DIR}/mugglec-src"
         BINARY_DIR        "${FETCHCONTENT_BASE_DIR}/mugglec-build"
@@ -182,8 +191,8 @@ add_executable(example src/example.c)
 target_link_libraries(example ${MUGGLEC_LIBRARIES})
 ```
 
-#### Use git submodule
-Invoke mugglec as git submodule
+#### Use git submodule(Not recommended)
+In addition to the two methods mentioned above, import mugglec as git submodule is another option
 ```
 git submodule add https://github.com/MuggleWei/mugglec.git thirdparty/mugglec
 ```

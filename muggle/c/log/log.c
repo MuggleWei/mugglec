@@ -26,6 +26,9 @@
 #include "muggle/c/log/log_file_time_rot_handler.h"
 #include "muggle/c/os/path.h"
 #include "muggle/c/os/os.h"
+#if MUGGLE_PLATFORM_WINDOWS
+#include "muggle/c/time/win_gmtime.h"
+#endif
 
 static int muggle_log_simple_init_fmt(const muggle_log_msg_t *msg, char *buf, size_t bufsize)
 {
@@ -97,7 +100,7 @@ static int muggle_log_complicated_init_fmt(const muggle_log_msg_t *msg, char *bu
 	}
 
 	return (int)snprintf(buf, bufsize,
-		"%s|%d-%02d-%02dT%02d:%02d:%02d.%03d|%s.%u|%s|%llu - %s\n",
+		"%s|%d-%02d-%02dT%02d:%02d:%02d.%03d|%s:%u|%s|%llu - %s\n",
 		level,
 		(int)t.tm_year+1900, (int)t.tm_mon+1, (int)t.tm_mday,
 		(int)t.tm_hour, (int)t.tm_min, (int)t.tm_sec,
