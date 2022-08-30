@@ -78,10 +78,10 @@ function(add_example name folder)
 	
 	set(name example_${name})
 
-	file(GLOB tmp_h ${folder}/*.h)
-	file(GLOB tmp_c ${folder}/*.c)
-	file(GLOB tmp_cpp ${folder}/*.cpp)
-	file(GLOB tmp_cc ${folder}/*.cc)
+	file(GLOB_RECURSE tmp_h ${folder}/*.h)
+	file(GLOB_RECURSE tmp_c ${folder}/*.c)
+	file(GLOB_RECURSE tmp_cpp ${folder}/*.cpp)
+	file(GLOB_RECURSE tmp_cc ${folder}/*.cc)
 
 	if (WIN32)
 		add_executable(${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
@@ -96,6 +96,7 @@ function(add_example name folder)
 	target_link_libraries(${name} ${mugglec})
 	add_dependencies(${name} ${mugglec})
 	target_include_directories(${name} PUBLIC
+		${folder}
 		${FETCHCONTENT_BASE_DIR}/mugglec-src
 	)
 	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)

@@ -17,6 +17,11 @@
 		- [简单的时间服务](#简单的时间服务)
 		- [组播](#组播)
 		- [多线程](#多线程)
+		- [自定义协议](#自定义协议)
+			- [事件循环回调](#事件循环回调)
+			- [协议头](#协议头)
+			- [消息](#消息)
+			- [编解码与消息分发](#编解码与消息分发)
 
 # Event & Network
 本节讲解**mugglec**中的事件与网络模块
@@ -391,3 +396,181 @@ static void ctx_release(muggle_socket_context_t *ctx)
 	}
 }
 ```
+
+### 自定义协议
+到现在为止, 我们已经看到一些很直观的例子, 当然真实的服务还要处理更多的问题, 比如TCP会遇到粘包, UDP需要自己处理丢包与重传, 还有需要传输自定义的消息而不是单纯的字符串. 下面的例子[foo.c](./foo/foo.c), 我们展示一个自定义协议的TCP服务器/客户端, 其中使用了在[内存模块](../memory/readme_cn.md)中提到的字节缓冲区来收取TCP的消息, 并且自定了消息分发器和编解码处理器.  
+那么现在, 让我们从头开始一步一步的构建这个服务/客户端吧
+
+#### 事件循环回调
+和上几个小节一样, 首先我们在main当中初始化事件循环, 并指定事件循环的回调函数以及相关的上下文附带数据的结构.  
+
+**TCP Server** [foo_serv_handle.c](./foo/serv/foo_serv_handle.c)  
+注册事件循环回调
+```
+muggle_socket_evloop_handle_init(handle);
+muggle_socket_evloop_handle_set_cb_conn(handle, tcp_serv_on_connect);
+muggle_socket_evloop_handle_set_cb_msg(handle, tcp_serv_on_message);
+muggle_socket_evloop_handle_set_cb_close(handle, tcp_serv_on_close);
+muggle_socket_evloop_handle_set_cb_release(handle, tcp_serv_on_release);
+muggle_socket_evloop_handle_set_cb_timer(handle, tcp_serv_on_timer);
+muggle_socket_evloop_handle_set_timer_interval(handle, 5000);
+muggle_socket_evloop_handle_attach(handle, evloop);
+```
+
+创建TCP监听socket并加入事件循环中
+```
+static muggle_thread_ret_t tcp_server_listen(void *p_args)
+{
+	foo_server_thread_args_t *args = (foo_server_thread_args_t*)p_args;
+
+	// tcp listen
+	muggle_socket_t fd = MUGGLE_INVALID_SOCKET;
+	do {
+		fd = muggle_tcp_listen(args->args->host, args->args->port, 512);
+		if (fd == MUGGLE_INVALID_SOCKET)
+		{
+			LOG_ERROR("failed tcp listen %s %s", args->args->host, args->args->port);
+			muggle_msleep(3000);
+		}
+	} while (fd == MUGGLE_INVALID_SOCKET);
+
+	// new context
+	muggle_socket_context_t *ctx =
+		(muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
+	muggle_socket_ctx_init(ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_LISTEN);
+
+	muggle_socket_evloop_add_ctx(args->evloop, ctx);
+
+	// free arguments
+	free(args);
+
+	return 0;
+}
+```
+
+**TCP Client** [foo_client_handle.c](./foo/client/foo_client_handle.c)  
+注册事件循环回调
+```
+muggle_socket_evloop_handle_init(handle);
+muggle_socket_evloop_handle_set_cb_add_ctx(handle, tcp_client_on_add_ctx);
+muggle_socket_evloop_handle_set_cb_msg(handle, tcp_client_on_message);
+muggle_socket_evloop_handle_set_cb_close(handle, tcp_client_on_close);
+muggle_socket_evloop_handle_attach(handle, evloop);
+```
+
+创建TCP连接socket并加入事件循环当中
+```
+static muggle_thread_ret_t tcp_client_connect(void *p_args)
+{
+	foo_client_thread_args_t *args = (foo_client_thread_args_t*)p_args;
+
+	// tcp connect
+	muggle_socket_t fd = MUGGLE_INVALID_SOCKET;
+	do {
+		fd = muggle_tcp_connect(args->args->host, args->args->port, 3);
+		if (fd == MUGGLE_INVALID_SOCKET)
+		{
+			LOG_ERROR("failed tcp connect %s %s", args->args->host, args->args->port);
+			muggle_msleep(3000);
+		}
+	} while (fd == MUGGLE_INVALID_SOCKET);
+
+	// new context
+	muggle_socket_context_t *ctx =
+		(muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
+	muggle_socket_ctx_init(ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_CLIENT);
+
+	muggle_socket_evloop_add_ctx(args->evloop, ctx);
+
+	// free arguments
+	free(args);
+
+	return 0;
+};
+```
+
+#### 协议头
+由于我们要处理不同类型的消息, 我们需要先定义协议头, 每个消息都带有协议头, 定义如下
+```
+|<---         head       --->|<---  body   --->|
+| message type | body length |    body bytes   |
+|    4 bytes   |   4 bytes   | variable length |
+```
+
+* 包头前4字节是用户自定义的消息类型
+* 包头后4字节, 用于指明body的长度
+* body是消息中携带的数据
+
+头定义
+```
+#pragma pack(push)
+#pragma pack(1)
+
+typedef struct foo_msg_header
+{
+	uint32_t msg_type;
+	uint32_t body_len;
+}foo_msg_header_t;
+
+#pragma pack(pop)
+```
+
+#### 消息
+接着, 我们定义消息ID与结构
+* 登录消息, 由客户端发起, 服务器回复
+* 求和消息, 由客户端发送一组int32型数组列表, 服务器返回相加的结果
+* 心跳消息, 由服务器每隔一段时间字段发送的消息
+
+可在[foo_msg.h](./foo/foo/foo_msg.h)中看到消息头与消息的定义
+
+#### 编解码与消息分发
+有了消息定义和事件循环回调之后, 我们现在需要考虑接收/发送消息时的编解码(比如处理协议格式, 大小端, 加解密, 压缩/解压等等)以及消息分发. 这里为了展示用法, 我们规定协议头和数据均为为网络字节序, 所以例子中我们分别定义两个编解码器, 分别是:
+* 字节流编解码`foo_codec_bytes_t`: 用于转换协议头的大小端, 以及解决TCP的粘包问题
+* 大小端编解码`foo_codec_endian_t`: 用于转换消息数据的大小端
+
+接着, 我们初始化消息分发器, 将编解码按照编码的顺序加入消息分发器当中 [foo_handle.c](./foo/foo/foo_handle.c)
+```
+foo_dispatcher_init(&evloop_data->dispatcher);
+
+foo_codec_endian_t *endian_codec = (foo_codec_endian_t*)malloc(sizeof(foo_codec_endian_t));
+foo_codec_endian_init(endian_codec);
+foo_dispatcher_append_codec(&evloop_data->dispatcher, (foo_codec_t*)endian_codec);
+
+foo_codec_bytes_t *bytes_codec = (foo_codec_bytes_t*)malloc(sizeof(foo_codec_bytes_t));
+foo_codec_bytes_init(bytes_codec);
+foo_dispatcher_append_codec(&evloop_data->dispatcher, (foo_codec_t*)bytes_codec);
+```
+
+现在我们已经将编解码与消息分发准备就绪, 接着, 我们只需要在初始化的时候注册消息与回调函数的映射关系 [foo.c](./foo/foo.c), 剩下的只需专心处理业务逻辑就可以了.  
+```
+switch (args.app_type)
+{
+case APP_TYPE_TCP_SERV:
+{
+	init_tcp_server_handle(evloop, &handle, &args);
+
+	// register message callbacks
+	foo_dispatcher_t *dispatcher = foo_handle_dipatcher(evloop);
+	foo_dispatcher_register(dispatcher, FOO_MSG_TYPE_REQ_LOGIN, tcp_server_on_req_login);
+	foo_dispatcher_register(dispatcher, FOO_MSG_TYPE_PONG, tcp_server_on_msg_pong);
+	foo_dispatcher_register(dispatcher, FOO_MSG_TYPE_REQ_SUM, tcp_server_on_req_sum);
+}break;
+case APP_TYPE_TCP_CLIENT:
+{
+	init_tcp_client_handle(evloop, &handle, &args);
+
+	// register message callbacks
+	foo_dispatcher_t *dispatcher = foo_handle_dipatcher(evloop);
+	foo_dispatcher_register(dispatcher, FOO_MSG_TYPE_RSP_LOGIN, tcp_client_on_rsp_login);
+	foo_dispatcher_register(dispatcher, FOO_MSG_TYPE_PING, tcp_client_on_msg_ping);
+	foo_dispatcher_register(dispatcher, FOO_MSG_TYPE_RSP_SUM, tcp_server_on_rsp_sum);
+}break;
+default:
+{
+	LOG_ERROR("invalid app type, exit");
+	exit(EXIT_FAILURE);
+}break;
+}
+```
+
+注意: 当前在endian codec中, 我们需要为每一个消息编写独立的大小端处理函数, 这可太无趣了, 那么是否能将这部分代码自动化完成呢. 很可惜, 由于c语言本身没有反射机制, 在不借助外部工具的情况下, 很难做到结构体的自动序列化与反序列化. 好在存在很多开源的项目, 来完成这件事, 比如protobuf, thrift; 或者也可以不使用结构体, 直接使用指定的数据交换格式, 比如json, xml等. 这有些偏离了这篇文章的主题了, 关于自动序列化/反序列化的主题就不在这里展开了.  
