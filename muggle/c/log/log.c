@@ -47,7 +47,7 @@ static int muggle_log_simple_init_fmt(const muggle_log_msg_t *msg, char *buf, si
 		"%s|%llu.%09d|%s:%u|%s|%llu - %s\n",
 		level,
 		(unsigned long long)msg->ts.tv_sec,
-		(int)msg->ts.tv_nsec / 1000,
+		(int)msg->ts.tv_nsec,
 		filename,
 		(unsigned int)msg->src_loc.line,
 		msg->src_loc.func,
