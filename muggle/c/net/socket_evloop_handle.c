@@ -82,8 +82,7 @@ static void muggle_socket_evloop_on_read(muggle_event_loop_t *evloop, muggle_eve
 			muggle_socket_t fd = muggle_socket_evloop_on_accept(socket_ctx);
 			if (fd != MUGGLE_INVALID_SOCKET)
 			{
-				muggle_socket_context_t *new_ctx =
-					(muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
+				muggle_socket_context_t *new_ctx = handle->cb_alloc(handle->mempool);
 				if (new_ctx == NULL)
 				{
 					muggle_socket_close(fd);
@@ -94,7 +93,7 @@ static void muggle_socket_evloop_on_read(muggle_event_loop_t *evloop, muggle_eve
 				int ret = muggle_evloop_add_ctx(evloop, (muggle_event_context_t*)new_ctx);
 				if (ret != 0)
 				{
-					free(new_ctx);
+					handle->cb_free(handle->mempool, new_ctx);
 					muggle_socket_close(fd);
 					return;
 				}
