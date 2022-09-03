@@ -49,6 +49,7 @@ There are some cmake build options to decide build this library as shared or sta
 | MUGGLE_BUILD_BENCHMARK | OFF | build benchmark |
 | MUGGLE_BUILD_TRACE | OFF | build with trace info in debug |
 | MUGGLE_EXTRA_PREFIX_PATH | "" | specify extra find path, it will append into CMAKE_PREFIX_PATH |
+| MUGGLE_INSTALL_BIN | OFF | install example, unittest and benchmark binaries |
 
 NOTE: mugglec unittest use gtest, so if MUGGLE_BUILD_TESTING is ON, it will try find gtest first, if gtest not found, will download gtest in first time automaticlly.  
 

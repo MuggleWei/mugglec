@@ -51,6 +51,7 @@ cmake ..
 | MUGGLE_BUILD_BENCHMARK | OFF | 构建性能测试 |
 | MUGGLE_BUILD_TRACE | OFF | 当构建的是Debug时, 是否增加一些额外的调试信息 |
 | MUGGLE_EXTRA_PREFIX_PATH | "" | 指定寻找库函数的路径, 它将会被添加到CMAKE_PREFIX_PATH |
+| MUGGLE_INSTALL_BIN | OFF | 安装时连例子、单元测试和性能测试的二进制文件一同安装 |
 
 NOTE: 本库的单元测试使用的是gtest, 若MUGGLE_BUILD_TESTING被设置为ON, 构建时会首先寻找gtest库, 若在CMAKE_PREFIX_PATH的路径中没有发现gtest, 则会在第一次构建时, 自动下载gtest到构建目录中
 

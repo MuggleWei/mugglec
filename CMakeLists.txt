@@ -55,6 +55,7 @@ option(MUGGLE_BUILD_TESTING "Build mugglec test" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build muggleCC benchmark" OFF)
 option(MUGGLE_BUILD_TRACE "If build type is debug then build with trace info in source codes" OFF)
 set(MUGGLE_EXTRA_PREFIX_PATH "" CACHE STRING "extra prefix path for cmake FIND_XXX")
+option(MUGGLE_INSTALL_BIN "Install example, unittest and benchmark binaries" OFF)
 
 # option(MUGGLE_CRYPT_OPTIMIZATION "Enable crypt optimization(use source codes extract from openssl)" ON)
 set(MUGGLE_CRYPT_OPTIMIZATION ON)
@@ -279,6 +280,10 @@ function(add_example name folder)
 		)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+		set_target_properties(${name}
+			PROPERTIES
+			INSTALL_RPATH "\$ORIGIN/../lib"
+		)
 	endif(WIN32)
 	add_dependencies(${name} ${muggle_c})
 	target_include_directories(${name} PUBLIC
@@ -288,6 +293,10 @@ function(add_example name folder)
 	target_link_libraries(${name} ${muggle_c})
 
 	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
+
+	if (MUGGLE_INSTALL_BIN)
+		install(TARGETS ${name} RUNTIME DESTINATION bin)
+	endif()
 endfunction()
 
 function(add_benchmark name folder)
@@ -309,10 +318,18 @@ function(add_benchmark name folder)
 		)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+		set_target_properties(${name}
+			PROPERTIES
+			INSTALL_RPATH "\$ORIGIN/../lib"
+		)
 	endif(WIN32)
 	add_dependencies(${name} muggle_benchmark)
 	target_link_libraries(${name} muggle_benchmark)
 	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
+
+	if (MUGGLE_INSTALL_BIN)
+		install(TARGETS ${name} RUNTIME DESTINATION bin)
+	endif()
 endfunction()
 
 function(add_gtest name folder)
@@ -334,6 +351,10 @@ function(add_gtest name folder)
 		)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+		set_target_properties(${name}
+			PROPERTIES
+			INSTALL_RPATH "\$ORIGIN/../lib"
+		)
 	endif(WIN32)
 
 	add_dependencies(${name} ${muggle_c} ${test_utils})
@@ -381,6 +402,10 @@ function(add_gtest name folder)
 	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
 
 	add_test(NAME ${name} COMMAND ${name})
+
+	if (MUGGLE_INSTALL_BIN)
+		install(TARGETS ${name} RUNTIME DESTINATION bin)
+	endif()
 endfunction()
 
 # test
