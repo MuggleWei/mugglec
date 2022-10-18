@@ -55,11 +55,24 @@
 
 // extern c
 #ifdef __cplusplus
-	#define EXTERN_C_BEGIN extern "C" {
-	#define EXTERN_C_END   }
+	#ifndef EXTERN_C_BEGIN
+		#define EXTERN_C_BEGIN extern "C" {
+	#endif
+	#ifndef EXTERN_C_END
+		#define EXTERN_C_END   }
+	#endif
 #else
-	#define EXTERN_C_BEGIN
-	#define EXTERN_C_END
+	#ifndef EXTERN_C_BEGIN
+		#define EXTERN_C_BEGIN
+	#endif
+	#ifndef EXTERN_C_END
+		#define EXTERN_C_END
+	#endif
+#endif
+
+// unused
+#ifndef UNUSED
+	#define UNUSED(x) (void)x
 #endif
 
 // namespace
