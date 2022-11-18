@@ -200,13 +200,14 @@ if (MUGGLE_BUILD_TRACE)
 	target_compile_definitions(${muggle_c}
 		PUBLIC MUGGLE_BUILD_TRACE
 	)
-	if (WIN32)
+	if (MSVC OR MINGW)
 		target_link_libraries(${muggle_c} debug Dbghelp)
 	endif()
 endif()
 
+# thread
 find_package(Threads)
-if (WIN32)
+if (MSVC OR MINGW)
 	target_link_libraries(${muggle_c}
 		${CMAKE_THREAD_LIBS_INIT}
 		${CMAKE_DL_LIBS}
@@ -217,6 +218,28 @@ else()
 		${CMAKE_THREAD_LIBS_INIT}
 		${CMAKE_DL_LIBS}
 	)
+endif()
+
+# backtrace
+if (CMAKE_HOST_UNIX)
+	find_package(Backtrace)
+	set(HAVE_BACKTRACE ${Backtrace_FOUND})
+	if (HAVE_BACKTRACE)
+		message("Found Backtrace")
+		message("Backtrace header: ${Backtrace_HEADER}")
+		message("Backtrace libs: ${Backtrace_LIBRARIES}")
+
+		target_link_libraries(${muggle_c}
+			${Backtrace_LIBRARIES}
+		)
+		target_include_directories(${muggle_c} PRIVATE
+			${Backtrace_INCLUDE_DIRS}
+		)
+		target_compile_definitions(${muggle_c} PUBLIC 
+			HAVE_BACKTRACE=1
+			BACKTRACE_HEADER=<${Backtrace_HEADER}>
+		)
+	endif()
 endif()
 
 install(TARGETS ${muggle_c}
@@ -271,7 +294,7 @@ function(add_example name folder)
 	file(GLOB_RECURSE tmp_cpp ${folder}/*.cpp)
 	file(GLOB_RECURSE tmp_cc ${folder}/*.cc)
 
-	if (WIN32)
+	if (MSVC OR MINGW)
 		add_executable(${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 		set_target_properties(${name}
 			PROPERTIES
@@ -284,7 +307,7 @@ function(add_example name folder)
 			PROPERTIES
 			INSTALL_RPATH "\$ORIGIN/../lib"
 		)
-	endif(WIN32)
+	endif(MSVC OR MINGW)
 	add_dependencies(${name} ${muggle_c})
 	target_include_directories(${name} PUBLIC
 		${folder}
@@ -309,7 +332,7 @@ function(add_benchmark name folder)
 	file(GLOB tmp_cpp ${folder}/*.cpp)
 	file(GLOB tmp_cc ${folder}/*.cc)
 
-	if (WIN32)
+	if (MSVC OR MINGW)
 		add_executable(${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 		set_target_properties(${name}
 			PROPERTIES
@@ -322,7 +345,7 @@ function(add_benchmark name folder)
 			PROPERTIES
 			INSTALL_RPATH "\$ORIGIN/../lib"
 		)
-	endif(WIN32)
+	endif(MSVC OR MINGW)
 	add_dependencies(${name} muggle_benchmark)
 	target_link_libraries(${name} muggle_benchmark)
 	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
@@ -342,7 +365,7 @@ function(add_gtest name folder)
 	file(GLOB tmp_cpp ${folder}/*.cpp)
 	file(GLOB tmp_cc ${folder}/*.cc)
 
-	if (WIN32)
+	if (MSVC OR MINGW)
 		add_executable(${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
 		set_target_properties(${name}
 			PROPERTIES
@@ -355,7 +378,7 @@ function(add_gtest name folder)
 			PROPERTIES
 			INSTALL_RPATH "\$ORIGIN/../lib"
 		)
-	endif(WIN32)
+	endif(MSVC OR MINGW)
 
 	add_dependencies(${name} ${muggle_c} ${test_utils})
 	if (FOUND_GTEST_FROM_DOWNLOAD)
