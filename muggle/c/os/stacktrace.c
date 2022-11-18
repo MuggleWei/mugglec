@@ -14,12 +14,14 @@
 #include <string.h>
 #include <stddef.h>
 #if MUGGLE_PLATFORM_WINDOWS
-#if defined(MUGGLE_BUILD_TRACE) & MUGGLE_DEBUG
-#include <windows.h>
-#include <dbghelp.h>
-#endif
+	#if defined(MUGGLE_BUILD_TRACE) & MUGGLE_DEBUG
+		#include <windows.h>
+		#include <dbghelp.h>
+	#endif
 #else
-#include <execinfo.h>
+	#ifdef HAVE_BACKTRACE
+		#include BACKTRACE_HEADER
+	#endif
 #endif
 #include "muggle/c/log/log.h"
 
@@ -29,7 +31,7 @@ int muggle_stacktrace_get(muggle_stacktrace_t *st, unsigned int max_cnt_frame)
 	memset(st, 0, sizeof(muggle_stacktrace_t));
 
 #if MUGGLE_PLATFORM_WINDOWS
-#if defined(MUGGLE_BUILD_TRACE) & MUGGLE_DEBUG
+	#if defined(MUGGLE_BUILD_TRACE) & MUGGLE_DEBUG
 	HANDLE process = GetCurrentProcess();
 	SymInitialize(process, NULL, TRUE);
 
@@ -70,10 +72,11 @@ int muggle_stacktrace_get(muggle_stacktrace_t *st, unsigned int max_cnt_frame)
 	free(symbol);
 
 	return 0;
-#else
+	#else // defined(MUGGLE_BUILD_TRACE) & MUGGLE_DEBUG
 	return -1;
-#endif
-#else
+	#endif // defined(MUGGLE_BUILD_TRACE) & MUGGLE_DEBUG
+#else // MUGGLE_PLATFORM_WINDOWS
+	#ifdef HAVE_BACKTRACE
 	void *stacks[MUGGLE_MAX_STACKTRACE_FRAME_NUM];
 	char **symbols;
 
@@ -121,7 +124,10 @@ int muggle_stacktrace_get(muggle_stacktrace_t *st, unsigned int max_cnt_frame)
 
 	free(symbols);
 	return 0;
-#endif
+	#else // HAVE_BACKTRACE
+	return -1;
+	#endif // HAVE_BACKTRACE
+#endif // MUGGLE_PLATFORM_WINDOWS
 }
 
 void muggle_stacktrace_free(muggle_stacktrace_t *st)
@@ -145,7 +151,7 @@ void muggle_stacktrace_free(muggle_stacktrace_t *st)
 void muggle_print_stacktrace()
 {
 #if MUGGLE_PLATFORM_WINDOWS
-#if defined(MUGGLE_BUILD_TRACE) & MUGGLE_DEBUG
+	#if defined(MUGGLE_BUILD_TRACE) & MUGGLE_DEBUG
 	HANDLE process = GetCurrentProcess();
 	SymInitialize(process, NULL, TRUE);
 
@@ -163,8 +169,9 @@ void muggle_print_stacktrace()
 	}
 
 	free(symbol);
-#endif
-#else
+	#endif // defined(MUGGLE_BUILD_TRACE) & MUGGLE_DEBUG
+#else // MUGGLE_PLATFORM_WINDOWS
+	#ifdef HAVE_BACKTRACE
 	void *stacks[MUGGLE_MAX_STACKTRACE_FRAME_NUM];
 	unsigned int cnt_frame = backtrace(stacks, MUGGLE_MAX_STACKTRACE_FRAME_NUM);
 	char **symbols = backtrace_symbols(stacks, cnt_frame);
@@ -179,5 +186,6 @@ void muggle_print_stacktrace()
 	}
 
 	free(symbols);
-#endif
+	#endif // HAVE_BACKTRACE
+#endif // MUGGLE_PLATFORM_WINDOWS
 }
