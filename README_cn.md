@@ -83,9 +83,10 @@ set(MUGGLE_BUILD_TESTING OFF CACHE BOOL "")
 set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
 
 FetchContent_Declare(
-        mugglec
-        GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
-        GIT_TAG v1.0.0-alpha.4
+	mugglec
+	GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
+	GIT_TAG v1.0.0-alpha.4
+	GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(mugglec)
 
@@ -94,7 +95,7 @@ add_executable(example src/example.c)
 add_dependencies(example mugglec)
 target_link_libraries(example mugglec)
 target_include_directories(example PUBLIC
-        ${FETCHCONTENT_BASE_DIR}/mugglec-src)
+	${FETCHCONTENT_BASE_DIR}/mugglec-src)
 ```
 
 ##### 老式的风格
