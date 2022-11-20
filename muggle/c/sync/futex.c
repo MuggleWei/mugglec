@@ -70,12 +70,17 @@ void muggle_futex_wake_all(muggle_atomic_int *futex_addr)
 
 #include <unistd.h>
 #include <sys/syscall.h>
-#include <linux/futex.h>
+#if MUGGLE_C_HAVE_LINUX_FUTEX
+	#include <linux/futex.h>
+#elif MUGGLE_C_HAVE_SYS_FUTEX
+	#include <sys/futex.h>
+#endif
 #include <time.h>
 #include <limits.h>
 
 static int futex(int *uaddr, int futex_op, int val, const struct timespec *timeout, int *uaddr2, int val3)
 {
+	UNUSED(uaddr2);
 	return syscall(SYS_futex, uaddr, futex_op, val, timeout, uaddr, val3);
 }
 

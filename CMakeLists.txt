@@ -161,6 +161,11 @@ if (MUGGLE_CRYPT_COMPARE_OPENSSL)
 	endif()
 endif()
 
+# check support
+include(CheckIncludeFile)
+check_include_file(linux/futex.h HAVE_LINUX_FUTEX)
+check_include_file(sys/futex.h HAVE_SYS_FUTEX)
+
 # mugglec
 set(muggle_c mugglec)
 set(mugglec_generated_dir ${CMAKE_CURRENT_BINARY_DIR}/generated)
@@ -192,7 +197,7 @@ if ((NOT ${MUGGLE_BUILD_SHARED_LIB}) AND (${MUGGLE_BUILD_STATIC_PIC}))
 	)
 endif()
 
-target_compile_definitions(${muggle_c} PUBLIC
+target_compile_definitions(${muggle_c} PRIVATE
 	MUGGLE_C_SEMVER=${MUGGLE_C_VERSION}
 )
 if (MUGGLE_BUILD_SHARED_LIB)
