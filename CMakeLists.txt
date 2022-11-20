@@ -303,10 +303,17 @@ function(add_example name folder)
 		)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
-		set_target_properties(${name}
-			PROPERTIES
-			INSTALL_RPATH "\$ORIGIN/../lib"
-		)
+		if (APPLE)
+			set_target_properties(${name}
+				PROPERTIES
+				INSTALL_RPATH "@executable_path/../lib"
+			)
+		elseif (UNIX)
+			set_target_properties(${name}
+				PROPERTIES
+				INSTALL_RPATH "\$ORIGIN/../lib"
+			)
+		endif()
 	endif(MSVC OR MINGW)
 	add_dependencies(${name} ${muggle_c})
 	target_include_directories(${name} PUBLIC
