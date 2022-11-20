@@ -1,8 +1,6 @@
-// use shared library
+// mugglec @MUGGLE_C_VERSION@ config file
+
 #cmakedefine MUGGLE_C_USE_DLL
 
-// // semver
-// #define MUGGLE_C_SEMVER @MUGGLE_C_VERSION@
-
-#define MUGGLE_C_HAVE_LINUX_FUTEX @HAVE_LINUX_FUTEX@
-#define MUGGLE_C_HAVE_SYS_FUTEX @HAVE_SYS_FUTEX@
+#cmakedefine01 MUGGLE_C_HAVE_LINUX_FUTEX
+#cmakedefine01 MUGGLE_C_HAVE_SYS_FUTEX

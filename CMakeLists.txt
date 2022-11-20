@@ -163,8 +163,8 @@ endif()
 
 # check support
 include(CheckIncludeFile)
-check_include_file(linux/futex.h HAVE_LINUX_FUTEX)
-check_include_file(sys/futex.h HAVE_SYS_FUTEX)
+check_include_file(linux/futex.h MUGGLE_C_HAVE_LINUX_FUTEX)
+check_include_file(sys/futex.h MUGGLE_C_HAVE_SYS_FUTEX)
 
 # mugglec
 set(muggle_c mugglec)
