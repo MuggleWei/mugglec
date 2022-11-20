@@ -11,6 +11,8 @@
 #ifndef MUGGLE_MACRO_H_
 #define MUGGLE_MACRO_H_
 
+#include "muggle/c/mugglec_config.h"
+
 // debug and release macro
 #if ! defined(NDEBUG)
 	#define MUGGLE_DEBUG 1

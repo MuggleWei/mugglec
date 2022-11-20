@@ -1,0 +1,5 @@
+// use shared library
+#cmakedefine MUGGLE_C_USE_DLL
+
+// // semver
+// #define MUGGLE_C_SEMVER @MUGGLE_C_VERSION@

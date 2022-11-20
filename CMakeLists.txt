@@ -161,13 +161,23 @@ if (MUGGLE_CRYPT_COMPARE_OPENSSL)
 	endif()
 endif()
 
-# include directories
-include_directories(
-	${CMAKE_CURRENT_LIST_DIR}
-)
-
 # mugglec
 set(muggle_c mugglec)
+set(mugglec_generated_dir ${CMAKE_CURRENT_BINARY_DIR}/generated)
+
+if (MUGGLE_BUILD_SHARED_LIB)
+	set(MUGGLE_C_USE_DLL ON)
+else()
+	set(MUGGLE_C_USE_DLL OFF)
+endif()
+configure_file(
+	${CMAKE_CURRENT_LIST_DIR}/muggle/c/mugglec_config.h.in
+	${mugglec_generated_dir}/muggle/c/mugglec_config.h)
+
+include_directories(
+	${CMAKE_CURRENT_LIST_DIR}
+	${mugglec_generated_dir})
+
 muggle_add_project(${muggle_c} ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
 
 set_target_properties(${muggle_c} PROPERTIES 
@@ -187,7 +197,6 @@ target_compile_definitions(${muggle_c} PUBLIC
 )
 if (MUGGLE_BUILD_SHARED_LIB)
 	target_compile_definitions(${muggle_c}
-		PUBLIC MUGGLE_C_USE_DLL
 		PRIVATE MUGGLE_C_EXPORTS 
 	)
 endif()
@@ -248,6 +257,7 @@ install(TARGETS ${muggle_c}
 	ARCHIVE DESTINATION lib/static
 )
 muggle_install_headers(${CMAKE_CURRENT_LIST_DIR}/muggle include/muggle)
+muggle_install_headers(${mugglec_generated_dir}/muggle include/muggle)
 
 # muggle benchmark
 if (MUGGLE_BUILD_LIB_BENCHMARK)
@@ -318,7 +328,6 @@ function(add_example name folder)
 	add_dependencies(${name} ${muggle_c})
 	target_include_directories(${name} PUBLIC
 		${folder}
-		${FETCHCONTENT_BASE_DIR}/mugglec-src
 	)
 	target_link_libraries(${name} ${muggle_c})
 

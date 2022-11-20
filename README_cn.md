@@ -95,7 +95,8 @@ add_executable(example src/example.c)
 add_dependencies(example mugglec)
 target_link_libraries(example mugglec)
 target_include_directories(example PUBLIC
-	${FETCHCONTENT_BASE_DIR}/mugglec-src)
+	${FETCHCONTENT_BASE_DIR}/mugglec-src
+	${FETCHCONTENT_BASE_DIR}/mugglec-build/generated)
 ```
 
 ##### 老式的风格
@@ -160,7 +161,8 @@ add_executable(example src/example.c)
 add_dependencies(example mugglec)
 target_link_libraries(example mugglec)
 target_include_directories(example PUBLIC
-	${FETCHCONTENT_BASE_DIR}/mugglec-src)
+	${FETCHCONTENT_BASE_DIR}/mugglec-src
+	${FETCHCONTENT_BASE_DIR}/mugglec-build/generated)
 ```
 
 #### 发现并链接
@@ -188,12 +190,10 @@ else()
         message(FATAL_ERROR "failed found mugglec")
 endif()
 
-# 包含mugglec的头文件路径
-include_directories(${MUGGLEC_INCLUDE_DIR})
-
-# 链接mugglec
+# 链接 mugglec, 包含头文件搜索路径
 add_executable(example src/example.c)
 target_link_libraries(example ${MUGGLEC_LIBRARIES})
+target_include_directories(example PUBLIC ${MUGGLEC_INCLUDE_DIR})
 ```
 
 #### 使用git子模块(不推荐)

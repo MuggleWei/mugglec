@@ -93,7 +93,8 @@ add_executable(example src/example.c)
 add_dependencies(example mugglec)
 target_link_libraries(example mugglec)
 target_include_directories(example PUBLIC
-	${FETCHCONTENT_BASE_DIR}/mugglec-src)
+	${FETCHCONTENT_BASE_DIR}/mugglec-src
+	${FETCHCONTENT_BASE_DIR}/mugglec-build/generated)
 ```
 
 ##### old style
@@ -157,7 +158,8 @@ add_executable(example src/example.c)
 add_dependencies(example mugglec)
 target_link_libraries(example mugglec)
 target_include_directories(example PUBLIC
-	${FETCHCONTENT_BASE_DIR}/mugglec-src)
+	${FETCHCONTENT_BASE_DIR}/mugglec-src
+	${FETCHCONTENT_BASE_DIR}/mugglec-build/generated)
 ```
 
 #### Find and link
@@ -185,12 +187,10 @@ else()
         message(FATAL_ERROR "failed found mugglec")
 endif()
 
-# include mugglec head directories
-include_directories(${MUGGLEC_INCLUDE_DIR})
-
-# link mugglec
+# link mugglec and include head directories
 add_executable(example src/example.c)
 target_link_libraries(example ${MUGGLEC_LIBRARIES})
+target_include_directories(example PUBLIC ${MUGGLEC_INCLUDE_DIR})
 ```
 
 #### Use git submodule(Not recommended)
