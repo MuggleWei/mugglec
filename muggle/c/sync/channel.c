@@ -64,11 +64,13 @@ static void muggle_channel_write_spinlock_unlock(muggle_channel_t *chan)
 
 static void muggle_channel_write_single_lock(muggle_channel_t *chan)
 {
+	MUGGLE_UNUSED(chan);
 	// do nothing
 }
 
 static void muggle_channel_write_single_unlock(muggle_channel_t *chan)
 {
+	MUGGLE_UNUSED(chan);
 	// do nothing
 }
 
@@ -180,6 +182,7 @@ static int muggle_channel_write_busy(muggle_channel_t *chan, void *data)
 
 static void muggle_channel_wake_busy(muggle_channel_t *chan)
 {
+	MUGGLE_UNUSED(chan);
 	// do nothing
 }
 

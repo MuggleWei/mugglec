@@ -3,6 +3,7 @@
 
 void func_mutex(void *args, uint64_t idx)
 {
+	MUGGLE_UNUSED(idx);
 	muggle_mutex_t *mutex = (muggle_mutex_t*)args;
 	muggle_mutex_lock(mutex);
 	muggle_mutex_unlock(mutex);

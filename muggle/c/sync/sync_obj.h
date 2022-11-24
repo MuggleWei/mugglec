@@ -43,6 +43,8 @@ EXTERN_C_BEGIN
 
 #elif MUGGLE_PLATFORM_WINDOWS
 
+	#include <windows.h>
+
 	#define MUGGLE_C_HAVE_SYNC_OBJ 1
 	
 	// NOTE
@@ -64,11 +66,11 @@ EXTERN_C_BEGIN
 	//     * Wait functions
 	//     * Interlocked functions (except functions with NoFence suffix, or 
 	//       intrinsics with _nf suffix)
-	typedef LONG muggle_sync_t
+	typedef LONG muggle_sync_t;
 
 #else
 	#define MUGGLE_C_HAVE_SYNC_OBJ 0
-	typedef uint32_t muggle_sync_t
+	typedef uint32_t muggle_sync_t;
 #endif
 
 #if MUGGLE_C_HAVE_SYNC_OBJ

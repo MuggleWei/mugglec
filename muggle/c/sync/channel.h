@@ -23,6 +23,7 @@
 #include "muggle/c/base/atomic.h"
 #include "muggle/c/sync/mutex.h"
 #include "muggle/c/sync/condition_variable.h"
+#include "muggle/c/sync/spinlock.h"
 
 EXTERN_C_BEGIN
 
@@ -105,7 +106,7 @@ typedef struct muggle_channel
 		// write lock
 		muggle_atomic_int write_futex;
 		muggle_mutex_t write_mutex;
-		muggle_atomic_int write_spinlock;
+		muggle_spinlock_t write_spinlock;
 		MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
 	};
 	// read lock

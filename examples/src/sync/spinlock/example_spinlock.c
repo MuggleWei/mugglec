@@ -7,8 +7,8 @@ typedef struct thread_args
 	int *arr;
 	int arr_size;
 
-	muggle_atomic_int *pos;
-	muggle_atomic_int *spin;
+	int *pos;
+	muggle_spinlock_t *spin;
 } thread_args_t;
 
 muggle_thread_ret_t producer(void *p_args)
@@ -45,9 +45,9 @@ int main()
 
 	int arr[ARRAY_SIZE];
 
-	muggle_atomic_int pos = 0;
+	int pos = 0;
 
-	muggle_atomic_int spin;
+	muggle_spinlock_t spin;
 	muggle_spinlock_init(&spin);
 
 	muggle_thread_t threads[PRODUCER_NUM];
