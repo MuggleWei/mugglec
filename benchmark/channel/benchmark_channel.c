@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 				{
 				case MUGGLE_CHANNEL_FLAG_WRITE_SYNC:
 					{
-						str_w_flags = "futex";
+						str_w_flags = "sync";
 					}break;
 				case MUGGLE_CHANNEL_FLAG_WRITE_MUTEX:
 					{
@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
 				{
 				case MUGGLE_CHANNEL_FLAG_READ_SYNC:
 					{
-						str_r_flags = "futex";
+						str_r_flags = "sync";
 					}break;
 				case MUGGLE_CHANNEL_FLAG_READ_MUTEX:
 					{
