@@ -4,6 +4,8 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
+#if MUGGLE_C_HAVE_SYNC_OBJ
+
 TEST(synclock, incr)
 {
 	int x = 0;
@@ -86,3 +88,10 @@ TEST(synclock, order)
 	t2.join();
 }
 
+#else // MUGGLE_C_HAVE_SYNC_OBJ
+
+TEST(synclock, not_support)
+{
+}
+
+#endif // MUGGLE_C_HAVE_SYNC_OBJ
