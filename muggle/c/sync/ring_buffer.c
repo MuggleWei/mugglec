@@ -126,6 +126,8 @@ inline static void muggle_ring_buffer_wake_wait(muggle_ring_buffer_t *r)
 #if MUGGLE_RING_BUFFER_USE_SYNC
 	muggle_sync_wake_all(&r->cursor);
 #else
+	muggle_mutex_lock(&r->read_mutex);
+	muggle_mutex_unlock(&r->read_mutex);
 	muggle_condition_variable_notify_all(&r->read_cv);
 #endif
 }
@@ -135,6 +137,8 @@ inline static void muggle_ring_buffer_wake_single_wait(muggle_ring_buffer_t *r)
 #if MUGGLE_RING_BUFFER_USE_SYNC
 	muggle_sync_wake_one(&r->cursor);
 #else
+	muggle_mutex_lock(&r->read_mutex);
+	muggle_mutex_unlock(&r->read_mutex);
 	muggle_condition_variable_notify_one(&r->read_cv);
 #endif
 }
@@ -150,6 +154,8 @@ inline static void muggle_ring_buffer_wake_lock(muggle_ring_buffer_t *r)
 #if MUGGLE_RING_BUFFER_USE_SYNC
 	muggle_sync_wake_one(&r->cursor);
 #else
+	muggle_mutex_lock(&r->read_mutex);
+	muggle_mutex_unlock(&r->read_mutex);
 	muggle_condition_variable_notify_one(&r->read_cv);
 #endif
 }
