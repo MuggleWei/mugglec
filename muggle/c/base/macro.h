@@ -73,9 +73,7 @@
 #endif
 
 // unused
-#ifndef UNUSED
-	#define UNUSED(x) (void)x
-#endif
+#define MUGGLE_UNUSED(x) (void)x
 
 // namespace
 #ifdef __cplusplus

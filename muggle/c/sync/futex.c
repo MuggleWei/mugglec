@@ -80,7 +80,7 @@ void muggle_futex_wake_all(muggle_atomic_int *futex_addr)
 
 static int futex(int *uaddr, int futex_op, int val, const struct timespec *timeout, int *uaddr2, int val3)
 {
-	UNUSED(uaddr2);
+	MUGGLE_UNUSED(uaddr2);
 	return syscall(SYS_futex, uaddr, futex_op, val, timeout, uaddr, val3);
 }
 

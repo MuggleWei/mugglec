@@ -6,49 +6,51 @@
 
 struct chan_data
 {
-	int idx;
-	int thread_idx;
-	int thread_msg_idx;
+	uint32_t idx;
+	uint32_t thread_idx;
+	uint32_t thread_msg_idx;
 };
 
-void test_chan(int flags, int cnt_writer)
+void test_chan(int flags, uint32_t cnt_writer)
 {
-	muggle_atomic_int capacity = 1024 * 4;
-	int cnt_msg = capacity * 32;
+	uint32_t capacity = 1024 * 4;
+	uint32_t cnt_msg = capacity * 32;
 	muggle_atomic_int msg_idx = 0;
 	chan_data *datas = (chan_data*)malloc(cnt_msg * sizeof(chan_data));
 
 	muggle_channel_t chan;
 	muggle_channel_init(&chan, capacity, flags);
 
-	std::map<int, int> thread_cnts;
-	for (int i = 0; i < cnt_writer; i++)
+	std::map<uint32_t, uint32_t> thread_cnts;
+	for (uint32_t i = 0; i < cnt_writer; i++)
 	{
 		thread_cnts[i] = 0;
 	}
 
 	// write
 	std::vector<std::thread> threads;
-	for (int i = 0; i < cnt_writer; i++)
+	for (uint32_t i = 0; i < cnt_writer; i++)
 	{
 		threads.push_back(std::thread([i, &chan, &msg_idx, &cnt_msg, &datas]{
 			muggle_msleep(1);
-			int thread_msg_idx = 0;
+			uint32_t thread_msg_idx = 0;
 
 			muggle_atomic_int cur_idx = 0;
 			while (true)
 			{
-				cur_idx = muggle_atomic_fetch_add(&msg_idx, 1, muggle_memory_order_relaxed);
-				if (cur_idx >= cnt_msg)
+				cur_idx = muggle_atomic_fetch_add(
+					&msg_idx, 1, muggle_memory_order_relaxed);
+				if ((uint32_t)cur_idx >= cnt_msg)
 				{
 					break;
 				}
 
-				datas[cur_idx].idx = cur_idx;
+				datas[cur_idx].idx = (uint32_t)cur_idx;
 				datas[cur_idx].thread_idx = i;
 				datas[cur_idx].thread_msg_idx = thread_msg_idx++;
 
-				while (muggle_channel_write(&chan, &datas[cur_idx]) == MUGGLE_ERR_FULL)
+				while (muggle_channel_write(&chan, &datas[cur_idx]) ==
+					MUGGLE_ERR_FULL)
 				{
 					muggle_msleep(1);
 				}
@@ -57,7 +59,7 @@ void test_chan(int flags, int cnt_writer)
 	}
 
 	// read
-	int recv_cnt = 0;
+	uint32_t recv_cnt = 0;
 	while (true)
 	{
 		chan_data *data = (chan_data*)muggle_channel_read(&chan);
@@ -76,7 +78,7 @@ void test_chan(int flags, int cnt_writer)
 	}
 
 	// join thread
-	for (int i = 0; i < cnt_writer; i++)
+	for (uint32_t i = 0; i < cnt_writer; i++)
 	{
 		threads[i].join();
 	}
@@ -86,7 +88,7 @@ void test_chan(int flags, int cnt_writer)
 	muggle_channel_destroy(&chan);
 }
 
-int getProducerNum()
+uint32_t getProducerNum()
 {
 	int hc = (int)muggle_thread_hardware_concurrency();
 	if (hc <= 0)
@@ -94,77 +96,101 @@ int getProducerNum()
 		hc = 2;
 	}
 
-	return hc * 2;
+	return (uint32_t)(hc * 2);
 }
 
-TEST(channel, futex_w_futex_r)
+TEST(channel, sync_w_sync_r)
 {
-	int flags = MUGGLE_CHANNEL_FLAG_WRITE_FUTEX | MUGGLE_CHANNEL_FLAG_READ_FUTEX;
+	int flags =
+		MUGGLE_CHANNEL_FLAG_WRITE_SYNC |
+		MUGGLE_CHANNEL_FLAG_READ_SYNC;
 	test_chan(flags, getProducerNum());
 }
 
-TEST(channel, futex_w_mutex_r)
+TEST(channel, sync_w_mutex_r)
 {
-	int flags = MUGGLE_CHANNEL_FLAG_WRITE_FUTEX | MUGGLE_CHANNEL_FLAG_READ_MUTEX;
+	int flags =
+		MUGGLE_CHANNEL_FLAG_WRITE_SYNC |
+		MUGGLE_CHANNEL_FLAG_READ_MUTEX;
 	test_chan(flags, getProducerNum());
 }
 
-TEST(channel, futex_w_busy_r)
+TEST(channel, sync_w_busy_r)
 {
-	int flags = MUGGLE_CHANNEL_FLAG_WRITE_FUTEX | MUGGLE_CHANNEL_FLAG_READ_BUSY;
+	int flags =
+		MUGGLE_CHANNEL_FLAG_WRITE_SYNC |
+		MUGGLE_CHANNEL_FLAG_READ_BUSY;
 	test_chan(flags, getProducerNum());
 }
 
-TEST(channel, mutex_w_futex_r)
+TEST(channel, mutex_w_sync_r)
 {
-	int flags = MUGGLE_CHANNEL_FLAG_WRITE_MUTEX | MUGGLE_CHANNEL_FLAG_READ_FUTEX;
+	int flags =
+		MUGGLE_CHANNEL_FLAG_WRITE_MUTEX |
+		MUGGLE_CHANNEL_FLAG_READ_SYNC;
 	test_chan(flags, getProducerNum());
 }
 
 TEST(channel, mutex_w_mutex_r)
 {
-	int flags = MUGGLE_CHANNEL_FLAG_WRITE_MUTEX | MUGGLE_CHANNEL_FLAG_READ_MUTEX;
+	int flags =
+		MUGGLE_CHANNEL_FLAG_WRITE_MUTEX |
+		MUGGLE_CHANNEL_FLAG_READ_MUTEX;
 	test_chan(flags, getProducerNum());
 }
 
 TEST(channel, mutex_w_busy_r)
 {
-	int flags = MUGGLE_CHANNEL_FLAG_WRITE_MUTEX | MUGGLE_CHANNEL_FLAG_READ_BUSY;
+	int flags =
+		MUGGLE_CHANNEL_FLAG_WRITE_MUTEX |
+		MUGGLE_CHANNEL_FLAG_READ_BUSY;
 	test_chan(flags, getProducerNum());
 }
 
-TEST(channel, spin_w_futex_r)
+TEST(channel, spin_w_sync_r)
 {
-	int flags = MUGGLE_CHANNEL_FLAG_WRITE_SPIN | MUGGLE_CHANNEL_FLAG_READ_FUTEX;
+	int flags =
+		MUGGLE_CHANNEL_FLAG_WRITE_SPIN |
+		MUGGLE_CHANNEL_FLAG_READ_SYNC;
 	test_chan(flags, getProducerNum());
 }
 
 TEST(channel, spin_w_mutex_r)
 {
-	int flags = MUGGLE_CHANNEL_FLAG_WRITE_SPIN | MUGGLE_CHANNEL_FLAG_READ_MUTEX;
+	int flags =
+		MUGGLE_CHANNEL_FLAG_WRITE_SPIN |
+		MUGGLE_CHANNEL_FLAG_READ_MUTEX;
 	test_chan(flags, getProducerNum());
 }
 
 TEST(channel, spin_w_busy_r)
 {
-	int flags = MUGGLE_CHANNEL_FLAG_WRITE_SPIN | MUGGLE_CHANNEL_FLAG_READ_BUSY;
+	int flags =
+		MUGGLE_CHANNEL_FLAG_WRITE_SPIN |
+		MUGGLE_CHANNEL_FLAG_READ_BUSY;
 	test_chan(flags, getProducerNum());
 }
 
-TEST(channel, single_w_futex_r)
+TEST(channel, single_w_sync_r)
 {
-	int flags = MUGGLE_CHANNEL_FLAG_WRITE_SINGLE | MUGGLE_CHANNEL_FLAG_READ_FUTEX;
+	int flags =
+		MUGGLE_CHANNEL_FLAG_WRITE_SINGLE |
+		MUGGLE_CHANNEL_FLAG_READ_SYNC;
 	test_chan(flags, 1);
 }
 
 TEST(channel, single_w_mutex_r)
 {
-	int flags = MUGGLE_CHANNEL_FLAG_WRITE_SINGLE | MUGGLE_CHANNEL_FLAG_READ_MUTEX;
+	int flags =
+		MUGGLE_CHANNEL_FLAG_WRITE_SINGLE |
+		MUGGLE_CHANNEL_FLAG_READ_MUTEX;
 	test_chan(flags, 1);
 }
 
 TEST(channel, single_w_busy_r)
 {
-	int flags = MUGGLE_CHANNEL_FLAG_WRITE_SINGLE | MUGGLE_CHANNEL_FLAG_READ_BUSY;
+	int flags =
+		MUGGLE_CHANNEL_FLAG_WRITE_SINGLE |
+		MUGGLE_CHANNEL_FLAG_READ_BUSY;
 	test_chan(flags, 1);
 }

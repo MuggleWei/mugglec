@@ -7,13 +7,16 @@
  *  @license      MIT License
  *  @brief        mugglec channel
  *
- * Passing data between threads, user must gurantee only one reader use channel at the same time
- * When channel full, write will failed and return enum MUGGLE_ERR_*
- * When channel empty, read will block until data write into channel
+ * Passing data between threads, user must gurantee only one reader use channel
+ * at the same time
+ *   - When channel full, write will failed and return enum MUGGLE_ERR_*
+ *   - When channel empty, read will block until data write into channel
  *
- * muggle_channel_t and muggle_ring_buffer_t with only one reader are very similar, but most important different is
- * when ringbuffer full, last message will be pushed in and lost all old message
- * when channel full, write will return failed
+ * muggle_channel_t and muggle_ring_buffer_t with only one reader are very 
+ * similar, but most important different is
+ *   - when ringbuffer full, last message will be pushed into ring and lost all
+ *     old unread message
+ *   - when channel full, write will return failed
  *****************************************************************************/
 
 #ifndef MUGGLE_C_CHANNEL_H_
@@ -23,6 +26,9 @@
 #include "muggle/c/base/atomic.h"
 #include "muggle/c/sync/mutex.h"
 #include "muggle/c/sync/condition_variable.h"
+#include "muggle/c/sync/spinlock.h"
+#include "muggle/c/sync/sync_obj.h"
+#include "muggle/c/sync/synclock.h"
 
 EXTERN_C_BEGIN
 
@@ -31,10 +37,11 @@ EXTERN_C_BEGIN
  */
 enum
 {
-	MUGGLE_CHANNEL_FLAG_WRITE_MUTEX   = 0, //!< write lock use mutex
-	MUGGLE_CHANNEL_FLAG_WRITE_FUTEX   = 1, //!< write lock use futex if be supported
-	MUGGLE_CHANNEL_FLAG_WRITE_SPIN    = 2, //!< write lock use spinlock
-	MUGGLE_CHANNEL_FLAG_WRITE_SINGLE  = 3, //!< user guarantee only one writer use this channel
+	MUGGLE_CHANNEL_FLAG_WRITE_MUTEX  = 0, //!< write lock use mutex
+	MUGGLE_CHANNEL_FLAG_WRITE_SYNC   = 1, //!< write lock use sync object
+	MUGGLE_CHANNEL_FLAG_WRITE_SPIN   = 2, //!< write lock use spinlock
+	MUGGLE_CHANNEL_FLAG_WRITE_SINGLE = 3, //!< user guarantee only one writer
+										  //   use this channel
 
 	MUGGLE_CHANNEL_FLAG_SINGLE_WRITER = MUGGLE_CHANNEL_FLAG_WRITE_SINGLE,
 };
@@ -44,11 +51,12 @@ enum
  */
 enum
 {
-	MUGGLE_CHANNEL_FLAG_READ_FUTEX = 0 << 4, //!< reader with futex wait if supported
+	MUGGLE_CHANNEL_FLAG_READ_SYNC  = 0 << 4, //!< reader with sync object
 	MUGGLE_CHANNEL_FLAG_READ_MUTEX = 1 << 4, //!< reader with mutex with
-	MUGGLE_CHANNEL_FLAG_READ_BUSY  = 2 << 4, //!< reader busy loop until read message from channel
+	MUGGLE_CHANNEL_FLAG_READ_BUSY  = 2 << 4, //!< reader busy loop until read
+											 //   message from channel
 
-	MUGGLE_CHANNEL_FLAG_READ_WAIT      = MUGGLE_CHANNEL_FLAG_READ_FUTEX,
+	MUGGLE_CHANNEL_FLAG_READ_WAIT      = MUGGLE_CHANNEL_FLAG_READ_SYNC,
 	MUGGLE_CHANNEL_FLAG_READ_BUSY_LOOP = MUGGLE_CHANNEL_FLAG_READ_BUSY,
 };
 
@@ -85,32 +93,33 @@ typedef struct muggle_channel_block
  */
 typedef struct muggle_channel
 {
-	muggle_atomic_int       capacity;   //!< capacity of channel
-	int                     flags;      //!< channel flags
-	int                     init_flags; //!< initialized flags
+	muggle_sync_t capacity;   //!< capacity of channel
+	int           flags;      //!< channel flags
+	int           init_flags; //!< initialized flags
+
 	fn_muggle_channel_lock  fn_lock;    //!< write lock function
 	fn_muggle_channel_lock  fn_unlock;  //!< write unlock function
 	fn_muggle_channel_write fn_write;   //!< write function
 	fn_muggle_channel_wake  fn_wake;    //!< wake function
 	fn_muggle_channel_read  fn_read;    //!< read function
-	union {
-		muggle_atomic_int write_cursor;
-		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
-	};
-	union {
-		muggle_atomic_int read_cursor;
-		MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
-	};
+
+	muggle_sync_t write_cursor;  //!< write cursor
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
+	muggle_sync_t read_cursor;  //!< read cursor
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
+
 	union {
 		// write lock
-		muggle_atomic_int write_futex;
-		muggle_mutex_t write_mutex;
-		muggle_atomic_int write_spinlock;
+		muggle_sync_t     write_synclock;  //!< wirte lock with synclock
+		muggle_spinlock_t write_spinlock;  //!< write lock with spinlock
+		muggle_mutex_t    *write_mutex;    //!< write lock with mutex
 		MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
 	};
 	// read lock
-	muggle_mutex_t read_mutex;
-	muggle_condition_variable_t read_cv;
+	muggle_mutex_t *read_mutex;
+	muggle_condition_variable_t *read_cv;
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(4);
+
 	muggle_channel_block_t *blocks;
 }muggle_channel_t;
 
@@ -126,7 +135,8 @@ typedef struct muggle_channel
  *     - otherwise return error code in muggle/c/base/err.h
  */
 MUGGLE_C_EXPORT
-int muggle_channel_init(muggle_channel_t *chan, muggle_atomic_int capacity, int flags);
+int muggle_channel_init(
+	muggle_channel_t *chan, muggle_sync_t capacity, int flags);
 
 /**
  * @brief destroy muggle_channel_t

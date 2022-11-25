@@ -53,6 +53,8 @@
 // sync
 #include "muggle/c/sync/mutex.h"
 #include "muggle/c/sync/condition_variable.h"
+#include "muggle/c/sync/sync_obj.h"
+#include "muggle/c/sync/synclock.h"
 #include "muggle/c/sync/futex.h"
 #include "muggle/c/sync/spinlock.h"
 #include "muggle/c/sync/ring_buffer.h"

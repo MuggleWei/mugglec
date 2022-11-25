@@ -41,7 +41,7 @@ muggle_thread_ret_t producer(void *p_args)
 
 #define PRODUCER_NUM 4
 
-int main(int argc, char const *argv[])
+int main()
 {
 	muggle_log_complicated_init(LOG_LEVEL_TRACE, -1, NULL);
 

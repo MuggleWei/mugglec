@@ -1,28 +1,30 @@
 #include "muggle/c/muggle_c.h"
 #include "muggle_benchmark/muggle_benchmark.h"
 
-void func_mutex(void *args, uint64_t idx)
+#if MUGGLE_C_HAVE_SYNC_OBJ
+
+void func_synclock(void *args, uint64_t idx)
 {
 	MUGGLE_UNUSED(idx);
-	muggle_mutex_t *mutex = (muggle_mutex_t*)args;
-	muggle_mutex_lock(mutex);
-	muggle_mutex_unlock(mutex);
+	muggle_sync_t *synclock = (muggle_sync_t*)args;
+	muggle_synclock_lock(synclock);
+	muggle_synclock_unlock(synclock);
 }
 
-void benchmark_mutex(
+void benchmark_synclock(
 	muggle_benchmark_config_t *config,
 	fn_muggle_benchmark_func func,
 	const char *name)
 {
-	muggle_mutex_t mutex;
-	muggle_mutex_init(&mutex);
+	muggle_sync_t synclock;
+	muggle_synclock_init(&synclock);
 
 	// initialize benchmark memory pool handle
 	muggle_benchmark_func_t benchmark;
 	muggle_benchmark_func_init(
 		&benchmark,
 		config,
-		&mutex,
+		&synclock,
 		func);
 
 	// run
@@ -33,8 +35,6 @@ void benchmark_mutex(
 
 	// destroy benchmark function handle
 	muggle_benchmark_func_destroy(&benchmark);
-
-	muggle_mutex_destroy(&mutex);
 }
 
 int main(int argc, char *argv[])
@@ -49,19 +49,19 @@ int main(int argc, char *argv[])
 	muggle_benchmark_config_output(&config);
 
 	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run mutex-1");
+	MUGGLE_LOG_INFO("run synclock-1");
 	config.producer = 1;
-	benchmark_mutex(&config, func_mutex, "mutex-1");
+	benchmark_synclock(&config, func_synclock, "synclock-1");
 
 	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run mutex-2");
+	MUGGLE_LOG_INFO("run synclock-2");
 	config.producer = 2;
-	benchmark_mutex(&config, func_mutex, "mutex-2");
+	benchmark_synclock(&config, func_synclock, "synclock-2");
 
 	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run mutex-4");
+	MUGGLE_LOG_INFO("run synclock-4");
 	config.producer = 4;
-	benchmark_mutex(&config, func_mutex, "mutex-4");
+	benchmark_synclock(&config, func_synclock, "synclock-4");
 
 	MUGGLE_LOG_INFO("--------------------------------------------------------");
 	int hc = (int)muggle_thread_hardware_concurrency();
@@ -70,7 +70,21 @@ int main(int argc, char *argv[])
 	{
 		hc = 1;
 	}
-	MUGGLE_LOG_INFO("run mutex-half-hc(%d)", hc);
+	MUGGLE_LOG_INFO("run synclock-half-hc(%d)", hc);
 	config.producer = hc;
-	benchmark_mutex(&config, func_mutex, "mutex-half-hc");
+	benchmark_synclock(&config, func_synclock, "synclock-half-hc");
 }
+
+#else
+
+int main(int argc, char *argv[])
+{
+	// initialize log
+	muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_INFO);
+
+	MUGGLE_LOG_INFO("MUGGLE_C_HAVE_SYNC_OBJ is 0");
+
+	return 0;
+}
+
+#endif
