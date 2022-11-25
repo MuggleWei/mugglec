@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include "muggle/c/base/err.h"
 #include "muggle/c/base/utils.h"
-#include "muggle/c/sync/futex.h"
 
 int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_atomic_int capacity, muggle_atomic_int data_size)
 {

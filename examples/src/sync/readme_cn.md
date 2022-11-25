@@ -228,12 +228,12 @@ while (1)
 ```
 // 写模式
 MUGGLE_CHANNEL_FLAG_WRITE_MUTEX,  //!< write lock use mutex
-MUGGLE_CHANNEL_FLAG_WRITE_FUTEX,  //!< write lock use futex if be supported
+MUGGLE_CHANNEL_FLAG_WRITE_SYNC,   //!< write lock use sync
 MUGGLE_CHANNEL_FLAG_WRITE_SPIN,   //!< write lock use spinlock
 MUGGLE_CHANNEL_FLAG_WRITE_SINGLE, //!< user guarantee only one writer use this channel
 
 // 读模式
-MUGGLE_CHANNEL_FLAG_READ_FUTEX, //!< reader with futex wait if supported
+MUGGLE_CHANNEL_FLAG_READ_SYNC,  //!< reader with sync wait
 MUGGLE_CHANNEL_FLAG_READ_MUTEX, //!< reader with mutex with
 MUGGLE_CHANNEL_FLAG_READ_BUSY,  //!< reader busy loop until read message from channel
 

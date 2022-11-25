@@ -14,7 +14,6 @@
 #include "muggle/c/base/err.h"
 #include "muggle/c/base/utils.h"
 #include "muggle/c/base/thread.h"
-#include "muggle/c/sync/futex.h"
 #include "muggle/c/sync/spinlock.h"
 
 /***************** write lock *****************/
