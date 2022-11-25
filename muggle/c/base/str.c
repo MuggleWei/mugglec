@@ -96,7 +96,7 @@ int muggle_str_count(const char *str, const char *sub, int start, int end)
 		return 0;
 	}
 
-	if (start >= str_len)
+	if (start >= (int)str_len)
 	{
 		return 0;
 	}
@@ -159,7 +159,7 @@ int muggle_str_find(const char *str, const char *sub, int start, int end)
 		return -1;
 	}
 
-	if (start >= str_len)
+	if (start >= (int)str_len)
 	{
 		return -1;
 	}
@@ -228,23 +228,23 @@ int muggle_str_rstrip_idx(const char *str)
 	return idx;
 }
 
-static int in_split_sep(int ch, const char *sep, int sep_len)
-{
-	if (sep == NULL)
-	{
-		return isspace(ch);
-	}
+// static int in_split_sep(int ch, const char *sep, int sep_len)
+// {
+//     if (sep == NULL)
+//     {
+//         return isspace(ch);
+//     }
 
-	for (int i = 0; i < sep_len; ++i)
-	{
-		if (ch == (int)sep[i])
-		{
-			return 1;
-		}
-	}
+//     for (int i = 0; i < sep_len; ++i)
+//     {
+//         if (ch == (int)sep[i])
+//         {
+//             return 1;
+//         }
+//     }
 
-	return 0;
-}
+//     return 0;
+// }
 
 int muggle_str_toi(const char *str, int *pval, int base)
 {
@@ -288,7 +288,7 @@ int muggle_str_toi(const char *str, int *pval, int base)
 }
 int muggle_str_tou(const char *str, unsigned int *pval, int base)
 {
-	long ret;
+	unsigned long ret;
 	char *endptr;
 
 	if (str == NULL || pval == NULL)

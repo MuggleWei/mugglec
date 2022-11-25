@@ -263,7 +263,7 @@ void muggle_des_f(const muggle_32bit_block_t *in, const muggle_des_subkey_t *sk,
 #endif
 
 
-	const unsigned char *in_bytes = p.bytes;
+	// const unsigned char *in_bytes = p.bytes;
 	muggle_32bit_block_t u32_block;
 	u32_block.bytes[0] = (p.bytes[0] & 0x0f) | ((p.bytes[1] << 4) & 0xf0);
 	u32_block.bytes[1] = (p.bytes[2] & 0x0f) | ((p.bytes[3] << 4) & 0xf0);

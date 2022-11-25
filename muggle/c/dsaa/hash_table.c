@@ -138,7 +138,6 @@ muggle_hash_table_node_t* muggle_hash_table_find(muggle_hash_table_t *p_hash_tab
 	uint64_t idx = hash_val % p_hash_table->table_size;
 	muggle_hash_table_node_t *head = &p_hash_table->nodes[idx];
 	muggle_hash_table_node_t *node = head->next;
-	muggle_hash_table_node_t *next = NULL;
 	while (node)
 	{
 		if (p_hash_table->cmp(node->key, key) == 0)
@@ -157,7 +156,6 @@ muggle_hash_table_node_t* muggle_hash_table_put(muggle_hash_table_t *p_hash_tabl
 	uint64_t idx = hash_val % p_hash_table->table_size;
 	muggle_hash_table_node_t *head = &p_hash_table->nodes[idx];
 	muggle_hash_table_node_t *node = head->next;
-	muggle_hash_table_node_t *next = NULL;
 	while (node)
 	{
 		if (p_hash_table->cmp(node->key, key) == 0)

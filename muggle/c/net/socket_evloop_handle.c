@@ -40,10 +40,14 @@ static muggle_socket_t muggle_socket_evloop_on_accept(muggle_socket_context_t *c
 
 muggle_socket_context_t* muggle_socket_evloop_handle_alloc(void *pool)
 {
+	MUGGLE_UNUSED(pool);
+
 	return (muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
 }
 void muggle_socket_evloop_handle_free(void *pool, muggle_socket_context_t *data)
 {
+	MUGGLE_UNUSED(pool);
+
 	free(data);
 }
 

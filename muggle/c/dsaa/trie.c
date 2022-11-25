@@ -119,7 +119,7 @@ muggle_trie_node_t* muggle_trie_find(muggle_trie_t *p_trie, const char *key)
 
 	while (*p != '\0')
 	{
-		node = node->children[*p];
+		node = node->children[(int)(*p)];
 		if (node == NULL)
 		{
 			break;
@@ -158,7 +158,7 @@ muggle_trie_node_t* muggle_trie_insert(muggle_trie_t *p_trie, const char *key, v
 
 	while (*p != '\0')
 	{
-		child = node->children[*p];
+		child = node->children[(int)(*p)];
 		if (child == NULL)
 		{
 			child = muggle_trie_allocate_node(p_trie);
@@ -166,7 +166,7 @@ muggle_trie_node_t* muggle_trie_insert(muggle_trie_t *p_trie, const char *key, v
 			{
 				return NULL;
 			}
-			node->children[*p] = child;
+			node->children[(int)(*p)] = child;
 		}
 		
 		node = child;

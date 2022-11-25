@@ -85,7 +85,6 @@ static int muggle_log_console_handler_write(
 		// restores text color
 		SetConsoleTextAttribute(stdout_handle, old_sb_attrs);
 #else
-		const char *color_str = UNIX_TERMINAL_COLOR_YEL;
 		if (msg->level >= MUGGLE_LOG_LEVEL_ERROR)
 		{
 			fwrite(UNIX_TERMINAL_COLOR_RED, 1, strlen(UNIX_TERMINAL_COLOR_RED), fp);
