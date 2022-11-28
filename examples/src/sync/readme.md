@@ -1,7 +1,7 @@
 - [sync](#sync)
 	- [线程](#线程)
 		- [创建线程](#创建线程)
-		- [detach & join](#detach--join)
+		- [detach \& join](#detach--join)
 	- [原子操作](#原子操作)
 		- [原子变量类型](#原子变量类型)
 		- [内存序](#内存序)
@@ -77,17 +77,17 @@ muggle_thread_join(&th);
 
 ### 写入与读取
 ```
-muggle_atomic_store(ptr, val, memmodel);
+muggle_atomic_store(ptr, val, memorder);
 ```
 * ptr: 指向原子变量的指针
 * val: 要赋给原子变量的值
-* memmodel: 指定内存序
+* memorder: 指定内存序
 
 ```
-muggle_atomic_load(ptr, memmodel);
+muggle_atomic_load(ptr, memorder);
 ```
 * ptr: 指向要读取的原子变量
-* memmodel: 指定内存序
+* memorder: 指定内存序
 * 返回值: 返回原子变量当下的值
 
 下面我们看一个经典的内存序的例子: [atomic_load_store.c](./atomic_load_store/atomic_load_store.c)  
@@ -105,25 +105,25 @@ x = muggle_atomic_load(args->x, muggle_memory_order_relaxed);
 
 ### 交换
 ```
-muggle_atomic_exchange(ptr, val, memmodel);
-muggle_atomic_exchange32(ptr, val, memmodel);
-muggle_atomic_exchange64(ptr, val, memmodel);
+muggle_atomic_exchange(ptr, val, memorder);
+muggle_atomic_exchange32(ptr, val, memorder);
+muggle_atomic_exchange64(ptr, val, memorder);
 ```
 * ptr: 指向原子变量的指针
 * val: 将要赋予原子变量的值
-* memmodel: 指定内存序
+* memorder: 指定内存序
 * 返回值: 原本存储在原子变量当中的值
 
 ### CAS
 比较并交换(compare and swap, CAS)是一种常见的原子操作
 ```
-muggle_atomic_cmp_exch_weak(ptr, expected, desired, memmodel);
-muggle_atomic_cmp_exch_weak32(ptr, expected, desired, memmodel);
-muggle_atomic_cmp_exch_weak64(ptr, expected, desired, memmodel);
+muggle_atomic_cmp_exch_weak(ptr, expected, desired, memorder);
+muggle_atomic_cmp_exch_weak32(ptr, expected, desired, memorder);
+muggle_atomic_cmp_exch_weak64(ptr, expected, desired, memorder);
 
-muggle_atomic_cmp_exch_strong(ptr, expected, desired, memmodel);
-muggle_atomic_cmp_exch_strong32(ptr, expected, desired, memmodel);
-muggle_atomic_cmp_exch_strong64(ptr, expected, desired, memmodel);
+muggle_atomic_cmp_exch_strong(ptr, expected, desired, memorder);
+muggle_atomic_cmp_exch_strong32(ptr, expected, desired, memorder);
+muggle_atomic_cmp_exch_strong64(ptr, expected, desired, memorder);
 ```
 * ptr: 指向原子变量的指针
 * expected: 用于与`*ptr`对比的值的指针

@@ -58,7 +58,7 @@ int muggle_ref_cnt_val(muggle_ref_cnt_t *ref)
 	return *ref;
 }
 
-int muggle_ref_cnt_load(muggle_ref_cnt_t *ref, int memmodel)
+int muggle_ref_cnt_load(muggle_ref_cnt_t *ref, int memorder)
 {
-	return muggle_atomic_load(ref, memmodel);
+	return muggle_atomic_load(ref, memorder);
 }

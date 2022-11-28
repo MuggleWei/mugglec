@@ -72,12 +72,12 @@ int muggle_ref_cnt_val(muggle_ref_cnt_t *ref);
  * @brief load reference count value
  *
  * @param ref       reference count
- * @param memmodel  memory order; see: muggle_memory_order_*
+ * @param memorder  memory order; see: muggle_memory_order_*
  *
  * @return value of reference count
  */
 MUGGLE_C_EXPORT
-int muggle_ref_cnt_load(muggle_ref_cnt_t *ref, int memmodel);
+int muggle_ref_cnt_load(muggle_ref_cnt_t *ref, int memorder);
 
 EXTERN_C_END
 

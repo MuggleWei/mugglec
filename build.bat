@@ -3,7 +3,7 @@
 setlocal ENABLEDELAYEDEXPANSION
 
 set origin_dir=%~dp0
-set user_local_dir=f:\\.local
+set user_local_dir=f:\\.local\\usr
 set build_dir=%origin_dir%build
 set install_dir=%user_local_dir%
 
