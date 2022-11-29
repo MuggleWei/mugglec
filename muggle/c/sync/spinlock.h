@@ -16,11 +16,7 @@
 
 EXTERN_C_BEGIN
 
-enum
-{
-	MUGGLE_SPINLOCK_STATUS_UNLOCK,
-	MUGGLE_SPINLOCK_STATUS_LOCK,
-};
+typedef muggle_atomic_byte muggle_spinlock_t;
 
 /**
  * @brief initialize spinlock status
@@ -28,7 +24,7 @@ enum
  * @param spinlock  spinlock
  */
 MUGGLE_C_EXPORT
-void muggle_spinlock_init(muggle_atomic_int *spinlock);
+void muggle_spinlock_init(muggle_spinlock_t *spinlock);
 
 /**
  * @brief lock spinlock
@@ -36,7 +32,7 @@ void muggle_spinlock_init(muggle_atomic_int *spinlock);
  * @param spinlock  spinlock
  */
 MUGGLE_C_EXPORT
-void muggle_spinlock_lock(muggle_atomic_int *spinlock);
+void muggle_spinlock_lock(muggle_spinlock_t *spinlock);
 
 /**
  * @brief unlock spinlock
@@ -44,7 +40,7 @@ void muggle_spinlock_lock(muggle_atomic_int *spinlock);
  * @param spinlock  spinlock
  */
 MUGGLE_C_EXPORT
-void muggle_spinlock_unlock(muggle_atomic_int *spinlock);
+void muggle_spinlock_unlock(muggle_spinlock_t *spinlock);
 
 EXTERN_C_END
 

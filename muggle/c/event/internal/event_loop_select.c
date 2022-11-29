@@ -41,6 +41,8 @@ static void muggle_evloop_select_set_fd(muggle_event_loop_select_t *evloop_selec
 
 int muggle_evloop_init_select(muggle_event_loop_t *evloop, muggle_event_loop_init_args_t *args)
 {
+	MUGGLE_UNUSED(args);
+
 	muggle_event_loop_select_t *evloop_select = (muggle_event_loop_select_t*)evloop;
 	FD_ZERO(&evloop_select->allset);
 
@@ -147,6 +149,8 @@ void muggle_evloop_run_select(muggle_event_loop_t *evloop)
 
 int muggle_evloop_add_ctx_select(muggle_event_loop_t *evloop, muggle_event_context_t *ctx, void *node)
 {
+	MUGGLE_UNUSED(node);
+
 	muggle_event_loop_select_t *evloop_select = (muggle_event_loop_select_t*)evloop;
 	muggle_evloop_select_set_fd(evloop_select, ctx->fd);
 	return 0;

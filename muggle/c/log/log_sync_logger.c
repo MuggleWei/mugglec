@@ -23,7 +23,9 @@ int muggle_sync_logger_init(muggle_sync_logger_t *logger)
 
 int muggle_sync_logger_add_handler(muggle_logger_t *logger, muggle_log_handler_t *handler)
 {
-	if (logger->cnt >= (sizeof(logger->handlers) / sizeof(logger->handlers[0])))
+	size_t cnt_handler =
+		sizeof(logger->handlers) / sizeof(logger->handlers[0]);
+	if (logger->cnt >= (int)cnt_handler)
 	{
 		return MUGGLE_ERR_BEYOND_RANGE;
 	}
@@ -45,6 +47,7 @@ int muggle_sync_logger_add_handler(muggle_logger_t *logger, muggle_log_handler_t
 
 void muggle_sync_logger_destroy(muggle_logger_t *logger)
 {
+	MUGGLE_UNUSED(logger);
 	// do nothing
 }
 

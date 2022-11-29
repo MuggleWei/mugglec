@@ -34,6 +34,8 @@ static void muggle_queue_free_node(muggle_queue_t *p_queue, muggle_queue_node_t 
 
 static void muggle_queue_free_data(muggle_queue_t *p_queue, muggle_queue_node_t *node, muggle_dsaa_data_free func_free, void *pool)
 {
+	MUGGLE_UNUSED(p_queue);
+
 	if (node->data)
 	{
 		if (func_free)

@@ -8,11 +8,15 @@ int chan_write(void *user_args, void *data)
 
 void* chan_read(void *user_args, int consumer_id)
 {
+	MUGGLE_UNUSED(consumer_id);
+
 	return muggle_channel_read((muggle_channel_t*)user_args);
 }
 
 void producer_complete_cb(muggle_benchmark_config_t *config, void *user_args)
 {
+	MUGGLE_UNUSED(config);
+
 	static muggle_benchmark_thread_message_t end_msg;
 	memset(&end_msg, 0, sizeof(end_msg));
 	end_msg.id = UINT64_MAX;
@@ -23,7 +27,7 @@ void benchmark_chan(muggle_benchmark_config_t *config, int flags, const char *na
 {
 	// prepare channel
 	muggle_channel_t chan;
-	muggle_channel_init(&chan, config->capacity, flags);
+	muggle_channel_init(&chan, (muggle_sync_t)config->capacity, flags);
 
 	// initialize thread transfer benchmark
 	muggle_benchmark_thread_trans_t benchmark;
@@ -82,14 +86,14 @@ int main(int argc, char *argv[])
 	};
 
 	int w_flags[] = {
-		MUGGLE_CHANNEL_FLAG_WRITE_FUTEX,
+		MUGGLE_CHANNEL_FLAG_WRITE_SYNC,
 		MUGGLE_CHANNEL_FLAG_WRITE_MUTEX,
 		MUGGLE_CHANNEL_FLAG_WRITE_SPIN,
 		MUGGLE_CHANNEL_FLAG_WRITE_SINGLE,
 	};
 
 	int r_flags[] = {
-		MUGGLE_CHANNEL_FLAG_READ_FUTEX,
+		MUGGLE_CHANNEL_FLAG_READ_SYNC,
 		MUGGLE_CHANNEL_FLAG_READ_MUTEX,
 		MUGGLE_CHANNEL_FLAG_READ_BUSY,
 	};
@@ -97,11 +101,11 @@ int main(int argc, char *argv[])
 	const char *str_w_flags = NULL;
 	const char *str_r_flags = NULL;
 	char name[64];
-	for (int i = 0; i < sizeof(producer_nums) / sizeof(producer_nums[0]); i++)
+	for (int i = 0; i < (int)(sizeof(producer_nums) / sizeof(producer_nums[0])); i++)
 	{
-		for (int w = 0; w < sizeof(w_flags) / sizeof(w_flags[0]); w++)
+		for (int w = 0; w < (int)(sizeof(w_flags) / sizeof(w_flags[0])); w++)
 		{
-			for (int r = 0; r < sizeof(r_flags) / sizeof(r_flags[0]); r++)
+			for (int r = 0; r < (int)(sizeof(r_flags) / sizeof(r_flags[0])); r++)
 			{
 				int wflag = w_flags[w];
 				int rflag = r_flags[r];
@@ -114,9 +118,9 @@ int main(int argc, char *argv[])
 
 				switch (wflag)
 				{
-				case MUGGLE_CHANNEL_FLAG_WRITE_FUTEX:
+				case MUGGLE_CHANNEL_FLAG_WRITE_SYNC:
 					{
-						str_w_flags = "futex";
+						str_w_flags = "sync";
 					}break;
 				case MUGGLE_CHANNEL_FLAG_WRITE_MUTEX:
 					{
@@ -139,9 +143,9 @@ int main(int argc, char *argv[])
 
 				switch (rflag)
 				{
-				case MUGGLE_CHANNEL_FLAG_READ_FUTEX:
+				case MUGGLE_CHANNEL_FLAG_READ_SYNC:
 					{
-						str_r_flags = "futex";
+						str_r_flags = "sync";
 					}break;
 				case MUGGLE_CHANNEL_FLAG_READ_MUTEX:
 					{

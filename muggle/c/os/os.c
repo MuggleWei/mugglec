@@ -166,7 +166,7 @@ int muggle_os_process_path(char *path, unsigned int size)
 
 	return MUGGLE_OK;
 #else
-	char sz_tmp[64], buf[MUGGLE_MAX_PATH];
+	char sz_tmp[64];
 	ssize_t len;
 
 	snprintf(sz_tmp, 63, "/proc/%ld/exe", (long)getpid());

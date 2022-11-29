@@ -10,7 +10,6 @@ int g_interval_ms = 1;
 int w_flags[] = {
 	MUGGLE_RING_BUFFER_FLAG_WRITE_LOCK,
 	MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER,
-	MUGGLE_RING_BUFFER_FLAG_WRITE_BUSY_LOOP
 };
 int r_flags[] = {
 	MUGGLE_RING_BUFFER_FLAG_READ_ALL | MUGGLE_RING_BUFFER_FLAG_READ_WAIT,
@@ -24,15 +23,15 @@ int invalid_r_flags[] = {
 
 TEST(ring_buffer, usage_utils)
 {
-	muggle_atomic_int capacity = 1 << 10;
-	muggle_atomic_int pos = 1 << ((sizeof(muggle_atomic_int) * 8) - 1);
+	muggle_sync_t capacity = 1 << 10;
+	muggle_sync_t pos = 1 << ((sizeof(muggle_atomic_int) * 8) - 1);
 	pos = ~pos;
 
 	ASSERT_GT(pos, 0);
 	// -2147483648 > 0 is true in some compiler, don't compare it with 0
 	// ASSERT_LT(pos + 1, 0);
 
-	muggle_atomic_int idx_in_ring = IDX_IN_POW_OF_2_RING(pos, capacity);
+	muggle_sync_t idx_in_ring = IDX_IN_POW_OF_2_RING(pos, capacity);
 	ASSERT_GE(idx_in_ring, 0);
 	ASSERT_LT(idx_in_ring, capacity);
 	if (idx_in_ring == capacity - 1)
@@ -46,9 +45,9 @@ TEST(ring_buffer, usage_utils)
 
 	int k = 8;
 	pos = pos - capacity * k - 1;
-	muggle_atomic_int last_idx_in_ring = IDX_IN_POW_OF_2_RING(pos, capacity);
+	muggle_sync_t last_idx_in_ring = IDX_IN_POW_OF_2_RING(pos, capacity);
 	++pos;
-	for (muggle_atomic_int i = 0; i < capacity * k * 2; ++i)
+	for (muggle_sync_t i = 0; i < capacity * k * 2; ++i)
 	{
 		idx_in_ring = IDX_IN_POW_OF_2_RING(pos, capacity);
 		ASSERT_GE(idx_in_ring, 0);
@@ -62,14 +61,14 @@ TEST(ring_buffer, usage_utils)
 			ASSERT_EQ(idx_in_ring, last_idx_in_ring + 1);
 		}
 		last_idx_in_ring = idx_in_ring;
-		++pos;
+		pos = IDX_IN_POW_OF_2_RING(pos + 1, capacity);
 	}
 }
 
 void test_ring_buffer_init_destroy(int expect_ret, int flag)
 {
 	muggle_ring_buffer_t r;
-	muggle_atomic_int capacity = 16;
+	muggle_sync_t capacity = 16;
 	int ret;
 
 	ret = muggle_ring_buffer_init(&r, capacity, flag);
@@ -107,26 +106,26 @@ TEST(ring_buffer, init_destroy)
 void test_write_read_in_single_thread(int flag)
 {
 	muggle_ring_buffer_t r;
-	muggle_atomic_int capacity = 16;
-	muggle_atomic_int pos = 0;
+	muggle_sync_t capacity = 16;
+	uint32_t pos = 0;
 	int arr[160];
 
 	muggle_ring_buffer_init(&r, capacity, flag);
 
 	// push capacity / 2, and get all
-	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
+	for (muggle_sync_t i = 0; i < capacity / 2; ++i)
 	{
 		arr[i] = (int)i;
 		muggle_ring_buffer_write(&r, &arr[i]);
 	}
-	for (muggle_atomic_int i = 0; i < capacity / 2; ++i)
+	for (muggle_sync_t i = 0; i < capacity / 2; ++i)
 	{
 		int data = *(int*)muggle_ring_buffer_read(&r, pos++);
 		EXPECT_EQ(data, (int)i);
 	}
 
 	// push one and get one
-	for (muggle_atomic_int i = 0; i < capacity * 5; ++i)
+	for (muggle_sync_t i = 0; i < capacity * 5; ++i)
 	{
 		arr[i] = (int)i;
 		muggle_ring_buffer_write(&r, &arr[i]);
@@ -149,7 +148,7 @@ TEST(ring_buffer, write_read_in_single_thread)
 }
 
 void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_interval, int interval_ms,
-	int capacity = 1024 * 2, int total = 10000)
+	muggle_sync_t capacity = 1024 * 2, int total = 10000)
 {
 	muggle_ring_buffer_t r;
 	int *arr = (int*)malloc(sizeof(int) * total);
@@ -166,7 +165,7 @@ void producer_consumer(int flag, int cnt_producer, int cnt_consumer, int cnt_int
 		consumers.push_back(std::thread([&]{
 			muggle_atomic_fetch_add(&consumer_ready, 1, muggle_memory_order_relaxed);
 
-			muggle_atomic_int pos = 0;
+			uint32_t pos = 0;
 			int recv_idx = 0;
 			while (1)
 			{
@@ -273,7 +272,7 @@ void consume_all_messages(int flag, int cnt_producer, int cnt_consumer,
 		for (int i = 0; i < cnt_consumer; ++i)
 		{
 			consumers.push_back(std::thread([&]{
-				muggle_atomic_int pos = loop_idx * (total + 1);
+				uint32_t pos = (uint32_t)(loop_idx * (total + 1));
 				while (1)
 				{
 					void *data = muggle_ring_buffer_read(&r, pos++);
@@ -281,6 +280,7 @@ void consume_all_messages(int flag, int cnt_producer, int cnt_consumer,
 					{
 						break;
 					}
+
 					muggle_atomic_fetch_add(&consumer_reads, 1, muggle_memory_order_relaxed);
 				}
 			}));

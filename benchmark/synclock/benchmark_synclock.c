@@ -1,30 +1,30 @@
 #include "muggle/c/muggle_c.h"
 #include "muggle_benchmark/muggle_benchmark.h"
 
-#if MUGGLE_SUPPORT_FUTEX
+#if MUGGLE_C_HAVE_SYNC_OBJ
 
-void func_futex(void *args, uint64_t idx)
+void func_synclock(void *args, uint64_t idx)
 {
-	muggle_atomic_int *futex = (muggle_atomic_int*)args;
-	muggle_futex_lock(futex);
-	muggle_futex_unlock(futex);
-	muggle_futex_wake_one(futex);
+	MUGGLE_UNUSED(idx);
+	muggle_sync_t *synclock = (muggle_sync_t*)args;
+	muggle_synclock_lock(synclock);
+	muggle_synclock_unlock(synclock);
 }
 
-void benchmark_futex(
+void benchmark_synclock(
 	muggle_benchmark_config_t *config,
 	fn_muggle_benchmark_func func,
 	const char *name)
 {
-	muggle_atomic_int futex;
-	muggle_futex_init(&futex);
+	muggle_sync_t synclock;
+	muggle_synclock_init(&synclock);
 
 	// initialize benchmark memory pool handle
 	muggle_benchmark_func_t benchmark;
 	muggle_benchmark_func_init(
 		&benchmark,
 		config,
-		&futex,
+		&synclock,
 		func);
 
 	// run
@@ -49,19 +49,19 @@ int main(int argc, char *argv[])
 	muggle_benchmark_config_output(&config);
 
 	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run futex-1");
+	MUGGLE_LOG_INFO("run synclock-1");
 	config.producer = 1;
-	benchmark_futex(&config, func_futex, "futex-1");
+	benchmark_synclock(&config, func_synclock, "synclock-1");
 
 	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run futex-2");
+	MUGGLE_LOG_INFO("run synclock-2");
 	config.producer = 2;
-	benchmark_futex(&config, func_futex, "futex-2");
+	benchmark_synclock(&config, func_synclock, "synclock-2");
 
 	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run futex-4");
+	MUGGLE_LOG_INFO("run synclock-4");
 	config.producer = 4;
-	benchmark_futex(&config, func_futex, "futex-4");
+	benchmark_synclock(&config, func_synclock, "synclock-4");
 
 	MUGGLE_LOG_INFO("--------------------------------------------------------");
 	int hc = (int)muggle_thread_hardware_concurrency();
@@ -70,19 +70,19 @@ int main(int argc, char *argv[])
 	{
 		hc = 1;
 	}
-	MUGGLE_LOG_INFO("run futex-half-hc(%d)", hc);
+	MUGGLE_LOG_INFO("run synclock-half-hc(%d)", hc);
 	config.producer = hc;
-	benchmark_futex(&config, func_futex, "futex-half-hc");
+	benchmark_synclock(&config, func_synclock, "synclock-half-hc");
 }
 
 #else
 
-int main()
+int main(int argc, char *argv[])
 {
 	// initialize log
 	muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_INFO);
 
-	MUGGLE_LOG_ERROR("futex not support in this platform");
+	MUGGLE_LOG_INFO("MUGGLE_C_HAVE_SYNC_OBJ is 0");
 
 	return 0;
 }

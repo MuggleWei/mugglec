@@ -3,7 +3,8 @@
 
 void func_spinlock(void *args, uint64_t idx)
 {
-	muggle_atomic_int *spinlock = (muggle_atomic_int*)args;
+	MUGGLE_UNUSED(idx);
+	muggle_spinlock_t *spinlock = (muggle_spinlock_t*)args;
 	muggle_spinlock_lock(spinlock);
 	muggle_spinlock_unlock(spinlock);
 }
@@ -13,7 +14,7 @@ void benchmark_spinlock(
 	fn_muggle_benchmark_func func,
 	const char *name)
 {
-	muggle_atomic_int spinlock;
+	muggle_spinlock_t spinlock;
 	muggle_spinlock_init(&spinlock);
 
 	// initialize benchmark memory pool handle
@@ -71,4 +72,3 @@ int main(int argc, char *argv[])
 	config.producer = hc;
 	benchmark_spinlock(&config, func_spinlock, "spinlock-half-hc");
 }
-

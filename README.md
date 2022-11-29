@@ -81,9 +81,10 @@ set(MUGGLE_BUILD_TESTING OFF CACHE BOOL "")
 set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
 
 FetchContent_Declare(
-        mugglec
-        GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
-        GIT_TAG v1.0.0-alpha.4
+	mugglec
+	GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
+	GIT_TAG v1.0.0-alpha.5
+	GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(mugglec)
 
@@ -92,7 +93,8 @@ add_executable(example src/example.c)
 add_dependencies(example mugglec)
 target_link_libraries(example mugglec)
 target_include_directories(example PUBLIC
-        ${FETCHCONTENT_BASE_DIR}/mugglec-src)
+	${FETCHCONTENT_BASE_DIR}/mugglec-src
+	${FETCHCONTENT_BASE_DIR}/mugglec-build/generated)
 ```
 
 ##### old style
@@ -106,7 +108,7 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        GIT_TAG           v1.0.0-alpha.4
+        GIT_TAG           v1.0.0-alpha.5
         GIT_SHALLOW       TRUE
         SOURCE_DIR        "${FETCHCONTENT_BASE_DIR}/mugglec-src"
         BINARY_DIR        "${FETCHCONTENT_BASE_DIR}/mugglec-build"
@@ -156,7 +158,8 @@ add_executable(example src/example.c)
 add_dependencies(example mugglec)
 target_link_libraries(example mugglec)
 target_include_directories(example PUBLIC
-	${FETCHCONTENT_BASE_DIR}/mugglec-src)
+	${FETCHCONTENT_BASE_DIR}/mugglec-src
+	${FETCHCONTENT_BASE_DIR}/mugglec-build/generated)
 ```
 
 #### Find and link
@@ -184,12 +187,10 @@ else()
         message(FATAL_ERROR "failed found mugglec")
 endif()
 
-# include mugglec head directories
-include_directories(${MUGGLEC_INCLUDE_DIR})
-
-# link mugglec
+# link mugglec and include head directories
 add_executable(example src/example.c)
 target_link_libraries(example ${MUGGLEC_LIBRARIES})
+target_include_directories(example PUBLIC ${MUGGLEC_INCLUDE_DIR})
 ```
 
 #### Use git submodule(Not recommended)

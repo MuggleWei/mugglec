@@ -70,7 +70,7 @@
 	(a)=(a)^(t)^(t>>(16-(n))))\
 
 #define MUGGLE_OPENSSL_DES_ROTATE(v, n) \
-	((v)>>(n))+((v)<<(32-(n)))
+	(((v)>>(n))+((v)<<(32-(n))))
 
 #define MUGGLE_OPENSSL_DES_IP(l,r) \
 	{ \

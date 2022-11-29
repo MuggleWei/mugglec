@@ -134,7 +134,7 @@ bool muggle_heap_insert(muggle_heap_t *p_heap, void *key, void *value)
 
 	uint64_t idx = p_heap->size;
 	uint64_t parent_idx = 0;
-	muggle_heap_node_t *node = NULL;
+	// muggle_heap_node_t *node = NULL;
 	muggle_heap_node_t *parent = NULL;
 	while (true)
 	{
@@ -144,7 +144,7 @@ bool muggle_heap_insert(muggle_heap_t *p_heap, void *key, void *value)
 			break;
 		}
 
-		node = &p_heap->nodes[idx];
+		// node = &p_heap->nodes[idx];
 		parent = &p_heap->nodes[parent_idx];
 
 		if (p_heap->cmp(parent->key, key) <= 0)
@@ -236,7 +236,7 @@ bool muggle_heap_remove(muggle_heap_t *p_heap, muggle_heap_node_t *node,
 	}
 
 	int64_t tmp = (int64_t)(node - &p_heap->nodes[0]);
-	if (tmp <= 0 || tmp > p_heap->size)
+	if (tmp <= 0 || (uint64_t)tmp > p_heap->size)
 	{
 		return false;
 	}

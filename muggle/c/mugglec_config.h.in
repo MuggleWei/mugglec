@@ -1,0 +1,6 @@
+// mugglec @MUGGLE_C_VERSION@ config file
+
+#cmakedefine MUGGLE_C_USE_DLL
+
+#cmakedefine01 MUGGLE_C_HAVE_LINUX_FUTEX
+#cmakedefine01 MUGGLE_C_HAVE_SYS_FUTEX

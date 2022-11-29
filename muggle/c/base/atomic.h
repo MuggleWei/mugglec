@@ -32,44 +32,44 @@
 #define muggle_memory_order_seq_cst 0
 
 // load
-#define muggle_atomic_load(ptr, memmodel) InterlockedOr(ptr, 0)
+#define muggle_atomic_load(ptr, memorder) InterlockedOr(ptr, 0)
 
 // store
-#define muggle_atomic_store(ptr, val, memmodel) InterlockedExchange(ptr, val)
+#define muggle_atomic_store(ptr, val, memorder) InterlockedExchange(ptr, val)
 
 // exchange
-#define muggle_atomic_exchange(ptr, val, memmodel) InterlockedExchange(ptr, val)
-#define muggle_atomic_exchange32(ptr, val, memmodel) InterlockedExchange(ptr, val)
-#define muggle_atomic_exchange64(ptr, val, memmodel) InterlockedExchange64(ptr, val)
+#define muggle_atomic_exchange(ptr, val, memorder) InterlockedExchange(ptr, val)
+#define muggle_atomic_exchange32(ptr, val, memorder) InterlockedExchange(ptr, val)
+#define muggle_atomic_exchange64(ptr, val, memorder) InterlockedExchange64(ptr, val)
 
 // compare exchange
-#define muggle_atomic_cmp_exch_weak(ptr, expected, desired, memmodel) muggle_win_atomic_cmp_exch32(ptr, expected, desired)
-#define muggle_atomic_cmp_exch_weak32(ptr, expected, desired, memmodel) muggle_win_atomic_cmp_exch32(ptr, expected, desired)
-#define muggle_atomic_cmp_exch_weak64(ptr, expected, desired, memmodel) muggle_win_atomic_cmp_exch64(ptr, expected, desired)
+#define muggle_atomic_cmp_exch_weak(ptr, expected, desired, memorder) muggle_win_atomic_cmp_exch32(ptr, expected, desired)
+#define muggle_atomic_cmp_exch_weak32(ptr, expected, desired, memorder) muggle_win_atomic_cmp_exch32(ptr, expected, desired)
+#define muggle_atomic_cmp_exch_weak64(ptr, expected, desired, memorder) muggle_win_atomic_cmp_exch64(ptr, expected, desired)
 
-#define muggle_atomic_cmp_exch_strong(ptr, expected, desired, memmodel) muggle_win_atomic_cmp_exch32(ptr, expected, desired)
-#define muggle_atomic_cmp_exch_strong32(ptr, expected, desired, memmodel) muggle_win_atomic_cmp_exch32(ptr, expected, desired)
-#define muggle_atomic_cmp_exch_strong64(ptr, expected, desired, memmodel) muggle_win_atomic_cmp_exch64(ptr, expected, desired)
+#define muggle_atomic_cmp_exch_strong(ptr, expected, desired, memorder) muggle_win_atomic_cmp_exch32(ptr, expected, desired)
+#define muggle_atomic_cmp_exch_strong32(ptr, expected, desired, memorder) muggle_win_atomic_cmp_exch32(ptr, expected, desired)
+#define muggle_atomic_cmp_exch_strong64(ptr, expected, desired, memorder) muggle_win_atomic_cmp_exch64(ptr, expected, desired)
 
 // fetch add
-#define muggle_atomic_fetch_add(ptr, val, memmodel) InterlockedExchangeAdd(ptr, val)
-#define muggle_atomic_fetch_add32(ptr, val, memmodel) InterlockedExchangeAdd(ptr, val)
-#define muggle_atomic_fetch_add64(ptr, val, memmodel) InterlockedExchangeAdd64(ptr, val)
+#define muggle_atomic_fetch_add(ptr, val, memorder) InterlockedExchangeAdd(ptr, val)
+#define muggle_atomic_fetch_add32(ptr, val, memorder) InterlockedExchangeAdd(ptr, val)
+#define muggle_atomic_fetch_add64(ptr, val, memorder) InterlockedExchangeAdd64(ptr, val)
 
 // fetch sub
-#define muggle_atomic_fetch_sub(ptr, val, memmodel) InterlockedExchangeAdd(ptr, -val)
-#define muggle_atomic_fetch_sub32(ptr, val, memmodel) InterlockedExchangeAdd(ptr, -val)
-#define muggle_atomic_fetch_sub64(ptr, val, memmodel) InterlockedExchangeAdd64(ptr, -val)
+#define muggle_atomic_fetch_sub(ptr, val, memorder) InterlockedExchangeAdd(ptr, -val)
+#define muggle_atomic_fetch_sub32(ptr, val, memorder) InterlockedExchangeAdd(ptr, -val)
+#define muggle_atomic_fetch_sub64(ptr, val, memorder) InterlockedExchangeAdd64(ptr, -val)
 
 // test_and_set
-#define muggle_atomic_test_and_set(ptr, memmodel) !_interlockedbittestandset(ptr, 0)
+#define muggle_atomic_test_and_set(ptr, memorder) !_interlockedbittestandset(ptr, 0)
 
 // clear
-#define muggle_atomic_clear(ptr, memmodel) _interlockedbittestandreset(ptr, 0)
+#define muggle_atomic_clear(ptr, memorder) _interlockedbittestandreset(ptr, 0)
 
 // fence
-#define muggle_atomic_thread_fence(memmodel) MemoryBarrier()
-#define muggle_atomic_signal_fence(memmodel) MemoryBarrier()
+#define muggle_atomic_thread_fence(memorder) MemoryBarrier()
+#define muggle_atomic_signal_fence(memorder) MemoryBarrier()
 
 EXTERN_C_BEGIN
 
@@ -96,44 +96,44 @@ EXTERN_C_END
 #define muggle_memory_order_seq_cst __ATOMIC_SEQ_CST
 
 // load
-#define muggle_atomic_load(ptr, memmodel) __atomic_load_n(ptr, memmodel)
+#define muggle_atomic_load(ptr, memorder) __atomic_load_n(ptr, memorder)
 
 // store
-#define muggle_atomic_store(ptr, val, memmodel) __atomic_store_n(ptr, val, memmodel)
+#define muggle_atomic_store(ptr, val, memorder) __atomic_store_n(ptr, val, memorder)
 
 // exchange
-#define muggle_atomic_exchange(ptr, val, memmodel) __atomic_exchange_n(ptr, val, memmodel)
-#define muggle_atomic_exchange32(ptr, val, memmodel) __atomic_exchange_n(ptr, val, memmodel)
-#define muggle_atomic_exchange64(ptr, val, memmodel) __atomic_exchange_n(ptr, val, memmodel)
+#define muggle_atomic_exchange(ptr, val, memorder) __atomic_exchange_n(ptr, val, memorder)
+#define muggle_atomic_exchange32(ptr, val, memorder) __atomic_exchange_n(ptr, val, memorder)
+#define muggle_atomic_exchange64(ptr, val, memorder) __atomic_exchange_n(ptr, val, memorder)
 
 // compare exchange
-#define muggle_atomic_cmp_exch_weak(ptr, expected, desired, memmodel) __atomic_compare_exchange_n(ptr, expected, desired, 1, memmodel, __ATOMIC_RELAXED)
-#define muggle_atomic_cmp_exch_weak32(ptr, expected, desired, memmodel) __atomic_compare_exchange_n(ptr, expected, desired, 1, memmodel, __ATOMIC_RELAXED)
-#define muggle_atomic_cmp_exch_weak64(ptr, expected, desired, memmodel) __atomic_compare_exchange_n(ptr, expected, desired, 1, memmodel, __ATOMIC_RELAXED)
+#define muggle_atomic_cmp_exch_weak(ptr, expected, desired, memorder) __atomic_compare_exchange_n(ptr, expected, desired, 1, memorder, __ATOMIC_RELAXED)
+#define muggle_atomic_cmp_exch_weak32(ptr, expected, desired, memorder) __atomic_compare_exchange_n(ptr, expected, desired, 1, memorder, __ATOMIC_RELAXED)
+#define muggle_atomic_cmp_exch_weak64(ptr, expected, desired, memorder) __atomic_compare_exchange_n(ptr, expected, desired, 1, memorder, __ATOMIC_RELAXED)
 
-#define muggle_atomic_cmp_exch_strong(ptr, expected, desired, memmodel) __atomic_compare_exchange_n(ptr, expected, desired, 0, memmodel, __ATOMIC_RELAXED)
-#define muggle_atomic_cmp_exch_strong32(ptr, expected, desired, memmodel) __atomic_compare_exchange_n(ptr, expected, desired, 0, memmodel, __ATOMIC_RELAXED)
-#define muggle_atomic_cmp_exch_strong64(ptr, expected, desired, memmodel) __atomic_compare_exchange_n(ptr, expected, desired, 0, memmodel, __ATOMIC_RELAXED)
+#define muggle_atomic_cmp_exch_strong(ptr, expected, desired, memorder) __atomic_compare_exchange_n(ptr, expected, desired, 0, memorder, __ATOMIC_RELAXED)
+#define muggle_atomic_cmp_exch_strong32(ptr, expected, desired, memorder) __atomic_compare_exchange_n(ptr, expected, desired, 0, memorder, __ATOMIC_RELAXED)
+#define muggle_atomic_cmp_exch_strong64(ptr, expected, desired, memorder) __atomic_compare_exchange_n(ptr, expected, desired, 0, memorder, __ATOMIC_RELAXED)
 
 // fetch add
-#define muggle_atomic_fetch_add(ptr, val, memmodel) __atomic_fetch_add (ptr, val, memmodel)
-#define muggle_atomic_fetch_add32(ptr, val, memmodel) __atomic_fetch_add (ptr, val, memmodel)
-#define muggle_atomic_fetch_add64(ptr, val, memmodel) __atomic_fetch_add (ptr, val, memmodel)
+#define muggle_atomic_fetch_add(ptr, val, memorder) __atomic_fetch_add (ptr, val, memorder)
+#define muggle_atomic_fetch_add32(ptr, val, memorder) __atomic_fetch_add (ptr, val, memorder)
+#define muggle_atomic_fetch_add64(ptr, val, memorder) __atomic_fetch_add (ptr, val, memorder)
 
 // fetch sub
-#define muggle_atomic_fetch_sub(ptr, val, memmodel) __atomic_fetch_sub(ptr, val, memmodel)
-#define muggle_atomic_fetch_sub32(ptr, val, memmodel) __atomic_fetch_sub(ptr, val, memmodel)
-#define muggle_atomic_fetch_sub64(ptr, val, memmodel) __atomic_fetch_sub(ptr, val, memmodel)
+#define muggle_atomic_fetch_sub(ptr, val, memorder) __atomic_fetch_sub(ptr, val, memorder)
+#define muggle_atomic_fetch_sub32(ptr, val, memorder) __atomic_fetch_sub(ptr, val, memorder)
+#define muggle_atomic_fetch_sub64(ptr, val, memorder) __atomic_fetch_sub(ptr, val, memorder)
 
 // test_and_set
-#define muggle_atomic_test_and_set(ptr, memmodel) !__atomic_test_and_set(ptr, memmodel)
+#define muggle_atomic_test_and_set(ptr, memorder) !__atomic_test_and_set(ptr, memorder)
 
 // clear
-#define muggle_atomic_clear(ptr, memmodel) __atomic_clear(ptr, memmodel)
+#define muggle_atomic_clear(ptr, memorder) __atomic_clear(ptr, memorder)
 
 // fence
-#define muggle_atomic_thread_fence(memmodel) __atomic_thread_fence(memmodel)
-#define muggle_atomic_signal_fence(memmodel) __atomic_signal_fence(memmodel)
+#define muggle_atomic_thread_fence(memorder) __atomic_thread_fence(memorder)
+#define muggle_atomic_signal_fence(memorder) __atomic_signal_fence(memorder)
 
 #endif
 

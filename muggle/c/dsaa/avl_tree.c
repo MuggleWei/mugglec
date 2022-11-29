@@ -104,6 +104,7 @@ static void muggle_avl_tree_erase_node(
 static bool muggle_avl_tree_rotate_left(muggle_avl_tree_t *p_avl_tree, muggle_avl_tree_node_t *node)
 {
 	/////////////////////////////////////////////
+	/*
 	// Right-Right
 	//
 	//      |                        |
@@ -115,6 +116,7 @@ static bool muggle_avl_tree_rotate_left(muggle_avl_tree_t *p_avl_tree, muggle_av
 	//       /   \              /   \
 	//     {t23} {t4}	      {t1}  {t23}
 	//     {   } {  }	      {  }  {   }
+	*/
 	/////////////////////////////////////////////
 
 	muggle_avl_tree_node_t *parent = node->parent;
@@ -171,6 +173,7 @@ static bool muggle_avl_tree_rotate_left(muggle_avl_tree_t *p_avl_tree, muggle_av
 static bool muggle_avl_tree_rotate_right(muggle_avl_tree_t *p_avl_tree, muggle_avl_tree_node_t *node)
 {
 	/////////////////////////////////////////////
+	/*
 	// Left-Left
 	//
 	//          |                    |
@@ -182,6 +185,7 @@ static bool muggle_avl_tree_rotate_right(muggle_avl_tree_t *p_avl_tree, muggle_a
 	//     /   \				      /   \
 	//   {t4} {t23}				    {t23} {t1}
 	//   {  } {   }				    {   } {  }
+	*/
 	/////////////////////////////////////////////
 
 	muggle_avl_tree_node_t *parent = node->parent;
@@ -236,6 +240,7 @@ static bool muggle_avl_tree_rotate_right(muggle_avl_tree_t *p_avl_tree, muggle_a
 static void muggle_avl_tree_rotate_right_left(muggle_avl_tree_t *p_avl_tree, muggle_avl_tree_node_t *node)
 {
 	//////////////////////////////////////////////////////////////////////////////////////////
+	/*
 	// Right-Left
 	//
 	//        |                            |                             |
@@ -250,6 +255,7 @@ static void muggle_avl_tree_rotate_right_left(muggle_avl_tree_t *p_avl_tree, mug
 	//       /   \                             /   \
 	//     {t2}  {t3}                        {t3}  {t4}
 	//     {  }  {  }                        {  }  {  }
+	*/
 	//////////////////////////////////////////////////////////////////////////////////////////
 
 	muggle_avl_tree_node_t *parent = node->parent;
@@ -322,6 +328,7 @@ static void muggle_avl_tree_rotate_right_left(muggle_avl_tree_t *p_avl_tree, mug
 static void muggle_avl_tree_rotate_left_right(muggle_avl_tree_t *p_avl_tree, muggle_avl_tree_node_t *node)
 {
 	//////////////////////////////////////////////////////////////////////////////////////////
+	/*
 	// Left-Right
 	//
 	//        |                            |                            |
@@ -336,6 +343,7 @@ static void muggle_avl_tree_rotate_left_right(muggle_avl_tree_t *p_avl_tree, mug
 	//       /   \                 /   \
 	//     {t3}  {t2}            {t4}  {t3}
 	//     {  }  {  }            {  }  {  }
+	*/
 	//////////////////////////////////////////////////////////////////////////////////////////
 
 	muggle_avl_tree_node_t *parent = node->parent;

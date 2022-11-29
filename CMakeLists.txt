@@ -161,13 +161,28 @@ if (MUGGLE_CRYPT_COMPARE_OPENSSL)
 	endif()
 endif()
 
-# include directories
-include_directories(
-	${CMAKE_CURRENT_LIST_DIR}
-)
+# check support
+include(CheckIncludeFile)
+check_include_file(linux/futex.h MUGGLE_C_HAVE_LINUX_FUTEX)
+check_include_file(sys/futex.h MUGGLE_C_HAVE_SYS_FUTEX)
 
 # mugglec
 set(muggle_c mugglec)
+set(mugglec_generated_dir ${CMAKE_CURRENT_BINARY_DIR}/generated)
+
+if (MUGGLE_BUILD_SHARED_LIB)
+	set(MUGGLE_C_USE_DLL ON)
+else()
+	set(MUGGLE_C_USE_DLL OFF)
+endif()
+configure_file(
+	${CMAKE_CURRENT_LIST_DIR}/muggle/c/mugglec_config.h.in
+	${mugglec_generated_dir}/muggle/c/mugglec_config.h)
+
+include_directories(
+	${CMAKE_CURRENT_LIST_DIR}
+	${mugglec_generated_dir})
+
 muggle_add_project(${muggle_c} ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
 
 set_target_properties(${muggle_c} PROPERTIES 
@@ -182,12 +197,11 @@ if ((NOT ${MUGGLE_BUILD_SHARED_LIB}) AND (${MUGGLE_BUILD_STATIC_PIC}))
 	)
 endif()
 
-target_compile_definitions(${muggle_c} PUBLIC
+target_compile_definitions(${muggle_c} PRIVATE
 	MUGGLE_C_SEMVER=${MUGGLE_C_VERSION}
 )
 if (MUGGLE_BUILD_SHARED_LIB)
 	target_compile_definitions(${muggle_c}
-		PUBLIC MUGGLE_C_USE_DLL
 		PRIVATE MUGGLE_C_EXPORTS 
 	)
 endif()
@@ -248,6 +262,7 @@ install(TARGETS ${muggle_c}
 	ARCHIVE DESTINATION lib/static
 )
 muggle_install_headers(${CMAKE_CURRENT_LIST_DIR}/muggle include/muggle)
+muggle_install_headers(${mugglec_generated_dir}/muggle include/muggle)
 
 # muggle benchmark
 if (MUGGLE_BUILD_LIB_BENCHMARK)
@@ -303,15 +318,21 @@ function(add_example name folder)
 		)
 	else()
 		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
-		set_target_properties(${name}
-			PROPERTIES
-			INSTALL_RPATH "\$ORIGIN/../lib"
-		)
+		if (APPLE)
+			set_target_properties(${name}
+				PROPERTIES
+				INSTALL_RPATH "@executable_path/../lib"
+			)
+		elseif (UNIX)
+			set_target_properties(${name}
+				PROPERTIES
+				INSTALL_RPATH "\$ORIGIN/../lib"
+			)
+		endif()
 	endif(MSVC OR MINGW)
 	add_dependencies(${name} ${muggle_c})
 	target_include_directories(${name} PUBLIC
 		${folder}
-		${FETCHCONTENT_BASE_DIR}/mugglec-src
 	)
 	target_link_libraries(${name} ${muggle_c})
 

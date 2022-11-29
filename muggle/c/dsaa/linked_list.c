@@ -58,6 +58,8 @@ static void muggle_linked_list_free_node(muggle_linked_list_t *p_linked_list, mu
 // linked list free data
 static void muggle_linked_list_free_data(muggle_linked_list_t *p_linked_list, muggle_linked_list_node_t *node, muggle_dsaa_data_free func_free, void *pool)
 {
+	MUGGLE_UNUSED(p_linked_list);
+
 	if (node->data)
 	{
 		if (func_free)

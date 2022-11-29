@@ -14,6 +14,7 @@
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/atomic.h"
 #include "muggle/c/sync/mutex.h"
+#include "muggle/c/sync/sync_obj.h"
 #include "muggle/c/sync/condition_variable.h"
 
 EXTERN_C_BEGIN
@@ -26,7 +27,8 @@ enum
 
 	MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER   = 0x01, //!< user guarantee only one writer use this ring_buffer
 	MUGGLE_RING_BUFFER_FLAG_SINGLE_READER   = 0x02, //!< user guarantee only one reader use this ring_buffer
-	MUGGLE_RING_BUFFER_FLAG_WRITE_BUSY_LOOP = 0x04, //!< every writer busy loop until write message into ring
+	// Deprecated: WRITE_BUSY_LOOP
+	// MUGGLE_RING_BUFFER_FLAG_WRITE_BUSY_LOOP = 0x04, //!< every writer busy loop until write message into ring
 	MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP  = 0x08, //!< reader busy loop until read message from ring
 	MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE   = 0x10, //!< every message will only be read once
 };
@@ -39,52 +41,24 @@ typedef struct muggle_ring_buffer_block
 	};
 } muggle_ring_buffer_block_t;
 
-#if MUGGLE_SUPPORT_FUTEX
-
 typedef struct muggle_ring_buffer
 {
 	muggle_atomic_int capacity;
 	int flag;
 	int write_mode;
 	int read_mode;
-	union {
-		muggle_atomic_int next;
-		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
-	};
-	union {
-		muggle_atomic_int cursor;
-		MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
-	};
-	union {
-		muggle_atomic_int read_cursor; // for MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE
-		MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
-	};
-	union {
-		muggle_mutex_t write_mutex;
-		MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
-	};
+	muggle_mutex_t write_mutex;
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
+	muggle_sync_t cursor;
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
+	// for MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE
+	muggle_sync_t read_cursor;
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
 	muggle_mutex_t read_mutex;
 	muggle_condition_variable_t read_cv;
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
 	muggle_ring_buffer_block_t *blocks;
 }muggle_ring_buffer_t;
-
-#else
-
-typedef struct muggle_ring_buffer
-{
-	muggle_atomic_int capacity;
-	int flag;
-	int write_mode;
-	int read_mode;
-	muggle_atomic_int next;
-	muggle_atomic_int cursor;
-	muggle_atomic_int read_cursor; // for MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE
-	muggle_mutex_t mtx;
-	muggle_condition_variable_t cv;
-	muggle_ring_buffer_block_t *blocks;
-}muggle_ring_buffer_t;
-
-#endif  /* #if MUGGLE_SUPPORT_FUTEX */
 
 /**
  * @brief initialize ring buffer
@@ -98,7 +72,8 @@ typedef struct muggle_ring_buffer
  *     - otherwise return error code in muggle/c/base/err.h
  */
 MUGGLE_C_EXPORT
-int muggle_ring_buffer_init(muggle_ring_buffer_t *r, muggle_atomic_int capacity, int flag);
+int muggle_ring_buffer_init(
+	muggle_ring_buffer_t *r, muggle_sync_t capacity, int flag);
 
 /**
  * @brief destroy ring buffer
@@ -132,9 +107,14 @@ int muggle_ring_buffer_write(muggle_ring_buffer_t *r, void *data);
  * @param idx   index of data
  *
  * @return data pointer
+ *
+ * @NOTE
+ *   Recommend user use unsigned for index, don't force convert from signed 
+ *   type. Then user can use ring_buffer_read(r, idx++), and don't worry about
+ *   signed integer overflow.
  */
 MUGGLE_C_EXPORT
-void* muggle_ring_buffer_read(muggle_ring_buffer_t *r, muggle_atomic_int idx);
+void* muggle_ring_buffer_read(muggle_ring_buffer_t *r, uint32_t idx);
 
 EXTERN_C_END
 

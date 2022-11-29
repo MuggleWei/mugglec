@@ -11,6 +11,8 @@
 #ifndef MUGGLE_MACRO_H_
 #define MUGGLE_MACRO_H_
 
+#include "muggle/c/mugglec_config.h"
+
 // debug and release macro
 #if ! defined(NDEBUG)
 	#define MUGGLE_DEBUG 1
@@ -71,9 +73,7 @@
 #endif
 
 // unused
-#ifndef UNUSED
-	#define UNUSED(x) (void)x
-#endif
+#define MUGGLE_UNUSED(x) (void)x
 
 // namespace
 #ifdef __cplusplus
@@ -101,7 +101,7 @@
 // #define MUGGLE_DEPRECATED [[deprecated]] // need c++14 support
 #if MUGGLE_PLATFORM_WINDOWS
 	#define MUGGLE_DEPRECATED __declspec(deprecated)
-#elif MUGGLE_PLATFORM_UNIX || MUGGLE_PLATFORM_OSX
+#elif MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_UNIX || MUGGLE_PLATFORM_OSX
 	#define MUGGLE_DEPRECATED __attribute__((deprecated))
 #else
 	#define MUGGLE_DEPRECATED
@@ -167,8 +167,8 @@
 
 // futex support
 #if defined(MUGGLE_PLATFORM_WINDOWS) || \
-	defined(MUGGLE_PLATFORM_LINUX) || \
-	defined(MUGGLE_PLATFORM_FREEBSD)
+	MUGGLE_C_HAVE_LINUX_FUTEX || \
+	MUGGLE_C_HAVE_SYS_FUTEX
 	#define MUGGLE_SUPPORT_FUTEX 1
 #endif
 

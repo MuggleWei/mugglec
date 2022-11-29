@@ -145,6 +145,8 @@ void muggle_stacktrace_free(muggle_stacktrace_t *st)
 		}
 		free(st->symbols);
 	}
+#else
+	MUGGLE_UNUSED(st);
 #endif
 }
 

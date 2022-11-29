@@ -159,5 +159,6 @@ muggle_pointer_slot_item_t* muggle_pointer_slot_iter_end(muggle_pointer_slot_t *
 
 void* muggle_pointer_slot_iter_data(muggle_pointer_slot_t *pointer_slot, muggle_pointer_slot_item_t *iter)
 {
+	MUGGLE_UNUSED(pointer_slot);
 	return iter->data;
 }
