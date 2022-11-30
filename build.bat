@@ -24,3 +24,4 @@ cmake .. ^
 
 :: cmake --build . --config Release --target INSTALL
 cmake --build . --config Release
+cpack
