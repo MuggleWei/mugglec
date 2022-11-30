@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0.2)
+cmake_minimum_required (VERSION 3.18.6)
 project(mugglec)
 
 # print compiler
@@ -65,8 +65,10 @@ set(MUGGLE_BUILD_WITH_COV OFF)
 
 if (MUGGLE_BUILD_SHARED_LIB)
 	set(MUGGLE_LIB_TYPE SHARED)
+	set(MUGGLE_C_USE_DLL ON)
 else()
 	set(MUGGLE_LIB_TYPE STATIC)
+	set(MUGGLE_C_USE_DLL OFF)
 endif()
 
 # set coverage flag
@@ -168,22 +170,17 @@ check_include_file(sys/futex.h MUGGLE_C_HAVE_SYS_FUTEX)
 
 # mugglec
 set(muggle_c mugglec)
-set(mugglec_generated_dir ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
-if (MUGGLE_BUILD_SHARED_LIB)
-	set(MUGGLE_C_USE_DLL ON)
-else()
-	set(MUGGLE_C_USE_DLL OFF)
-endif()
+set(mugglec_generated_dir ${CMAKE_CURRENT_BINARY_DIR}/generated)
 configure_file(
 	${CMAKE_CURRENT_LIST_DIR}/muggle/c/mugglec_config.h.in
 	${mugglec_generated_dir}/muggle/c/mugglec_config.h)
 
-include_directories(
-	${CMAKE_CURRENT_LIST_DIR}
-	${mugglec_generated_dir})
-
 muggle_add_project(${muggle_c} ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
+target_include_directories(${muggle_c} PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+	$<BUILD_INTERFACE:${mugglec_generated_dir}>
+	$<INSTALL_INTERFACE:include>)
 
 set_target_properties(${muggle_c} PROPERTIES 
 	LINKER_LANGUAGE C
@@ -191,6 +188,7 @@ set_target_properties(${muggle_c} PROPERTIES
 	SOVERSION ${MUGGLE_C_SOVERSION}
 	DEBUG_POSTFIX d
 )
+
 if ((NOT ${MUGGLE_BUILD_SHARED_LIB}) AND (${MUGGLE_BUILD_STATIC_PIC}))
 	set_target_properties(${muggle_c} PROPERTIES
 		POSITION_INDEPENDENT_CODE ON
@@ -219,22 +217,22 @@ if (MUGGLE_BUILD_TRACE)
 	endif()
 endif()
 
-# thread
+# mugglec extra libraries
 find_package(Threads)
-if (MSVC OR MINGW)
-	target_link_libraries(${muggle_c}
-		${CMAKE_THREAD_LIBS_INIT}
-		${CMAKE_DL_LIBS}
-		synchronization
-	)
+if (Threads_FOUND)
+	list(APPEND mugglec_extra_libs Threads::Threads)
 else()
-	target_link_libraries(${muggle_c}
-		${CMAKE_THREAD_LIBS_INIT}
-		${CMAKE_DL_LIBS}
-	)
+	message(FATAL_ERROR "Failed found threads")
 endif()
 
-# backtrace
+list(APPEND mugglec_extra_libs ${CMAKE_DL_LIBS})
+
+if (MSVC OR MINGW)
+	list(APPEND mugglec_extra_libs synchronization)
+endif()
+
+target_link_libraries(${muggle_c} ${mugglec_extra_libs})
+
 if (CMAKE_HOST_UNIX)
 	find_package(Backtrace)
 	set(HAVE_BACKTRACE ${Backtrace_FOUND})
@@ -256,13 +254,44 @@ if (CMAKE_HOST_UNIX)
 	endif()
 endif()
 
+# install and add export configuration
+set(mugglec_export_dir lib/cmake/mugglec)
 install(TARGETS ${muggle_c}
+	EXPORT mugglecTargets
 	RUNTIME DESTINATION bin
 	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib/static
-)
+	ARCHIVE DESTINATION lib/static)
+install(EXPORT mugglecTargets
+	FILE mugglecTargets.cmake
+	DESTINATION ${mugglec_export_dir})
 muggle_install_headers(${CMAKE_CURRENT_LIST_DIR}/muggle include/muggle)
 muggle_install_headers(${mugglec_generated_dir}/muggle include/muggle)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+	${CMAKE_CURRENT_LIST_DIR}/cmake/mugglecConfig.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/mugglecConfig.cmake"
+    INSTALL_DESTINATION ${mugglec_export_dir}
+    NO_SET_AND_CHECK_MACRO
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/mugglecConfigVersion.cmake"
+	VERSION ${MUGGLE_C_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+install(FILES
+	${CMAKE_CURRENT_BINARY_DIR}/mugglecConfig.cmake
+	${CMAKE_CURRENT_BINARY_DIR}/mugglecConfigVersion.cmake
+	DESTINATION ${mugglec_export_dir})
+
+# cpack
+include(InstallRequiredSystemLibraries)
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_LIST_DIR}/LICENSE")
+set(CPACK_PACKAGE_VERSION_MAJOR ${MUGGLE_C_VER_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${MUGGLE_C_VER_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${MUGGLE_C_VER_PATCH})
+set(CPACK_SOURCE_GENERATOR "TGZ")
+include(CPack)
 
 # muggle benchmark
 if (MUGGLE_BUILD_LIB_BENCHMARK)
@@ -296,6 +325,9 @@ if (MUGGLE_BUILD_TESTING)
 	set(test_utils muggle_test_utils)
 	muggle_add_project(${test_utils} ${CMAKE_CURRENT_LIST_DIR}/test_utils SHARED)
 	add_dependencies(${test_utils} ${muggle_c})
+	target_include_directories(${test_utils} PUBLIC
+		${CMAKE_CURRENT_LIST_DIR}
+		${mugglec_generated_dir})
 endif()
 
 # functions
