@@ -16,7 +16,8 @@ mugglec is a cross platform C base library, contains utilities like basic data s
     - [Incorporating Into CMake project(recommended)](#incorporating-into-cmake-projectrecommended)
       - [current style](#current-style)
       - [old style](#old-style)
-    - [Find and link](#find-and-link)
+    - [Use find\_package (recommended)](#use-find_package-recommended)
+    - [Search and link](#search-and-link)
     - [Use git submodule(Not recommended)](#use-git-submodulenot-recommended)
 
 ### Feature
@@ -162,10 +163,21 @@ target_include_directories(example PUBLIC
 	${FETCHCONTENT_BASE_DIR}/mugglec-build/generated)
 ```
 
-#### Find and link
+#### Use find_package (recommended)
 If you don't want to compile mugglec in each project, you can compile and install once, after just link it.  
-After build and install mugglec, you can find and link it.  
+After build and install(`cmake --build . --target install`) mugglec, you can find and link it.  
 If your project already use CMake, add content below into your CMakeLists.txt  
+```
+# find mugglec package
+find_package(mugglec 1 REQUIRED)
+
+# link mugglec (NOTE: no need to include directory manually)
+add_executable(example src/example.c)
+target_link_libraries(example PUBLIC mugglec)
+```
+
+#### Search and link
+When you don't wanna use `find_package` or only have mugglec libraries and headers in your system, you can try to find `mugglec` manually
 ```
 # search head files and libraries
 find_path(MUGGLEC_INCLUDE_DIR

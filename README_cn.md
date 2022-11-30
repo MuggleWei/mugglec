@@ -18,6 +18,7 @@ mugglec是一个c语言编写, 跨平台基础库, 提供了一系列常用的�
     - [融入进CMake工程 (推荐)](#融入进cmake工程-推荐)
       - [当前的风格](#当前的风格)
       - [老式的风格](#老式的风格)
+    - [使用find\_package (推荐)](#使用find_package-推荐)
     - [发现并链接](#发现并链接)
     - [使用git子模块(不推荐)](#使用git子模块不推荐)
 
@@ -165,10 +166,21 @@ target_include_directories(example PUBLIC
 	${FETCHCONTENT_BASE_DIR}/mugglec-build/generated)
 ```
 
+#### 使用find_package (推荐)
+若你不想每个工程都独立去编译mugglec, 可以选择只编译一次并安装, 之后只需链接即可  
+成功构建 mugglec 后, 执行 install 步骤(`cmake --build . --target install`), 成功之后便可在系统中查找mugglec  
+若你的工程使用的是cmake, 可在CMakeLists.txt中添加  
+```
+# 发现 mugglec 的包
+find_package(mugglec 1 REQUIRED)
+
+# 链接 mugglec (注意, 这里无需手动包含头文件的查找路径)
+add_executable(example src/example.c)
+target_link_libraries(example PUBLIC mugglec)
+```
+
 #### 发现并链接
-若你不想每个工程都独立去编译mugglec, 可以选择只编译一次并安装, 之后只需链接即可.  
-成功构建mugglec后, 执行install步骤, 成功之后便可在系统中查找mugglec  
-若你的工程使用的是cmake, 可在CMakeLists.txt中添加
+当你不想使用 `find_package` 或是你的系统中只包含 `mugglec` 的库和头文件时, 你还可以尝试自己手动发现 `mugglec`
 ```
 # 查找头文件和库
 find_path(MUGGLEC_INCLUDE_DIR
