@@ -173,8 +173,8 @@ set(muggle_c mugglec)
 
 set(mugglec_generated_dir ${CMAKE_CURRENT_BINARY_DIR}/generated)
 configure_file(
-	${CMAKE_CURRENT_LIST_DIR}/muggle/c/mugglec_config.h.in
-	${mugglec_generated_dir}/muggle/c/mugglec_config.h)
+	"${CMAKE_CURRENT_LIST_DIR}/muggle/c/mugglec_config.h.in"
+	"${mugglec_generated_dir}/muggle/c/mugglec_config.h")
 
 muggle_add_project(${muggle_c} ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
 target_include_directories(${muggle_c} PUBLIC
@@ -237,9 +237,9 @@ if (CMAKE_HOST_UNIX)
 	find_package(Backtrace)
 	set(HAVE_BACKTRACE ${Backtrace_FOUND})
 	if (HAVE_BACKTRACE)
-		message("Found Backtrace")
-		message("Backtrace header: ${Backtrace_HEADER}")
-		message("Backtrace libs: ${Backtrace_LIBRARIES}")
+		#message("Found Backtrace")
+		#message("Backtrace header: ${Backtrace_HEADER}")
+		#message("Backtrace libs: ${Backtrace_LIBRARIES}")
 
 		target_link_libraries(${muggle_c}
 			${Backtrace_LIBRARIES}
@@ -255,34 +255,46 @@ if (CMAKE_HOST_UNIX)
 endif()
 
 # install and add export configuration
-set(mugglec_export_dir lib/cmake/mugglec)
+include(GNUInstallDirs)
+
+set(mugglec_export_dir "${CMAKE_INSTALL_LIBDIR}/cmake/mugglec")
 install(TARGETS ${muggle_c}
 	EXPORT mugglecTargets
-	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib/static)
+	RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+	ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 install(EXPORT mugglecTargets
 	FILE mugglecTargets.cmake
 	DESTINATION ${mugglec_export_dir})
-muggle_install_headers(${CMAKE_CURRENT_LIST_DIR}/muggle include/muggle)
-muggle_install_headers(${mugglec_generated_dir}/muggle include/muggle)
+muggle_install_headers(
+	"${CMAKE_CURRENT_LIST_DIR}/muggle" "${CMAKE_INSTALL_INCLUDEDIR}/muggle")
+muggle_install_headers(
+	"${mugglec_generated_dir}/muggle" "${CMAKE_INSTALL_INCLUDEDIR}/muggle")
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
-	${CMAKE_CURRENT_LIST_DIR}/cmake/mugglecConfig.cmake.in
-    "${CMAKE_CURRENT_BINARY_DIR}/mugglecConfig.cmake"
+	"${CMAKE_CURRENT_LIST_DIR}/cmake/mugglecConfig.cmake.in"
+    "${mugglec_generated_dir}/mugglecConfig.cmake"
     INSTALL_DESTINATION ${mugglec_export_dir}
     NO_SET_AND_CHECK_MACRO
     NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/mugglecConfigVersion.cmake"
+    "${mugglec_generated_dir}/mugglecConfigVersion.cmake"
 	VERSION ${MUGGLE_C_VERSION}
     COMPATIBILITY SameMajorVersion
 )
 install(FILES
-	${CMAKE_CURRENT_BINARY_DIR}/mugglecConfig.cmake
-	${CMAKE_CURRENT_BINARY_DIR}/mugglecConfigVersion.cmake
+	"${mugglec_generated_dir}/mugglecConfig.cmake"
+	"${mugglec_generated_dir}/mugglecConfigVersion.cmake"
 	DESTINATION ${mugglec_export_dir})
+
+# configure and install pkgconfig file
+configure_file(
+	"${CMAKE_CURRENT_LIST_DIR}/cmake/mugglec.pc.in"
+	"${mugglec_generated_dir}/mugglec.pc" @ONLY)
+install(FILES
+	"${mugglec_generated_dir}/mugglec.pc"
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
 # cpack
 include(InstallRequiredSystemLibraries)

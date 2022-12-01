@@ -1,0 +1,9 @@
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+
+Name: mugglec
+Description: mugglec
+Version: @MUGGLE_C_VERSION@
+URL: https://github.com/MuggleWei/mugglec
+Libs: -L${libdir} -lmugglec
+Cflags: -I${includedir}
