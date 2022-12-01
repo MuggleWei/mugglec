@@ -18,7 +18,9 @@ mugglec是一个c语言编写, 跨平台基础库, 提供了一系列常用的�
     - [融入进CMake工程 (推荐)](#融入进cmake工程-推荐)
       - [当前的风格](#当前的风格)
       - [老式的风格](#老式的风格)
-    - [使用find\_package (推荐)](#使用find_package-推荐)
+    - [使用 find\_package 或 pkg-config (推荐)](#使用-find_package-或-pkg-config-推荐)
+      - [find\_package](#find_package)
+      - [pkg-config](#pkg-config)
     - [发现并链接](#发现并链接)
     - [使用git子模块(不推荐)](#使用git子模块不推荐)
 
@@ -166,9 +168,11 @@ target_include_directories(example PUBLIC
 	${FETCHCONTENT_BASE_DIR}/mugglec-build/generated)
 ```
 
-#### 使用find_package (推荐)
-若你不想每个工程都独立去编译mugglec, 可以选择只编译一次并安装, 之后只需链接即可  
-成功构建 mugglec 后, 执行 install 步骤(`cmake --build . --target install`), 成功之后便可在系统中查找mugglec  
+#### 使用 find_package 或 pkg-config (推荐)
+若你不想每个工程都独立去编译 mugglec, 可以选择只编译一次并安装, 之后只需链接即可  
+成功构建 mugglec 后, 执行 install(`cmake --build . --target install`), 成功之后便可在系统中查找mugglec  
+
+##### find_package
 若你的工程使用的是cmake, 可在CMakeLists.txt中添加  
 ```
 # 发现 mugglec 的包
@@ -178,6 +182,19 @@ find_package(mugglec 1 REQUIRED)
 add_executable(example src/example.c)
 target_link_libraries(example PUBLIC mugglec)
 ```
+
+##### pkg-config
+若你的工程并非使用 cmake 构建，那么大概率会支持 pkg-config  
+比如当使用 meson 时，可以通过 pkg-config 轻松的增加依赖
+* 首先指定 pkg-config 文件所在路径
+  ```
+  export PKG_CONFIG_PATH=/wherever/your/pkgconfig/dir/is/
+  ```
+* 修改 meson.build，增加对 mugglec 的依赖
+  ```
+  mugglecdep = dependency('mugglec')
+  executable('hello', 'hello.c', dependencies: mugglecdep)
+  ```
 
 #### 发现并链接
 当你不想使用 `find_package` 或是你的系统中只包含 `mugglec` 的库和头文件时, 你还可以尝试自己手动发现 `mugglec`
