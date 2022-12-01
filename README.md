@@ -16,7 +16,9 @@ mugglec is a cross platform C base library, contains utilities like basic data s
     - [Incorporating Into CMake project(recommended)](#incorporating-into-cmake-projectrecommended)
       - [current style](#current-style)
       - [old style](#old-style)
-    - [Use find\_package (recommended)](#use-find_package-recommended)
+    - [Use find\_package or pkg-config (recommended)](#use-find_package-or-pkg-config-recommended)
+      - [find\_package](#find_package)
+      - [pkg-config](#pkg-config)
     - [Search and link](#search-and-link)
     - [Use git submodule(Not recommended)](#use-git-submodulenot-recommended)
 
@@ -84,7 +86,7 @@ set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
 FetchContent_Declare(
 	mugglec
 	GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
-	GIT_TAG v1.0.0-alpha.6
+	GIT_TAG v1.0.0-alpha.7
 	GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(mugglec)
@@ -109,7 +111,7 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        GIT_TAG           v1.0.0-alpha.6
+        GIT_TAG           v1.0.0-alpha.7
         GIT_SHALLOW       TRUE
         SOURCE_DIR        "${FETCHCONTENT_BASE_DIR}/mugglec-src"
         BINARY_DIR        "${FETCHCONTENT_BASE_DIR}/mugglec-build"
@@ -163,9 +165,11 @@ target_include_directories(example PUBLIC
 	${FETCHCONTENT_BASE_DIR}/mugglec-build/generated)
 ```
 
-#### Use find_package (recommended)
+#### Use find_package or pkg-config (recommended)
 If you don't want to compile mugglec in each project, you can compile and install once, after just link it.  
 After build and install(`cmake --build . --target install`) mugglec, you can find and link it.  
+
+##### find_package
 If your project already use CMake, add content below into your CMakeLists.txt  
 ```
 # find mugglec package
@@ -175,6 +179,19 @@ find_package(mugglec 1 REQUIRED)
 add_executable(example src/example.c)
 target_link_libraries(example PUBLIC mugglec)
 ```
+
+##### pkg-config
+If your project is not built with cmake, it will most likely support pkg-config.  
+For example, when using meson, you can easily add dependencies through pkg-config
+* Specify the path where the pkg-config dir is
+  ```
+  export PKG_CONFIG_PATH=/wherever/your/pkgconfig/dir/is/
+  ```
+* Modify meson.build, add mugglec dependency
+  ```
+  mugglecdep = dependency('mugglec')
+  executable('hello', 'hello.c', dependencies: mugglecdep)
+  ```
 
 #### Search and link
 When you don't wanna use `find_package` or only have mugglec libraries and headers in your system, you can try to find `mugglec` manually
