@@ -178,3 +178,23 @@ MACRO(SUBDIRLIST result curdir)
     ENDFOREACH()
     SET(${result} ${dirlist})
 ENDMACRO()
+
+#########################################
+# muggle_add_copy_dir_target
+# descript: add fake target for copy files from src dir to dst dir
+# @name: target's name
+function(muggle_copy_dir_target name src_dir dst_dir)
+	file(GLOB_RECURSE src_files "${src_dir}/*")
+	foreach(src_file ${src_files})
+		file(RELATIVE_PATH rel_path ${src_dir} ${src_file})
+		set(dst_file "${dst_dir}/${rel_path}")
+		add_custom_command(
+			OUTPUT "${dst_file}"
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different "${src_file}" ${dst_file}
+			DEPENDS "${src_file}"
+			COMMENT "copy ${src_file} to ${dst_file}"
+		)
+		list(APPEND dst_files "${dst_file}")
+	endforeach()
+	add_custom_target(${name} ALL DEPENDS ${dst_files})
+endfunction()
