@@ -181,8 +181,10 @@ ENDMACRO()
 
 #########################################
 # muggle_add_copy_dir_target
-# descript: add fake target for copy files from src dir to dst dir
+# descript: add custom target for copy files from src dir to dst dir
 # @name: target's name
+# @src_dir: source directory
+# @dst_dir: destination directory
 function(muggle_copy_dir_target name src_dir dst_dir)
 	file(GLOB_RECURSE src_files "${src_dir}/*")
 	foreach(src_file ${src_files})
