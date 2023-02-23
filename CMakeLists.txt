@@ -129,6 +129,8 @@ if (${MUGGLE_BUILD_TRACE})
 	target_compile_definitions(${muggle_cc} PUBLIC MUGGLE_BUILD_TRACE)
 endif()
 
+target_compile_options(${muggle_cc} PRIVATE -fwrapv)
+
 # muggle benchmark
 muggle_add_project(muggle_benchmark ${CMAKE_CURRENT_LIST_DIR}/muggle_benchmark ${MUGGLE_LIB_TYPE})
 set_target_properties(muggle_benchmark PROPERTIES 
