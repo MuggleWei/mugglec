@@ -13,6 +13,7 @@ COPY ./muggle /app/src/mugglec/muggle
 COPY ./test_utils /app/src/mugglec/test_utils
 COPY ./test /app/src/mugglec/test
 COPY ./cmake /app/src/mugglec/cmake
+COPY ./LICENSE /app/src/mugglec/LICENSE
 WORKDIR /app/src/mugglec
 RUN cmake \
 	-S /app/src/mugglec \

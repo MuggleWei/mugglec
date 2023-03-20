@@ -83,30 +83,36 @@ static void muggle_socket_evloop_on_read(muggle_event_loop_t *evloop, muggle_eve
 	{
 		case MUGGLE_SOCKET_CTX_TYPE_TCP_LISTEN:
 		{
-			muggle_socket_t fd = muggle_socket_evloop_on_accept(socket_ctx);
-			if (fd != MUGGLE_INVALID_SOCKET)
-			{
-				muggle_socket_context_t *new_ctx = handle->cb_alloc(handle->mempool);
-				if (new_ctx == NULL)
+			do {
+				muggle_socket_t fd = muggle_socket_evloop_on_accept(socket_ctx);
+				if (fd != MUGGLE_INVALID_SOCKET)
 				{
-					muggle_socket_close(fd);
-					return;
-				}
-				muggle_socket_ctx_init(new_ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_CLIENT);
+					muggle_socket_context_t *new_ctx = handle->cb_alloc(handle->mempool);
+					if (new_ctx == NULL)
+					{
+						muggle_socket_close(fd);
+						return;
+					}
+					muggle_socket_ctx_init(new_ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_CLIENT);
 
-				int ret = muggle_evloop_add_ctx(evloop, (muggle_event_context_t*)new_ctx);
-				if (ret != 0)
-				{
-					handle->cb_free(handle->mempool, new_ctx);
-					muggle_socket_close(fd);
-					return;
-				}
+					int ret = muggle_evloop_add_ctx(evloop, (muggle_event_context_t*)new_ctx);
+					if (ret != 0)
+					{
+						handle->cb_free(handle->mempool, new_ctx);
+						muggle_socket_close(fd);
+						return;
+					}
 
-				if (handle->cb_conn)
-				{
-					handle->cb_conn(evloop, new_ctx);
+					if (handle->cb_conn)
+					{
+						handle->cb_conn(evloop, new_ctx);
+					}
 				}
-			}
+				else
+				{
+					break;
+				}
+			} while(1);
 		}break;
 		default:
 		{
