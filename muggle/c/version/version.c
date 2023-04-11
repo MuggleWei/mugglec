@@ -19,7 +19,8 @@
 
 const char* mugglec_version()
 {
-	return MUGGLE_MACRO_STR(MUGGLE_C_SEMVER);
+	// return MUGGLE_MACRO_STR(MUGGLE_C_SEMVER);
+	return MUGGLE_C_VERSION;
 }
 
 const char* mugglec_compile_time()
