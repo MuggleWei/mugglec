@@ -1,3 +1,6 @@
+#ifndef MUGGLE_C_CONFIG_IN_H_
+#define MUGGLE_C_CONFIG_IN_H_
+
 // mugglec @MUGGLE_C_VERSION@ config file
 
 #cmakedefine MUGGLE_C_VERSION "@MUGGLE_C_VERSION@"
@@ -6,3 +9,5 @@
 
 #cmakedefine01 MUGGLE_C_HAVE_LINUX_FUTEX
 #cmakedefine01 MUGGLE_C_HAVE_SYS_FUTEX
+
+#endif // !MUGGLE_C_CONFIG_IN_H_
