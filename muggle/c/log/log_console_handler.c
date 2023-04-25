@@ -6,15 +6,55 @@
 #include "muggle/c/sync/mutex.h"
 #include "log_level.h"
 
+/*
+ * unix terminal colors
+ *
+ * output colored text, need print or echo -e the control characters for 
+ * required color, then output text, and then reset the output back to default.
+ *
+ * "\x1B[${code}m" or "\033[${code}m", ${code} represent color code
+ *
+ * reset codes: 0
+ *
+ * color codes:
+ * | color        | foreground | background |
+ * | ----         | ----       | ----       |
+ * | default      | 39         | 49         |
+ * | black        | 30         | 40         |
+ * | dark red     | 31         | 41         |
+ * | dark green   | 32         | 42         |
+ * | dark yellow  | 33         | 43         |
+ * | dark blue    | 34         | 44         |
+ * | dark magenta | 35         | 45         |
+ * | dark cyan    | 36         | 46         |
+ * | light gray   | 37         | 47         |
+ * | dark gray    | 90         | 100        |
+ * | red          | 91         | 101        |
+ * | green        | 92         | 102        |
+ * | orange       | 93         | 103        |
+ * | blue         | 94         | 104        |
+ * | magenta      | 95         | 105        |
+ * | cyan         | 96         | 106        |
+ * | white        | 97         | 107        |
+ *
+ * format for foreground color is:
+ * "\x1B[" + "<0 or 1, meaning nromal or bold>;" + "<color code>" + "m"
+ *
+ * format for background:
+ * "\x1B[" + "<color code>" + "m"
+ * */
+
+#define UNIX_TERMINAL_COLOR(code) "\x1B[" #code "m"
+
  // terminal color for *nix
-#define UNIX_TERMINAL_COLOR_NRM  "\x1B[0m"
-#define UNIX_TERMINAL_COLOR_RED  "\x1B[31m"
-#define UNIX_TERMINAL_COLOR_GRN  "\x1B[32m"
-#define UNIX_TERMINAL_COLOR_YEL  "\x1B[33m"
-#define UNIX_TERMINAL_COLOR_BLU  "\x1B[34m"
-#define UNIX_TERMINAL_COLOR_MAG  "\x1B[35m"
-#define UNIX_TERMINAL_COLOR_CYN  "\x1B[36m"
-#define UNIX_TERMINAL_COLOR_WHT  "\x1B[37m"
+#define UNIX_TERMINAL_COLOR_RST UNIX_TERMINAL_COLOR(0)
+#define UNIX_TERMINAL_COLOR_RED UNIX_TERMINAL_COLOR(31)
+#define UNIX_TERMINAL_COLOR_GRN UNIX_TERMINAL_COLOR(32)
+#define UNIX_TERMINAL_COLOR_YEL UNIX_TERMINAL_COLOR(33)
+#define UNIX_TERMINAL_COLOR_BLU UNIX_TERMINAL_COLOR(34)
+#define UNIX_TERMINAL_COLOR_MAG UNIX_TERMINAL_COLOR(35)
+#define UNIX_TERMINAL_COLOR_CYN UNIX_TERMINAL_COLOR(36)
+#define UNIX_TERMINAL_COLOR_WHT UNIX_TERMINAL_COLOR(37)
 
 /**
  * @brief write log
@@ -94,7 +134,7 @@ static int muggle_log_console_handler_write(
 			fwrite(UNIX_TERMINAL_COLOR_YEL, 1, strlen(UNIX_TERMINAL_COLOR_YEL), fp);
 		}
 		ret = (int)fwrite(buf, 1, ret, fp);
-		fwrite("\033[m", 1, strlen("\033[m"), fp);
+		fwrite(UNIX_TERMINAL_COLOR_RST, 1, strlen(UNIX_TERMINAL_COLOR_RST), fp);
 
 		fflush(fp);
 #endif
