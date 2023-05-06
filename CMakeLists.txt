@@ -513,7 +513,7 @@ if (BUILD_TESTING)
 		message("-- GTest both libraries: ${GTEST_BOTH_LIBRARIES}")
 	else()
 		# Download and unpack googletest at configure time
-		configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/CMakeLists.txt.in googletest-download/CMakeLists.txt)
+		configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/googletest.cmake.in googletest-download/CMakeLists.txt)
 		execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
 			RESULT_VARIABLE result
 			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )

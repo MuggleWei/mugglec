@@ -18,6 +18,7 @@ int main()
 	LOG_INFO("info message");
 	LOG_WARNING("warning message");
 	LOG_ERROR("error message");
+	LOG_INFO("bye");
 
 	return 0;
 }
