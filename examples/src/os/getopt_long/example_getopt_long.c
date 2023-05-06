@@ -25,10 +25,7 @@
  *  |                                     | unknown option                  |
  *****************************************************************************/
 
-#include <unistd.h>
-#include <getopt.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "muggle/c/muggle_c.h"
 
 int main(int argc, char *argv[])
 {

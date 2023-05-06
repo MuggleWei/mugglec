@@ -43,7 +43,7 @@ int getopt_long(
 	int nargc, char **nargv,
 	const char *options,
 	const struct option *long_options,
-	int *index)
+	int *index);
 
 #else
 
