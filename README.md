@@ -86,7 +86,7 @@ set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
 FetchContent_Declare(
 	mugglec
 	GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
-	GIT_TAG v1.1.0
+	GIT_TAG v1.2.0
 	GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(mugglec)
@@ -111,7 +111,7 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        GIT_TAG           v1.1.0
+        GIT_TAG           v1.2.0
         GIT_SHALLOW       TRUE
         SOURCE_DIR        "${FETCHCONTENT_BASE_DIR}/mugglec-src"
         BINARY_DIR        "${FETCHCONTENT_BASE_DIR}/mugglec-build"

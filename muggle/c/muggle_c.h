@@ -61,6 +61,7 @@
 #include "muggle/c/sync/double_buffer.h"
 #include "muggle/c/sync/channel.h"
 #include "muggle/c/sync/ref_cnt.h"
+#include "muggle/c/sync/call_once.h"
 
 // log
 #include "muggle/c/log/log_level.h"
