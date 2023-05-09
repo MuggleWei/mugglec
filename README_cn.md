@@ -1,4 +1,10 @@
 ## mugglec
+
+![linux-gcc](https://github.com/MuggleWei/mugglec/actions/workflows/linux-gcc.yaml/badge.svg?branch=master)
+![linux-clang](https://github.com/MuggleWei/mugglec/actions/workflows/linux-clang.yaml/badge.svg?branch=master)
+![win-msvc](https://github.com/MuggleWei/mugglec/actions/workflows/win-msvc.yaml/badge.svg?branch=master)
+![macos-clang](https://github.com/MuggleWei/mugglec/actions/workflows/macos-clang.yaml/badge.svg?branch=master)
+
 <b>跨平台c语言基础库</b>
 * [readme EN](./README.md)
 * [readme 中文](./README_cn.md)
@@ -32,11 +38,6 @@ mugglec是一个c语言编写, 跨平台基础库, 提供了一系列常用的�
 * 尽可能的保持体积小
 
 ### 构建
-![linux-gcc](https://github.com/MuggleWei/mugglec/actions/workflows/linux-gcc.yaml/badge.svg?branch=master)
-![linux-clang](https://github.com/MuggleWei/mugglec/actions/workflows/linux-clang.yaml/badge.svg?branch=master)
-![win-msvc](https://github.com/MuggleWei/mugglec/actions/workflows/win-msvc.yaml/badge.svg?branch=master)
-![macos-clang](https://github.com/MuggleWei/mugglec/actions/workflows/macos-clang.yaml/badge.svg?branch=master)
-
 可以很轻松的通过cmake构建此库, 通常要做的就是:
 ```
 mkdir build

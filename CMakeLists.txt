@@ -243,32 +243,33 @@ endif()
 # extra libraries
 find_package(Threads)
 if (Threads_FOUND)
-	list(APPEND mugglec_extra_libs ${CMAKE_THREAD_LIBS_INIT})
+	message("-- mugglec link threads: ${CMAKE_THREAD_LIBS_INIT}")
+	target_link_libraries(${muggle_c} ${CMAKE_THREAD_LIBS_INIT})
 else()
 	message(FATAL_ERROR "Failed found threads")
 endif()
 
-list(APPEND mugglec_extra_libs ${CMAKE_DL_LIBS})
+message("-- mugglec link dl libs: ${CMAKE_DL_LIBS}")
+target_link_libraries(${muggle_c} ${CMAKE_DL_LIBS})
 
 if (MSVC OR MINGW)
-	list(APPEND mugglec_extra_libs synchronization)
+	message("-- mugglec link sync: synchronization")
+	target_link_libraries(${muggle_c} synchronization)
 endif()
 
 if (Backtrace_FOUND)
-	target_include_directories(${muggle_c} PRIVATE
-		${Backtrace_INCLUDE_DIRS}
-		)
-	list(APPEND mugglec_extra_libs ${Backtrace_LIBRARIES})
+	target_include_directories(${muggle_c} PRIVATE ${Backtrace_INCLUDE_DIRS})
+
+	message("-- mugglec link backtrace lib: ${Backtrace_LIBRARIES}")
+	target_link_libraries(${muggle_c} ${Backtrace_LIBRARIES})
 endif()
 
 if (MUGGLE_BUILD_TRACE)
 	if (MSVC OR MINGW)
-		list(APPEND mugglec_extra_libs debug Dbghelp)
+		message("-- mugglec link debug lib: debug Dbghelp")
+		target_link_libraries(${muggle_c} debug Dbghelp)
 	endif()
 endif()
-
-message("-- mugglec link extra libs: ${mugglec_extra_libs}")
-target_link_libraries(${muggle_c} INTERFACE ${mugglec_extra_libs})
 
 # install
 include(GNUInstallDirs)
