@@ -24,22 +24,28 @@ echo "use c compiler: $CC"
 echo "use cxx compiler: $CXX"
 
 # build
-source_dir=$(dirname $(readlink -f "$0"))
-cd $source_dir
+origin_dir="$(dirname "$(readlink -f "$0")")"
+user_local_dir=$HOME/.local
+build_dir=$origin_dir/build
+dep_search_path=$user_local_dir/usr
 
-rm -rf build
-mkdir build
-cd build
+cd $origin_dir
 
-cmake .. \
+rm -rf $build_dir
+mkdir -p $build_dir
+cd $build_dir
+
+cmake \
+	-S $origin_dir -B $build_dir \
 	-DCMAKE_BUILD_TYPE=Coverage \
-	-DMUGGLE_BUILD_SHARED_LIB=ON \
+	-DCMAKE_PREFIX_PATH=$dep_search_path \
+	-DBUILD_SHARED_LIBS=ON \
 	-DMUGGLE_BUILD_STATIC_PIC=ON \
-	-DMUGGLE_BUILD_EXAMPLE=OFF \
-	-DMUGGLE_BUILD_TESTING=OFF \
-	-DMUGGLE_BUILD_BENCHMARK=OFF \
 	-DMUGGLE_BUILD_TRACE=OFF \
-	-DMUGGLE_EXTRA_PREFIX_PATH=~/.local
+	-DBUILD_TESTING=OFF \
+	-DMUGGLE_BUILD_EXAMPLE=OFF \
+	-DMUGGLE_BUILD_BENCHMARK=OFF \
+	-DMUGGLE_INSTALL_BIN=OFF
 
 # run test & coverage
 make
