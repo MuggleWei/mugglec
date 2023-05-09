@@ -330,7 +330,7 @@ include(CPack)
 # test utils
 if (${BUILD_TESTING})
 	if (MUGGLE_CRYPT_COMPARE_OPENSSL)
-		find_package(OpenSSL QUIET)
+		find_package(OpenSSL 3 QUIET)
 		if (OPENSSL_FOUND)
 			message("-- Find openssl - for compare crypt result in unittest")
 			message("-- Openssl include dir: ${OPENSSL_INCLUDE_DIR}")

@@ -15,16 +15,11 @@ jobs:
           mkdir build;
           cd build;
           cmake ..
-          -DCMAKE_C_COMPILER="cl"
-          -DCMAKE_CXX_COMPILER="cl"
-          -DCMAKE_BUILD_TYPE=Debug
-          -DMUGGLE_BUILD_SHARED_LIB=ON
-          -DMUGGLE_BUILD_EXAMPLE=OFF
-          -DMUGGLE_BUILD_TESTING=ON
-          -DMUGGLE_BUILD_BENCHMARK=ON;
+            -DCMAKE_C_COMPILER="cl"
+            -DCMAKE_CXX_COMPILER="cl"
+            -DCMAKE_BUILD_TYPE=Debug
+            -DBUILD_TESTING=ON;
           cmake --build . --config Debug;
-
-
       - name: tests
         run: >
           cd build;
