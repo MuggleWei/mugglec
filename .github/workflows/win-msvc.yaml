@@ -14,10 +14,10 @@ jobs:
         run: >
           mkdir build;
           cd build;
-          cmake ..
-            -DCMAKE_C_COMPILER="cl"
-            -DCMAKE_CXX_COMPILER="cl"
-            -DCMAKE_BUILD_TYPE=Debug
+          cmake .. ^
+            -DCMAKE_C_COMPILER="cl" ^
+            -DCMAKE_CXX_COMPILER="cl" ^
+            -DCMAKE_BUILD_TYPE=Debug ^
             -DBUILD_TESTING=ON;
           cmake --build . --config Debug;
       - name: tests
