@@ -47,32 +47,31 @@ cmake ..
 默认情况下, 只会编译出单独的库, 也可以通过改变cmake的option来决定编译动态库或者是静态库, 是否编译例子, 单元测试以及性能测试, 下面列出了可供改变的cmake option
 | option | default | desc |
 | ---- | ---- | ---- |
-| MUGGLE_BUILD_SHARED_LIB | ON | ON - 构建动态库, OFF - 构建静态库 |
+| BUILD_SHARED_LIBS | ON | ON - 构建动态库, OFF - 构建静态库 |
 | MUGGLE_BUILD_STATIC_PIC | ON | 若是静态库, 是否设置位置无关代码的标志 |
-| MUGGLE_BUILD_EXAMPLE | OFF | 构建例子 |
-| MUGGLE_BUILD_TESTING | OFF | 构建单元测试 |
-| MUGGLE_BUILD_BENCHMARK | OFF | 构建性能测试 |
 | MUGGLE_BUILD_TRACE | OFF | 当构建的是Debug时, 是否增加一些额外的调试信息 |
-| MUGGLE_EXTRA_PREFIX_PATH | "" | 指定寻找库函数的路径, 它将会被添加到CMAKE_PREFIX_PATH |
+| BUILD_TESTING | OFF | 构建单元测试 |
+| MUGGLE_BUILD_EXAMPLE | OFF | 构建例子 |
+| MUGGLE_BUILD_BENCHMARK | OFF | 构建性能测试 |
 | MUGGLE_INSTALL_BIN | OFF | 安装时连例子、单元测试和性能测试的二进制文件一同安装 |
 
-NOTE: 本库的单元测试使用的是gtest, 若MUGGLE_BUILD_TESTING被设置为ON, 构建时会首先寻找gtest库, 若在CMAKE_PREFIX_PATH的路径中没有发现gtest, 则会在第一次构建时, 自动下载gtest到构建目录中
+NOTE: 本库的单元测试使用的是 gtest, 若 BUILD_TESTING 被设置为ON, 构建时会首先寻找 gtest 库, 若在 CMAKE_PREFIX_PATH 的路径中没有发现 gtest, 则会在第一次构建时, 自动下载 gtest 到构建目录中
 
 ### 教程和示例
-可以通过查看[examples](./examples/readme_cn.md)文件夹来发现教程与使用示例.  
-当cmake构建时开启了`MUGGLE_BUILD_EXAMPLE`选项时, 则[examples](./examples/readme_cn.md)文件夹中的程序将被纳入工程构建当中. 此外, 该文件夹中包含一个独立的CMakeLists.txt文件, 如果用户想要体验一下在工程中引入mugglec, 可以将[examples](./examples/readme_cn.md)文件夹拷贝到任意地点并进行构建, 它将在构建过程中, 自动下载mugglec的代码.  
+可以通过查看 [examples](./examples/readme_cn.md) 文件夹来发现教程与使用示例.  
+当 cmake 构建时开启了 `MUGGLE_BUILD_EXAMPLE` 选项时, 则 [examples](./examples/readme_cn.md) 文件夹中的程序将被纳入工程构建当中. 此外, 该文件夹中包含一个独立的 CMakeLists.txt 文件, 如果用户想要体验一下在工程中引入 mugglec, 可以将 [examples](./examples/readme_cn.md) 文件夹拷贝到任意地点并进行构建, 它将在构建过程中, 自动下载 mugglec 的代码.  
 
 ### 接口文档
-在工程根目录中有Doxyfile, 用户可安装[doxygen](https://doxygen.nl/)后, 运行根目录中的`gen_doxygen_doc.sh`脚本, 生成项目文档
+在工程根目录中有 Doxyfile, 用户可安装 [doxygen](https://doxygen.nl/) 后, 运行根目录中的 `gen_doxygen_doc.sh` 脚本, 生成项目文档
 
 ### 引入mugglec
-想要在自己的工程中引入mugglec, 有几种普遍的做法
+想要在自己的工程中引入 mugglec, 有几种普遍的做法
 
 #### 融入进CMake工程 (推荐)
-如果你的工程也使用CMake来构建，那么可以在 CMake 阶段调用 mugglec 作为子构建。
+如果你的工程也使用 CMake 来构建，那么可以在 CMake 阶段调用 mugglec 作为子构建。
 
 ##### 当前的风格
-若你的cmake版本 >= 3.11, 那么可以直接使用```FetchContent```, 将以下内容添加到你的CMakeLists.txt文件中, 当你运行```cmake ..```时, cmake将自动下载mugglec到```${FETCHCONTENT_BASE_DIR}```目录当中
+若你的 cmake 版本 >= 3.11, 那么可以直接使用```FetchContent```, 将以下内容添加到你的CMakeLists.txt文件中, 当你运行```cmake ..```时, cmake将自动下载mugglec到```${FETCHCONTENT_BASE_DIR}```目录当中
 ```
 include(FetchContent)
 set(FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
