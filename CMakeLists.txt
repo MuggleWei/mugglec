@@ -1,6 +1,10 @@
 cmake_minimum_required (VERSION 3.18.6)
 project(mugglec)
 
+################################
+# general config
+################################
+
 # print compiler
 message("-- use c compiler ${CMAKE_C_COMPILER}")
 message("-- use c++ compiler ${CMAKE_CXX_COMPILER}")
@@ -25,45 +29,46 @@ foreach(feature ${CMAKE_C_COMPILE_FEATURES})
 	message("support feature: ${feature}")
 endforeach()
 
-# for vim plugin - YCM
-if (NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-	set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-endif()
-
 # set output directory
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# cmake
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/muggle_utils.cmake)
+# for vim plugin - YCM
+if (NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+	set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+endif()
 
 # set use folder in vs
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# options
-if (BUILD_SHARED_LIBS)
-	set(MUGGLE_BUILD_SHARED_LIB_DEFAULT ON)
-else(BUILD_SHARED_LIBS)
-	set(MUGGLE_BUILD_SHARED_LIB_DEFAULT OFF)
-endif()
+################################
+# include cmake
+################################
 
-option(MUGGLE_BUILD_SHARED_LIB "build shared or static library" ${MUGGLE_BUILD_SHARED_LIB_DEFAULT})
+# cmake
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/muggle_utils.cmake)
+
+################################
+# options
+################################
+
+option(BUILD_SHARED_LIBS "Build shared or static library" ON)
+option(BUILD_TESTING "Build testing" OFF)
+
 option(MUGGLE_BUILD_STATIC_PIC "build static library with position independent code flag" ON)
 option(MUGGLE_BUILD_EXAMPLE "Build mugglec example" OFF)
-option(MUGGLE_BUILD_TESTING "Build mugglec test" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build muggleCC benchmark" OFF)
 option(MUGGLE_BUILD_TRACE "If build type is debug then build with trace info in source codes" OFF)
-set(MUGGLE_EXTRA_PREFIX_PATH "" CACHE STRING "extra prefix path for cmake FIND_XXX")
 option(MUGGLE_INSTALL_BIN "Install example, unittest and benchmark binaries" OFF)
-
 # option(MUGGLE_CRYPT_OPTIMIZATION "Enable crypt optimization(use source codes extract from openssl)" ON)
 set(MUGGLE_CRYPT_OPTIMIZATION ON)
 # option(MUGGLE_CRYPT_COMPARE_OPENSSL "Link openssl in unittest for compare result" OFF)
 set(MUGGLE_CRYPT_COMPARE_OPENSSL ON)
 set(MUGGLE_BUILD_WITH_COV OFF)
+set(MUGGLE_TEST_LINK_OPENSSL OFF)
 
-if (MUGGLE_BUILD_SHARED_LIB)
+if (BUILD_SHARED_LIBS)
 	set(MUGGLE_LIB_TYPE SHARED)
 	set(MUGGLE_C_USE_DLL ON)
 else()
@@ -71,8 +76,13 @@ else()
 	set(MUGGLE_C_USE_DLL OFF)
 endif()
 
-# set coverage flag
-if (CMAKE_BUILD_TYPE MATCHES "[Cc]overage")
+################################
+# coverage
+################################
+
+if (${CMAKE_BUILD_TYPE} MATCHES "[Cc]overage")
+	set(BUILD_TESTING ON)
+
 	if (${CMAKE_C_COMPILER_ID} MATCHES Clang)
 		message("-- CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}, set MUGGLE_BUILD_WITH_COV ON")
 		set(MUGGLE_BUILD_WITH_COV ON)
@@ -94,23 +104,53 @@ if (MUGGLE_BUILD_WITH_COV)
 	message("-- muggle build with cov, add compiler flags: ${COVERAGE_COMPILER_FLAGS}")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COVERAGE_COMPILER_FLAGS}")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COVERAGE_COMPILER_FLAGS}")
-	set(MUGGLE_BUILD_TESTING ON)
 endif()
 
-# set build testing
-if (MUGGLE_BUILD_TESTING)
-	set(BUILD_TESTING ON)
+if (MUGGLE_BUILD_WITH_COV)
+	if (${CMAKE_C_COMPILER_ID} MATCHES Clang)
+		find_program(LLVM_PROFDATA llvm-profdata)
+		find_program(LLVM_COV_PATH llvm-cov)
+		if (LLVM_PROFDATA AND LLVM_COV_PATH)
+			set(COV_OUT_NAME mugglec_coverage)
+			add_custom_target(
+				coverage
+				COMMAND echo "run converage"
+				COMMAND rm -rf ${COV_OUT_NAME}
+				COMMAND rm -rf mugglec-*profraw
+				COMMAND rm -rf mugglec.profdata
+				COMMAND LLVM_PROFILE_FILE=mugglec-%m.profraw make test
+				COMMAND ${LLVM_PROFDATA} merge mugglec-*.profraw -o mugglec.profdata
+				COMMAND ${LLVM_COV_PATH} report ./lib/libmugglec.* -instr-profile=mugglec.profdata
+				COMMAND ${LLVM_COV_PATH} show ./lib/libmugglec.* -instr-profile=mugglec.profdata -output-dir=${COV_OUT_NAME} -format=html
+				)
+		else()
+			message(SEND_ERROR "failed generate coverage report, llvm-profdata or llvm-cov not found")
+		endif()
+	elseif(${CMAKE_C_COMPILER_ID} STREQUAL GNU)
+		find_program(LCOV_PATH lcov)
+		find_program(GENHTML_PATH genhtml)
+		if (LCOV_PATH AND GENHTML_PATH)
+			set(COV_OUT_NAME mugglec_coverage)
+			set(COV_DIR ./CMakeFiles/mugglec.dir)
+			add_custom_target(
+				coverage
+				COMMAND echo "run converage"
+				COMMAND rm -rf ${COV_OUT_NAME}.info ${COV_OUT_NAME}
+				COMMAND ${LCOV_PATH} --zerocounters -d ${COV_DIR}
+				COMMAND rm -rf ${COV_OUT_NAME} ${COV_OUT_NAME}.info
+				COMMAND make test
+				COMMAND ${LCOV_PATH} -d ${COV_DIR} -c -o ${COV_OUT_NAME}.info
+				COMMAND ${GENHTML_PATH} ${COV_OUT_NAME}.info -o ${COV_OUT_NAME}
+				)
+		else()
+			message(SEND_ERROR "failed generate coverage report, lcov or genhtml not found")
+		endif()
+	endif()
 endif()
 
-# set build benchmark
-if (MUGGLE_BUILD_BENCHMARK)
-	set(MUGGLE_BUILD_LIB_BENCHMARK ON)
-else()
-	set(MUGGLE_BUILD_LIB_BENCHMARK OFF)
-endif()
-
-
+################################
 # version
+################################
 
 # NTOE: don't use READ, it will add newline
 #file(READ "version.txt" mugglec_version)
@@ -127,54 +167,58 @@ list(GET mugglec_semver_list 2 MUGGLE_C_VER_PATCH)
 set(MUGGLE_C_VERSION "${mugglec_version}")
 set(MUGGLE_C_SOVERSION "${MUGGLE_C_VER_MAJOR}")
 
+################################
 # output options
+################################
+
 message("-- c compiler flags: ${CMAKE_C_FLAGS}")
 message("-- cxx compiler flags: ${CMAKE_CXX_FLAGS}")
 message("-- mugglec version ${MUGGLE_C_VERSION}")
-message("-- option MUGGLE_BUILD_TRACE ${MUGGLE_BUILD_TRACE}")
-message("-- option MUGGLE_BUILD_SHARED_LIB ${MUGGLE_BUILD_SHARED_LIB}")
-message("-- option MUGGLE_BUILD_STATIC_PIC ${MUGGLE_BUILD_STATIC_PIC}")
-message("-- option MUGGLE_BUILD_EXAMPLE ${MUGGLE_BUILD_EXAMPLE}")
-message("-- option MUGGLE_BUILD_TESTING ${MUGGLE_BUILD_TESTING}")
-message("-- option MUGGLE_BUILD_BENCHMARK ${MUGGLE_BUILD_BENCHMARK}")
-message("-- option MUGGLE_BUILD_WITH_COV ${MUGGLE_BUILD_WITH_COV}")
-message("-- option MUGGLE_EXTRA_PREFIX_PATH ${MUGGLE_EXTRA_PREFIX_PATH}")
-message("-- option MUGGLE_CRYPT_OPTIMIZATION ${MUGGLE_CRYPT_OPTIMIZATION}")
-message("-- option MUGGLE_CRYPT_COMPARE_OPENSSL ${MUGGLE_CRYPT_COMPARE_OPENSSL}")
 
-if ("${MUGGLE_EXTRA_PREFIX_PATH}" STREQUAL "")
-else()
-	list(APPEND CMAKE_PREFIX_PATH ${MUGGLE_EXTRA_PREFIX_PATH})
-	message("-- cmake prefix path: ${CMAKE_PREFIX_PATH}")
-endif()
+message("-- mugglec option BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS}")
+message("-- mugglec option MUGGLE_BUILD_STATIC_PIC ${MUGGLE_BUILD_STATIC_PIC}")
+message("-- mugglec option MUGGLE_BUILD_TRACE ${MUGGLE_BUILD_TRACE}")
+message("-- mugglec option MUGGLE_BUILD_WITH_COV ${MUGGLE_BUILD_WITH_COV}")
 
+message("-- mugglec option BUILD_TESTING ${BUILD_TESTING}")
+message("-- mugglec option MUGGLE_BUILD_EXAMPLE ${MUGGLE_BUILD_EXAMPLE}")
+message("-- mugglec option MUGGLE_BUILD_BENCHMARK ${MUGGLE_BUILD_BENCHMARK}")
 
-# find openssl
-set(MUGGLE_TEST_LINK_OPENSSL OFF)
-if (MUGGLE_CRYPT_COMPARE_OPENSSL)
-	find_package(OpenSSL QUIET)
-	if (OPENSSL_FOUND)
-		message("-- Find openssl - for compare crypt result in unittest")
-		message("-- Openssl include dir: ${OPENSSL_INCLUDE_DIR}")
-		message("-- Openssl libraries: ${OPENSSL_LIBRARIES}")
-		set(MUGGLE_TEST_LINK_OPENSSL ON)
-	else()
-		message("-- Can't find Openssl, option MUGGLE_CRYPT_COMPARE_OPENSSL OFF")
-	endif()
-endif()
+message("-- mugglec option MUGGLE_CRYPT_OPTIMIZATION ${MUGGLE_CRYPT_OPTIMIZATION}")
+message("-- mugglec option MUGGLE_CRYPT_COMPARE_OPENSSL ${MUGGLE_CRYPT_COMPARE_OPENSSL}")
+message("-- mugglec option MUGGLE_INSTALL_BIN ${MUGGLE_INSTALL_BIN}")
+
+################################
+# configure
+################################
 
 # check support
 include(CheckIncludeFile)
 check_include_file(linux/futex.h MUGGLE_C_HAVE_LINUX_FUTEX)
 check_include_file(sys/futex.h MUGGLE_C_HAVE_SYS_FUTEX)
 
-# mugglec
-set(muggle_c mugglec)
+if (CMAKE_HOST_UNIX)
+	find_package(Backtrace)
+	if (Backtrace_FOUND)
+		#message("Found Backtrace")
+		#message("Backtrace header: ${Backtrace_HEADER}")
+		#message("Backtrace libs: ${Backtrace_LIBRARIES}")
+
+		set(MUGGLE_C_HAVE_BACKTRACE 1)
+		set(MUGGLE_C_BACKTRACE_HEADER ${Backtrace_HEADER})
+	endif()
+endif()
 
 set(mugglec_generated_dir ${CMAKE_CURRENT_BINARY_DIR}/generated)
 configure_file(
 	"${CMAKE_CURRENT_LIST_DIR}/muggle/c/mugglec_config.h.in"
 	"${mugglec_generated_dir}/muggle/c/mugglec_config.h")
+
+################################
+# mugglec
+################################
+
+set(muggle_c mugglec)
 
 muggle_add_project(${muggle_c} ${CMAKE_CURRENT_LIST_DIR}/muggle ${MUGGLE_LIB_TYPE})
 target_include_directories(${muggle_c} PUBLIC
@@ -182,6 +226,7 @@ target_include_directories(${muggle_c} PUBLIC
 	$<BUILD_INTERFACE:${mugglec_generated_dir}>
 	$<INSTALL_INTERFACE:include>)
 
+target_compile_definitions(${muggle_c} PRIVATE MUGGLE_C_EXPORTS)
 set_target_properties(${muggle_c} PROPERTIES 
 	LINKER_LANGUAGE C
 	VERSION ${MUGGLE_C_VERSION}
@@ -189,38 +234,16 @@ set_target_properties(${muggle_c} PROPERTIES
 	DEBUG_POSTFIX d
 )
 
-if ((NOT ${MUGGLE_BUILD_SHARED_LIB}) AND (${MUGGLE_BUILD_STATIC_PIC}))
+if ((NOT ${BUILD_SHARED_LIBS}) AND (${MUGGLE_BUILD_STATIC_PIC}))
 	set_target_properties(${muggle_c} PROPERTIES
 		POSITION_INDEPENDENT_CODE ON
 	)
 endif()
 
-target_compile_definitions(${muggle_c} PRIVATE
-	MUGGLE_C_SEMVER=${MUGGLE_C_VERSION}
-)
-if (MUGGLE_BUILD_SHARED_LIB)
-	target_compile_definitions(${muggle_c}
-		PRIVATE MUGGLE_C_EXPORTS 
-	)
-endif()
-if (MUGGLE_CRYPT_OPTIMIZATION)
-	target_compile_definitions(${muggle_c}
-		PUBLIC MUGGLE_CRYPT_OPTIMIZATION
-	)
-endif()
-if (MUGGLE_BUILD_TRACE)
-	target_compile_definitions(${muggle_c}
-		PUBLIC MUGGLE_BUILD_TRACE
-	)
-	if (MSVC OR MINGW)
-		target_link_libraries(${muggle_c} debug Dbghelp)
-	endif()
-endif()
-
-# mugglec extra libraries
+# extra libraries
 find_package(Threads)
 if (Threads_FOUND)
-	list(APPEND mugglec_extra_libs ${CMAKE_THREAD_LIBS_INIT})
+	list(APPEND mugglec_extra_libs Threads::Threads)
 else()
 	message(FATAL_ERROR "Failed found threads")
 endif()
@@ -231,45 +254,39 @@ if (MSVC OR MINGW)
 	list(APPEND mugglec_extra_libs synchronization)
 endif()
 
-target_link_libraries(${muggle_c} ${mugglec_extra_libs})
+if (Backtrace_FOUND)
+	target_include_directories(${muggle_c} PRIVATE
+		${Backtrace_INCLUDE_DIRS}
+		)
+	list(APPEND mugglec_extra_libs ${Backtrace_LIBRARIES})
+endif()
 
-if (CMAKE_HOST_UNIX)
-	find_package(Backtrace)
-	set(HAVE_BACKTRACE ${Backtrace_FOUND})
-	if (HAVE_BACKTRACE)
-		#message("Found Backtrace")
-		#message("Backtrace header: ${Backtrace_HEADER}")
-		#message("Backtrace libs: ${Backtrace_LIBRARIES}")
-
-		target_link_libraries(${muggle_c}
-			${Backtrace_LIBRARIES}
-		)
-		target_include_directories(${muggle_c} PRIVATE
-			${Backtrace_INCLUDE_DIRS}
-		)
-		target_compile_definitions(${muggle_c} PUBLIC 
-			HAVE_BACKTRACE=1
-			BACKTRACE_HEADER=<${Backtrace_HEADER}>
-		)
+if (MUGGLE_BUILD_TRACE)
+	if (MSVC OR MINGW)
+		list(APPEND mugglec_extra_libs debug Dbghelp)
 	endif()
 endif()
 
-# install and add export configuration
-include(GNUInstallDirs)
+message("-- mugglec link extra libs: ${mugglec_extra_libs}")
+target_link_libraries(${muggle_c} ${mugglec_extra_libs})
 
-set(mugglec_export_dir "${CMAKE_INSTALL_LIBDIR}/cmake/mugglec")
+# install
+include(GNUInstallDirs)
 install(TARGETS ${muggle_c}
 	EXPORT mugglecTargets
 	RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 	ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+install(DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/muggle" "${mugglec_generated_dir}/muggle"
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+	FILES_MATCHING
+	PATTERN "*.h")
+
+# cmake package config
+set(mugglec_export_dir "${CMAKE_INSTALL_LIBDIR}/cmake/mugglec")
 install(EXPORT mugglecTargets
 	FILE mugglecTargets.cmake
 	DESTINATION ${mugglec_export_dir})
-muggle_install_headers(
-	"${CMAKE_CURRENT_LIST_DIR}/muggle" "${CMAKE_INSTALL_INCLUDEDIR}/muggle")
-muggle_install_headers(
-	"${mugglec_generated_dir}/muggle" "${CMAKE_INSTALL_INCLUDEDIR}/muggle")
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
@@ -281,14 +298,13 @@ configure_package_config_file(
 write_basic_package_version_file(
     "${mugglec_generated_dir}/mugglecConfigVersion.cmake"
 	VERSION ${MUGGLE_C_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
+    COMPATIBILITY SameMajorVersion)
 install(FILES
 	"${mugglec_generated_dir}/mugglecConfig.cmake"
 	"${mugglec_generated_dir}/mugglecConfigVersion.cmake"
 	DESTINATION ${mugglec_export_dir})
 
-# configure and install pkgconfig file
+# pkgconfig
 configure_file(
 	"${CMAKE_CURRENT_LIST_DIR}/cmake/mugglec.pc.in"
 	"${mugglec_generated_dir}/mugglec.pc" @ONLY)
@@ -307,8 +323,34 @@ set(CPACK_SOURCE_GENERATOR "TGZ")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/MuggleWei/mugglec")
 include(CPack)
 
-# muggle benchmark
-if (MUGGLE_BUILD_LIB_BENCHMARK)
+################################
+# test & benchmark utils
+################################
+
+# test utils
+if (${BUILD_TESTING})
+	if (MUGGLE_CRYPT_COMPARE_OPENSSL)
+		find_package(OpenSSL 3 QUIET)
+		if (OPENSSL_FOUND)
+			message("-- Find openssl - for compare crypt result in unittest")
+			message("-- Openssl include dir: ${OPENSSL_INCLUDE_DIR}")
+			message("-- Openssl libraries: ${OPENSSL_LIBRARIES}")
+			set(MUGGLE_TEST_LINK_OPENSSL ON)
+		else()
+			message("-- Can't find Openssl, option MUGGLE_TEST_LINK_OPENSSL OFF")
+		endif()
+	endif()
+
+	set(test_utils muggle_test_utils)
+	muggle_add_project(${test_utils} ${CMAKE_CURRENT_LIST_DIR}/test_utils SHARED)
+	add_dependencies(${test_utils} ${muggle_c})
+	target_include_directories(${test_utils} PUBLIC
+		${CMAKE_CURRENT_LIST_DIR}
+		${mugglec_generated_dir})
+endif()
+
+# benchmark utils
+if (${MUGGLE_BUILD_BENCHMARK})
 	muggle_add_project(muggle_benchmark ${CMAKE_CURRENT_LIST_DIR}/muggle_benchmark ${MUGGLE_LIB_TYPE})
 	set_target_properties(muggle_benchmark PROPERTIES 
 		VERSION ${MUGGLE_C_VERSION}
@@ -318,15 +360,13 @@ if (MUGGLE_BUILD_LIB_BENCHMARK)
 		PROPERTIES 
 		DEBUG_POSTFIX d
 	)
-	if ((NOT ${MUGGLE_BUILD_SHARED_LIB}) AND (${MUGGLE_BUILD_STATIC_PIC}))
-		set_target_properties(muggle_benchmark PROPERTIES
-			POSITION_INDEPENDENT_CODE ON
-		)
+	if ((NOT ${BUILD_SHARED_LIBS}) AND ${MUGGLE_BUILD_STATIC_PIC})
+		set_target_properties(muggle_benchmark PROPERTIES POSITION_INDEPENDENT_CODE ON)
 	endif()
 	target_link_libraries(muggle_benchmark ${muggle_c})
 	add_dependencies(muggle_benchmark ${muggle_c})
 	
-	if (MUGGLE_BUILD_SHARED_LIB)
+	if (BUILD_SHARED_LIBS)
 		target_compile_definitions(muggle_benchmark
 			PUBLIC MUGGLE_BENCHMARK_USE_DLL
 			PRIVATE MUGGLE_BENCHMARK_EXPORTS 
@@ -334,15 +374,9 @@ if (MUGGLE_BUILD_LIB_BENCHMARK)
 	endif()
 endif()
 
-# muggle test utils
-if (MUGGLE_BUILD_TESTING)
-	set(test_utils muggle_test_utils)
-	muggle_add_project(${test_utils} ${CMAKE_CURRENT_LIST_DIR}/test_utils SHARED)
-	add_dependencies(${test_utils} ${muggle_c})
-	target_include_directories(${test_utils} PUBLIC
-		${CMAKE_CURRENT_LIST_DIR}
-		${mugglec_generated_dir})
-endif()
+################################
+# functions
+################################
 
 # functions
 function(add_example name folder)
@@ -382,7 +416,7 @@ function(add_example name folder)
 	)
 	target_link_libraries(${name} ${muggle_c})
 
-	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
+	target_compile_definitions(${name} PRIVATE MUGGLE_HOLD_LOG_MACRO)
 
 	if (MUGGLE_INSTALL_BIN)
 		install(TARGETS ${name} RUNTIME DESTINATION bin)
@@ -415,7 +449,7 @@ function(add_benchmark name folder)
 	endif(MSVC OR MINGW)
 	add_dependencies(${name} muggle_benchmark)
 	target_link_libraries(${name} muggle_benchmark)
-	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
+	target_compile_definitions(${name} PRIVATE MUGGLE_HOLD_LOG_MACRO)
 
 	if (MUGGLE_INSTALL_BIN)
 		install(TARGETS ${name} RUNTIME DESTINATION bin)
@@ -484,12 +518,12 @@ function(add_gtest name folder)
 				${OPENSSL_INCLUDE_DIR}
 			)
 			target_compile_definitions(${name}
-				PUBLIC MUGGLE_TEST_LINK_OPENSSL
+				PRIVATE MUGGLE_TEST_LINK_OPENSSL
 			)
 		endif()
 	endif()
 
-	target_compile_definitions(${name} PUBLIC MUGGLE_HOLD_LOG_MACRO)
+	target_compile_definitions(${name} PRIVATE MUGGLE_HOLD_LOG_MACRO)
 
 	add_test(NAME ${name} COMMAND ${name})
 
@@ -572,7 +606,7 @@ if (${MUGGLE_BUILD_EXAMPLE})
 endif()
 
 # test
-if (MUGGLE_BUILD_TESTING)
+if (${BUILD_TESTING})
 	message("---------------------- test ----------------------")
 	SUBDIRLIST(test_root_dir ${CMAKE_CURRENT_LIST_DIR}/test)
 	FOREACH(subdir ${test_root_dir})
@@ -581,7 +615,7 @@ if (MUGGLE_BUILD_TESTING)
 endif()
 
 # benchmark
-if (MUGGLE_BUILD_BENCHMARK)
+if (${MUGGLE_BUILD_BENCHMARK})
 	message("---------------------- benchmark ----------------------")
 	SUBDIRLIST(benchmark_root_dir ${CMAKE_CURRENT_LIST_DIR}/benchmark)
 	FOREACH(subdir ${benchmark_root_dir})
@@ -590,44 +624,3 @@ if (MUGGLE_BUILD_BENCHMARK)
 endif()
 
 # coverage
-if (MUGGLE_BUILD_WITH_COV)
-	if (${CMAKE_C_COMPILER_ID} MATCHES Clang)
-		find_program(LLVM_PROFDATA llvm-profdata)
-		find_program(LLVM_COV_PATH llvm-cov)
-		if (LLVM_PROFDATA AND LLVM_COV_PATH)
-			set(COV_OUT_NAME mugglec_coverage)
-			add_custom_target(
-				coverage
-				COMMAND echo "run converage"
-				COMMAND rm -rf ${COV_OUT_NAME}
-				COMMAND rm -rf mugglec-*profraw
-				COMMAND rm -rf mugglec.profdata
-				COMMAND LLVM_PROFILE_FILE=mugglec-%m.profraw make test
-				COMMAND ${LLVM_PROFDATA} merge mugglec-*.profraw -o mugglec.profdata
-				COMMAND ${LLVM_COV_PATH} report ./lib/libmugglec.* -instr-profile=mugglec.profdata
-				COMMAND ${LLVM_COV_PATH} show ./lib/libmugglec.* -instr-profile=mugglec.profdata -output-dir=${COV_OUT_NAME} -format=html
-				)
-		else()
-			message(SEND_ERROR "failed generate coverage report, llvm-profdata or llvm-cov not found")
-		endif()
-	elseif(${CMAKE_C_COMPILER_ID} STREQUAL GNU)
-		find_program(LCOV_PATH lcov)
-		find_program(GENHTML_PATH genhtml)
-		if (LCOV_PATH AND GENHTML_PATH)
-			set(COV_OUT_NAME mugglec_coverage)
-			set(COV_DIR ./CMakeFiles/mugglec.dir)
-			add_custom_target(
-				coverage
-				COMMAND echo "run converage"
-				COMMAND rm -rf ${COV_OUT_NAME}.info ${COV_OUT_NAME}
-				COMMAND ${LCOV_PATH} --zerocounters -d ${COV_DIR}
-				COMMAND rm -rf ${COV_OUT_NAME} ${COV_OUT_NAME}.info
-				COMMAND make test
-				COMMAND ${LCOV_PATH} -d ${COV_DIR} -c -o ${COV_OUT_NAME}.info
-				COMMAND ${GENHTML_PATH} ${COV_OUT_NAME}.info -o ${COV_OUT_NAME}
-				)
-		else()
-			message(SEND_ERROR "failed generate coverage report, lcov or genhtml not found")
-		endif()
-	endif()
-endif()

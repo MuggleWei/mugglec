@@ -23,6 +23,8 @@
 // build with trace info
 #if MUGGLE_DEBUG & defined(MUGGLE_BUILD_TRACE)
 	#define MUGGLE_ENABLE_TRACE 1
+#else
+	#define MUGGLE_ENABLE_TRACE 0
 #endif
 
 // detect platform

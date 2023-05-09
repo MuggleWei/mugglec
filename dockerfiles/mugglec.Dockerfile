@@ -19,13 +19,15 @@ RUN cmake \
 	-S /app/src/mugglec \
 	-B /app/src/mugglec/build \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DMUGGLE_EXTRA_PREFIX_PATH=/opt/googletest \
+	-DCMAKE_PREFIX_PATH=/opt/googletest \
 	-DCMAKE_INSTALL_PREFIX=/usr/local \
-	-DMUGGLE_BUILD_SHARED_LIB=ON \
+	-DBUILD_SHARED_LIBS=ON \
 	-DMUGGLE_BUILD_STATIC_PIC=ON \
+	-DMUGGLE_BUILD_TRACE=OFF \
 	-DMUGGLE_BUILD_TESTING=ON \
 	-DMUGGLE_BUILD_EXAMPLE=OFF \
-	-DMUGGLE_BUILD_BENCHMARK=OFF
+	-DMUGGLE_BUILD_BENCHMARK=OFF \
+	-DMUGGLE_INSTALL_BIN=OFF
 RUN cmake --build /app/src/mugglec/build
 RUN cmake --build /app/src/mugglec/build --target test
 RUN cmake --build /app/src/mugglec/build --target install

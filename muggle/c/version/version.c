@@ -12,9 +12,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifndef MUGGLE_C_SEMVER
-	#define MUGGLE_C_SEMVER ?.?.?
-#endif
+// #ifndef MUGGLE_C_SEMVER
+//     #define MUGGLE_C_SEMVER ?.?.?
+// #endif
 #define MUGGLE_C_COMPILE_DATE_TIME __DATE__ " " __TIME__
 
 const char* mugglec_version()
