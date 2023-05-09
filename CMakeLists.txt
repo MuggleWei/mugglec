@@ -268,7 +268,7 @@ if (MUGGLE_BUILD_TRACE)
 endif()
 
 message("-- mugglec link extra libs: ${mugglec_extra_libs}")
-target_link_libraries(${muggle_c} ${mugglec_extra_libs})
+target_link_libraries(${muggle_c} INTERFACE ${mugglec_extra_libs})
 
 # install
 include(GNUInstallDirs)
