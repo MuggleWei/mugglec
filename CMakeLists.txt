@@ -243,7 +243,7 @@ endif()
 # extra libraries
 find_package(Threads)
 if (Threads_FOUND)
-	list(APPEND mugglec_extra_libs Threads::Threads)
+	list(APPEND mugglec_extra_libs ${CMAKE_THREAD_LIBS_INIT})
 else()
 	message(FATAL_ERROR "Failed found threads")
 endif()
