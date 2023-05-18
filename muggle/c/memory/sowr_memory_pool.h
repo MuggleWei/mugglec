@@ -22,6 +22,7 @@
 
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/atomic.h"
+#include "muggle/c/sync/sync_obj.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 	#include <windows.h>
@@ -50,11 +51,11 @@ typedef struct muggle_sowr_block_head_tag
 typedef struct muggle_sowr_memory_pool_tag
 {
 	void *blocks;
-	muggle_atomic_int capacity;
-	muggle_atomic_int block_size;
-	muggle_atomic_int alloc_idx;
-	muggle_atomic_int free_idx;
-	muggle_atomic_int cached_free_pos;
+	muggle_sync_t capacity;
+	muggle_sync_t block_size;
+	muggle_sync_t alloc_idx;
+	muggle_sync_t free_idx;
+	muggle_sync_t cached_free_pos;
 }muggle_sowr_memory_pool_t;
 
 /**
@@ -71,7 +72,7 @@ typedef struct muggle_sowr_memory_pool_tag
  *     - otherwise return error code in muggle/c/base/err.h
  */
 MUGGLE_C_EXPORT
-int muggle_sowr_memory_pool_init(muggle_sowr_memory_pool_t *pool, muggle_atomic_int capacity, muggle_atomic_int data_size);
+int muggle_sowr_memory_pool_init(muggle_sowr_memory_pool_t *pool, muggle_sync_t capacity, muggle_sync_t data_size);
 
 /**
  * @brief destroy sowr memory pool

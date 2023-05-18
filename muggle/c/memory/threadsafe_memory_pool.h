@@ -12,8 +12,8 @@
 #define MUGGLE_C_THREADSAFE_MEMORY_POOL_H_
 
 #include "muggle/c/base/macro.h"
-#include "muggle/c/base/atomic.h"
 #include "muggle/c/sync/mutex.h"
+#include "muggle/c/sync/sync_obj.h"
 
 EXTERN_C_BEGIN
 
@@ -42,15 +42,15 @@ typedef struct muggle_ts_memory_pool_head_ptr
  */
 typedef struct muggle_ts_memory_pool
 {
-	muggle_atomic_int                capacity;
-	muggle_atomic_int                block_size;
+	muggle_sync_t                    capacity;
+	muggle_sync_t                    block_size;
 	void                             *data;
 	muggle_ts_memory_pool_head_ptr_t *ptrs;
 
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
-	muggle_atomic_int alloc_cursor;
+	muggle_sync_t alloc_cursor;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
-	muggle_atomic_int free_cursor;
+	muggle_sync_t free_cursor;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
 	muggle_mutex_t free_mutex;
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
@@ -68,7 +68,7 @@ typedef struct muggle_ts_memory_pool
  *     - otherwise failed and return error code in muggle/c/base/err.h
  */
 MUGGLE_C_EXPORT
-int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_atomic_int capacity, muggle_atomic_int data_size);
+int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_sync_t capacity, muggle_sync_t data_size);
 
 /**
  * @brief destroy thread safe memory pool
