@@ -136,7 +136,9 @@ void muggle_evloop_run_epoll(muggle_event_loop_t *evloop)
 
 		if (nfds < 0)
 		{
-			muggle_evloop_exit(evloop);
+			if (MUGGLE_EVENT_LAST_ERRNO != MUGGLE_SYS_ERRNO_INTR) {
+				muggle_evloop_exit(evloop);
+			}
 		}
 
 		if (evloop->to_exit)

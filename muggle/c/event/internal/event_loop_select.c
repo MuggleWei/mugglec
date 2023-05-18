@@ -130,7 +130,9 @@ void muggle_evloop_run_select(muggle_event_loop_t *evloop)
 		}
 		else if (n < 0)
 		{
-			muggle_evloop_exit(evloop);
+			if (MUGGLE_EVENT_LAST_ERRNO != MUGGLE_SYS_ERRNO_INTR) {
+				muggle_evloop_exit(evloop);
+			}
 		}
 
 		// n == 0: timer trigger
