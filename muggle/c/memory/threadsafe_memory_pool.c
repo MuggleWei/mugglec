@@ -12,8 +12,9 @@
 #include <stdlib.h>
 #include "muggle/c/base/err.h"
 #include "muggle/c/base/utils.h"
+#include "muggle/c/base/atomic.h"
 
-int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_atomic_int capacity, muggle_atomic_int data_size)
+int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_sync_t capacity, muggle_sync_t data_size)
 {
 	if (capacity <= 0)
 	{
@@ -25,14 +26,14 @@ int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_atomic_int 
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	capacity = (muggle_atomic_int)next_pow_of_2((uint64_t)capacity);
+	capacity = (muggle_sync_t)next_pow_of_2((uint64_t)capacity);
 	if (capacity <= 0)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	muggle_atomic_int block_size =
-		(muggle_atomic_int)next_pow_of_2((uint64_t)(sizeof(muggle_ts_memory_pool_head_t) + data_size));
+	muggle_sync_t block_size =
+		(muggle_sync_t)next_pow_of_2((uint64_t)(sizeof(muggle_ts_memory_pool_head_t) + data_size));
 	if (block_size <= 0)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
@@ -68,7 +69,7 @@ int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_atomic_int 
 		return MUGGLE_ERR_MEM_ALLOC;
 	}
 
-	for (muggle_atomic_int i = 0; i < capacity; i++)
+	for (muggle_sync_t i = 0; i < capacity; i++)
 	{
 		muggle_ts_memory_pool_head_t *block =
 			(muggle_ts_memory_pool_head_t*)((char*)pool->data + block_size * i);
@@ -98,9 +99,9 @@ void muggle_ts_memory_pool_destroy(muggle_ts_memory_pool_t *pool)
 
 void* muggle_ts_memory_pool_alloc(muggle_ts_memory_pool_t *pool)
 {
-	muggle_atomic_int expected = pool->alloc_cursor;
-	muggle_atomic_int alloc_cursor = 0;
-	muggle_atomic_int alloc_pos = 0;
+	muggle_sync_t expected = pool->alloc_cursor;
+	muggle_sync_t alloc_cursor = 0;
+	muggle_sync_t alloc_pos = 0;
 	void *data = NULL;
 	do {
 		alloc_cursor = expected;
@@ -129,7 +130,7 @@ void muggle_ts_memory_pool_free(void *data)
 
 	muggle_mutex_lock(&pool->free_mutex);
 
-	muggle_atomic_int free_pos = IDX_IN_POW_OF_2_RING(pool->free_cursor, pool->capacity);
+	muggle_sync_t free_pos = IDX_IN_POW_OF_2_RING(pool->free_cursor, pool->capacity);
 	pool->ptrs[free_pos].ptr = block;
 
 	// use atomic store for writer see correct order
