@@ -156,7 +156,9 @@ void muggle_evloop_run_poll(muggle_event_loop_t *evloop)
 		}
 		else
 		{
-			muggle_evloop_exit(evloop);
+			if (MUGGLE_EVENT_LAST_ERRNO != MUGGLE_SYS_ERRNO_INTR) {
+				muggle_evloop_exit(evloop);
+			}
 		}
 
 		if (evloop->to_exit)
