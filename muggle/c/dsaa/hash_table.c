@@ -26,7 +26,7 @@ static uint64_t s_muggle_default_str_hash_func(void *data)
 	return hash_val;
 }
 
-bool muggle_hash_table_init(muggle_hash_table_t *p_hash_table, size_t table_size, hash_func hash, muggle_dsaa_data_cmp cmp, size_t capacity)
+bool muggle_hash_table_init(muggle_hash_table_t *p_hash_table, size_t table_size, func_muggle_hash hash, muggle_dsaa_data_cmp cmp, size_t capacity)
 {
 	if (cmp == NULL)
 	{
