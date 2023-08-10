@@ -15,7 +15,7 @@
 
 EXTERN_C_BEGIN
 
-typedef uint64_t (*hash_func)(void *data);
+typedef uint64_t (*func_muggle_hash)(void *data);
 
 /**
  * @brief hash table node
@@ -35,7 +35,7 @@ typedef struct muggle_hash_table
 {
 	muggle_hash_table_node_t *nodes;      //!< node array
 	uint64_t                 table_size;  //!< size of hash table
-	hash_func                hash;        //!< pointer to hash function
+	func_muggle_hash         hash;        //!< pointer to hash function
 	muggle_dsaa_data_cmp     cmp;         //!< pointer to compare function
 	muggle_memory_pool_t     *pool;       //!< memory pool of tree, if it's NULL, use malloc and free by default
 }muggle_hash_table_t;
@@ -54,7 +54,7 @@ typedef struct muggle_hash_table
  * @return boolean
  */
 MUGGLE_C_EXPORT
-bool muggle_hash_table_init(muggle_hash_table_t *p_hash_table, size_t table_size, hash_func hash, muggle_dsaa_data_cmp cmp, size_t capacity);
+bool muggle_hash_table_init(muggle_hash_table_t *p_hash_table, size_t table_size, func_muggle_hash hash, muggle_dsaa_data_cmp cmp, size_t capacity);
 
 // 
 MUGGLE_C_EXPORT
