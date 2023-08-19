@@ -199,6 +199,15 @@ include(CheckIncludeFile)
 check_include_file(linux/futex.h MUGGLE_C_HAVE_LINUX_FUTEX)
 check_include_file(sys/futex.h MUGGLE_C_HAVE_SYS_FUTEX)
 
+# detech endianness
+include(TestBigEndian)
+TEST_BIG_ENDIAN(IS_BIG_ENDIAN)  # NOTE: big endian is 1, little endian is 0
+if (IS_BIG_ENDIAN)
+	set(MUGGLE_C_IS_BIG_ENDIAN 1)
+else()
+	set(MUGGLE_C_IS_BIG_ENDIAN 0)
+endif()
+
 if (CMAKE_HOST_UNIX)
 	find_package(Backtrace)
 	if (Backtrace_FOUND)

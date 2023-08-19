@@ -16,4 +16,6 @@
 #cmakedefine01 MUGGLE_CRYPT_OPTIMIZATION
 #cmakedefine MUGGLE_BUILD_TRACE
 
+#cmakedefine01 MUGGLE_C_IS_BIG_ENDIAN
+
 #endif // !MUGGLE_C_CONFIG_IN_H_
