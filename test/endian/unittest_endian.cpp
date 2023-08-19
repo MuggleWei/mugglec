@@ -1,6 +1,11 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
 
+TEST(endian, compare_precompile_runtime)
+{
+	ASSERT_EQ(muggle_endianness(), MUGGLE_ENDIANNESS);
+}
+
 TEST(endian, check)
 {
 	int16_t i16 = 0x0001;

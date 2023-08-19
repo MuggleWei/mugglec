@@ -38,6 +38,12 @@ EXTERN_C_BEGIN
 #define MUGGLE_LITTLE_ENDIAN 0 //!< little endian
 #define MUGGLE_BIG_ENDIAN    1 //!< big endian
 
+#if MUGGLE_C_IS_BIG_ENDIAN
+	#define MUGGLE_ENDIANNESS MUGGLE_BIG_ENDIAN
+#else
+	#define MUGGLE_ENDIANNESS MUGGLE_LITTLE_ENDIAN
+#endif
+
 /**
  * @brief get endianness
  *
