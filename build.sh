@@ -3,7 +3,7 @@
 # handle argv
 if [ "$#" -lt 1 ]; then
 	echo "[ERROR] build.sh without build type"
-	echo "[ERROR] Usage: build.sh <Debug|Release|Coverage>"
+	echo "[ERROR] Usage: build.sh <Debug|Release|RelWithDebInfo|Coverage>"
 	exit 1
 else
 	# to lowercase
@@ -26,6 +26,7 @@ cmake \
 	-DBUILD_SHARED_LIBS=ON \
 	-DMUGGLE_BUILD_STATIC_PIC=ON \
 	-DMUGGLE_BUILD_TRACE=OFF \
+	-DMUGGLE_BUILD_SANITIZER=OFF \
 	-DBUILD_TESTING=OFF \
 	-DMUGGLE_BUILD_EXAMPLE=OFF \
 	-DMUGGLE_BUILD_BENCHMARK=OFF \
