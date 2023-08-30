@@ -60,6 +60,9 @@ TEST(thread, detach)
 	auto diff = end - start;
 	int elapsed = (int)std::chrono::duration_cast<std::chrono::milliseconds>(diff).count();
 	EXPECT_LT(elapsed, arg.ms);
+
+	// for avoid of stack-use-after-free
+	std::this_thread::sleep_for(std::chrono::milliseconds(arg.ms * 8));
 }
 
 TEST(thread, equal)
