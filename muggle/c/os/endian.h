@@ -17,23 +17,24 @@
 EXTERN_C_BEGIN
 
 #define MUGGLE_ENDIAN_SWAP_16(value) \
-	((((value) << 8) & 0xFF00) | (((value) >> 8) & 0x00FF))
+	((((value) & 0x00FF) << 8) | \
+	 (((value) & 0xFF00) >> 8))
 
 #define MUGGLE_ENDIAN_SWAP_32(value) \
-	((((value) << 24) & 0xFF000000) | \
-	 (((value) <<  8) & 0x00FF0000) | \
-	 (((value) >>  8) & 0x0000FF00) | \
-	 (((value) >> 24) & 0x000000FF)) 
+	((((value) & 0x000000FF) << 24) | \
+	 (((value) & 0x0000FF00) <<  8) | \
+	 (((value) & 0x00FF0000) >>  8) | \
+	 (((value) & 0xFF000000) >> 24))
 
 #define MUGGLE_ENDIAN_SWAP_64(value) \
-	((((value) << 56) & 0xFF00000000000000) | \
-	 (((value) << 40) & 0x00FF000000000000) | \
-	 (((value) << 24) & 0x0000FF0000000000) | \
-	 (((value) <<  8) & 0x000000FF00000000) | \
-	 (((value) >>  8) & 0x00000000FF000000) | \
-	 (((value) >> 24) & 0x0000000000FF0000) | \
-	 (((value) >> 40) & 0x000000000000FF00) | \
-	 (((value) >> 56) & 0x00000000000000FF))
+	((((value) & 0x00000000000000FF) << 56) | \
+	 (((value) & 0x000000000000FF00) << 40) | \
+	 (((value) & 0x0000000000FF0000) << 24) | \
+	 (((value) & 0x00000000FF000000) <<  8) | \
+	 (((value) & 0x000000FF00000000) >>  8) | \
+	 (((value) & 0x0000FF0000000000) >> 24) | \
+	 (((value) & 0x00FF000000000000) >> 40) | \
+	 (((value) & 0xFF00000000000000) >> 56))
 
 #define MUGGLE_LITTLE_ENDIAN 0 //!< little endian
 #define MUGGLE_BIG_ENDIAN    1 //!< big endian
