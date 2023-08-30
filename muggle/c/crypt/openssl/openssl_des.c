@@ -686,8 +686,8 @@ void muggle_openssl_tdes_crypt(
 	uint32_t l, r;
 
 	muggle_64bit_block_t input_block;
-	MUGGLE_OPENSSL_C2L(&input->u32.l, input_block.u32.l);
-	MUGGLE_OPENSSL_C2L(&input->u32.h, input_block.u32.h);
+	MUGGLE_OPENSSL_C2L((unsigned char *)&input->u32.l, input_block.u32.l);
+	MUGGLE_OPENSSL_C2L((unsigned char *)&input->u32.h, input_block.u32.h);
 
 	l = input->u32.l;
 	r = input->u32.h;
