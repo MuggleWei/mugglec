@@ -34,6 +34,10 @@ TEST(endian, swap_u16)
 	u16 = 0xff00;
 	u16 = MUGGLE_ENDIAN_SWAP_16(u16);
 	ASSERT_EQ(u16, 0x00ff);
+
+	u16 = 0x00ff;
+	u16 = MUGGLE_ENDIAN_SWAP_16(u16);
+	ASSERT_EQ(u16, 0xff00);
 }
 
 TEST(endian, swap_i16)
@@ -45,6 +49,12 @@ TEST(endian, swap_i16)
 	i16 = 0xff00;
 	i16 = MUGGLE_ENDIAN_SWAP_16(i16);
 	ASSERT_EQ(i16, 0x00ff);
+
+	i16 = 0x00ff;
+	i16 = MUGGLE_ENDIAN_SWAP_16(i16);
+	uint16_t result = 0xff00;
+	int16_t *i16_result = (int16_t*)&result;
+	ASSERT_EQ(i16, *i16_result);
 }
 
 TEST(endian, swap_u32)
@@ -56,6 +66,10 @@ TEST(endian, swap_u32)
 	u32 = 0xff000000;
 	u32 = MUGGLE_ENDIAN_SWAP_32(u32);
 	ASSERT_EQ(u32, (uint32_t)0x000000ff);
+
+	u32 = 0x000000ff;
+	u32 = MUGGLE_ENDIAN_SWAP_32(u32);
+	ASSERT_EQ(u32, (uint32_t)0xff000000);
 }
 
 TEST(endian, swap_i32)
@@ -67,6 +81,10 @@ TEST(endian, swap_i32)
 	i32 = 0xff000000;
 	i32 = MUGGLE_ENDIAN_SWAP_32(i32);
 	ASSERT_EQ(i32, 0x000000ff);
+
+	i32 = 0x000000ff;
+	i32 = MUGGLE_ENDIAN_SWAP_32(i32);
+	ASSERT_EQ(i32, (uint32_t)0xff000000);
 }
 
 TEST(endian, swap_u64)
@@ -78,6 +96,10 @@ TEST(endian, swap_u64)
 	u64 = 0xff00000000000000;
 	u64 = MUGGLE_ENDIAN_SWAP_64(u64);
 	ASSERT_EQ(u64, (uint64_t)0x00000000000000ff);
+
+	u64 = 0x00000000000000ff;
+	u64 = MUGGLE_ENDIAN_SWAP_64(u64);
+	ASSERT_EQ(u64, (uint64_t)0xff00000000000000);
 }
 
 TEST(endian, swap_i64)
@@ -89,4 +111,8 @@ TEST(endian, swap_i64)
 	i64 = 0xff00000000000000;
 	i64 = MUGGLE_ENDIAN_SWAP_64(i64);
 	ASSERT_EQ(i64, 0x00000000000000ff);
+
+	i64 = 0x00000000000000ff;
+	i64 = MUGGLE_ENDIAN_SWAP_64(i64);
+	ASSERT_EQ(i64, (uint64_t)0xff00000000000000);
 }
