@@ -221,7 +221,7 @@ bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, unsigned int ca
 
 	// copy alloc section
 	pool->alloc_index = offset;
-	if (num_free_section1 > 0)
+	if (num_alloc_section1 > 0)
 	{
 		memcpy(&new_ptr_buf[offset], (void*)alloc_section1, sizeof(void*) * num_alloc_section1);
 		offset += num_alloc_section1;
