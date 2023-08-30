@@ -60,8 +60,9 @@ option(BUILD_TESTING "Build testing" OFF)
 
 option(MUGGLE_BUILD_STATIC_PIC "build static library with position independent code flag" ON)
 option(MUGGLE_BUILD_EXAMPLE "Build mugglec example" OFF)
-option(MUGGLE_BUILD_BENCHMARK "Build muggleCC benchmark" OFF)
+option(MUGGLE_BUILD_BENCHMARK "Build mugglec benchmark" OFF)
 option(MUGGLE_BUILD_TRACE "If build type is debug then build with trace info in source codes" OFF)
+option(MUGGLE_BUILD_SANITIZER "Compile mugglec with sanitizer" OFF)
 option(MUGGLE_INSTALL_BIN "Install example, unittest and benchmark binaries" OFF)
 # option(MUGGLE_CRYPT_OPTIMIZATION "Enable crypt optimization(use source codes extract from openssl)" ON)
 set(MUGGLE_CRYPT_OPTIMIZATION ON)
@@ -279,6 +280,20 @@ if (MUGGLE_BUILD_TRACE)
 	if (MSVC OR MINGW)
 		message("-- mugglec link debug lib: debug Dbghelp")
 		target_link_libraries(${muggle_c} debug Dbghelp)
+	endif()
+endif()
+
+if (MUGGLE_BUILD_SANITIZER)
+	if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
+		(CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+		target_compile_options(${muggle_c} PUBLIC
+			-fsanitize=undefined
+			-fsanitize=address
+			-fsanitize=leak)
+		target_link_options(${muggle_c} PUBLIC
+			-fsanitize=undefined
+			-fsanitize=address
+			-fsanitize=leak)
 	endif()
 endif()
 

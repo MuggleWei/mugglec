@@ -41,7 +41,7 @@ typedef void(*muggle_dsaa_data_free)(void *pool, void *data);
 
 // check muggle data structure capacity is valid
 #define MUGGLE_DS_CAP_IS_VALID(capacity) \
-((uint64_t)(capacity) >= (uint64_t)(1<<31) ? false : true)
+	((uint64_t)(capacity) >= (uint64_t)(1ULL << 31) ? false : true)
 
 EXTERN_C_END
 
