@@ -1,6 +1,3 @@
-# cmake directory
-build/
-
 # vim
 *~
 /compile_commands.json
@@ -22,3 +19,12 @@ doc/compile_commands.json
 
 # tags
 /tags
+
+######### build & generated packages #########
+build/
+_hpkg/
+_hpb/
+_deps/
+_package/
+_packages/
+dist/

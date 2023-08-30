@@ -197,4 +197,6 @@ TEST(pointer_slot, insert_remove_iter)
 	ASSERT_EQ(cnt, 2);
 	ASSERT_EQ(p_arr[0], &arr[0]);
 	ASSERT_EQ(p_arr[1], &arr[2]);
+
+	muggle_pointer_slot_destroy(&ptr_slot);
 }
