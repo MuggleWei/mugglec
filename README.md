@@ -48,8 +48,9 @@ There are some cmake build options to decide build this library as shared or sta
 | ---- | ---- | ---- |
 | BUILD_SHARED_LIBS | ON | build shared library |
 | MUGGLE_BUILD_STATIC_PIC | ON | if build static library, set position independent code flag |
-| MUGGLE_BUILD_TRACE | OFF | build with trace info in debug |
 | BUILD_TESTING | OFF | build unittests |
+| MUGGLE_BUILD_TRACE | OFF | build with trace info in debug |
+| MUGGLE_BUILD_SANITIZER | OFF | build with sanitizer |
 | MUGGLE_BUILD_EXAMPLE | OFF | build examples |
 | MUGGLE_BUILD_BENCHMARK | OFF | build benchmark |
 | MUGGLE_INSTALL_BIN | OFF | install example, unittest and benchmark binaries |

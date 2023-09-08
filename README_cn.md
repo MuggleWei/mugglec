@@ -50,8 +50,9 @@ cmake ..
 | ---- | ---- | ---- |
 | BUILD_SHARED_LIBS | ON | ON - 构建动态库, OFF - 构建静态库 |
 | MUGGLE_BUILD_STATIC_PIC | ON | 若是静态库, 是否设置位置无关代码的标志 |
-| MUGGLE_BUILD_TRACE | OFF | 当构建的是Debug时, 是否增加一些额外的调试信息 |
 | BUILD_TESTING | OFF | 构建单元测试 |
+| MUGGLE_BUILD_TRACE | OFF | 当构建的是Debug时, 是否增加一些额外的调试信息 |
+| MUGGLE_BUILD_SANITIZER | OFF | 构建时增加 sanitizer 的编译选项 |
 | MUGGLE_BUILD_EXAMPLE | OFF | 构建例子 |
 | MUGGLE_BUILD_BENCHMARK | OFF | 构建性能测试 |
 | MUGGLE_INSTALL_BIN | OFF | 安装时连例子、单元测试和性能测试的二进制文件一同安装 |
