@@ -339,14 +339,14 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
     if (n == 0)
     {
         muggle_socket_close(client);
-        MUGGLE_LOG_ERROR("failed nonblocking tcp connect for %s:%s - timeout(%d sec)", host, serv, timeout_sec);
+        MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - timeout(%d sec)", host, serv, timeout_sec);
         return MUGGLE_INVALID_SOCKET;
     }
     else if (n == MUGGLE_SOCKET_ERROR)
     {
         char err_msg[1024] = {0};
         muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-        MUGGLE_LOG_ERROR("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
+        MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
 
         muggle_socket_close(client);
         return MUGGLE_INVALID_SOCKET;
@@ -360,7 +360,7 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
         {
             char err_msg[1024] = {0};
             muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-            MUGGLE_LOG_ERROR("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
+            MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
 
             muggle_socket_close(client);
             return MUGGLE_INVALID_SOCKET;
@@ -368,7 +368,7 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
     }
     else
     {
-        MUGGLE_LOG_ERROR("failed nonblocking tcp connect for %s:%s - socket not set", host, serv);
+        MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - socket not set", host, serv);
         muggle_socket_close(client);
         return MUGGLE_INVALID_SOCKET;
     }
@@ -377,7 +377,7 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
     {
         char err_msg[1024] = {0};
         muggle_socket_strerror(error, err_msg, sizeof(err_msg));
-        MUGGLE_LOG_ERROR("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
+        MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
 
         muggle_socket_close(client);
         return MUGGLE_INVALID_SOCKET;
