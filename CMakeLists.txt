@@ -55,8 +55,15 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/muggle_utils.cmake)
 # options
 ################################
 
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (Debug, RelWithDebInfo, Release, MinSizeRel)")
 option(BUILD_SHARED_LIBS "Build shared or static library" ON)
 option(BUILD_TESTING "Build testing" OFF)
+
+# close generator multi config, set to CMAKE_BUILD_TYPE
+get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if (is_multi_config)
+	set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE})
+endif()
 
 option(MUGGLE_BUILD_STATIC_PIC "build static library with position independent code flag" ON)
 option(MUGGLE_BUILD_EXAMPLE "Build mugglec example" OFF)
@@ -176,6 +183,8 @@ set(MUGGLE_C_SOVERSION "${MUGGLE_C_VER_MAJOR}")
 
 message("-- c compiler flags: ${CMAKE_C_FLAGS}")
 message("-- cxx compiler flags: ${CMAKE_CXX_FLAGS}")
+message("-- CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
 message("-- mugglec version ${MUGGLE_C_VERSION}")
 
 message("-- mugglec option BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS}")
