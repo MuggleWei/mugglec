@@ -55,8 +55,15 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/muggle_utils.cmake)
 # options
 ################################
 
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (Debug, RelWithDebInfo, Release, MinSizeRel)")
 option(BUILD_SHARED_LIBS "Build shared or static library" ON)
 option(BUILD_TESTING "Build testing" OFF)
+
+# close generator multi config, set to CMAKE_BUILD_TYPE
+get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if (is_multi_config)
+	set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE})
+endif()
 
 option(MUGGLE_BUILD_STATIC_PIC "build static library with position independent code flag" ON)
 option(MUGGLE_BUILD_EXAMPLE "Build mugglec example" OFF)
@@ -174,22 +181,28 @@ set(MUGGLE_C_SOVERSION "${MUGGLE_C_VER_MAJOR}")
 # output options
 ################################
 
-message("-- c compiler flags: ${CMAKE_C_FLAGS}")
-message("-- cxx compiler flags: ${CMAKE_CXX_FLAGS}")
-message("-- mugglec version ${MUGGLE_C_VERSION}")
+message("--------------------------------")
 
-message("-- mugglec option BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS}")
-message("-- mugglec option MUGGLE_BUILD_STATIC_PIC ${MUGGLE_BUILD_STATIC_PIC}")
-message("-- mugglec option MUGGLE_BUILD_TRACE ${MUGGLE_BUILD_TRACE}")
-message("-- mugglec option MUGGLE_BUILD_WITH_COV ${MUGGLE_BUILD_WITH_COV}")
+message("# mugglec version ${MUGGLE_C_VERSION}")
 
-message("-- mugglec option BUILD_TESTING ${BUILD_TESTING}")
-message("-- mugglec option MUGGLE_BUILD_EXAMPLE ${MUGGLE_BUILD_EXAMPLE}")
-message("-- mugglec option MUGGLE_BUILD_BENCHMARK ${MUGGLE_BUILD_BENCHMARK}")
+message("# c compiler flags: ${CMAKE_C_FLAGS}")
+message("# cxx compiler flags: ${CMAKE_CXX_FLAGS}")
 
-message("-- mugglec option MUGGLE_CRYPT_OPTIMIZATION ${MUGGLE_CRYPT_OPTIMIZATION}")
-message("-- mugglec option MUGGLE_CRYPT_COMPARE_OPENSSL ${MUGGLE_CRYPT_COMPARE_OPENSSL}")
-message("-- mugglec option MUGGLE_INSTALL_BIN ${MUGGLE_INSTALL_BIN}")
+message("# CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
+message("# mugglec option BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
+message("# mugglec option MUGGLE_BUILD_STATIC_PIC: ${MUGGLE_BUILD_STATIC_PIC}")
+message("# mugglec option MUGGLE_BUILD_TRACE: ${MUGGLE_BUILD_TRACE}")
+message("# mugglec option MUGGLE_BUILD_WITH_COV: ${MUGGLE_BUILD_WITH_COV}")
+message("# mugglec option MUGGLE_BUILD_SANITIZER: ${MUGGLE_BUILD_SANITIZER}")
+message("# mugglec option BUILD_TESTING: ${BUILD_TESTING}")
+message("# mugglec option MUGGLE_BUILD_EXAMPLE: ${MUGGLE_BUILD_EXAMPLE}")
+message("# mugglec option MUGGLE_BUILD_BENCHMARK: ${MUGGLE_BUILD_BENCHMARK}")
+message("# mugglec option MUGGLE_CRYPT_OPTIMIZATION: ${MUGGLE_CRYPT_OPTIMIZATION}")
+message("# mugglec option MUGGLE_CRYPT_COMPARE_OPENSSL: ${MUGGLE_CRYPT_COMPARE_OPENSSL}")
+message("# mugglec option MUGGLE_INSTALL_BIN: ${MUGGLE_INSTALL_BIN}")
+
+message("--------------------------------")
 
 ################################
 # configure
@@ -284,8 +297,8 @@ if (MUGGLE_BUILD_TRACE)
 endif()
 
 if (MUGGLE_BUILD_SANITIZER)
-	if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
-		(CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+	if ((${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") OR
+		(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang"))
 		target_compile_options(${muggle_c} PUBLIC
 			-fsanitize=undefined
 			-fsanitize=address
