@@ -181,24 +181,28 @@ set(MUGGLE_C_SOVERSION "${MUGGLE_C_VER_MAJOR}")
 # output options
 ################################
 
-message("-- c compiler flags: ${CMAKE_C_FLAGS}")
-message("-- cxx compiler flags: ${CMAKE_CXX_FLAGS}")
-message("-- CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+message("--------------------------------")
 
-message("-- mugglec version ${MUGGLE_C_VERSION}")
+message("# mugglec version ${MUGGLE_C_VERSION}")
 
-message("-- mugglec option BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS}")
-message("-- mugglec option MUGGLE_BUILD_STATIC_PIC ${MUGGLE_BUILD_STATIC_PIC}")
-message("-- mugglec option MUGGLE_BUILD_TRACE ${MUGGLE_BUILD_TRACE}")
-message("-- mugglec option MUGGLE_BUILD_WITH_COV ${MUGGLE_BUILD_WITH_COV}")
+message("# c compiler flags: ${CMAKE_C_FLAGS}")
+message("# cxx compiler flags: ${CMAKE_CXX_FLAGS}")
 
-message("-- mugglec option BUILD_TESTING ${BUILD_TESTING}")
-message("-- mugglec option MUGGLE_BUILD_EXAMPLE ${MUGGLE_BUILD_EXAMPLE}")
-message("-- mugglec option MUGGLE_BUILD_BENCHMARK ${MUGGLE_BUILD_BENCHMARK}")
+message("# CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
-message("-- mugglec option MUGGLE_CRYPT_OPTIMIZATION ${MUGGLE_CRYPT_OPTIMIZATION}")
-message("-- mugglec option MUGGLE_CRYPT_COMPARE_OPENSSL ${MUGGLE_CRYPT_COMPARE_OPENSSL}")
-message("-- mugglec option MUGGLE_INSTALL_BIN ${MUGGLE_INSTALL_BIN}")
+message("# mugglec option BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
+message("# mugglec option MUGGLE_BUILD_STATIC_PIC: ${MUGGLE_BUILD_STATIC_PIC}")
+message("# mugglec option MUGGLE_BUILD_TRACE: ${MUGGLE_BUILD_TRACE}")
+message("# mugglec option MUGGLE_BUILD_WITH_COV: ${MUGGLE_BUILD_WITH_COV}")
+message("# mugglec option MUGGLE_BUILD_SANITIZER: ${MUGGLE_BUILD_SANITIZER}")
+message("# mugglec option BUILD_TESTING: ${BUILD_TESTING}")
+message("# mugglec option MUGGLE_BUILD_EXAMPLE: ${MUGGLE_BUILD_EXAMPLE}")
+message("# mugglec option MUGGLE_BUILD_BENCHMARK: ${MUGGLE_BUILD_BENCHMARK}")
+message("# mugglec option MUGGLE_CRYPT_OPTIMIZATION: ${MUGGLE_CRYPT_OPTIMIZATION}")
+message("# mugglec option MUGGLE_CRYPT_COMPARE_OPENSSL: ${MUGGLE_CRYPT_COMPARE_OPENSSL}")
+message("# mugglec option MUGGLE_INSTALL_BIN: ${MUGGLE_INSTALL_BIN}")
+
+message("--------------------------------")
 
 ################################
 # configure
