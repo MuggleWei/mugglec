@@ -52,6 +52,7 @@ There are some cmake build options to decide build this library as shared or sta
 | MUGGLE_BUILD_TRACE | OFF | build with trace info in debug |
 | MUGGLE_BUILD_SANITIZER | OFF | build with sanitizer |
 | MUGGLE_BUILD_EXAMPLE | OFF | build examples |
+| MUGGLE_BUILD_BENCHMARK_UTILS | OFF | build benchmark utils |
 | MUGGLE_BUILD_BENCHMARK | OFF | build benchmark |
 | MUGGLE_INSTALL_BIN | OFF | install example, unittest and benchmark binaries |
 
@@ -87,7 +88,7 @@ set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
 FetchContent_Declare(
 	mugglec
 	GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
-	GIT_TAG v1.3.2
+	GIT_TAG v1.3.3
 	GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(mugglec)
@@ -112,7 +113,7 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        GIT_TAG           v1.3.2
+        GIT_TAG           v1.3.3
         GIT_SHALLOW       TRUE
         SOURCE_DIR        "${FETCHCONTENT_BASE_DIR}/mugglec-src"
         BINARY_DIR        "${FETCHCONTENT_BASE_DIR}/mugglec-build"

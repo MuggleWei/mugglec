@@ -54,6 +54,7 @@ cmake ..
 | MUGGLE_BUILD_TRACE | OFF | 当构建的是Debug时, 是否增加一些额外的调试信息 |
 | MUGGLE_BUILD_SANITIZER | OFF | 构建时增加 sanitizer 的编译选项 |
 | MUGGLE_BUILD_EXAMPLE | OFF | 构建例子 |
+| MUGGLE_BUILD_BENCHMARK_UTILS | OFF | 构建性能测试工具 |
 | MUGGLE_BUILD_BENCHMARK | OFF | 构建性能测试 |
 | MUGGLE_INSTALL_BIN | OFF | 安装时连例子、单元测试和性能测试的二进制文件一同安装 |
 
@@ -89,7 +90,7 @@ set(MUGGLE_BUILD_EXAMPLE OFF CACHE BOOL "")
 FetchContent_Declare(
 	mugglec
 	GIT_REPOSITORY https://github.com/MuggleWei/mugglec.git
-	GIT_TAG v1.3.2
+	GIT_TAG v1.3.3
 	GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(mugglec)
@@ -115,7 +116,7 @@ project(mugglec-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mugglec
         GIT_REPOSITORY    https://github.com/MuggleWei/mugglec.git
-        GIT_TAG           v1.3.2
+        GIT_TAG           v1.3.3
         GIT_SHALLOW       TRUE
         SOURCE_DIR        "${CMAKE_BINARY_DIR}/_deps/mugglec-src"
         BINARY_DIR        "${CMAKE_BINARY_DIR}/_deps/mugglec-build"

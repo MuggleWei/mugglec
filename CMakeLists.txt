@@ -67,6 +67,7 @@ endif()
 
 option(MUGGLE_BUILD_STATIC_PIC "build static library with position independent code flag" ON)
 option(MUGGLE_BUILD_EXAMPLE "Build mugglec example" OFF)
+option(MUGGLE_BUILD_BENCHMARK_UTILS "Build mugglec benchmark utils" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build mugglec benchmark" OFF)
 option(MUGGLE_BUILD_TRACE "If build type is debug then build with trace info in source codes" OFF)
 option(MUGGLE_BUILD_SANITIZER "Compile mugglec with sanitizer" OFF)
@@ -197,6 +198,7 @@ message("# mugglec option MUGGLE_BUILD_WITH_COV: ${MUGGLE_BUILD_WITH_COV}")
 message("# mugglec option MUGGLE_BUILD_SANITIZER: ${MUGGLE_BUILD_SANITIZER}")
 message("# mugglec option BUILD_TESTING: ${BUILD_TESTING}")
 message("# mugglec option MUGGLE_BUILD_EXAMPLE: ${MUGGLE_BUILD_EXAMPLE}")
+message("# mugglec option MUGGLE_BUILD_BENCHMARK_UTILS: ${MUGGLE_BUILD_BENCHMARK_UTILS}")
 message("# mugglec option MUGGLE_BUILD_BENCHMARK: ${MUGGLE_BUILD_BENCHMARK}")
 message("# mugglec option MUGGLE_CRYPT_OPTIMIZATION: ${MUGGLE_CRYPT_OPTIMIZATION}")
 message("# mugglec option MUGGLE_CRYPT_COMPARE_OPENSSL: ${MUGGLE_CRYPT_COMPARE_OPENSSL}")
@@ -390,7 +392,7 @@ if (${BUILD_TESTING})
 endif()
 
 # benchmark utils
-if (${MUGGLE_BUILD_BENCHMARK})
+if (${MUGGLE_BUILD_BENCHMARK} OR ${MUGGLE_BUILD_BENCHMARK_UTILS})
 	muggle_add_project(muggle_benchmark ${CMAKE_CURRENT_LIST_DIR}/muggle_benchmark ${MUGGLE_LIB_TYPE})
 	set_target_properties(muggle_benchmark PROPERTIES 
 		VERSION ${MUGGLE_C_VERSION}
