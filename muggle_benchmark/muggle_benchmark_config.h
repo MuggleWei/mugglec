@@ -57,6 +57,6 @@ void muggle_benchmark_config_parse_cli(
 MUGGLE_BENCHMARK_EXPORT
 void muggle_benchmark_config_output(muggle_benchmark_config_t *config);
 
-EXTERN_C_BEGIN
+EXTERN_C_END
 
 #endif // !MUGGLE_C_BENCHMARK_CONFIG_H_
