@@ -14,7 +14,7 @@ origin_dir="$(dirname "$(readlink -f "$0")")"
 user_local_dir=$HOME/.local
 build_dir=$origin_dir/build
 dep_search_path=$user_local_dir/usr
-install_dir=$user_local_dir/usr
+install_dir=$origin_dir/dist
 
 mkdir -p $build_dir
 cd $build_dir
@@ -30,8 +30,9 @@ cmake \
 	-DBUILD_TESTING=OFF \
 	-DMUGGLE_BUILD_EXAMPLE=OFF \
 	-DMUGGLE_BUILD_BENCHMARK=OFF \
-	-DMUGGLE_INSTALL_BIN=OFF
+	-DMUGGLE_INSTALL_BIN=OFF \
+	-DCMAKE_INSTALL_PREFIX=$install_dir
 
 # make && make install
 cmake --build .
-cpack
+cmake --build . --target install
