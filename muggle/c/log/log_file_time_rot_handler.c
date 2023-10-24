@@ -111,12 +111,13 @@ static int muggle_log_file_time_rot_handler_rotate(
 		handler->fp = NULL;
 	}
 
+	int ret = 0;
 	char buf[MUGGLE_MAX_PATH];
 	switch (handler->rotate_unit)
 	{
 		case MUGGLE_LOG_TIME_ROTATE_UNIT_SEC:
 		{
-			snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d%02d%02d",
+			ret = snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d%02d%02d",
 				handler->filepath,
 				handler->last_tm.tm_year + 1900,
 				handler->last_tm.tm_mon + 1,
@@ -128,7 +129,7 @@ static int muggle_log_file_time_rot_handler_rotate(
 		}break;
 		case MUGGLE_LOG_TIME_ROTATE_UNIT_MIN:
 		{
-			snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d%02d",
+			ret = snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d%02d",
 				handler->filepath,
 				handler->last_tm.tm_year + 1900,
 				handler->last_tm.tm_mon + 1,
@@ -138,7 +139,7 @@ static int muggle_log_file_time_rot_handler_rotate(
 		}break;
 		case MUGGLE_LOG_TIME_ROTATE_UNIT_HOUR:
 		{
-			snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d",
+			ret = snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d",
 				handler->filepath,
 				handler->last_tm.tm_year + 1900,
 				handler->last_tm.tm_mon + 1,
@@ -147,12 +148,16 @@ static int muggle_log_file_time_rot_handler_rotate(
 		}break;
 		case MUGGLE_LOG_TIME_ROTATE_UNIT_DAY:
 		{
-			snprintf(buf, sizeof(buf), "%s.%d%02d%02d",
+			ret = snprintf(buf, sizeof(buf), "%s.%d%02d%02d",
 				handler->filepath,
 				handler->last_tm.tm_year + 1900,
 				handler->last_tm.tm_mon + 1,
 				handler->last_tm.tm_mday);
 		}break;
+	}
+	if (ret < 0) {
+		fprintf(stderr, "failed snprintf time rotate log buf\n");
+		return MUGGLE_ERR_SYS_CALL;
 	}
 
 	handler->fp = fopen(buf, "ab+");
@@ -300,6 +305,10 @@ int muggle_log_file_time_rot_handler_init(
 	}
 
 	strncpy(handler->filepath, abs_filepath, sizeof(handler->filepath)-1);
+	// handler already memset, the line below just for get rid of gcc strncpy 
+	// truncated warning
+	handler->filepath[sizeof(handler->filepath) - 1] = '\0';
+
 	handler->last_sec = time(NULL);
 	if (handler->use_local_time)
 	{
