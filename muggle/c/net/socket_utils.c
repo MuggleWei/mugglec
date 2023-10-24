@@ -554,7 +554,7 @@ muggle_socket_t muggle_mcast_join(
 	}
 
 	struct addrinfo *bind_addrinfo = NULL;
-	struct sockaddr_storage *bind_addr = NULL;
+	// struct sockaddr_storage *bind_addr = NULL;
 
 #if MUGGLE_PLATFORM_WINDOWS
 	// get local address
@@ -580,7 +580,7 @@ muggle_socket_t muggle_mcast_join(
 	}
 
 	bind_addrinfo = &local_addrinfo;
-	bind_addr = &local_addr;
+	// bind_addr = &local_addr;
 #else
 	unsigned int iface_idx = 0;
 	if (iface != NULL)
@@ -595,7 +595,7 @@ muggle_socket_t muggle_mcast_join(
 	}
 
 	bind_addrinfo = &multicast_addrinfo;
-	bind_addr = &multicast_addr;
+	// bind_addr = &multicast_addr;
 #endif
 
 	// create socket

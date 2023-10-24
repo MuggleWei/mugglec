@@ -60,23 +60,27 @@ static int muggle_log_simple_init_log_path(char *log_path, size_t log_path_size)
 	char process_path[MUGGLE_MAX_PATH];
 	if (muggle_os_process_path(process_path, sizeof(process_path)) != 0)
 	{
-		fprintf(stderr, "failed get process path");
+		fprintf(stderr, "failed get process path\n");
 		return -1;
 	}
 
     char process_name[MUGGLE_MAX_PATH];
     if (muggle_path_basename(process_path, process_name, sizeof(process_name)) != 0)
     {
-		fprintf(stderr, "failed get basename from path: %s", process_path);
+		fprintf(stderr, "failed get basename from path: %s\n", process_path);
         return -1;
     }
 
 	char log_name[MUGGLE_MAX_PATH];
-	snprintf(log_name, sizeof(log_name), "%s.log", process_name);
+	int ret = snprintf(log_name, sizeof(log_name), "%s.log", process_name);
+	if (ret < 0) {
+		fprintf(stderr, "failed snprintf log name\n");
+		return -1;
+	}
 
 	if (muggle_path_join("log", log_name, log_path, log_path_size) != 0)
 	{
-		fprintf(stderr, "failed join log path");
+		fprintf(stderr, "failed join log path\n");
 		return -1;
 	}
 
@@ -136,7 +140,7 @@ int muggle_log_simple_init(int level_console, int level_file_rotating)
 		char log_path[MUGGLE_MAX_PATH];
 		if (muggle_log_simple_init_log_path(log_path, sizeof(log_path)) != 0)
 		{
-			fprintf(stderr, "failed init log path");
+			fprintf(stderr, "failed init log path\n");
 			return -1;
 		}
 
@@ -145,7 +149,7 @@ int muggle_log_simple_init(int level_console, int level_file_rotating)
 				&rot_file_handler, log_path, 1024 * 1024 * 64, 5);
 		if (ret != 0)
 		{
-			fprintf(stderr, "failed init file rotate handler with path: %s", log_path);
+			fprintf(stderr, "failed init file rotate handler with path: %s\n", log_path);
 			return -1;
 		}
 		muggle_log_handler_set_level((muggle_log_handler_t*)&rot_file_handler, level_file_rotating);

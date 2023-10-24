@@ -25,8 +25,13 @@ static int muggle_log_file_rotate_handler_rotate(muggle_log_file_rotate_handler_
 	}
 
 	char buf[MUGGLE_MAX_PATH];
-	snprintf(buf, sizeof(buf)-1, "%s.%d",
-		handler->filepath, handler->backup_count);
+	int ret = snprintf(buf, sizeof(buf)-1, "%s.%d", handler->filepath,
+			handler->backup_count);
+	if (ret < 0) {
+		fprintf(stderr, "failed snprintf rotate backup count\n");
+		return MUGGLE_ERR_SYS_CALL;
+	}
+
 	if (muggle_path_exists(buf))
 	{
 		muggle_os_remove(buf);
@@ -35,12 +40,23 @@ static int muggle_log_file_rotate_handler_rotate(muggle_log_file_rotate_handler_
 	char src[MUGGLE_MAX_PATH], dst[MUGGLE_MAX_PATH];
 	for (int i = (int)handler->backup_count - 1; i > 0; i--)
 	{
-		snprintf(src, sizeof(src), "%s.%d", handler->filepath, i);
-		snprintf(dst, sizeof(dst), "%s.%d", handler->filepath, i+1);
+		ret = snprintf(src, sizeof(src), "%s.%d", handler->filepath, i);
+		if (ret < 0) {
+			fprintf(stderr, "failed snprintf rotate src idx: %d\n", i);
+			continue;
+		}
+		ret = snprintf(dst, sizeof(dst), "%s.%d", handler->filepath, i+1);
+		if (ret < 0) {
+			fprintf(stderr, "failed snprintf rotate dst idx: %d\n", i);
+			continue;
+		}
 		muggle_os_rename(src, dst);
 	}
 
-	snprintf(dst, sizeof(dst), "%s.1", handler->filepath);
+	ret = snprintf(dst, sizeof(dst), "%s.1", handler->filepath);
+	if (ret < 0) {
+		fprintf(stderr, "failed snprintf rotate dst idx: 1\n");
+	}
 	muggle_os_rename(handler->filepath, dst);
 
 	handler->fp = fopen(handler->filepath, "ab+");
