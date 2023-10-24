@@ -305,6 +305,10 @@ int muggle_log_file_time_rot_handler_init(
 	}
 
 	strncpy(handler->filepath, abs_filepath, sizeof(handler->filepath)-1);
+	// handler already memset, the line below just for get rid of gcc strncpy 
+	// truncated warning
+	handler->filepath[sizeof(handler->filepath) - 1] = '\0';
+
 	handler->last_sec = time(NULL);
 	if (handler->use_local_time)
 	{

@@ -212,6 +212,10 @@ int muggle_log_file_rotate_handler_init(
 	}
 
 	strncpy(handler->filepath, abs_filepath, sizeof(handler->filepath)-1);
+	// handler already memset, the line below just for get rid of gcc strncpy 
+	// truncated warning
+	handler->filepath[sizeof(handler->filepath) - 1] = '\0';
+	
 	handler->max_bytes = max_bytes;
 	handler->backup_count = backup_count;
 
