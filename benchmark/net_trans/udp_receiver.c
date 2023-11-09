@@ -44,6 +44,16 @@ static void run_udp_receiver_multiplexing(const char *host, const char *port,
 	user_data.handle = handle;
 	user_data.config = config;
 
+	// init udp socket context
+	muggle_socket_t fd = muggle_udp_bind(host, port);
+	if (fd == MUGGLE_INVALID_SOCKET) {
+		MUGGLE_LOG_ERROR("failed create udp bind for %s:%s", host, port);
+		exit(EXIT_FAILURE);
+	}
+	muggle_socket_context_t *ctx =
+		(muggle_socket_context_t *)malloc(sizeof(muggle_socket_context_t));
+	muggle_socket_ctx_init(ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_UDP);
+
 	// init event loop
 	muggle_event_loop_init_args_t ev_init_args;
 	memset(&ev_init_args, 0, sizeof(ev_init_args));
@@ -68,25 +78,14 @@ static void run_udp_receiver_multiplexing(const char *host, const char *port,
 	muggle_socket_evloop_handle_attach(&evloop_handle, evloop);
 	LOG_INFO("socket handle attached event loop");
 
-	// init udp socket context
-	muggle_socket_t fd = muggle_udp_bind(host, port);
-	if (fd == MUGGLE_INVALID_SOCKET) {
-		MUGGLE_LOG_ERROR("failed create udp bind for %s:%s", host, port);
-		exit(EXIT_FAILURE);
-	}
-	muggle_socket_context_t ctx;
-	muggle_socket_ctx_init(&ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_UDP);
-
 	// add socket context into evloop
-	muggle_socket_evloop_add_ctx(evloop, &ctx);
+	muggle_socket_evloop_add_ctx(evloop, ctx);
 
-	// run event loop
+	// run
 	muggle_evloop_run(evloop);
 
-	// destroy socket event loop handle
+	// cleanup
 	muggle_socket_evloop_handle_destroy(&evloop_handle);
-
-	// delete event loop
 	muggle_evloop_delete(evloop);
 }
 

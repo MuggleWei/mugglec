@@ -263,5 +263,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	muggle_benchmark_handle_destroy(&handle);
+
 	return 0;
 }

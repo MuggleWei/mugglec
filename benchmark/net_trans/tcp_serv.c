@@ -153,6 +153,12 @@ void run_tcp_serv_multiplexing(const char *host, const char *port, int is_busy,
 							   muggle_benchmark_handle_t *handle,
 							   muggle_benchmark_config_t *config)
 {
+	// user data
+	struct tcp_serv_user_data user_data;
+	memset(&user_data, 0, sizeof(user_data));
+	user_data.handle = handle;
+	user_data.config = config;
+
 	// create tcp listen socket
 	muggle_socket_t fd = muggle_tcp_listen(host, port, 512);
 	if (fd == MUGGLE_INVALID_SOCKET) {
@@ -164,12 +170,6 @@ void run_tcp_serv_multiplexing(const char *host, const char *port, int is_busy,
 	int enable = 1;
 	muggle_setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *)&enable,
 					  sizeof(enable));
-
-	// user data
-	struct tcp_serv_user_data user_data;
-	memset(&user_data, 0, sizeof(user_data));
-	user_data.handle = handle;
-	user_data.config = config;
 
 	// create socket context
 	muggle_socket_context_t *ctx =
@@ -203,13 +203,13 @@ void run_tcp_serv_multiplexing(const char *host, const char *port, int is_busy,
 	muggle_socket_evloop_handle_attach(&evloop_handle, evloop);
 	LOG_INFO("socket handle attached to event loop");
 
-	// add socket context into event loop
+	// add socket context into evloop
 	muggle_socket_evloop_add_ctx(evloop, ctx);
 
 	// run
 	muggle_evloop_run(evloop);
 
-	// clear
+	// cleanup
 	muggle_socket_evloop_handle_destroy(&evloop_handle);
 	muggle_evloop_delete(evloop);
 }
@@ -294,6 +294,9 @@ void run_tcp_serv_single(const char *host, const char *port, int is_busy,
 			break;
 		}
 	}
+
+	// cleanup
+	muggle_bytes_buffer_destroy(&bytes_buf);
 }
 
 void run_tcp_serv(const char *host, const char *port, int is_multiplexing,
