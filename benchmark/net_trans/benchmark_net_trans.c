@@ -29,7 +29,7 @@ bool parse_args(int argc, char **argv, args_t *args)
 	strncpy(args->role, "null", sizeof(args->role) - 1);
 	strncpy(args->host, "127.0.0.1", sizeof(args->host) - 1);
 	strncpy(args->port, "10102", sizeof(args->port) - 1);
-	args->is_multiplexing = 0;
+	args->is_multiplexing = 1;
 	args->is_busy = 1;
 	args->round = 100;
 	args->cnt_per_round = 10;
@@ -50,7 +50,7 @@ bool parse_args(int argc, char **argv, args_t *args)
 			{ NULL, 0, NULL, 0 }
 		};
 
-		c = getopt_long(argc, argv, "hr:m:H:P:", long_options, &option_index);
+		c = getopt_long(argc, argv, "hr:H:P:m:b:", long_options, &option_index);
 		if (c == -1) {
 			break;
 		}
