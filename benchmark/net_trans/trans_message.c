@@ -20,7 +20,8 @@ void genPkgData(struct pkg_data *data, uint32_t idx)
 	data->nsec = (uint64_t)ts.tv_nsec;
 }
 
-void sendPkgs(muggle_socket_context_t *ctx, muggle_benchmark_handle_t *handle,
+void sendPkgs(muggle_socket_context_t *ctx, int is_busy,
+			  muggle_benchmark_handle_t *handle,
 			  muggle_benchmark_config_t *config)
 {
 	struct pkg msg;
@@ -51,7 +52,23 @@ void sendPkgs(muggle_socket_context_t *ctx, muggle_benchmark_handle_t *handle,
 		}
 
 		if (config->round_interval_ms > 0) {
-			muggle_msleep(config->round_interval_ms);
+			if (is_busy) {
+				struct timespec ts_wait_begin;
+				struct timespec ts_wait_end;
+				timespec_get(&ts_wait_begin, TIME_UTC);
+				while (1) {
+					timespec_get(&ts_wait_end, TIME_UTC);
+					int64_t elapsed_ms =
+						(ts_wait_end.tv_sec - ts_wait_begin.tv_sec) * 1000 +
+						ts_wait_end.tv_nsec / 1000000 -
+						ts_wait_begin.tv_nsec / 1000000;
+					if (elapsed_ms > config->round_interval_ms) {
+						break;
+					}
+				}
+			} else {
+				muggle_msleep(config->round_interval_ms);
+			}
 		}
 	}
 
@@ -75,6 +92,8 @@ int onRecvPkg(muggle_socket_context_t *ctx, struct pkg *pkg,
 			  muggle_benchmark_handle_t *handle,
 			  muggle_benchmark_config_t *config)
 {
+	MUGGLE_UNUSED(ctx);
+
 	// record time
 	muggle_benchmark_record_t record;
 	fn_muggle_benchmark_record fn_record =

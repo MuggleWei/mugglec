@@ -10,14 +10,12 @@ void run_udp_sender(const char *host, const char *port, int is_busy,
 		exit(EXIT_FAILURE);
 	}
 
-	if (is_busy) {
-		muggle_socket_set_nonblock(fd, 1);
-	}
+	muggle_socket_set_nonblock(fd, 1);
 
 	muggle_socket_context_t ctx;
 	muggle_socket_ctx_init(&ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_UDP);
 
-	sendPkgs(&ctx, handle, config);
+	sendPkgs(&ctx, is_busy, handle, config);
 
 	muggle_socket_ctx_close(&ctx);
 }
