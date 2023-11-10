@@ -60,9 +60,14 @@ option(BUILD_SHARED_LIBS "Build shared or static library" ON)
 option(BUILD_TESTING "Build testing" OFF)
 
 # # close generator multi config, set to CMAKE_BUILD_TYPE
+# if (NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
+# 	if (NOT CMAKE_BUILD_TYPE)
+# 		set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (Debug, RelWithDebInfo, Release, MinSizeRel)" FORCE)
+# 	endif()
+# endif()
 # get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 # if (is_multi_config)
-# 	set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE})
+#     set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE})
 # endif()
 
 option(MUGGLE_BUILD_STATIC_PIC "build static library with position independent code flag" ON)
