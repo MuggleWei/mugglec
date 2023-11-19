@@ -27,6 +27,7 @@ muggle_thread_ret_t thread_connect(void *arg)
 		if (strcmp(th_arg->socket_type, "tcp") == 0)
 		{
 			fd = muggle_tcp_connect(th_arg->host, th_arg->serv, 3);
+			// fd = muggle_tcp_bind_connect("127.0.0.1", NULL, th_arg->host, th_arg->serv, 3);
 			if (fd != MUGGLE_INVALID_SOCKET)
 			{
 				ctx = (muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
@@ -198,4 +199,6 @@ muggle_thread_ret_t thread_socket_event(void *arg)
 		muggle_msleep(100);
 	}
 	muggle_sowr_memory_pool_destroy(&text_sowr_pool);
+
+	return 0;
 }
