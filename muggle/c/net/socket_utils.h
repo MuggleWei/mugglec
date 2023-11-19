@@ -94,6 +94,38 @@ MUGGLE_C_EXPORT
 muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeout_sec);
 
 /**
+ * @brief bind tcp
+ *
+ * @param bind_host  bind host
+ * @param bind_serv  bind service or port, if it's null, bind port randomly
+ *
+ * @return
+ *     - on success, connected socket description is returned
+ *     - otherwise return MUGGLE_INVALID_SOCKET
+ */
+MUGGLE_C_EXPORT
+muggle_socket_t muggle_tcp_bind(const char *bind_host, const char *bind_serv);
+
+/**
+ * @brief tcp bind and connect
+ *
+ * @param bind_host    bind host
+ * @param bind_serv  bind service or port, if it's null, bind port randomly
+ * @param host         target host
+ * @param serv         target service or port
+ * @param timeout_sec  max seconds for wait connect complete
+ *
+ * @return
+ *     - on success, connected socket description is returned
+ *     - otherwise return MUGGLE_INVALID_SOCKET
+ */
+MUGGLE_C_EXPORT
+muggle_socket_t muggle_tcp_bind_connect(
+		const char *bind_host, const char *bind_serv,
+		const char *host, const char *serv,
+		int timeout_sec);
+
+/**
  * @brief udp bind
  *
  * @param host  bind host

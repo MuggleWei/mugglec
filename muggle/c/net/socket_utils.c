@@ -394,6 +394,239 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
     return client;
 }
 
+muggle_socket_t muggle_tcp_bind(const char *bind_host, const char *bind_serv)
+{
+	muggle_socket_t client = MUGGLE_INVALID_SOCKET;
+
+    struct addrinfo hints, *res;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_CANONNAME;
+
+    int n;
+    if ((n = getaddrinfo(bind_host, bind_serv, &hints, &res)) != 0) {
+#if MUGGLE_PLATFORM_WINDOWS
+        char err_msg[1024] = {0};
+        muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
+		MUGGLE_LOG_ERROR("failed tcp bind -> %s %s"
+			" - getaddrinfo return '%s'",
+			bind_host, bind_serv == NULL ? "(null)" : bind_serv, err_msg);
+#else
+		MUGGLE_LOG_ERROR("failed tcp bind and connect %s -> %s:%s"
+			" - getaddrinfo return '%s'",
+			bind_host, bind_serv == NULL ? "(null)" : bind_serv,
+			gai_strerror(n));
+#endif
+        return MUGGLE_INVALID_SOCKET;
+    }
+
+    struct addrinfo *ressave = res;
+    for (; res != NULL; res = res->ai_next)
+    {
+        client = muggle_socket_create(res->ai_family, res->ai_socktype, res->ai_protocol);
+        if (client == MUGGLE_INVALID_SOCKET)
+        {
+			continue;
+        }
+
+		if (bind(client, res->ai_addr, (muggle_socklen_t)res->ai_addrlen) == 0) {
+			break;
+		} else {
+			char err_msg[1024] = {0};
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_LOG_WARNING("failed tcp bind %s:%s - bind return '%s'",
+				bind_host, bind_serv == NULL ? "(null)" : bind_serv, err_msg);
+		}
+
+		muggle_socket_close(client);
+		client = MUGGLE_INVALID_SOCKET;
+    }
+
+	if (res == NULL) {
+		MUGGLE_LOG_ERROR("failed tcp bind %s:%s - no valid addrinfo",
+			bind_host, bind_serv == NULL ? "(null)" : bind_serv);
+		freeaddrinfo(ressave);
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	freeaddrinfo(ressave);
+
+	return client;
+}
+
+static muggle_socket_t muggle_tcp_binded_socket_connect(
+		muggle_socket_t client, const char *host, const char *serv, int timeout_sec)
+{
+    // set nonblock
+#if MUGGLE_PLATFORM_WINDOWS
+    u_long iMode = 1;
+
+    // If iMode = 0, blocking is enabled;
+    // If iMode != 0, non-blocking mode is enabled.
+    ioctlsocket(client, FIONBIO, &iMode);
+#else
+    int flags = 0;
+    flags = fcntl(client, F_GETFL, 0);
+    fcntl(client, F_SETFL, flags | O_NONBLOCK);
+#endif
+
+	// get remote addr
+    struct addrinfo hints, *res;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_CANONNAME;
+
+    int n;
+    if ((n = getaddrinfo(host, serv, &hints, &res)) != 0)
+    {
+#if MUGGLE_PLATFORM_WINDOWS
+        char err_msg[1024] = {0};
+        muggle_socket_strerror(WSAGetLastError(), err_msg, sizeof(err_msg));
+		MUGGLE_LOG_ERROR("failed nonblocking tcp bind and connect for %s:%s"
+			" - getaddrinfo return '%s'",
+            host, serv, err_msg);
+#else
+		MUGGLE_LOG_ERROR("failed nonblocking tcp bind and connect for %s:%s"
+			" - getaddrinfo return '%s'",
+            host, serv, gai_strerror(n));
+#endif
+        return MUGGLE_INVALID_SOCKET;
+    }
+
+	if (res == NULL) {
+		MUGGLE_LOG_ERROR("failed nonblocking tcp bind and connect for %s:%s"
+			" - 0 valid addrinfo",
+			host, serv);
+		muggle_socket_close(client);
+		return MUGGLE_INVALID_SOCKET;
+	}
+
+	// connect
+    n = connect(client, res->ai_addr, (muggle_socklen_t)res->ai_addrlen);
+    if (n < 0)
+    {
+#if MUGGLE_PLATFORM_WINDOWS
+        if (MUGGLE_SOCKET_LAST_ERRNO != WSAEWOULDBLOCK)
+#else
+        if (MUGGLE_SOCKET_LAST_ERRNO != EINPROGRESS)
+#endif
+        {
+            char err_msg[1024] = {0};
+            muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+            MUGGLE_LOG_ERROR("failed connect for %s:%s - %s", host, serv, err_msg);
+
+            muggle_socket_close(client);
+            freeaddrinfo(res);
+            return MUGGLE_INVALID_SOCKET;
+        }
+    }
+
+    freeaddrinfo(res);
+
+    // connect completed immediately
+    if (n == 0)
+    {
+        // restore file status flags
+#if MUGGLE_PLATFORM_WINDOWS
+        iMode = 0;
+        ioctlsocket(client, FIONBIO, &iMode);
+#else
+        fcntl(client, F_SETFL, flags);
+#endif
+        return client;
+    }
+
+    // select
+    fd_set rset, wset;
+    FD_ZERO(&rset);
+    FD_SET(client, &rset);
+    wset = rset;
+
+    struct timeval tval;
+    tval.tv_sec = timeout_sec;
+    tval.tv_usec = 0;
+
+    int nfds = 0;
+#if !MUGGLE_PLATFORM_WINDOWS
+    nfds = client + 1;
+#endif
+
+    n = select(nfds, &rset, &wset, NULL, timeout_sec ? &tval : NULL);
+    if (n == 0)
+    {
+        muggle_socket_close(client);
+        MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - timeout(%d sec)", host, serv, timeout_sec);
+        return MUGGLE_INVALID_SOCKET;
+    }
+    else if (n == MUGGLE_SOCKET_ERROR)
+    {
+        char err_msg[1024] = {0};
+        muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+        MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
+
+        muggle_socket_close(client);
+        return MUGGLE_INVALID_SOCKET;
+    }
+
+    int error = 0;
+    if (FD_ISSET(client, &rset) || FD_ISSET(client, &wset))
+    {
+        muggle_socklen_t len = sizeof(error);
+        if (getsockopt(client, SOL_SOCKET, SO_ERROR, (void*)&error, &len) < 0)
+        {
+            char err_msg[1024] = {0};
+            muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+            MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
+
+            muggle_socket_close(client);
+            return MUGGLE_INVALID_SOCKET;
+        }
+    }
+    else
+    {
+        MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - socket not set", host, serv);
+        muggle_socket_close(client);
+        return MUGGLE_INVALID_SOCKET;
+    }
+
+    if (error != 0)
+    {
+        char err_msg[1024] = {0};
+        muggle_socket_strerror(error, err_msg, sizeof(err_msg));
+        MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
+
+        muggle_socket_close(client);
+        return MUGGLE_INVALID_SOCKET;
+    }
+
+    // restore file status flags
+#if MUGGLE_PLATFORM_WINDOWS
+    iMode = 0;
+    ioctlsocket(client, FIONBIO, &iMode);
+#else
+    fcntl(client, F_SETFL, flags);
+#endif
+
+	return client;
+}
+
+muggle_socket_t muggle_tcp_bind_connect(
+		const char *bind_host, const char *bind_serv,
+		const char *host, const char *serv,
+		int timeout_sec)
+{
+	muggle_socket_t client = muggle_tcp_bind(bind_host, bind_serv);
+	if (client == MUGGLE_INVALID_SOCKET) {
+		MUGGLE_LOG_ERROR("failed tcp bind %s:%s",
+			bind_host, bind_serv == NULL ? "(null)" : bind_serv);
+		return client;
+	}
+
+	return muggle_tcp_binded_socket_connect(client, host, serv, timeout_sec);
+}
+
 muggle_socket_t muggle_udp_bind(const char *host, const char *serv)
 {
 	muggle_socket_t udp_socket = MUGGLE_INVALID_SOCKET;
