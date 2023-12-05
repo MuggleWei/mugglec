@@ -14,6 +14,7 @@ origin_dir="$(dirname "$(readlink -f "$0")")"
 build_dir=$origin_dir/build
 install_dir=$origin_dir/dist
 
+#abi=arm64-v8a
 abi=armeabi-v7a
 
 if [ -z "$ANDROID_NDK" ]; then
