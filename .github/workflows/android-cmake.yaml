@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-android@v2
-      - names: build
+      - name: build
         run: |
           mkdir build;
           cd build;
