@@ -9,11 +9,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: nttld/setup-ndk@v1
-      - name: build
         id: setup-ndk
         with:
           ndk-version: r25b
           add-to-path: false
+      - name: build
         run: |
           mkdir build;
           cd build;
