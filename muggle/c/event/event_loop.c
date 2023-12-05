@@ -30,7 +30,7 @@ static struct muggle_evloop_fn s_evloop_fn[] = {
 		muggle_evloop_add_ctx_poll
 	},
 	// epoll
-#if MUGGLE_PLATFORM_LINUX
+#if MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_ANDROID
 	{
 		muggle_evloop_init_epoll,
 		muggle_evloop_destroy_epoll,
@@ -160,7 +160,7 @@ static void muggle_evloop_destroy(muggle_event_loop_t *evloop)
 static int muggle_evloop_get_type(muggle_event_loop_init_args_t *args)
 {
 	int evloop_type = args->evloop_type;
-#if !MUGGLE_PLATFORM_LINUX
+#if !(MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_ANDROID)
 	if (evloop_type == MUGGLE_EVLOOP_TYPE_EPOLL)
 	{
 		evloop_type = MUGGLE_EVLOOP_TYPE_NULL;
@@ -177,7 +177,7 @@ static int muggle_evloop_get_type(muggle_event_loop_init_args_t *args)
 	if (evloop_type <= MUGGLE_EVLOOP_TYPE_NULL ||
 		evloop_type >= MUGGLE_MAX_EVLOOP_TYPE)
 	{
-#if MUGGLE_PLATFORM_LINUX
+#if MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_ANDROID
 		evloop_type = MUGGLE_EVLOOP_TYPE_EPOLL;
 #elif MUGGLE_PLATFORM_WINDOWS
 		evloop_type = MUGGLE_EVLOOP_TYPE_POLL;
@@ -219,7 +219,7 @@ muggle_event_loop_t* muggle_evloop_new(muggle_event_loop_init_args_t *args)
 		}break;
 		case MUGGLE_EVLOOP_TYPE_EPOLL:
 		{
-#if MUGGLE_PLATFORM_LINUX
+#if MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_ANDROID
 			evloop = (muggle_event_loop_t*)malloc(sizeof(muggle_event_loop_epoll_t));
 			if (evloop == NULL)
 			{

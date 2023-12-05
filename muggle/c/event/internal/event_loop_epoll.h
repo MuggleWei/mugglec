@@ -12,7 +12,7 @@
 #define MUGGLE_C_EVENT_LOOP_EPOLL_H_
 
 #include "muggle/c/event/event_loop.h"
-#if MUGGLE_PLATFORM_LINUX
+#if MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_ANDROID
 #include <sys/epoll.h>
 
 EXTERN_C_BEGIN
