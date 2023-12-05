@@ -408,6 +408,12 @@ if (${BUILD_TESTING})
 	target_include_directories(${test_utils} PUBLIC
 		${CMAKE_CURRENT_LIST_DIR}
 		${mugglec_generated_dir})
+	if (MUGGLE_INSTALL_BIN)
+		install(TARGETS ${test_utils}
+			RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+			ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+			LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+	endif()
 endif()
 
 # benchmark utils
@@ -432,6 +438,13 @@ if (${MUGGLE_BUILD_BENCHMARK} OR ${MUGGLE_BUILD_BENCHMARK_UTILS})
 			PUBLIC MUGGLE_BENCHMARK_USE_DLL
 			PRIVATE MUGGLE_BENCHMARK_EXPORTS 
 		)
+	endif()
+
+	if (MUGGLE_INSTALL_BIN)
+		install(TARGETS muggle_benchmark
+			RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+			ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+			LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 	endif()
 endif()
 
@@ -464,7 +477,7 @@ function(add_example name folder)
 				PROPERTIES
 				INSTALL_RPATH "@executable_path/../lib"
 			)
-		elseif (UNIX)
+		else ()
 			set_target_properties(${name}
 				PROPERTIES
 				INSTALL_RPATH "\$ORIGIN/../lib"
@@ -480,7 +493,7 @@ function(add_example name folder)
 	target_compile_definitions(${name} PRIVATE MUGGLE_HOLD_LOG_MACRO)
 
 	if (MUGGLE_INSTALL_BIN)
-		install(TARGETS ${name} RUNTIME DESTINATION bin)
+		install(TARGETS ${name} RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 	endif()
 endfunction()
 
@@ -513,7 +526,7 @@ function(add_benchmark name folder)
 	target_compile_definitions(${name} PRIVATE MUGGLE_HOLD_LOG_MACRO)
 
 	if (MUGGLE_INSTALL_BIN)
-		install(TARGETS ${name} RUNTIME DESTINATION bin)
+		install(TARGETS ${name} RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 	endif()
 endfunction()
 
@@ -589,7 +602,7 @@ function(add_gtest name folder)
 	add_test(NAME ${name} COMMAND ${name})
 
 	if (MUGGLE_INSTALL_BIN)
-		install(TARGETS ${name} RUNTIME DESTINATION bin)
+		install(TARGETS ${name} RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 	endif()
 endfunction()
 
@@ -645,11 +658,23 @@ if (BUILD_TESTING)
 		# add_test(NAME example_test COMMAND example)
 
 		set(GTEST_INCLUDE_DIRS "${gtest_SOURCE_DIR}/include")
-		set(GTEST_BOTH_LIBRARIES gtest_main)
+		set(GTEST_BOTH_LIBRARIES gtest_main gtest)
 		set(FOUND_GTEST_FROM_DOWNLOAD ON)
 
 		message("-- Find GTest - use gtest from download")
 	endif()
+
+	if (MUGGLE_INSTALL_BIN)
+		if (FOUND_GTEST_FROM_DOWNLOAD)
+			install(TARGETS ${GTEST_BOTH_LIBRARIES}
+				RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+				ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+				LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+		else()
+			install(IMPORTED_RUNTIME_ARTIFACTS GTest::gtest GTest::gtest_main)
+		endif()
+	endif()
+
 endif()
 
 # example
