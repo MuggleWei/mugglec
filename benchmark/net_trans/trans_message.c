@@ -15,7 +15,7 @@ void genPkgData(struct pkg_data *data, uint32_t idx)
 	data->idx = idx;
 
 	struct timespec ts;
-	timespec_get(&ts, TIME_UTC);
+	muggle_realtime_get(ts);
 	data->sec = (uint64_t)ts.tv_sec;
 	data->nsec = (uint64_t)ts.tv_nsec;
 }
@@ -28,7 +28,7 @@ void sendPkgs(muggle_socket_context_t *ctx, int is_busy,
 	genPkgHeader(&msg.header);
 
 	struct timespec ts_start, ts_end;
-	timespec_get(&ts_start, TIME_UTC);
+	muggle_realtime_get(ts_start);
 
 	muggle_benchmark_record_t *write_beg_records =
 		muggle_benchmark_handle_get_records(handle, NET_TRANS_ACTION_WRITE_BEG);
@@ -55,9 +55,9 @@ void sendPkgs(muggle_socket_context_t *ctx, int is_busy,
 			if (is_busy) {
 				struct timespec ts_wait_begin;
 				struct timespec ts_wait_end;
-				timespec_get(&ts_wait_begin, TIME_UTC);
+				muggle_realtime_get(ts_wait_begin);
 				while (1) {
-					timespec_get(&ts_wait_end, TIME_UTC);
+					muggle_realtime_get(ts_wait_end);
 					int64_t elapsed_ms =
 						(ts_wait_end.tv_sec - ts_wait_begin.tv_sec) * 1000 +
 						ts_wait_end.tv_nsec / 1000000 -
@@ -72,7 +72,7 @@ void sendPkgs(muggle_socket_context_t *ctx, int is_busy,
 		}
 	}
 
-	timespec_get(&ts_end, TIME_UTC);
+	muggle_realtime_get(ts_end);
 	uint64_t elapsed_ns = (ts_end.tv_sec - ts_start.tv_sec) * 1000000000 +
 						  ts_end.tv_nsec - ts_start.tv_nsec;
 

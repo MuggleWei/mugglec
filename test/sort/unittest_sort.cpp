@@ -71,9 +71,9 @@ void run_sort(void **ptr, muggle_func_sort func, const char *name)
 {
 	timespec t1, t2;
 
-	timespec_get(&t1, TIME_UTC);
+	muggle_realtime_get(t1);
 	bool ret = func(ptr, TEST_SORT_LEN, test_utils_cmp_int);
-	timespec_get(&t2, TIME_UTC);
+	muggle_realtime_get(t2);
 
 	ASSERT_TRUE(ret);
 
