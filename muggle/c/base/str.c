@@ -312,7 +312,7 @@ int muggle_str_tou(const char *str, unsigned int *pval, int base)
 		}
 	}
 
-	if (ret == ULONG_MAX || ret == ULLONG_MAX)
+	if (ret == ULONG_MAX)
 	{
 		// out of range or negative integer
 		return 0;
@@ -347,7 +347,7 @@ int muggle_str_tol(const char *str, long *pval, int base)
 		}
 	}
 
-	if (*pval == LONG_MAX || *pval == LONG_MIN || *pval == LLONG_MAX || *pval == LLONG_MIN)
+	if (*pval == LONG_MAX || *pval == LONG_MIN)
 	{
 		// out of range
 		return 0;
@@ -380,7 +380,7 @@ int muggle_str_toul(const char *str, unsigned long *pval, int base)
 		}
 	}
 
-	if (*pval == ULONG_MAX || *pval == ULLONG_MAX)
+	if (*pval == ULONG_MAX)
 	{
 		// out of range
 		return 0;

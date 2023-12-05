@@ -323,7 +323,7 @@ void muggle_benchmark_gen_latency_report_body(
 
 static void muggle_benchmark_record_ns(muggle_benchmark_record_t *record)
 {
-	timespec_get(&record->ts, TIME_UTC);
+	muggle_realtime_get(record->ts);
 }
 static void muggle_benchmark_record_cpu_cycle(muggle_benchmark_record_t *record)
 {

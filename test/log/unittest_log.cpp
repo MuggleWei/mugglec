@@ -49,7 +49,7 @@ TEST(log, log_fmt)
 		{__FILE__, __LINE__, __FUNCTION__},
 		"log formatter"
 	};
-	timespec_get(&msg.ts, TIME_UTC);
+	muggle_realtime_get(msg.ts);
 	msg.tid = muggle_thread_id();
 
 	char buf[MUGGLE_LOG_MSG_MAX_LEN];

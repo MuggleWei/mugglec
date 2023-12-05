@@ -4,6 +4,7 @@
 #include "muggle/c/event/internal/event_loop_select.h"
 #include "muggle/c/event/internal/event_loop_poll.h"
 #include "muggle/c/event/internal/event_loop_epoll.h"
+#include "muggle/c/time/realtime_get.h"
 
 struct muggle_evloop_fn
 {
@@ -51,7 +52,7 @@ void muggle_evloop_handle_timer(muggle_event_loop_t *evloop)
 	}
 
 	struct timespec curr_ts;
-	timespec_get(&curr_ts, TIME_UTC);
+	muggle_realtime_get(curr_ts);
 	int interval_ms = 
 		(int)((curr_ts.tv_sec - evloop->last_ts.tv_sec) * 1000 +
 		(curr_ts.tv_nsec - evloop->last_ts.tv_nsec) / 1000000);
@@ -357,7 +358,7 @@ void muggle_evloop_run(muggle_event_loop_t *evloop)
 	evloop->tid = muggle_thread_current_id();
 
 	// reset timer last tick
-	timespec_get(&evloop->last_ts, TIME_UTC);
+	muggle_realtime_get(evloop->last_ts);
 
 	// run
 	s_evloop_fn[evloop->evloop_type].fn_run(evloop);
