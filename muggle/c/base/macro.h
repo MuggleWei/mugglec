@@ -45,6 +45,8 @@
 	#else
 		// Unknown Apple platform
 	#endif
+#elif __ANDROID__
+	#define MUGGLE_PLATFORM_ANDROID 1
 #elif __linux__
 	#define MUGGLE_PLATFORM_LINUX 1
 #elif __FreeBSD__

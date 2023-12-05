@@ -7,6 +7,7 @@
 #include "muggle/c/log/log_level.h"
 #include "muggle/c/log/log_fmt.h"
 #include "muggle/c/base/err.h"
+#include "muggle/c/time/realtime_get.h"
 
 int muggle_sync_logger_init(muggle_sync_logger_t *logger)
 {
@@ -72,7 +73,7 @@ void muggle_sync_logger_log(
 	// timestamp
 	if (logger->fmt_hint & MUGGLE_LOG_FMT_TIME)
 	{
-		timespec_get(&msg.ts, TIME_UTC);
+		muggle_realtime_get(msg.ts);
 	}
 
 	// thread id
