@@ -1,0 +1,28 @@
+name: Android NDK CMake
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Android NDK CMake
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r25b
+          add-to-path: false
+      - run:
+          mkdir build;
+          cd build;
+          cmake ..  \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake /
+            -DANDROID_ABI=$ABI
+            -DBUILD_TESTING=ON;
+          cmake --build . --config Release;
+        env:
+          ANDROID_NDK: ${{ steps.setup-ndk.outputs.ndk-path }}
+          ABI: armeabi-v7a
+
