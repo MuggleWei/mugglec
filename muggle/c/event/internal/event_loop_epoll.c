@@ -14,7 +14,7 @@
 
 void muggle_evloop_handle_timer(muggle_event_loop_t *evloop);
 
-#if MUGGLE_PLATFORM_LINUX
+#if MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_ANDROID
 
 static void muggle_evloop_epoll_handle_wakeup(muggle_event_loop_t *evloop, struct epoll_event *event)
 {

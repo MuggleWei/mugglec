@@ -10,7 +10,7 @@
 
 #include "event_signal.h"
 
-#if MUGGLE_PLATFORM_LINUX && MUGGLE_EVENT_SIGNAL_LINUX_USE_EVENTFD 
+#if (MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_ANDROID) && MUGGLE_EVENT_SIGNAL_LINUX_USE_EVENTFD 
 
 #include <unistd.h>
 #include <sys/eventfd.h>

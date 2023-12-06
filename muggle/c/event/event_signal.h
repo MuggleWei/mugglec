@@ -17,7 +17,8 @@
 
 #define MUGGLE_EVENT_SIGNAL_LINUX_USE_EVENTFD 1
 
-#if MUGGLE_PLATFORM_LINUX && MUGGLE_EVENT_SIGNAL_LINUX_USE_EVENTFD 
+#if (MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_ANDROID) \
+	&& MUGGLE_EVENT_SIGNAL_LINUX_USE_EVENTFD 
 #else
 #include "muggle/c/sync/mutex.h"
 #endif
@@ -26,7 +27,7 @@ EXTERN_C_BEGIN
 
 typedef struct muggle_event_signal
 {
-#if MUGGLE_PLATFORM_LINUX && MUGGLE_EVENT_SIGNAL_LINUX_USE_EVENTFD 
+#if (MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_ANDROID) && MUGGLE_EVENT_SIGNAL_LINUX_USE_EVENTFD 
 	muggle_event_fd evfd;  //!< eventfd
 #elif MUGGLE_PLATFORM_WINDOWS
 	muggle_event_fd    socket_fds[2]; //!< socket fds

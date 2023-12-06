@@ -105,7 +105,10 @@
 // #define MUGGLE_DEPRECATED [[deprecated]] // need c++14 support
 #if MUGGLE_PLATFORM_WINDOWS
 	#define MUGGLE_DEPRECATED __declspec(deprecated)
-#elif MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_UNIX || MUGGLE_PLATFORM_OSX
+#elif MUGGLE_PLATFORM_LINUX \
+	|| MUGGLE_PLATFORM_UNIX \
+	|| MUGGLE_PLATFORM_OSX \
+	|| MUGGLE_PLATFORM_ANDROID
 	#define MUGGLE_DEPRECATED __attribute__((deprecated))
 #else
 	#define MUGGLE_DEPRECATED
