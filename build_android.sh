@@ -17,11 +17,11 @@ install_dir=$origin_dir/dist
 abi=arm64-v8a
 #abi=armeabi-v7a
 
-if [ -z "$ANDROID_NDK" ]; then
-	echo "run without ANDROID_NDK"
+if [ -z "$ANDROID_NDK_ROOT" ]; then
+	echo "run without ANDROID_NDK_ROOT"
 	exit 1
 else
-	echo "ndk: $ANDROID_NDK"
+	echo "ndk: $ANDROID_NDK_ROOT"
 fi
 
 if [ -d $build_dir ]; then
@@ -32,7 +32,7 @@ mkdir $build_dir
 cmake \
 	-S $origin_dir -B $build_dir \
 	-DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-	-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+	-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake \
 	-DANDROID_ABI=$abi \
 	-DCMAKE_INSTALL_PREFIX=$install_dir
 
