@@ -22,6 +22,8 @@ cd $build_dir
 cmake \
 	-S $origin_dir -B $build_dir \
 	-DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+	-DCMAKE_C_FLAGS="-march=native" \
+	-DCMAKE_CXX_FLAGS="-march=native" \
 	-DCMAKE_PREFIX_PATH=$dep_search_path \
 	-DBUILD_SHARED_LIBS=ON \
 	-DMUGGLE_BUILD_STATIC_PIC=ON \
