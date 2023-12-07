@@ -378,7 +378,7 @@ install(FILES
 	DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
 # cpack
-include(InstallRequiredSystemLibraries)
+#include(InstallRequiredSystemLibraries)
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_LIST_DIR}/LICENSE")
 set(CPACK_PACKAGE_VERSION_MAJOR ${MUGGLE_C_VER_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${MUGGLE_C_VER_MINOR})
