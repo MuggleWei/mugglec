@@ -16,23 +16,26 @@ int main(int argc, char *argv[])
 	}
 
 	muggle_pid_handle_t pid = 0;
+	int ret = 0;
 
 	// set cpu affinity
 	muggle_cpu_mask_t mask;
 	muggle_cpu_mask_zero(&mask);
 	muggle_cpu_mask_set(&mask, cpu);
-	if (muggle_cpu_set_thread_affinity(pid, &mask) != 0) {
+	ret = muggle_cpu_set_thread_affinity(pid, &mask);
+	if (ret != 0) {
 		char errmsg[256];
-		muggle_sys_strerror(muggle_sys_lasterror(), errmsg, sizeof(errmsg));
+		muggle_sys_strerror(ret, errmsg, sizeof(errmsg));
 		LOG_ERROR("failed set thread's CPU affinity, err=%s", errmsg);
 		exit(EXIT_FAILURE);
 	}
 
 	// get cpu affinity
 	muggle_cpu_mask_zero(&mask);
-	if (muggle_cpu_get_thread_affinity(pid, &mask) != 0) {
+	ret = muggle_cpu_get_thread_affinity(pid, &mask);
+	if (ret != 0) {
 		char errmsg[256];
-		muggle_sys_strerror(muggle_sys_lasterror(), errmsg, sizeof(errmsg));
+		muggle_sys_strerror(ret, errmsg, sizeof(errmsg));
 		LOG_ERROR("failed get thread's CPU affinity, err=%s", errmsg);
 		exit(EXIT_FAILURE);
 	}

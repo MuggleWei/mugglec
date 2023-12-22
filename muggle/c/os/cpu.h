@@ -94,7 +94,7 @@ muggle_pid_handle_t muggle_get_current_tid_handle();
  *
  * @return
  *     - on success, return 0
- *     - otherwise -1 is returned and sys lasterror is set
+ *     - otherwise sys lasterr or -1 is returned
  *
  * @NOTE
  *     - if in MACOS, mask support only one CPU
@@ -111,7 +111,7 @@ int muggle_cpu_set_thread_affinity(muggle_pid_handle_t tid,
  *
  * @return
  *     - on success, return 0
- *     - otherwise -1 is returned and sys lasterror is set
+ *     - otherwise sys lasterr or -1 is returned
  */
 MUGGLE_C_EXPORT
 int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,

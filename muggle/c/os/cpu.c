@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "muggle/c/os/sys.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 
@@ -33,7 +34,11 @@ int muggle_cpu_set_thread_affinity(muggle_pid_handle_t tid,
 	if ((void *)tid == NULL) {
 		tid = muggle_get_current_tid_handle();
 	}
-	return SetThreadAffinityMask(tid, *mask) != 0 ? 0 : -1;
+
+	if (SetThreadAffinityMask(tid, *mask) == 0) {
+		return muggle_sys_lasterror();
+	}
+	return 0;
 }
 
 int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,
@@ -52,8 +57,9 @@ int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,
 			*mask = old;
 			return 0;
 		} else {
-			if (GetLastError() != ERROR_INVALID_PARAMETER) {
-				return -1;
+			int ret = muggle_sys_lasterror();
+			if (ret != ERROR_INVALID_PARAMETER) {
+				return ret;
 			}
 		}
 
@@ -68,7 +74,7 @@ int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,
 
 #elif MUGGLE_PLATFORM_APPLE
 
-#include <mach/mach.h>
+	#include <mach/mach.h>
 
 void muggle_cpu_mask_zero(muggle_cpu_mask_t *mask)
 {
@@ -106,7 +112,7 @@ int muggle_cpu_set_thread_affinity(muggle_pid_handle_t tid,
 	kern_return_t ret = thread_policy_set(tid, THREAD_AFFINITY_POLICY,
 										  (thread_policy_t)mask,
 										  THREAD_AFFINITY_POLICY_COUNT);
-	return ret == KERN_SUCCESS ? 0 : -1;
+	return ret == KERN_SUCCESS ? 0 : ret;
 }
 
 int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,
@@ -120,12 +126,12 @@ int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,
 	kern_return_t ret = thread_policy_get(tid, THREAD_AFFINITY_POLICY,
 										  (thread_policy_t)mask, &count,
 										  &get_default);
-	return ret == KERN_SUCCESS ? 0 : -1;
+	return ret == KERN_SUCCESS ? 0 : ret;
 }
 
 #else // android or *nix
 
-#include <unistd.h>
+	#include <unistd.h>
 
 void muggle_cpu_mask_zero(muggle_cpu_mask_t *mask)
 {
@@ -155,13 +161,19 @@ muggle_pid_handle_t muggle_get_current_tid_handle()
 int muggle_cpu_set_thread_affinity(muggle_pid_handle_t tid,
 								   const muggle_cpu_mask_t *mask)
 {
-	return sched_setaffinity(tid, CPU_SETSIZE, mask);
+	if (sched_setaffinity(tid, CPU_SETSIZE, mask) != 0) {
+		return muggle_sys_lasterror();
+	}
+	return 0;
 }
 
 int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,
 								   muggle_cpu_mask_t *mask)
 {
-	return sched_getaffinity(tid, CPU_SETSIZE, mask);
+	if (sched_getaffinity(tid, CPU_SETSIZE, mask) != 0) {
+		return muggle_sys_lasterror();
+	}
+	return 0;
 }
 
 #endif
