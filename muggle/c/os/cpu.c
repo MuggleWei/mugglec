@@ -66,7 +66,7 @@ int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,
 	return -1;
 }
 
-#elif MUGGLE_PLATFORM_LINUX
+#elif MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_ANDROID
 
 #include <unistd.h>
 

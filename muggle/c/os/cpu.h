@@ -15,10 +15,10 @@
 #include <stdbool.h>
 #if MUGGLE_PLATFORM_WINDOWS
 	#include <windows.h>
+#elif MUGGLE_PLATFORM_ANDROID
+	#include <sched.h>
+	#include <sys/types.h>
 #elif MUGGLE_PLATFORM_LINUX
-	#ifndef _GNU_SOURCE
-		#define _GNU_SOURCE
-	#endif
 	#include <sched.h>
 #else
 #endif
@@ -28,6 +28,9 @@ EXTERN_C_BEGIN
 #if MUGGLE_PLATFORM_WINDOWS
 typedef HANDLE muggle_pid_handle_t;
 typedef DWORD_PTR muggle_cpu_mask_t;
+#elif MUGGLE_PLATFORM_ANDROID
+typedef pid_t muggle_pid_handle_t;
+typedef cpu_set_t muggle_cpu_mask_t;
 #elif MUGGLE_PLATFORM_LINUX
 typedef pid_t muggle_pid_handle_t;
 typedef cpu_set_t muggle_cpu_mask_t;
@@ -104,7 +107,8 @@ int muggle_cpu_set_thread_affinity(muggle_pid_handle_t tid,
  *     - otherwise -1 is returned and sys lasterror is set
  */
 MUGGLE_C_EXPORT
-int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid, muggle_cpu_mask_t *mask);
+int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,
+								   muggle_cpu_mask_t *mask);
 
 EXTERN_C_END
 

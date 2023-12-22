@@ -47,8 +47,18 @@
 	#endif
 #elif __ANDROID__
 	#define MUGGLE_PLATFORM_ANDROID 1
+
+	// for cpu_set_t
+	#ifndef _GNU_SOURCE
+		#define _GNU_SOURCE
+	#endif
 #elif __linux__
 	#define MUGGLE_PLATFORM_LINUX 1
+
+	// for cpu_set_t
+	#ifndef _GNU_SOURCE
+		#define _GNU_SOURCE
+	#endif
 #elif __FreeBSD__
 	#define MUGGLE_PLATFORM_FREEBSD 1
 #elif __unix__
