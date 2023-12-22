@@ -66,7 +66,62 @@ int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,
 	return -1;
 }
 
-#elif MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_ANDROID
+#elif MUGGLE_PLATFORM_APPLE
+
+#include <mach/mach.h>
+
+void muggle_cpu_mask_zero(muggle_cpu_mask_t *mask)
+{
+    mask->affinity_tag = 0;
+}
+
+void muggle_cpu_mask_set(muggle_cpu_mask_t *mask, int cpu)
+{
+    mask->affinity_tag = cpu;
+}
+
+void muggle_cpu_mask_clr(muggle_cpu_mask_t *mask, int cpu)
+{
+    if (muggle_cpu_mask_isset(mask, cpu)) {
+        mask->affinity_tag = 0;
+    }
+}
+
+bool muggle_cpu_mask_isset(muggle_cpu_mask_t *mask, int cpu)
+{
+    return mask->affinity_tag == cpu;
+}
+
+muggle_pid_handle_t muggle_get_current_tid_handle()
+{
+    return mach_thread_self();
+}
+
+int muggle_cpu_set_thread_affinity(muggle_pid_handle_t tid,
+								   const muggle_cpu_mask_t *mask)
+{
+	if ((void *)tid == NULL) {
+		tid = muggle_get_current_tid_handle();
+	}
+    kern_return_t ret = thread_policy_set(tid, THREAD_AFFINITY_POLICY,
+            (thread_policy_t)mask, THREAD_AFFINITY_POLICY_COUNT);
+    return ret == KERN_SUCCESS ? 0 : -1;
+}
+
+int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,
+								   muggle_cpu_mask_t *mask)
+{
+	if ((void *)tid == NULL) {
+		tid = muggle_get_current_tid_handle();
+	}
+    mach_msg_type_number_t count = 0;
+    boolean_t get_default = false;
+    kern_return_t ret = thread_policy_get(tid, THREAD_AFFINITY_POLICY,
+            (thread_policy_t)mask, &count, &get_default);
+    return ret == KERN_SUCCESS ? 0 : -1;
+}
+
+#else // android or *nix
 
 #include <unistd.h>
 
@@ -107,5 +162,4 @@ int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,
 	return sched_getaffinity(tid, CPU_SETSIZE, mask);
 }
 
-#else
 #endif

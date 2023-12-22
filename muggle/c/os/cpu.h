@@ -15,12 +15,14 @@
 #include <stdbool.h>
 #if MUGGLE_PLATFORM_WINDOWS
 	#include <windows.h>
+#elif MUGGLE_PLATFORM_APPLE
+	#include <pthread.h>
+	#include <mach/thread_policy.h>
 #elif MUGGLE_PLATFORM_ANDROID
 	#include <sched.h>
 	#include <sys/types.h>
-#elif MUGGLE_PLATFORM_LINUX
+#else // *nix
 	#include <sched.h>
-#else
 #endif
 
 EXTERN_C_BEGIN
@@ -28,13 +30,15 @@ EXTERN_C_BEGIN
 #if MUGGLE_PLATFORM_WINDOWS
 typedef HANDLE muggle_pid_handle_t;
 typedef DWORD_PTR muggle_cpu_mask_t;
+#elif MUGGLE_PLATFORM_APPLE
+typedef mach_port_t muggle_pid_handle_t;
+typedef thread_affinity_policy_data_t muggle_cpu_mask_t;
 #elif MUGGLE_PLATFORM_ANDROID
 typedef pid_t muggle_pid_handle_t;
 typedef cpu_set_t muggle_cpu_mask_t;
-#elif MUGGLE_PLATFORM_LINUX
+#else // *nix
 typedef pid_t muggle_pid_handle_t;
 typedef cpu_set_t muggle_cpu_mask_t;
-#else
 #endif
 
 /**
@@ -91,6 +95,9 @@ muggle_pid_handle_t muggle_get_current_tid_handle();
  * @return
  *     - on success, return 0
  *     - otherwise -1 is returned and sys lasterror is set
+ *
+ * @NOTE
+ *     - if in MACOS, mask support only one CPU
  */
 MUGGLE_C_EXPORT
 int muggle_cpu_set_thread_affinity(muggle_pid_handle_t tid,
