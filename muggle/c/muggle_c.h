@@ -50,6 +50,7 @@
 #include "muggle/c/os/endian.h"
 #include "muggle/c/os/win_getopt.h"
 #include "muggle/c/os/sys.h"
+#include "muggle/c/os/cpu.h"
 
 // sync
 #include "muggle/c/sync/mutex.h"
