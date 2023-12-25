@@ -50,7 +50,7 @@ int muggle_socket_writev(muggle_socket_t fd, const muggle_socket_iovec_t *iov,
 						 int iovcnt)
 {
 #if MUGGLE_PLATFORM_WINDOWS
-	DOWRD send_bytes = 0;
+	DWORD send_bytes = 0;
 	int rc = WSASend(fd, iov, iovcnt, &send_bytes, 0, NULL, NULL);
 	if (rc != 0) {
 		return MUGGLE_SOCKET_ERROR;
