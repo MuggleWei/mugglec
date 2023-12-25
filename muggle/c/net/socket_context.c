@@ -33,6 +33,29 @@ int muggle_socket_ctx_type(muggle_socket_context_t *ctx)
 	return sock_ev_ctx->sock_type;
 }
 
+int muggle_socket_ctx_writev(
+		muggle_socket_context_t *ctx,
+		muggle_socket_iovec_t *iov,
+		int iovcnt)
+{
+	int n = muggle_socket_writev(ctx->base.fd, iov, iovcnt);
+#if MUGGLE_ENABLE_TRACE
+	if (n != (int)len)
+	{
+		if (n == MUGGLE_EVENT_ERROR)
+		{
+			MUGGLE_LOG_SYS_ERR(MUGGLE_LOG_LEVEL_TRACE, "failed socket send");
+		}
+		else
+		{
+			MUGGLE_LOG_TRACE("send buffer full");
+		}
+	}
+#endif
+
+	return n;
+}
+
 int muggle_socket_ctx_recv(muggle_socket_context_t *ctx, void *buf, size_t len, int flags)
 {
 	return muggle_socket_ctx_recvfrom(ctx, buf, len, flags, NULL, NULL);

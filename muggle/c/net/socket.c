@@ -46,6 +46,21 @@ int muggle_socket_set_nonblock(muggle_socket_t socket, int on)
 	return muggle_ev_fd_set_nonblock(socket, on);
 }
 
+int muggle_socket_writev(muggle_socket_t fd, muggle_socket_iovec_t *iov,
+						 int iovcnt)
+{
+#if MUGGLE_PLATFORM_WINDOWS
+	DWORD send_bytes = 0;
+	int rc = WSASend(fd, iov, iovcnt, &send_bytes, 0, NULL, NULL);
+	if (rc != 0) {
+		return MUGGLE_SOCKET_ERROR;
+	}
+	return (int)send_bytes;
+#else
+	return (int)writev(fd, iov, iovcnt);
+#endif
+}
+
 int muggle_socket_recv(muggle_socket_t fd, void *buf, size_t len, int flags)
 {
 #if MUGGLE_PLATFORM_WINDOWS
@@ -100,7 +115,7 @@ int muggle_getsockopt(
 	void *optval, muggle_socklen_t *optlen)
 {
 #if MUGGLE_PLATFORM_WINDOWS
-	return getsockopt(socket, level, optname, (const char*)optval, optlen);
+	return getsockopt(socket, level, optname, (char*)optval, optlen);
 #else
 	return getsockopt(socket, level, optname, optval, optlen);
 #endif

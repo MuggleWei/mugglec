@@ -8,6 +8,12 @@
 #ifndef MUGGLE_C_H_
 #define MUGGLE_C_H_
 
+// muggle c macro
+// NOTE: 
+//   muggle c macro must in the first, cause some macro (like _GNU_SOURCE) must
+//   before other head files
+#include "muggle/c/base/macro.h"
+
 // base c header
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,7 +26,6 @@
 #include <time.h>
 
 // muggle c base header
-#include "muggle/c/base/macro.h"
 #include "muggle/c/base/err.h"
 #include "muggle/c/base/utils.h"
 #include "muggle/c/base/str.h"
@@ -50,6 +55,7 @@
 #include "muggle/c/os/endian.h"
 #include "muggle/c/os/win_getopt.h"
 #include "muggle/c/os/sys.h"
+#include "muggle/c/os/cpu.h"
 
 // sync
 #include "muggle/c/sync/mutex.h"
