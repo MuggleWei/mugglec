@@ -161,7 +161,7 @@ int muggle_socket_set_nonblock(muggle_socket_t socket, int on);
  *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
-int muggle_socket_writev(muggle_socket_t fd, const muggle_socket_iovec_t *iov,
+int muggle_socket_writev(muggle_socket_t fd, muggle_socket_iovec_t *iov,
 						 int iovcnt);
 
 /**

@@ -46,7 +46,7 @@ int muggle_socket_set_nonblock(muggle_socket_t socket, int on)
 	return muggle_ev_fd_set_nonblock(socket, on);
 }
 
-int muggle_socket_writev(muggle_socket_t fd, const muggle_socket_iovec_t *iov,
+int muggle_socket_writev(muggle_socket_t fd, muggle_socket_iovec_t *iov,
 						 int iovcnt)
 {
 #if MUGGLE_PLATFORM_WINDOWS
@@ -115,7 +115,7 @@ int muggle_getsockopt(
 	void *optval, muggle_socklen_t *optlen)
 {
 #if MUGGLE_PLATFORM_WINDOWS
-	return getsockopt(socket, level, optname, (const char*)optval, optlen);
+	return getsockopt(socket, level, optname, (char*)optval, optlen);
 #else
 	return getsockopt(socket, level, optname, optval, optlen);
 #endif

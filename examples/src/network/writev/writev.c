@@ -1,8 +1,9 @@
 #include "muggle/c/muggle_c.h"
-#include <sys/socket.h>
 
 #if MUGGLE_PLATFORM_LINUX
+	#include <sys/socket.h>
 #else
+
 typedef struct listen_thread_args {
 	muggle_socket_t *fd;
 	muggle_socket_t listen_fd;
@@ -65,6 +66,7 @@ static bool create_tcp_socket_pair(muggle_socket_t fds[2])
 
 	return true;
 }
+
 #endif
 
 typedef struct msg_hdr {
