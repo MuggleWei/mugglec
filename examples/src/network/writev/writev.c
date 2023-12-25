@@ -165,7 +165,15 @@ void run_read(muggle_socket_t fd)
 
 int main()
 {
-	muggle_log_complicated_init(LOG_LEVEL_DEBUG, -1, NULL);
+	if (muggle_log_complicated_init(LOG_LEVEL_DEBUG, -1, NULL) != 0) {
+		LOG_ERROR("failed initalize log");
+		exit(EXIT_FAILURE);
+	}
+
+	if (muggle_socket_lib_init() != 0) {
+		LOG_ERROR("failed initialize socket library");
+		exit(EXIT_FAILURE);
+	}
 
 	muggle_socket_t fds[2];
 #if MUGGLE_PLATFORM_LINUX
