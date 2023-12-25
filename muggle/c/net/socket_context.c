@@ -33,45 +33,6 @@ int muggle_socket_ctx_type(muggle_socket_context_t *ctx)
 	return sock_ev_ctx->sock_type;
 }
 
-int muggle_socket_ctx_readv(
-		muggle_socket_context_t *ctx, muggle_socket_iovec_t *iov, int iovcnt)
-{
-	int n = 0;
-	while (1)
-	{
-		n = muggle_socket_readv(ctx->base.fd, iov, iovcnt);
-		if (n > 0)
-		{
-			break;
-		}
-		else
-		{
-			if (n < 0)
-			{
-				if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
-				{
-					break;
-				}
-				else if (MUGGLE_EVENT_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
-				{
-					continue;
-				}
-#if MUGGLE_ENABLE_TRACE
-				else
-				{
-					MUGGLE_LOG_SYS_ERR(MUGGLE_LOG_LEVEL_TRACE, "failed socket readv");
-				}
-#endif
-			}
-
-			muggle_socket_ctx_set_flag(ctx, MUGGLE_EV_CTX_FLAG_CLOSED);
-			break;
-		}
-	}
-
-	return n;
-}
-
 int muggle_socket_ctx_writev(
 		muggle_socket_context_t *ctx,
 		const muggle_socket_iovec_t *iov,

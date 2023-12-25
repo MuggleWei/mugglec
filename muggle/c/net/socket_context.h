@@ -107,21 +107,6 @@ MUGGLE_C_EXPORT
 int muggle_socket_ctx_type(muggle_socket_context_t *ctx);
 
 /**
- * @brief socket context readv
- *
- * @param ctx     socket context
- * @param iov     socket iovec array
- * @param iovcnt  number of iovec in iov array
- *
- * @return 
- *     - on success, return the number of bytes sent
- *     - on error, MUGGLE_SOCKET_ERROR is returned and MUGGLE_SOCKET_LAST_ERRNO is set
- */
-MUGGLE_C_EXPORT
-int muggle_socket_ctx_readv(
-		muggle_socket_context_t *ctx, muggle_socket_iovec_t *iov, int iovcnt);
-
-/**
  * @brief socket context writev
  *
  * @param ctx     socket context

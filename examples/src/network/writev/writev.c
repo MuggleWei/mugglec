@@ -162,30 +162,6 @@ void run_read(muggle_socket_t fd)
 			 (uint32_t)tail->checksum_fletcher16);
 }
 
-void run_readv(muggle_socket_t fd)
-{
-	msg_hdr_t hdr;
-	msg_data_t data;
-	msg_tail_t tail;
-
-	muggle_socket_iovec_t iov[3];
-	MUGGLE_SOCKET_IOVEC_SET_BUF(&iov[0], &hdr);
-	MUGGLE_SOCKET_IOVEC_SET_LEN(&iov[0], sizeof(hdr));
-	MUGGLE_SOCKET_IOVEC_SET_BUF(&iov[1], &data);
-	MUGGLE_SOCKET_IOVEC_SET_LEN(&iov[1], sizeof(data));
-	MUGGLE_SOCKET_IOVEC_SET_BUF(&iov[2], &tail);
-	MUGGLE_SOCKET_IOVEC_SET_LEN(&iov[2], sizeof(tail));
-
-	muggle_socket_readv(fd, &iov[0], sizeof(iov) / sizeof(iov[0]));
-
-	LOG_INFO("readv: \n"
-			 "hdr | msg_id=%u, payload_len=%u\n"
-			 "data| u32=%u, i32=%d, s=%s\n"
-			 "tail| checksum=%u",
-			 hdr.msg_id, hdr.payload_len, data.u32, data.i32, data.s,
-			 (uint32_t)tail.checksum_fletcher16);
-}
-
 int main()
 {
 	muggle_log_complicated_init(LOG_LEVEL_DEBUG, -1, NULL);
@@ -207,9 +183,6 @@ int main()
 
 	run_writev(fds[0]);
 	run_read(fds[1]);
-
-	run_writev(fds[0]);
-	run_readv(fds[1]);
 
 	muggle_socket_close(fds[0]);
 	muggle_socket_close(fds[1]);

@@ -33,6 +33,12 @@ typedef muggle_event_fd muggle_socket_t;
 
 typedef int muggle_socklen_t;
 
+typedef WSABUF muggle_socket_iovec_t;
+#define MUGGLE_SOCKET_IOVEC_GET_LEN(p_iov) ((p_iov)->len)
+#define MUGGLE_SOCKET_IOVEC_GET_BUF(p_iov) ((p_iov)->buf)
+#define MUGGLE_SOCKET_IOVEC_SET_LEN(p_iov, len) (p_iov)->len = len
+#define MUGGLE_SOCKET_IOVEC_SET_BUF(p_iov, buf) (p_iov)->buf = buf
+
 #else // MUGGLE_PLATFORM_WINDOWS
 
 #include <sys/types.h>
@@ -142,22 +148,6 @@ int muggle_socket_set_nonblock(muggle_socket_t socket, int on);
 #define muggle_socket_read(fd, buf, len) muggle_ev_fd_read(fd, buf, len)
 
 #define muggle_socket_write(fd, buf, len) muggle_ev_fd_write(fd, buf, len)
-
-/**
- * @brief socket readv
- *
- * @param fd      socket file descriptor
- * @param iov     socket iovec array
- * @param iovcnt  number of iovec in iov array
- *
- * @return 
- *     - return positive value, the number of bytes received
- *     - return 0, the connction has been closed
- *     - return MUGGLE_SOCKET_ERROR, an error occurred, MUGGLE_SOCKET_LAST_ERRNO is set.
- */
-MUGGLE_C_EXPORT
-int muggle_socket_readv(muggle_socket_t fd, muggle_socket_iovec_t *iov,
-						int iovcnt);
 
 /**
  * @brief socket writev
