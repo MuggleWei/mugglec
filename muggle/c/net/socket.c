@@ -46,6 +46,24 @@ int muggle_socket_set_nonblock(muggle_socket_t socket, int on)
 	return muggle_ev_fd_set_nonblock(socket, on);
 }
 
+int muggle_socket_readv(muggle_socket_t fd, muggle_socket_iovec_t *iov,
+						int iovcnt)
+{
+#if MUGGLE_PLATFORM_WINDOWS
+#else
+	return (int)readv(fd, iov, iovcnt);
+#endif
+}
+
+int muggle_socket_writev(muggle_socket_t fd, const muggle_socket_iovec_t *iov,
+						 int iovcnt)
+{
+#if MUGGLE_PLATFORM_WINDOWS
+#else
+	return (int)writev(fd, iov, iovcnt);
+#endif
+}
+
 int muggle_socket_recv(muggle_socket_t fd, void *buf, size_t len, int flags)
 {
 #if MUGGLE_PLATFORM_WINDOWS

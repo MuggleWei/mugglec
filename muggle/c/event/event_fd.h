@@ -101,7 +101,7 @@ int muggle_ev_fd_read(muggle_event_fd fd, void *buf, size_t len);
  * @param len  size of buffer
  *
  * @return 
- *     - on success, return the number of bytes received, 0 indicates end of event fd
+ *     - on success, return the number of bytes written
  *     - on error, MUGGLE_EVENT_ERROR is returned and MUGGLE_EVENT_LAST_ERRNO is set
  */
 MUGGLE_C_EXPORT
