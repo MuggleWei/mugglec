@@ -120,7 +120,7 @@ int muggle_socket_ctx_type(muggle_socket_context_t *ctx);
 MUGGLE_C_EXPORT
 int muggle_socket_ctx_writev(
 		muggle_socket_context_t *ctx,
-		const muggle_socket_iovec_t *iov,
+		muggle_socket_iovec_t *iov,
 		int iovcnt);
 
 /**
