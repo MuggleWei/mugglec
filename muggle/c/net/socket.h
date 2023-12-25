@@ -34,10 +34,10 @@ typedef muggle_event_fd muggle_socket_t;
 typedef int muggle_socklen_t;
 
 typedef WSABUF muggle_socket_iovec_t;
-#define MUGGLE_SOCKET_IOVEC_GET_LEN(p_iov) ((p_iov)->len)
-#define MUGGLE_SOCKET_IOVEC_GET_BUF(p_iov) ((p_iov)->buf)
-#define MUGGLE_SOCKET_IOVEC_SET_LEN(p_iov, len) (p_iov)->len = len
-#define MUGGLE_SOCKET_IOVEC_SET_BUF(p_iov, buf) (p_iov)->buf = buf
+#define MUGGLE_SOCKET_IOVEC_GET_LEN(iov) (iov).len
+#define MUGGLE_SOCKET_IOVEC_GET_BUF(iov) (iov).buf
+#define MUGGLE_SOCKET_IOVEC_SET_LEN(iov, buf_len) (iov).len = buf_len
+#define MUGGLE_SOCKET_IOVEC_SET_BUF(iov, buf_data) (iov).buf = buf_data
 
 #else // MUGGLE_PLATFORM_WINDOWS
 
@@ -56,10 +56,10 @@ typedef WSABUF muggle_socket_iovec_t;
 typedef socklen_t muggle_socklen_t;
 
 typedef struct iovec muggle_socket_iovec_t;
-#define MUGGLE_SOCKET_IOVEC_GET_LEN(p_iov) ((p_iov)->iov_len)
-#define MUGGLE_SOCKET_IOVEC_GET_BUF(p_iov) ((p_iov)->iov_base)
-#define MUGGLE_SOCKET_IOVEC_SET_LEN(p_iov, len) (p_iov)->iov_len = len
-#define MUGGLE_SOCKET_IOVEC_SET_BUF(p_iov, buf) (p_iov)->iov_base = buf
+#define MUGGLE_SOCKET_IOVEC_GET_LEN(iov) (iov).iov_len
+#define MUGGLE_SOCKET_IOVEC_GET_BUF(iov) (iov).iov_base
+#define MUGGLE_SOCKET_IOVEC_SET_LEN(iov, len) (iov).iov_len = len
+#define MUGGLE_SOCKET_IOVEC_SET_BUF(iov, buf) (iov).iov_base = buf
 
 #endif // MUGGLE_PLATFORM_WINDOWS
 

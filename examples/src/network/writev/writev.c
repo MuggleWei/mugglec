@@ -95,9 +95,8 @@ uint16_t gen_checksum_fletcher16(muggle_socket_iovec_t *iov, int iovcnt)
 	uint16_t sum2 = 0;
 
 	for (int i = 0; i < iovcnt; i++) {
-		muggle_socket_iovec_t *p_iov = iov + i;
-		uint8_t *data = (uint8_t *)MUGGLE_SOCKET_IOVEC_GET_BUF(p_iov);
-		for (size_t idx = 0; idx < MUGGLE_SOCKET_IOVEC_GET_LEN(p_iov); idx++) {
+		uint8_t *data = (uint8_t *)MUGGLE_SOCKET_IOVEC_GET_BUF(iov[i]);
+		for (size_t idx = 0; idx < MUGGLE_SOCKET_IOVEC_GET_LEN(iov[i]); idx++) {
 			sum1 = (sum1 + data[idx]) & 0xff;
 			sum2 = (sum2 + sum1) & 0xff;
 		}
@@ -124,12 +123,12 @@ void run_writev(muggle_socket_t fd)
 	strncpy(data.s, "hello world", sizeof(data.s) - 1);
 
 	muggle_socket_iovec_t iov[3];
-	MUGGLE_SOCKET_IOVEC_SET_BUF(&iov[0], &hdr);
-	MUGGLE_SOCKET_IOVEC_SET_LEN(&iov[0], sizeof(hdr));
-	MUGGLE_SOCKET_IOVEC_SET_BUF(&iov[1], &data);
-	MUGGLE_SOCKET_IOVEC_SET_LEN(&iov[1], sizeof(data));
-	MUGGLE_SOCKET_IOVEC_SET_BUF(&iov[2], &tail);
-	MUGGLE_SOCKET_IOVEC_SET_LEN(&iov[2], sizeof(tail));
+	MUGGLE_SOCKET_IOVEC_SET_BUF(iov[0], &hdr);
+	MUGGLE_SOCKET_IOVEC_SET_LEN(iov[0], sizeof(hdr));
+	MUGGLE_SOCKET_IOVEC_SET_BUF(iov[1], &data);
+	MUGGLE_SOCKET_IOVEC_SET_LEN(iov[1], sizeof(data));
+	MUGGLE_SOCKET_IOVEC_SET_BUF(iov[2], &tail);
+	MUGGLE_SOCKET_IOVEC_SET_LEN(iov[2], sizeof(tail));
 	tail.checksum_fletcher16 = gen_checksum_fletcher16(&iov[0], 2);
 
 	LOG_INFO("write: \n"
