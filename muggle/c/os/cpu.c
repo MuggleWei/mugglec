@@ -132,6 +132,7 @@ int muggle_cpu_get_thread_affinity(muggle_pid_handle_t tid,
 #else // android or *nix
 
 	#include <unistd.h>
+	#include <sys/syscall.h>
 
 void muggle_cpu_mask_zero(muggle_cpu_mask_t *mask)
 {
@@ -155,7 +156,14 @@ bool muggle_cpu_mask_isset(muggle_cpu_mask_t *mask, int cpu)
 
 muggle_pid_handle_t muggle_get_current_tid_handle()
 {
-	return gettid();
+	// return gettid();
+
+#ifdef SYS_gettid
+	return (pid_t)syscall(SYS_gettid);
+#else
+	#error "SYS_gettid unavailable on this system"
+	return 0;
+#endif
 }
 
 int muggle_cpu_set_thread_affinity(muggle_pid_handle_t tid,
