@@ -36,7 +36,7 @@ typedef int muggle_socklen_t;
 typedef WSABUF muggle_socket_iovec_t;
 #define MUGGLE_SOCKET_IOVEC_GET_LEN(iov) (iov).len
 #define MUGGLE_SOCKET_IOVEC_GET_BUF(iov) (iov).buf
-#define MUGGLE_SOCKET_IOVEC_SET_LEN(iov, buf_len) (iov).len = (CHAR*)(buf_len)
+#define MUGGLE_SOCKET_IOVEC_SET_LEN(iov, buf_len) (iov).len = (buf_len)
 #define MUGGLE_SOCKET_IOVEC_SET_BUF(iov, buf_data) (iov).buf = (CHAR*)(buf_data)
 
 #else // MUGGLE_PLATFORM_WINDOWS
