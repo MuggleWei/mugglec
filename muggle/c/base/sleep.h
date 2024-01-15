@@ -27,6 +27,18 @@ EXTERN_C_BEGIN
 MUGGLE_C_EXPORT
 int muggle_msleep(unsigned long ms);
 
+/**
+ * @brief sleep current thread for nanoseconds
+ *
+ * @param ns  nanoseconds
+ *
+ * @return 
+ *   - on success, return 0
+ *   - interupt by signal will return MUGGLE_ERR_INTERRUPT
+ */
+MUGGLE_C_EXPORT
+int muggle_nsleep(unsigned long ns);
+
 EXTERN_C_END
 
 #endif
