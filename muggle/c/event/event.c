@@ -55,6 +55,8 @@ int muggle_event_strerror(int errnum, char *buf, size_t bufsize)
 
 	return ret > 0 ? 0 : -1;
 #else
-	return strerror_r(errnum, buf, bufsize);
+	// return strerror_r(errnum, buf, bufsize);
+	strerror_r(errnum, buf, bufsize);
+	return 0;
 #endif
 }

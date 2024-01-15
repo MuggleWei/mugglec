@@ -69,6 +69,7 @@
 #include "muggle/c/sync/channel.h"
 #include "muggle/c/sync/ref_cnt.h"
 #include "muggle/c/sync/call_once.h"
+#include "muggle/c/sync/ma_ring.h"
 
 // log
 #include "muggle/c/log/log_level.h"

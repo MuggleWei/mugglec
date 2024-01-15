@@ -15,10 +15,8 @@
 
 #if MUGGLE_PLATFORM_WINDOWS
 #include <windows.h>
-typedef unsigned int muggle_thread_ret_t;
 #else
 #include <pthread.h>
-typedef void* muggle_thread_ret_t;
 #endif
 
 #include <stdbool.h>
@@ -36,15 +34,21 @@ typedef struct muggle_thread_tag
 }muggle_thread_t;
 
 #if MUGGLE_PLATFORM_WINDOWS
+	#define muggle_thread_local __declspec(thread)
+	typedef DWORD muggle_thread_id;
+	typedef unsigned int muggle_thread_ret_t;
+#else
+	#define muggle_thread_local __thread
+	typedef pthread_t muggle_thread_id;
+	typedef void* muggle_thread_ret_t;
+#endif
+
+typedef unsigned long muggle_thread_readable_id;
+
+#if MUGGLE_PLATFORM_WINDOWS
 typedef muggle_thread_ret_t __stdcall muggle_thread_routine(void *args);
 #else
 typedef muggle_thread_ret_t muggle_thread_routine(void *args);
-#endif
-
-#if MUGGLE_PLATFORM_WINDOWS
-typedef DWORD muggle_thread_id;
-#else
-typedef pthread_t muggle_thread_id;
 #endif
 
 /**
@@ -92,6 +96,14 @@ int muggle_thread_detach(muggle_thread_t *thread);
  */
 MUGGLE_C_EXPORT
 muggle_thread_id muggle_thread_current_id();
+
+/**
+ * @brief get current thread readable id
+ *
+ * @return current thread readable id
+ */
+MUGGLE_C_EXPORT
+muggle_thread_readable_id muggle_thread_current_readable_id();
 
 /**
  * @brief return the number of concurrent threads supported by the implementation

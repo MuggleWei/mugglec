@@ -31,6 +31,7 @@ int muggle_sys_strerror(int errnum, char *buf, size_t bufsize)
 #if MUGGLE_PLATFORM_WINDOWS
 	return strerror_s(buf, bufsize, errnum);
 #else
-	return strerror_r(errnum, buf, bufsize);
+	strerror_r(errnum, buf, bufsize);
+	return 0;
 #endif
 }

@@ -52,6 +52,11 @@ muggle_thread_id muggle_thread_current_id()
 	return GetCurrentThreadId();
 }
 
+muggle_thread_readable_id muggle_thread_current_readable_id()
+{
+	return GetCurrentThreadId();
+}
+
 int muggle_thread_hardware_concurrency()
 {
 	SYSTEM_INFO sysinfo;
@@ -72,6 +77,8 @@ bool muggle_thread_equal(muggle_thread_id t1, muggle_thread_id t2)
 #else
 
 #include <unistd.h>
+#include <sys/syscall.h>
+#include <sched.h>
 
 int muggle_thread_create(muggle_thread_t *thread, muggle_thread_routine routine, void *args)
 {
@@ -91,6 +98,23 @@ int muggle_thread_detach(muggle_thread_t *thread)
 muggle_thread_id muggle_thread_current_id()
 {
 	return pthread_self();
+}
+
+muggle_thread_readable_id muggle_thread_current_readable_id()
+{
+#if MUGGLE_PLATFORM_LINUX
+	return syscall(SYS_gettid);
+#elif MUGGLE_PLATFORM_APPLE
+	uint64_t tid;
+	pthread_threadid_np(NULL, &tid);
+	return tid;
+#elif MUGGLE_PLATFORM_FREEBSD
+	long tid;
+	thr_self(&tid);
+	return (int)tid;
+#else
+	return syscall(SYS_gettid);
+#endif
 }
 
 int muggle_thread_hardware_concurrency()
