@@ -1,17 +1,25 @@
 - [memory](#memory)
 	- [内存池](#内存池)
+		- [优缺点](#优缺点)
 		- [初始化](#初始化)
 		- [销毁](#销毁)
 		- [分配与回收内存](#分配与回收内存)
 		- [禁止扩容](#禁止扩容)
 	- [线程安全内存池](#线程安全内存池)
+		- [优缺点](#优缺点-1)
 		- [初始化](#初始化-1)
 		- [销毁](#销毁-1)
 		- [分配与回收内存](#分配与回收内存-1)
-	- [顺序读写内存池](#顺序读写内存池)
+	- [环形内存池](#环形内存池)
+		- [优缺点](#优缺点-2)
 		- [初始化](#初始化-2)
 		- [销毁](#销毁-2)
 		- [分配与回收内存](#分配与回收内存-2)
+	- [顺序读写内存池](#顺序读写内存池)
+		- [优缺点](#优缺点-3)
+		- [初始化](#初始化-3)
+		- [销毁](#销毁-3)
+		- [分配与回收内存](#分配与回收内存-3)
 	- [字节缓冲区](#字节缓冲区)
 
 # memory
@@ -19,6 +27,13 @@
 
 ## 内存池
 **mugglec**实现了一个可扩展容量的内存池`muggle_memory_pool_t`
+
+### 优缺点
+* 优点
+  * 分配与释放的速度都很快
+  * 可选扩容
+* 缺点
+  * 非线程安全
 
 ### 初始化
 `muggle_memory_pool_init`用于内存池的初始化
@@ -70,7 +85,13 @@ muggle_memory_pool_set_flag(&pool, MUGGLE_MEMORY_POOL_CONSTANT_SIZE);
 ```
 
 ## 线程安全内存池
-`mugglec`还实现了一个线程安全的内存池muggle_ts_memory_pool_t
+**mugglec** 还实现了一个线程安全的内存池 `muggle_ts_memory_pool_t`
+
+### 优缺点
+* 优点
+  * 线程安全
+* 缺点
+  * 速度很慢, 仅在分配/释放大块内存时对标准库有优势
 
 ### 初始化
 ```
@@ -126,10 +147,67 @@ if (foo)
 * `muggle_channel_read`从channel当中取出生产者发送过来的数据
 * `muggle_ts_memory_pool_free`回收了内存块
 
+## 环形内存池
+除了上面提到的线程安全内存池, **mugglec** 还提供一个可选线程安全的内存池 `muggle_ring_memory_pool_t`
+
+### 优缺点
+* 优点
+  * 可选线程安全
+  * 释放速度快
+  * 释放时无需指定池对象
+* 缺点
+  * 分配速度很慢, 仅在分配大块内存时对标准库有优势
+
+### 初始化
+```
+int muggle_ring_memory_pool_init(
+	muggle_ring_memory_pool_t *pool,
+	muggle_sync_t capacity,
+	muggle_sync_t data_size);
+```
+* pool: 一个指向内存池的指针
+* capacity: 初始化 `muggle_ring_memory_pool_t` 的大小
+* data_size: 内存池分配的数据块大小
+
+### 销毁
+```
+void muggle_ring_memory_pool_destroy(muggle_ring_memory_pool_t *pool)
+```
+* pool: 一个指向内存池的指针
+
+### 分配与回收内存
+[ring_alloc_free](./ring_alloc_free/ring_alloc_free.c)  
+
+我们在生产者中分配内存块, 并通过 Channel 发送给消费者
+```
+foo_t *foo = muggle_ring_memory_pool_alloc(&pool);
+```
+这里有一点需要注意, `muggle_ring_memory_pool_t` 释放数据内存时始终是线程安全的, 但是分配时, 线程安全为可选的  
+* `muggle_ring_memory_pool_alloc`: 非线程安全分配
+* `muggle_ring_memory_pool_threadsafe_alloc`: 线程安全分配
+
+接着, 我们在消费者线程当中接收并回收内存块
+```
+foo_t *foo = (foo_t *)muggle_channel_read(chan);
+if (foo) {
+	muggle_ring_memory_pool_free(foo);
+	cnt++;
+}
+```
+这里我们可以发现, 使用 `muggle_ring_memory_pool_free` 释放内存时, 无需手动指定内存池对象
+
 ## 顺序读写内存池
 **mugglec**中还提供了一个特殊的顺序读写内存池`muggle_sowr_memory_pool_t`, 它适用于单生产者单消费者的场景.  
 一般用法是, 用户需要保证按照顺序释放内存. 比如内存块A比内存块B更早分配, 则释放A要在释放B之前.  
 除了一般的用法, `muggle_sowr_memory_pool_t`还有一个有意思的特性, 就是当第n个分配的内存被释放, 则意味着[0, n-1]的内存都被释放了. 这个特性可被用于非重要消息的传递, 比如当线程间管道写满堵塞而导致写入失败时, 可以不用对分配出来的消息做释放处理, 只要后续有一个消息被正常回收, 则之前的所有消息都将被正常回收
+
+### 优缺点
+* 优点
+  * 分配与释放的速度都很快
+  * 使用场景明确, 配套的特性方便此场景下使用
+  * 释放时无需指定池对象
+* 缺点
+  * 仅适用于一读一写的场景
 
 ### 初始化
 ```
