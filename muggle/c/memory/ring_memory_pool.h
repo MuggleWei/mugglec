@@ -26,7 +26,7 @@ typedef struct muggle_ring_mpool_block_tag {
 	unsigned char cache_line[MUGGLE_CACHE_LINE_SIZE * 2];
 	struct muggle_ring_memory_pool_tag *pool; //!< belong to pool
 	muggle_atomic_int32 in_use; //!< is in used
-	uint32_t block_idx;  //!< block index
+	uint32_t block_idx; //!< block index
 } muggle_ring_mpool_block_head_t;
 
 /**
