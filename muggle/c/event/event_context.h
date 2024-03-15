@@ -79,6 +79,17 @@ MUGGLE_C_EXPORT
 void muggle_ev_ctx_set_flag(muggle_event_context_t *ctx, int flag);
 
 /**
+ * @brief get the reference count of context
+ *
+ * @param ctx  event context
+ * @param memorder  memory order; see: muggle_memory_order_*
+ *
+ * @return  reference count of context
+ */
+MUGGLE_C_EXPORT
+int muggle_ev_ctx_ref_num(muggle_event_context_t *ctx, int memorder);
+
+/**
  * @brief
  * increases the reference count of context by 1
  *

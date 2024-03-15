@@ -36,6 +36,7 @@
 // memory
 #include "muggle/c/memory/memory_pool.h"
 #include "muggle/c/memory/sowr_memory_pool.h"
+#include "muggle/c/memory/ring_memory_pool.h"
 #include "muggle/c/memory/memory_detect.h"
 #include "muggle/c/memory/bytes_buffer.h"
 #include "muggle/c/memory/threadsafe_memory_pool.h"

@@ -134,16 +134,34 @@ TEST(atomic, cmp_exch_single_thread)
 	EXPECT_EQ(expected, 0);
 	EXPECT_EQ(i, 1);
 
+	i = 1;
+	expected = 0;
+	EXPECT_FALSE(muggle_atomic_cmp_exch_strong(&i, &expected, 1, muggle_memory_order_relaxed));
+	EXPECT_EQ(expected, 1);
+	EXPECT_EQ(i, 1);
+
 	i32 = 0;
 	expected32 = 0;
 	EXPECT_TRUE(muggle_atomic_cmp_exch_strong32(&i32, &expected32, 1, muggle_memory_order_relaxed));
 	EXPECT_EQ(expected32, 0);
 	EXPECT_EQ(i32, 1);
 
+	i32 = 1;
+	expected32 = 0;
+	EXPECT_FALSE(muggle_atomic_cmp_exch_strong32(&i32, &expected32, 1, muggle_memory_order_relaxed));
+	EXPECT_EQ(expected32, 1);
+	EXPECT_EQ(i32, 1);
+
 	i64 = 0;
 	expected64 = 0;
 	EXPECT_TRUE(muggle_atomic_cmp_exch_strong64(&i64, &expected64, 1, muggle_memory_order_relaxed));
 	EXPECT_EQ(expected64, 0);
+	EXPECT_EQ(i64, 1);
+
+	i64 = 1;
+	expected64 = 0;
+	EXPECT_FALSE(muggle_atomic_cmp_exch_strong64(&i64, &expected64, 1, muggle_memory_order_relaxed));
+	EXPECT_EQ(expected64, 1);
 	EXPECT_EQ(i64, 1);
 }
 
