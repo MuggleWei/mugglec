@@ -78,6 +78,9 @@ void muggle_socket_ctx_set_data(muggle_socket_context_t *ctx, void *data);
 #define muggle_socket_ctx_set_flag(ctx, flag) \
 	muggle_ev_ctx_set_flag((muggle_event_context_t*)ctx, flag)
 
+#define muggle_socket_ctx_ref_num(ctx, memorder) \
+	muggle_ev_ctx_ref_num((muggle_event_context_t*)ctx, memorder);
+
 #define muggle_socket_ctx_ref_retain(ctx) \
 	muggle_ev_ctx_ref_retain((muggle_event_context_t*)ctx)
 

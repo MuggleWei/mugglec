@@ -41,6 +41,11 @@ void muggle_ev_ctx_set_flag(muggle_event_context_t *ctx, int flag)
 	ctx->flags |= flag;
 }
 
+int muggle_ev_ctx_ref_num(muggle_event_context_t *ctx, int memorder)
+{
+	return muggle_ref_cnt_load(&ctx->ref_cnt, memorder);
+}
+
 int muggle_ev_ctx_ref_retain(muggle_event_context_t *ctx)
 {
 	return muggle_ref_cnt_retain(&ctx->ref_cnt);
