@@ -12,11 +12,13 @@
 		- [分配与回收内存](#分配与回收内存-1)
 	- [环形内存池](#环形内存池)
 		- [优缺点](#优缺点-2)
+		- [初始化](#初始化-2)
+		- [销毁](#销毁-2)
 		- [分配与回收内存](#分配与回收内存-2)
 	- [顺序读写内存池](#顺序读写内存池)
 		- [优缺点](#优缺点-3)
-		- [初始化](#初始化-2)
-		- [销毁](#销毁-2)
+		- [初始化](#初始化-3)
+		- [销毁](#销毁-3)
 		- [分配与回收内存](#分配与回收内存-3)
 	- [字节缓冲区](#字节缓冲区)
 
@@ -28,7 +30,7 @@
 
 ### 优缺点
 * 优点
-  * 速度快
+  * 分配与释放的速度都很快
   * 可选扩容
 * 缺点
   * 非线程安全
@@ -83,7 +85,7 @@ muggle_memory_pool_set_flag(&pool, MUGGLE_MEMORY_POOL_CONSTANT_SIZE);
 ```
 
 ## 线程安全内存池
-`mugglec`还实现了一个线程安全的内存池 `muggle_ts_memory_pool_t`
+**mugglec** 还实现了一个线程安全的内存池 `muggle_ts_memory_pool_t`
 
 ### 优缺点
 * 优点
@@ -146,7 +148,7 @@ if (foo)
 * `muggle_ts_memory_pool_free`回收了内存块
 
 ## 环形内存池
-除了上面提到的线程安全内存池, `mugglec` 还提供一个可选线程安全的内存池 `muggle_ring_memory_pool_t`
+除了上面提到的线程安全内存池, **mugglec** 还提供一个可选线程安全的内存池 `muggle_ring_memory_pool_t`
 
 ### 优缺点
 * 优点
@@ -156,6 +158,23 @@ if (foo)
 * 缺点
   * 分配速度慢, 仅在分配大块内存时对标准库的内存分配释放有优势
 
+### 初始化
+```
+int muggle_ring_memory_pool_init(
+	muggle_ring_memory_pool_t *pool,
+	muggle_sync_t capacity,
+	muggle_sync_t data_size);
+```
+* pool: 一个指向内存池的指针
+* capacity: 初始化 `muggle_ring_memory_pool_t` 的大小
+* data_size: 内存池分配的数据块大小
+
+### 销毁
+```
+void muggle_ring_memory_pool_destroy(muggle_ring_memory_pool_t *pool)
+```
+* pool: 一个指向内存池的指针
+
 ### 分配与回收内存
 [ring_alloc_free](./ring_alloc_free/ring_alloc_free.c)  
 
@@ -163,7 +182,7 @@ if (foo)
 ```
 foo_t *foo = muggle_ring_memory_pool_alloc(&pool);
 ```
-这里有一点需要注意, `muggle_ring_memory_pool_t` 分配内存的释放始终是线程安全的, 但是分配时, 线程安全为可选的  
+这里有一点需要注意, `muggle_ring_memory_pool_t` 释放数据内存时始终是线程安全的, 但是分配时, 线程安全为可选的  
 * `muggle_ring_memory_pool_alloc`: 非线程安全分配
 * `muggle_ring_memory_pool_threadsafe_alloc`: 线程安全分配
 
@@ -175,7 +194,7 @@ if (foo) {
 	cnt++;
 }
 ```
-这里我们可以发现, 释放由 `muggle_ring_memory_pool_t` 分配的内存时, 无需手动指定内存池对象
+这里我们可以发现, 使用 `muggle_ring_memory_pool_free` 释放内存时, 无需手动指定内存池对象
 
 ## 顺序读写内存池
 **mugglec**中还提供了一个特殊的顺序读写内存池`muggle_sowr_memory_pool_t`, 它适用于单生产者单消费者的场景.  
@@ -184,9 +203,9 @@ if (foo) {
 
 ### 优缺点
 * 优点
-  * 速度快
-  * 使用场景明确
-  * 有一些特定的特性
+  * 分配与释放的速度都很快
+  * 使用场景明确, 配套的特性方便此场景下使用
+  * 释放时无需指定池对象
 * 缺点
   * 仅适用于一读一写的场景
 
