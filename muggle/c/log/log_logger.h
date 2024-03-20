@@ -23,6 +23,12 @@ enum
 
 struct muggle_logger;
 
+#if __GNUC__
+	#define MUGGLE_LOG_PRINT_FORMAT_CHECK __attribute__((format(printf, 4, 5)));
+#else
+	#define MUGGLE_LOG_PRINT_FORMAT_CHECK
+#endif
+
 /**
  * @brief prototype of logger output function
  *
@@ -64,7 +70,7 @@ typedef void (*func_muggle_logger_destroy)(struct muggle_logger *logger);
  */
 typedef struct muggle_logger
 {
-	func_muggle_logger_log         log;
+	func_muggle_logger_log         log MUGGLE_LOG_PRINT_FORMAT_CHECK;
 	func_muggle_logger_add_handler add_handler;
 	func_muggle_logger_destroy     destroy;
 
