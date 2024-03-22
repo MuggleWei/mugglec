@@ -18,20 +18,30 @@ void fn_msg(muggle_ma_ring_t *ring, void *data)
 		LOG_ERROR("something wrong! p->u32=%u, s_u32=%u", p->u32, s_u32);
 		MUGGLE_ASSERT(p->u32 == s_u32);
 	}
+
+	LOG_DEBUG("ma_ring backend recv: %u", p->u32);
+
 	s_u32++;
 
-	if (s_u32 == TOTAL_CNT - 1) {
+	if (s_u32 == TOTAL_CNT) {
 		LOG_INFO("reach the end");
 	}
 }
 
+void fn_before_run()
+{
+	LOG_INFO("before ma_ring run");
+}
+
 int main()
 {
-	muggle_log_complicated_init(MUGGLE_LOG_LEVEL_INFO, -1, NULL);
+	muggle_log_complicated_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_DEBUG,
+								"logs/ma_ring.log");
 
-	muggle_ma_ring_ctx_set_capacity(4 * 1024);
+	muggle_ma_ring_ctx_set_capacity(TOTAL_CNT / 4);
 	muggle_ma_ring_ctx_set_data_size(1024 - 128);
 	muggle_ma_ring_ctx_set_callback(fn_msg);
+	muggle_ma_ring_ctx_set_before_run_callback(fn_before_run);
 	muggle_ma_ring_backend_run();
 
 	muggle_ma_ring_thread_ctx_init();

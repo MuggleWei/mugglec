@@ -97,6 +97,10 @@ static muggle_thread_ret_t s_muggle_ma_ring_backend_func(void *args)
 
 	muggle_ma_ring_context_t *ctx = muggle_ma_ring_ctx_get();
 
+	if (ctx->before_run_cb) {
+		ctx->before_run_cb();
+	}
+
 	while (1) {
 		int num_consume = 0;
 
@@ -136,6 +140,7 @@ muggle_ma_ring_context_t *muggle_ma_ring_ctx_get()
 		.add_list = { .next = NULL, .ring = NULL },
 		.ring_list = { .next = NULL, .ring = NULL },
 		.cb = s_default_ma_ring_cb,
+		.before_run_cb = NULL,
 	};
 	return &s_ctx;
 }
@@ -156,6 +161,13 @@ void muggle_ma_ring_ctx_set_callback(muggle_ma_ring_callback fn)
 {
 	muggle_ma_ring_context_t *ctx = muggle_ma_ring_ctx_get();
 	ctx->cb = fn;
+}
+
+void muggle_ma_ring_ctx_set_before_run_callback(
+	muggle_ma_ring_before_run_callback fn)
+{
+	muggle_ma_ring_context_t *ctx = muggle_ma_ring_ctx_get();
+	ctx->before_run_cb = fn;
 }
 
 static muggle_thread_local muggle_ma_ring_t *s_muggle_ma_ring_thread_ctx = NULL;
