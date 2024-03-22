@@ -44,11 +44,16 @@ typedef struct muggle_ma_ring_list_node {
 } muggle_ma_ring_list_node_t;
 
 /**
- * @brief am_ring callback function
+ * @brief ma_ring callback function
  *
  * @param data  data pointer
  */
 typedef void (*muggle_ma_ring_callback)(muggle_ma_ring_t *ring, void *data);
+
+/**
+ * @brief before ma_ring backend run callback
+ */
+typedef void (*muggle_ma_ring_before_run_callback)();
 
 /**
  * @brief ma_ring context
@@ -60,6 +65,7 @@ typedef struct muggle_ma_ring_context {
 	muggle_ma_ring_list_node_t add_list; //!< add list
 	muggle_ma_ring_list_node_t ring_list; //!< ring list
 	muggle_ma_ring_callback cb; //!< message callback
+	muggle_ma_ring_before_run_callback before_run_cb; //!< before run callback
 } muggle_ma_ring_context_t;
 
 /**
@@ -74,7 +80,7 @@ void muggle_ma_ring_backend_run();
  * @return ma_ring context
  */
 MUGGLE_C_EXPORT
-muggle_ma_ring_context_t* muggle_ma_ring_ctx_get();
+muggle_ma_ring_context_t *muggle_ma_ring_ctx_get();
 
 /**
  * @brief set ma_ring capacity
@@ -101,12 +107,21 @@ MUGGLE_C_EXPORT
 void muggle_ma_ring_ctx_set_callback(muggle_ma_ring_callback fn);
 
 /**
+ * @brief set before run callback of ma_ring
+ *
+ * @param fn  before run callback function
+ */
+MUGGLE_C_EXPORT
+void muggle_ma_ring_ctx_set_before_run_callback(
+	muggle_ma_ring_before_run_callback fn);
+
+/**
  * @brief get thread-local ma_ring
  *
  * @return ma_ring
  */
 MUGGLE_C_EXPORT
-muggle_ma_ring_t* muggle_ma_ring_thread_ctx_get();
+muggle_ma_ring_t *muggle_ma_ring_thread_ctx_get();
 
 /**
  * @brief initialize ma_ring thread context
@@ -114,7 +129,7 @@ muggle_ma_ring_t* muggle_ma_ring_thread_ctx_get();
  * @return ma_ring
  */
 MUGGLE_C_EXPORT
-muggle_ma_ring_t* muggle_ma_ring_thread_ctx_init();
+muggle_ma_ring_t *muggle_ma_ring_thread_ctx_init();
 
 /**
  * @brief cleanup thread context
@@ -130,7 +145,7 @@ void muggle_ma_ring_thread_ctx_cleanup();
  * @return block pointer
  */
 MUGGLE_C_EXPORT
-void* muggle_ma_ring_alloc(muggle_ma_ring_t *ring);
+void *muggle_ma_ring_alloc(muggle_ma_ring_t *ring);
 
 /**
  * @brief move ring writer forward
