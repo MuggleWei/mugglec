@@ -413,8 +413,7 @@ muggle_socket_t muggle_tcp_bind(const char *bind_host, const char *bind_serv)
 			" - getaddrinfo return '%s'",
 			bind_host, bind_serv == NULL ? "(null)" : bind_serv, err_msg);
 #else
-		MUGGLE_LOG_ERROR("failed tcp bind and connect %s -> %s:%s"
-			" - getaddrinfo return '%s'",
+		MUGGLE_LOG_ERROR("failed tcp bind %s:%s - getaddrinfo return '%s'",
 			bind_host, bind_serv == NULL ? "(null)" : bind_serv,
 			gai_strerror(n));
 #endif
