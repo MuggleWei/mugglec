@@ -29,6 +29,19 @@ MUGGLE_C_EXPORT
 const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufsize, int host_only);
 
 /**
+ * @brief convert sockaddr to presentation ip and port
+ *
+ * @param sa         pointer to sockaddr
+ * @param buf        buffer that store host string
+ * @param bufsize    size of buffer
+ * @param port       port pointer
+ *
+ * @return return 0 if it succeeds, otherwise return -1
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_nto_ip_port(const struct sockaddr *sa, void *buf, size_t bufsize, int *port);
+
+/**
  * @brief get socket address info
  *
  * @param host     internet host
@@ -56,6 +69,19 @@ MUGGLE_C_EXPORT
 const char* muggle_socket_local_addr(muggle_socket_t fd, char *buf, size_t bufsize, int host_only);
 
 /**
+ * @brief get socket local host string and port
+ *
+ * @param fd        socket fd
+ * @param buf       buffer that store presentation host string
+ * @param bufsize   size of buffer
+ * @param port      port pointer
+ *
+ * @return return 0 if it succeeds, otherwise return -1
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_local_ip_port(muggle_socket_t fd, char *buf, size_t bufsize, int *port);
+
+/**
  * @brief get socket remote address info in presentation string
  *
  * @param fd          socket fd
@@ -67,6 +93,19 @@ const char* muggle_socket_local_addr(muggle_socket_t fd, char *buf, size_t bufsi
  */
 MUGGLE_C_EXPORT
 const char* muggle_socket_remote_addr(muggle_socket_t fd, char *buf, size_t bufsize, int host_only);
+
+/**
+ * @brief get socket remote host string and port
+ *
+ * @param fd        socket fd
+ * @param buf       buffer that store presentation host string
+ * @param bufsize   size of buffer
+ * @param port      port pointer
+ *
+ * @return return 0 if it succeeds, otherwise return -1
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_remote_ip_port(muggle_socket_t fd, char *buf, size_t bufsize, int *port);
 
 /**
  * @brief tcp listen

@@ -87,7 +87,49 @@ const char* muggle_socket_ntop(const struct sockaddr *sa, void *buf, size_t bufs
 	}
 
 	return NULL;
+}
 
+int muggle_socket_nto_ip_port(const struct sockaddr *sa, void *buf, size_t bufsize, int *port)
+{
+	switch (sa->sa_family)
+	{
+	case AF_INET:
+		{
+			const struct sockaddr_in *sin = (struct sockaddr_in*)sa;
+			if (inet_ntop(AF_INET, (void*)&sin->sin_addr, buf, (socklen_t)bufsize) == NULL)
+			{
+				char err_msg[1024] = {0};
+				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+				MUGGLE_LOG_ERROR("failed inet_ntop - %s", err_msg);
+				return -1;
+			}
+
+			*port = (int)ntohs(sin->sin_port);
+			return 0;
+		}break;
+	case AF_INET6:
+		{
+			const struct sockaddr_in6 *sin6 = (struct sockaddr_in6*)sa;
+
+			if (inet_ntop(AF_INET6, (void*)&sin6->sin6_addr, buf, (socklen_t)bufsize) == NULL)
+			{
+				char err_msg[1024] = {0};
+				muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+				MUGGLE_LOG_ERROR("failed inet_ntop - %s", err_msg);
+				return -1;
+			}
+
+			*port = (int)ntohs(sin6->sin6_port);
+
+			return 0;
+		}break;
+	default:
+		{
+			MUGGLE_LOG_ERROR("invalid AF_* family(%d) for socket_nto_host_port", sa->sa_family);
+		}
+	}
+
+	return -1;
 }
 
 int muggle_socket_getaddrinfo(const char *host, const char *serv, struct addrinfo *hints, struct addrinfo *addrinfo, struct sockaddr *addr)
@@ -135,6 +177,20 @@ const char* muggle_socket_local_addr(muggle_socket_t fd, char *buf, size_t bufsi
 	return muggle_socket_ntop((struct sockaddr*)&sin, buf, bufsize, host_only);
 }
 
+int muggle_socket_local_ip_port(muggle_socket_t fd, char *buf, size_t bufsize, int *port)
+{
+	struct sockaddr_storage sin;
+	memset(&sin, 0, sizeof(sin));
+	muggle_socklen_t len = sizeof(sin);
+
+	if (getsockname(fd, (struct sockaddr*)&sin, &len) != 0)
+	{
+		return -1;
+	}
+
+	return muggle_socket_nto_ip_port((struct sockaddr*)&sin, buf, bufsize, port);
+}
+
 const char* muggle_socket_remote_addr(muggle_socket_t fd, char *buf, size_t bufsize, int host_only)
 {
 	struct sockaddr_storage sin;
@@ -147,6 +203,20 @@ const char* muggle_socket_remote_addr(muggle_socket_t fd, char *buf, size_t bufs
 	}
 
 	return muggle_socket_ntop((struct sockaddr*)&sin, buf, bufsize, host_only);
+}
+
+int muggle_socket_remote_ip_port(muggle_socket_t fd, char *buf, size_t bufsize, int *port)
+{
+	struct sockaddr_storage sin;
+	memset(&sin, 0, sizeof(sin));
+	muggle_socklen_t len = sizeof(sin);
+
+	if (getpeername(fd, (struct sockaddr*)&sin, &len) != 0)
+	{
+		return -1;
+	}
+
+	return muggle_socket_nto_ip_port((struct sockaddr*)&sin, buf, bufsize, port);
 }
 
 muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlog)

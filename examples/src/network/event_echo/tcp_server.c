@@ -43,7 +43,17 @@ muggle_socket_t tcp_server_do_accept(
 
 void tcp_server_on_connect(muggle_event_loop_t *evloop, muggle_socket_t fd)
 {
-	LOG_INFO("on TCP connection");
+	char remote_ip[MUGGLE_SOCKET_ADDR_STRLEN];
+	int remote_port;
+	muggle_socket_remote_ip_port(fd, remote_ip, sizeof(remote_ip), &remote_port);
+
+	char local_ip[MUGGLE_SOCKET_ADDR_STRLEN];
+	int local_port;
+	muggle_socket_local_ip_port(fd, local_ip, sizeof(local_ip), &local_port);
+
+	LOG_INFO("on TCP connection: "
+			 "remote_ip=%s, remote_port=%d, local_ip=%s, local_port=%d",
+			 remote_ip, remote_port, local_ip, local_port);
 
 	muggle_event_context_t *ctx =
 		(muggle_event_context_t*)malloc(sizeof(muggle_event_context_t));
@@ -65,6 +75,8 @@ void tcp_server_on_connect(muggle_event_loop_t *evloop, muggle_socket_t fd)
 
 void tcp_on_message(muggle_event_loop_t *evloop, muggle_event_context_t *ctx)
 {
+	MUGGLE_UNUSED(evloop);
+
 	muggle_event_fd fd = muggle_ev_ctx_fd(ctx);
 
 	char buf[1024];
@@ -85,6 +97,8 @@ void tcp_on_message(muggle_event_loop_t *evloop, muggle_event_context_t *ctx)
 
 void tcp_on_close(muggle_event_loop_t *evloop, muggle_event_context_t *ctx)
 {
+	MUGGLE_UNUSED(evloop);
+
 	LOG_INFO("on disconnection");
 	ev_data_t *ev_data = (ev_data_t*)muggle_ev_ctx_data(ctx);
 	if (ev_data)
