@@ -199,15 +199,21 @@ set(MUGGLE_C_SOVERSION "${MUGGLE_C_VER_MAJOR}")
 # output options
 ################################
 
+string(TOUPPER ${CMAKE_BUILD_TYPE} upper_cmake_build_type)
+
 message("--------------------------------")
 
 message("# mugglec version ${MUGGLE_C_VERSION}")
-
+message("# c compiler: ${CMAKE_C_COMPILER}")
+message("# c compiler version: ${CMAKE_C_COMPILER_VERSION}")
 message("# c compiler flags: ${CMAKE_C_FLAGS}")
+message("# c compiler build flags: ${CMAKE_C_FLAGS_${upper_cmake_build_type}}")
+message("# cxx compiler: ${CMAKE_CXX_COMPILER}")
+message("# cxx compiler version: ${CMAKE_CXX_COMPILER_VERSION}")
 message("# cxx compiler flags: ${CMAKE_CXX_FLAGS}")
-
+message("# cxx compiler build flags: ${CMAKE_CXX_FLAGS_${upper_cmake_build_type}}")
+message("# CMake version: ${CMAKE_VERSION}")
 message("# CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
-
 message("# mugglec option BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 message("# mugglec option MUGGLE_BUILD_STATIC_PIC: ${MUGGLE_BUILD_STATIC_PIC}")
 message("# mugglec option MUGGLE_BUILD_TRACE: ${MUGGLE_BUILD_TRACE}")
