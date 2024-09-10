@@ -431,8 +431,13 @@ int muggle_channel_init(
 	chan->write_cursor = 0;
 	chan->read_cursor = capacity - 1;
 
+#if MUGGLE_C_HAVE_ALIGNED_ALLOC
+	chan->blocks = (muggle_channel_block_t*)aligned_alloc(
+		MUGGLE_CACHE_LINE_X2_SIZE, sizeof(muggle_channel_block_t) * capacity);
+#else
 	chan->blocks =(muggle_channel_block_t*)malloc(
 		sizeof(muggle_channel_block_t) * capacity);
+#endif
 	if (chan->blocks == NULL)
 	{
 		ret = MUGGLE_ERR_MEM_ALLOC;

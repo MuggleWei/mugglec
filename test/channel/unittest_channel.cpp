@@ -99,6 +99,38 @@ uint32_t getProducerNum()
 	return (uint32_t)(hc * 2);
 }
 
+TEST(channel, struct_size_and_align)
+{
+	MUGGLE_ALIGNAS(MUGGLE_CACHE_LINE_X2_SIZE) muggle_channel_t chan;
+	muggle_channel_init(&chan, 16, 0);
+
+#if MUGGLE_C_HAVE_ALIGNAS
+	uintptr_t addr_chan = (uintptr_t)&chan;
+	uintptr_t addr_write_cursor = (uintptr_t)&chan.write_cursor;
+	uintptr_t addr_read_cursor = (uintptr_t)&chan.read_cursor;
+	uintptr_t addr_write_spin = (uintptr_t)&chan.write_spinlock;
+
+	ASSERT_EQ(addr_write_cursor % MUGGLE_CACHE_LINE_X2_SIZE, 0);
+	ASSERT_EQ(addr_read_cursor % MUGGLE_CACHE_LINE_X2_SIZE, 0);
+	ASSERT_EQ(addr_write_spin % MUGGLE_CACHE_LINE_X2_SIZE, 0);
+
+	ASSERT_EQ(addr_write_cursor - addr_chan, MUGGLE_CACHE_LINE_X2_SIZE);
+	ASSERT_EQ(addr_read_cursor - addr_write_cursor, MUGGLE_CACHE_LINE_X2_SIZE);
+	ASSERT_EQ(addr_write_spin - addr_read_cursor, MUGGLE_CACHE_LINE_X2_SIZE);
+#endif
+
+	ASSERT_EQ(sizeof(muggle_channel_block_t), MUGGLE_CACHE_LINE_X2_SIZE); 
+#if MUGGLE_C_HAVE_ALIGNED_ALLOC 
+	uintptr_t addr_blocks0 = (uintptr_t)&chan.blocks[0];
+	uintptr_t addr_blocks1 = (uintptr_t)&chan.blocks[1];
+
+	ASSERT_EQ(addr_blocks0 % MUGGLE_CACHE_LINE_X2_SIZE, 0);
+	ASSERT_EQ(addr_blocks1 - addr_blocks0, MUGGLE_CACHE_LINE_X2_SIZE);
+#endif
+
+	muggle_channel_destroy(&chan);
+}
+
 TEST(channel, sync_w_sync_r)
 {
 	int flags =
