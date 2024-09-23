@@ -1,11 +1,9 @@
 #include "muggle/c/muggle_c.h"
 
-void init_log()
+void init_log(const char *filepath)
 {
 	static muggle_log_file_handler_t file_handler;
 
-	const char *filepath = "logs/hello.log";
-	// const char *filepath = "/tmp/test_mugglec/logs/hello.log";
 	if (muggle_log_file_handler_init(&file_handler, filepath, "w") != 0) {
 		fprintf(stderr, "failed open file: %s\n", filepath);
 		return;
@@ -17,9 +15,14 @@ void init_log()
 	logger->add_handler(logger, (muggle_log_handler_t*)&file_handler);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-	init_log();
+	const char *filepath = "logs/hello.log";
+	if (argc > 1) {
+		filepath = argv[1];
+	}
+
+	init_log(filepath);
 	
 	LOG_INFO("info message");
 	LOG_WARNING("warning message");
