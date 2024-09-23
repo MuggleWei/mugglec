@@ -256,3 +256,41 @@ int muggle_os_rename(const char *src, const char *dst)
 }
 
 #endif
+
+FILE* muggle_os_fopen(const char *filepath, const char *mode)
+{
+	int ret = 0;
+	const char *abs_filepath = NULL;
+	char tmp_path[MUGGLE_MAX_PATH];
+	if (muggle_path_isabs(filepath)) {
+		abs_filepath = filepath;
+	} else {
+		char cur_path[MUGGLE_MAX_PATH];
+		ret = muggle_os_curdir(cur_path, sizeof(cur_path));
+		if (ret != 0) {
+			return NULL;
+		}
+
+		ret = muggle_path_join(cur_path, filepath, tmp_path, sizeof(tmp_path));
+		if (ret != 0) {
+			return NULL;
+		}
+
+		abs_filepath = tmp_path;
+	}
+
+	char file_dir[MUGGLE_MAX_PATH];
+	ret = muggle_path_dirname(abs_filepath, file_dir, sizeof(file_dir));
+	if (ret != 0) {
+		return NULL;
+	}
+
+	if (!muggle_path_exists(file_dir)) {
+		ret = muggle_os_mkdir(file_dir);
+		if (ret != 0) {
+			return NULL;
+		}
+	}
+
+	return fopen(abs_filepath, mode);
+}
