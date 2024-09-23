@@ -3,7 +3,13 @@
 void init_log()
 {
 	static muggle_log_file_handler_t file_handler;
-	muggle_log_file_handler_init(&file_handler, "log/hello.log", "w");
+
+	const char *filepath = "logs/hello.log";
+	// const char *filepath = "/tmp/test_mugglec/logs/hello.log";
+	if (muggle_log_file_handler_init(&file_handler, filepath, "w") != 0) {
+		fprintf(stderr, "failed open file: %s\n", filepath);
+		return;
+	}
 	muggle_log_handler_set_level(
 		(muggle_log_handler_t*)&file_handler, LOG_LEVEL_DEBUG);
 

@@ -160,7 +160,7 @@ static int muggle_log_file_time_rot_handler_rotate(
 		return MUGGLE_ERR_SYS_CALL;
 	}
 
-	handler->fp = fopen(buf, "ab+");
+	handler->fp = muggle_os_fopen(buf, "ab+");
 	if (handler->fp == NULL)
 	{
 		return MUGGLE_ERR_SYS_CALL;
@@ -211,7 +211,7 @@ static int muggle_log_file_time_rot_handler_write(
 		{
 			if (muggle_log_file_time_rot_handler_rotate(handler) != 0)
 			{
-				fprintf(stderr, "failed rotate log handler");
+				fprintf(stderr, "failed rotate log handler\n");
 			}
 		}
 	}
@@ -283,22 +283,6 @@ int muggle_log_file_time_rot_handler_init(
 		if (ret != 0)
 		{
 			return ret;
-		}
-
-		char log_dir[MUGGLE_MAX_PATH];
-		ret = muggle_path_dirname(log_path, log_dir, sizeof(log_dir));
-		if (ret != 0)
-		{
-			return ret;
-		}
-
-		if (!muggle_path_exists(log_dir))
-		{
-			ret = muggle_os_mkdir(log_dir);
-			if (ret != 0)
-			{
-				return ret;
-			}
 		}
 
 		abs_filepath = log_path;
