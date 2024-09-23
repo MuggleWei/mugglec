@@ -111,26 +111,10 @@ int muggle_log_file_handler_init(
 			return ret;
 		}
 
-		char log_dir[MUGGLE_MAX_PATH];
-		ret = muggle_path_dirname(log_path, log_dir, sizeof(log_dir));
-		if (ret != 0)
-		{
-			return ret;
-		}
-
-		if (!muggle_path_exists(log_dir))
-		{
-			ret = muggle_os_mkdir(log_dir);
-			if (ret != 0)
-			{
-				return ret;
-			}
-		}
-
 		abs_filepath = log_path;
 	}
 
-	handler->fp = fopen(abs_filepath, mode);
+	handler->fp = muggle_os_fopen(abs_filepath, mode);
 	if (handler->fp == NULL)
 	{
 		return MUGGLE_ERR_SYS_CALL;

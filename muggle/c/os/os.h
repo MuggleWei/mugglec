@@ -12,6 +12,7 @@
 #define MUGGLE_C_OS_H_
 
 #include "muggle/c/base/macro.h"
+#include <stdio.h>
 
 EXTERN_C_BEGIN
 
@@ -87,6 +88,19 @@ int muggle_os_rmdir(const char *path);
  */
 MUGGLE_C_EXPORT
 int muggle_os_rename(const char *src, const char *dst);
+
+/**
+ * @brief open file, if dir is not exists, create dir automatically
+ *
+ * @param filepath  file path
+ * @param mode      open file mode
+ *
+ * @return
+ *     - on success, return FILE pointer
+ *     - on failed, NULL is returned
+ */
+MUGGLE_C_EXPORT
+FILE* muggle_os_fopen(const char *filepath, const char *mode);
 
 EXTERN_C_END
 
