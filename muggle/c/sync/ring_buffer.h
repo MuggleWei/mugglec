@@ -37,7 +37,7 @@ typedef struct muggle_ring_buffer_block
 {
 	union {
 		void *data;
-		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
 	};
 } muggle_ring_buffer_block_t;
 
@@ -48,15 +48,17 @@ typedef struct muggle_ring_buffer
 	int write_mode;
 	int read_mode;
 	muggle_mutex_t write_mutex;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
-	muggle_sync_t cursor;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
+	union {
+		muggle_sync_t cursor;
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
+	};
 	// for MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE
-	muggle_sync_t read_cursor;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
+	union {
+		muggle_sync_t read_cursor;
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
+	};
 	muggle_mutex_t read_mutex;
 	muggle_condition_variable_t read_cv;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
 	muggle_ring_buffer_block_t *blocks;
 }muggle_ring_buffer_t;
 
