@@ -47,8 +47,16 @@ int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_sync_t capa
 
 	pool->capacity = capacity;
 	pool->block_size = block_size;
+#if MUGGLE_C_HAVE_ALIGNED_ALLOC
+	pool->data = aligned_alloc(MUGGLE_CACHE_LINE_X2_SIZE, capacity * block_size);
+	pool->ptrs = (muggle_ts_memory_pool_head_ptr_t*)aligned_alloc(
+			MUGGLE_CACHE_LINE_X2_SIZE,
+			capacity * sizeof(muggle_ts_memory_pool_head_ptr_t));
+#else
 	pool->data = malloc(capacity * block_size);
-	pool->ptrs = (muggle_ts_memory_pool_head_ptr_t*)malloc(capacity * sizeof(muggle_ts_memory_pool_head_ptr_t));
+	pool->ptrs = (muggle_ts_memory_pool_head_ptr_t*)malloc(
+			capacity * sizeof(muggle_ts_memory_pool_head_ptr_t));
+#endif
 	pool->alloc_cursor = 0;
 	pool->free_cursor = capacity;
 
