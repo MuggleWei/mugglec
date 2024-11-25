@@ -24,12 +24,7 @@ struct muggle_ts_memory_pool;
  */
 typedef struct muggle_ts_memory_pool_head
 {
-	// NOTE: 
-	// only one cache line is enough here, cause block_size align x2 cacheline
-	union {
-		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
-		struct muggle_ts_memory_pool *pool;
-	};
+	struct muggle_ts_memory_pool *pool;
 }muggle_ts_memory_pool_head_t;
 
 /**

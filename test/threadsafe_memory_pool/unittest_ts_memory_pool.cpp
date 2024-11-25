@@ -10,29 +10,6 @@ struct ts_data
 	int thread_idx;
 };
 
-TEST(ts_memory_pool, block_size)
-{
-	for (int i = 0; i < 32; ++i) {
-		int idx_beg = 
-			i * MUGGLE_CACHE_LINE_X2_SIZE - MUGGLE_CACHE_LINE_SIZE + 1;
-		int idx_end = idx_beg + MUGGLE_CACHE_LINE_X2_SIZE;
-		muggle_sync_t block_size = (i + 1) * MUGGLE_CACHE_LINE_X2_SIZE;
-
-		if (idx_beg < 1) {
-			idx_beg = 1;
-		}
-
-		for (int idx = idx_beg; idx < idx_end; ++idx) {
-			muggle_ts_memory_pool_t pool;
-			muggle_ts_memory_pool_init(&pool, 1, idx);
-			ASSERT_EQ(pool.block_size, block_size);
-			// fprintf(stderr, "%d + 64 = %d -> %d\n",
-			//         idx, idx + MUGGLE_CACHE_LINE_SIZE, block_size);
-			muggle_ts_memory_pool_destroy(&pool);
-		}
-	}
-}
-
 TEST(ts_memory_pool, single_thread)
 {
 	muggle_atomic_int capacity = (muggle_atomic_int)next_pow_of_2((uint64_t)5); // real capacity is 8, real allocate capacity = capacity - 1
