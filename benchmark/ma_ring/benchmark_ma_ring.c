@@ -15,7 +15,8 @@ void fn_backend_callback(muggle_ma_ring_t *ring, void *data)
 
 void func_ma_ring_write(void *args, uint64_t idx)
 {
-	muggle_ma_ring_t *ring = (muggle_ma_ring_t*)args;
+	MUGGLE_UNUSED(args);
+	muggle_ma_ring_t *ring = muggle_ma_ring_thread_ctx_get();
 
 	data_t *data = (data_t *)muggle_ma_ring_alloc(ring);
 	data->u32 = idx;
@@ -30,16 +31,12 @@ void benchmark_ma_ring(muggle_benchmark_config_t *config,
 	muggle_ma_ring_ctx_set_callback(fn_backend_callback);
 	muggle_ma_ring_backend_run();
 
-	muggle_ma_ring_thread_ctx_init();
-
-	muggle_ma_ring_t *ring = muggle_ma_ring_thread_ctx_get();
-
 	// initialize benchmark handle
 	muggle_benchmark_func_t benchmark;
 	muggle_benchmark_func_init(
 		&benchmark,
 		config,
-		ring,
+		NULL,
 		func);
 
 	// run
@@ -50,8 +47,6 @@ void benchmark_ma_ring(muggle_benchmark_config_t *config,
 
 	// destroy benchmark function handle
 	muggle_benchmark_func_destroy(&benchmark);
-
-	muggle_ma_ring_thread_ctx_cleanup();
 }
 
 int main(int argc, char *argv[])
