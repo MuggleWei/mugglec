@@ -314,7 +314,14 @@ int muggle_ring_buffer_init(
 		return ret;
 	}
 
-	r->blocks = (muggle_ring_buffer_block_t*)malloc(sizeof(muggle_ring_buffer_block_t) * r->capacity);
+#if MUGGLE_C_HAVE_ALIGNED_ALLOC
+	r->blocks = (muggle_ring_buffer_block_t*)aligned_alloc(
+			MUGGLE_CACHE_LINE_X2_SIZE,
+			sizeof(muggle_ring_buffer_block_t) * r->capacity);
+#else
+	r->blocks = (muggle_ring_buffer_block_t*)malloc(
+			sizeof(muggle_ring_buffer_block_t) * r->capacity);
+#endif
 	if (r->blocks == NULL)
 	{
 		muggle_mutex_destroy(&r->write_mutex);
