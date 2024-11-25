@@ -42,6 +42,7 @@ typedef struct muggle_sowr_block_head_tag
 {
 	struct muggle_sowr_memory_pool_tag *pool;
 	muggle_sync_t block_idx;
+	muggle_sync_t alignment_padding;
 }muggle_sowr_block_head_t;
 
 /**
