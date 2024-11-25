@@ -40,9 +40,15 @@ struct muggle_sowr_memory_pool_tag;
  */
 typedef struct muggle_sowr_block_head_tag
 {
-	struct muggle_sowr_memory_pool_tag *pool;
-	int block_idx;
-	int alignment_padding;
+	// NOTE: 
+	// only one cache line is enough here, cause block_size align x2 cacheline
+	union {
+		struct {
+			struct muggle_sowr_memory_pool_tag *pool;
+			muggle_sync_t block_idx;
+		};
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
+	};
 }muggle_sowr_block_head_t;
 
 /**
