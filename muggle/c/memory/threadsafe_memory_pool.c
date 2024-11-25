@@ -32,8 +32,13 @@ int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_sync_t capa
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	muggle_sync_t block_size =
-		(muggle_sync_t)next_pow_of_2((uint64_t)(sizeof(muggle_ts_memory_pool_head_t) + data_size));
+	// align block_size to MUGGLE_CACHE_LINE_X2_SIZE
+	muggle_sync_t block_size = 
+		(muggle_sync_t)sizeof(muggle_ts_memory_pool_head_t) + data_size;
+	muggle_sync_t quotient = block_size / MUGGLE_CACHE_LINE_X2_SIZE;
+	muggle_sync_t remainder = block_size % MUGGLE_CACHE_LINE_X2_SIZE;
+	block_size = quotient * MUGGLE_CACHE_LINE_X2_SIZE +
+		(remainder == 0 ? 0 : MUGGLE_CACHE_LINE_X2_SIZE);
 	if (block_size <= 0)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
