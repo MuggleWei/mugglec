@@ -57,7 +57,7 @@ bool muggle_hash_table_init(muggle_hash_table_t *p_hash_table, size_t table_size
 
 	if (table_size < 8)
 	{
-		table_size = HASH_TABLE_SIZE_10007;
+		table_size = MUGGLE_HASH_TABLE_SIZE_10007;
 	}
 	p_hash_table->table_size = table_size;
 	p_hash_table->nodes = (muggle_hash_table_node_t*)malloc(sizeof(muggle_hash_table_node_t) * table_size);
