@@ -50,7 +50,7 @@ bool muggle_memory_pool_init(muggle_memory_pool_t* pool, unsigned int init_capac
 
 	pool->flag = 0;
 
-	pool->max_delta_cap = 1024;
+	pool->max_delta_cap = 512 * 1024;
 
 	pool->peak = 0;
 
