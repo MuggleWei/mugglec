@@ -50,9 +50,9 @@ bool muggle_memory_pool_init(muggle_memory_pool_t* pool, unsigned int init_capac
 
 	pool->flag = 0;
 
-#if MUGGLE_DEBUG
+	pool->max_delta_cap = 1024;
+
 	pool->peak = 0;
-#endif
 
 	void* ptr_buf = pool->memory_pool_data_bufs[0];
 	unsigned int i;
@@ -79,7 +79,13 @@ void* muggle_memory_pool_alloc(muggle_memory_pool_t* pool)
 {
 	if (pool->used == pool->capacity)
 	{
-		if (!muggle_memory_pool_ensure_space(pool, pool->capacity * 2))
+		unsigned int delta_cap = pool->capacity;
+		if (pool->max_delta_cap > 0 && delta_cap > pool->max_delta_cap) {
+			delta_cap = pool->max_delta_cap;
+		}
+		unsigned int new_cap = pool->capacity + delta_cap;
+
+		if (!muggle_memory_pool_ensure_space(pool, new_cap))
 		{
 			return NULL;
 		}
@@ -258,4 +264,9 @@ unsigned int muggle_memory_pool_get_flag(muggle_memory_pool_t* pool)
 void muggle_memory_pool_set_flag(muggle_memory_pool_t* pool, unsigned int flag)
 {
 	pool->flag = flag;
+}
+
+void muggle_memory_pool_set_max_delta_cap(muggle_memory_pool_t* pool, unsigned int max_delta_cap)
+{
+	pool->max_delta_cap = max_delta_cap;
 }

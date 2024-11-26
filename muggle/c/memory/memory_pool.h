@@ -35,9 +35,8 @@ typedef struct muggle_memory_pool_tag
 
 	unsigned int	flag;					//!< flags
 
-#if MUGGLE_DEBUG
-	unsigned int	peak;                   //!< record max number of block in use
-#endif
+	unsigned int    max_delta_cap;          //!< max auto increase capacity in allocate, if it's 0, no limit
+	unsigned int	peak;                   //!< record max number of block in use (debug only)
 }muggle_memory_pool_t;
 
 /**
@@ -112,6 +111,15 @@ unsigned int muggle_memory_pool_get_flag(muggle_memory_pool_t* pool);
  */
 MUGGLE_C_EXPORT
 void muggle_memory_pool_set_flag(muggle_memory_pool_t* pool, unsigned int flag);
+
+/**
+ * @brief set memory pool max auto increase capacity in allocate
+ *
+ * @param pool           memory pool pointer
+ * @param max_delta_cap  max increase capacity
+ */
+MUGGLE_C_EXPORT
+void muggle_memory_pool_set_max_delta_cap(muggle_memory_pool_t* pool, unsigned int max_delta_cap);
 
 EXTERN_C_END
 

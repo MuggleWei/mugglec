@@ -234,3 +234,82 @@ TEST_F(TestMemoryPoolFixture, alloc_free_ensure_space4)
 	ASSERT_GT(cap, INIT_CAPACITY);
 	ASSERT_EQ(pool_.capacity, 16);
 }
+
+TEST_F(TestMemoryPoolFixture, alloc_increase_space1)
+{
+	block_data_t *data = NULL;
+
+	for (int i = 0; i < INIT_CAPACITY; i++) {
+		data = (block_data_t *)muggle_memory_pool_alloc(&pool_);
+		ASSERT_TRUE(data != NULL);
+		ASSERT_EQ(pool_.capacity, INIT_CAPACITY);
+	}
+
+	for (int i = 0; i < INIT_CAPACITY; i++) {
+		data = (block_data_t *)muggle_memory_pool_alloc(&pool_);
+		ASSERT_TRUE(data != NULL);
+		ASSERT_EQ(pool_.capacity, 2 * INIT_CAPACITY);
+	}
+
+	for (int i = 0; i < 2 * INIT_CAPACITY; i++) {
+		data = (block_data_t *)muggle_memory_pool_alloc(&pool_);
+		ASSERT_TRUE(data != NULL);
+		ASSERT_EQ(pool_.capacity, 4 * INIT_CAPACITY);
+	}
+
+	for (int i = 0; i < 4 * INIT_CAPACITY; i++) {
+		data = (block_data_t *)muggle_memory_pool_alloc(&pool_);
+		ASSERT_TRUE(data != NULL);
+		ASSERT_EQ(pool_.capacity, 8 * INIT_CAPACITY);
+	}
+}
+
+TEST_F(TestMemoryPoolFixture, alloc_increase_space2)
+{
+	block_data_t *data = NULL;
+
+	muggle_memory_pool_set_max_delta_cap(&pool_, 1);
+
+	for (int i = 0; i < INIT_CAPACITY; i++) {
+		data = (block_data_t *)muggle_memory_pool_alloc(&pool_);
+		ASSERT_TRUE(data != NULL);
+		ASSERT_EQ(pool_.capacity, INIT_CAPACITY);
+	}
+
+	for (int i = 0; i < INIT_CAPACITY; i++) {
+		data = (block_data_t *)muggle_memory_pool_alloc(&pool_);
+		ASSERT_TRUE(data != NULL);
+		ASSERT_EQ(pool_.capacity, INIT_CAPACITY + i + 1);
+	}
+}
+
+TEST_F(TestMemoryPoolFixture, alloc_increase_space3)
+{
+	block_data_t *data = NULL;
+
+	muggle_memory_pool_set_max_delta_cap(&pool_, 8);
+
+	for (int i = 0; i < INIT_CAPACITY; i++) {
+		data = (block_data_t *)muggle_memory_pool_alloc(&pool_);
+		ASSERT_TRUE(data != NULL);
+		ASSERT_EQ(pool_.capacity, INIT_CAPACITY);
+	}
+
+	for (int i = 0; i < INIT_CAPACITY; i++) {
+		data = (block_data_t *)muggle_memory_pool_alloc(&pool_);
+		ASSERT_TRUE(data != NULL);
+		ASSERT_EQ(pool_.capacity, 2 * INIT_CAPACITY);
+	}
+
+	for (int i = 0; i < INIT_CAPACITY; i++) {
+		data = (block_data_t *)muggle_memory_pool_alloc(&pool_);
+		ASSERT_TRUE(data != NULL);
+		ASSERT_EQ(pool_.capacity, 3 * INIT_CAPACITY);
+	}
+
+	for (int i = 0; i < INIT_CAPACITY; i++) {
+		data = (block_data_t *)muggle_memory_pool_alloc(&pool_);
+		ASSERT_TRUE(data != NULL);
+		ASSERT_EQ(pool_.capacity, 4 * INIT_CAPACITY);
+	}
+}
