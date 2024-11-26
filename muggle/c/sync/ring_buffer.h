@@ -14,6 +14,7 @@
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/atomic.h"
 #include "muggle/c/sync/mutex.h"
+#include "muggle/c/sync/spinlock.h"
 #include "muggle/c/sync/sync_obj.h"
 #include "muggle/c/sync/condition_variable.h"
 
@@ -47,7 +48,7 @@ typedef struct muggle_ring_buffer
 	int flag;
 	int write_mode;
 	int read_mode;
-	muggle_mutex_t write_mutex;
+	muggle_spinlock_t write_spin;
 	union {
 		muggle_sync_t cursor;
 		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
