@@ -1339,7 +1339,10 @@ int muggle_socketpair(
 	muggle_thread_create(
 		&th_listen, muggle_socketpair_listen_routine, &listen_args);
 
-	fds[1] = muggle_tcp_connect(host, port, 3);
+	char str_port[16];
+	snprintf(str_port, sizeof(str_port), "%d", port);
+
+	fds[1] = muggle_tcp_connect(host, str_port, 3);
 	muggle_thread_join(&th_listen);
 
 	if (fds[0] == MUGGLE_INVALID_SOCKET || fds[1] == MUGGLE_INVALID_SOCKET) {
