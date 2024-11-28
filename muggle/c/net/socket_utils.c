@@ -1291,7 +1291,7 @@ static muggle_thread_ret_t muggle_socketpair_listen_routine(void *p_args)
 
 	muggle_socket_t fd = accept(listen_args->listen_fd, NULL, NULL);
 	if (fd == MUGGLE_INVALID_SOCKET) {
-		LOG_ERROR("socketpair failed accept");
+		MUGGLE_LOG_ERROR("socketpair failed accept");
 		goto socketpair_listen_th_exit;
 	}
 	*listen_args->fd = fd;
@@ -1318,7 +1318,7 @@ int muggle_socketpair(
 		char errmsg[256];
 		int errid = muggle_socket_lasterror();
 		muggle_socket_strerror(errid, errmsg, sizeof(errmsg));
-		LOG_ERROR("failed socketpair listen, errno: %d, errmsg: %s",
+		MUGGLE_LOG_ERROR("failed socketpair listen, errno: %d, errmsg: %s",
 			errid, errmsg);
 		return -1;
 	}
@@ -1328,7 +1328,7 @@ int muggle_socketpair(
 	if (muggle_socket_local_ip_port(
 			listen_fd, host, sizeof(host), &port) != 0) {
 		muggle_socket_close(listen_fd);
-		LOG_ERROR("failed socketpair get listen port");
+		MUGGLE_LOG_ERROR("failed socketpair get listen port");
 		return -1;
 	}
 

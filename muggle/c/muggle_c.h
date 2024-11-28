@@ -98,6 +98,7 @@
 #include "muggle/c/net/socket_context.h"
 #include "muggle/c/net/socket_utils.h"
 #include "muggle/c/net/socket_evloop_handle.h"
+#include "muggle/c/net/socket_evloop_pipe.h"
 
 // crypt
 #include "muggle/c/crypt/crypt_utils.h"

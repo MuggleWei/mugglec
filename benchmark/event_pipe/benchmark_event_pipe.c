@@ -1,40 +1,22 @@
 #include "muggle/c/muggle_c.h"
 #include "muggle_benchmark/muggle_benchmark.h"
 
-typedef struct {
-	muggle_spinlock_t write_spin;
-	muggle_socket_t fds[2];
-} socket_pair_args_t;
-
-enum {
-	SOCKET_PAIR_WRITER = 0,
-	SOCKET_PAIR_READER = 1,
-};
-
-int socketpair_write(void *user_args, void *data)
+int pipe_write(void *user_args, void *data)
 {
-	socket_pair_args_t *args = (socket_pair_args_t *)user_args;
-
-	muggle_spinlock_lock(&args->write_spin);
-
-	muggle_atomic_thread_fence(muggle_memory_order_release);
-	muggle_socket_write(args->fds[SOCKET_PAIR_WRITER], &data, sizeof(void *));
-
-	muggle_spinlock_unlock(&args->write_spin);
-
-	return 0;
+	return muggle_socket_evloop_pipe_write(
+			   (muggle_socket_evloop_pipe_t *)user_args, data) ?
+			   0 :
+			   -1;
 }
 
-void *socketpair_read(void *user_args, int consumer_id)
+void *pipe_read(void *user_args, int consumer_id)
 {
 	MUGGLE_UNUSED(consumer_id);
 
-	socket_pair_args_t *args = (socket_pair_args_t *)user_args;
-
 	void *data = NULL;
-	muggle_socket_read(args->fds[SOCKET_PAIR_READER], &data, sizeof(void *));
-	muggle_atomic_thread_fence(muggle_memory_order_acquire);
-
+	while ((data = muggle_socket_evloop_pipe_read(
+				(muggle_socket_evloop_pipe_t *)user_args)) == NULL) {
+	}
 	return data;
 }
 
@@ -45,23 +27,19 @@ void producer_complete_cb(muggle_benchmark_config_t *config, void *user_args)
 	static muggle_benchmark_thread_message_t end_msg;
 	memset(&end_msg, 0, sizeof(end_msg));
 	end_msg.id = UINT64_MAX;
-	socketpair_write(user_args, (void *)&end_msg);
+	pipe_write(user_args, (void *)&end_msg);
 }
 
-void benchmark_socketpair(muggle_benchmark_config_t *config, const char *name)
+void benchmark_ev_pipe(muggle_benchmark_config_t *config, const char *name)
 {
-	// prepare socketpair
-	socket_pair_args_t args;
-	muggle_spinlock_init(&args.write_spin);
-	if (muggle_socketpair(AF_UNIX, SOCK_DGRAM, 0, args.fds) != 0) {
-		LOG_ERROR("failed init socketpair");
-		return;
-	}
+	// prepare event pipe
+	muggle_socket_evloop_pipe_t ev_pipe;
+	muggle_socket_evloop_pipe_init(&ev_pipe);
 
 	// initialize thread transfer benchmark
 	muggle_benchmark_thread_trans_t benchmark;
-	muggle_benchmark_thread_trans_init(&benchmark, config, (void *)&args,
-									   socketpair_write, socketpair_read,
+	muggle_benchmark_thread_trans_init(&benchmark, config, (void *)&ev_pipe,
+									   pipe_write, pipe_read,
 									   producer_complete_cb);
 
 	// run benchmark
@@ -73,9 +51,8 @@ void benchmark_socketpair(muggle_benchmark_config_t *config, const char *name)
 	// destroy benchmark
 	muggle_benchmark_thread_trans_destroy(&benchmark);
 
-	// close socket pair
-	muggle_socket_close(args.fds[0]);
-	muggle_socket_close(args.fds[1]);
+	// free event pipe
+	muggle_socket_evloop_pipe_destroy(&ev_pipe);
 }
 
 int main(int argc, char *argv[])
@@ -109,14 +86,14 @@ int main(int argc, char *argv[])
 		 i++) {
 		int num_producer = producer_nums[i];
 		memset(name, 0, sizeof(name));
-		snprintf(name, sizeof(name), "socketpair_%d", num_producer);
+		snprintf(name, sizeof(name), "event_pipe_%d", num_producer);
 
 		config.producer = num_producer;
 
 		MUGGLE_LOG_INFO(
 			"--------------------------------------------------------");
-		MUGGLE_LOG_INFO("run socketpair - %d write and 1 read", num_producer);
-		benchmark_socketpair(&config, name);
+		MUGGLE_LOG_INFO("run event pipe - %d write and 1 read", num_producer);
+		benchmark_ev_pipe(&config, name);
 	}
 
 	return 0;
