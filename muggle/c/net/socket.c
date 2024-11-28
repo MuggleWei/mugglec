@@ -9,6 +9,8 @@
  *****************************************************************************/
  
 #include "socket.h"
+#include "muggle/c/base/sleep.h"
+#include "muggle/c/os/sys.h"
 #include <string.h>
 
 int muggle_socket_lib_init()
@@ -44,6 +46,38 @@ int muggle_socket_strerror(int errnum, char *buf, size_t bufsize)
 int muggle_socket_set_nonblock(muggle_socket_t socket, int on)
 {
 	return muggle_ev_fd_set_nonblock(socket, on);
+}
+
+int muggle_socket_block_write(
+	muggle_socket_t fd, void *data, size_t len, unsigned long wait_ns)
+{
+	char *p = (char *)data;
+	int total_bytes = (int)len;
+	int remain_bytes = total_bytes;
+	do {
+		int send_bytes = muggle_socket_write(
+				fd, p + (total_bytes - remain_bytes), remain_bytes);
+		if (send_bytes > 0) {
+			remain_bytes -= send_bytes;
+		} else if (send_bytes == MUGGLE_EVENT_ERROR) {
+			int last_errnum = muggle_sys_lasterror();
+			if (last_errnum == MUGGLE_SYS_ERRNO_WOULDBLOCK ||
+					last_errnum == MUGGLE_SYS_ERROR_AGAIN ||
+					last_errnum == MUGGLE_SYS_ERRNO_INTR) {
+				if (wait_ns > 0) {
+					muggle_nsleep(wait_ns);
+				}
+				continue;
+			} else {
+				return MUGGLE_EVENT_ERROR;
+			}
+		} else {
+			// LOG_ERROR("failed block write message: return=%d", send_bytes);
+			return 0;
+		}
+	} while (remain_bytes > 0);
+
+	return total_bytes;
 }
 
 int muggle_socket_writev(muggle_socket_t fd, muggle_socket_iovec_t *iov,
