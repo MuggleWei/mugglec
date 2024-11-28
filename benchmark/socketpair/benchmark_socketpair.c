@@ -83,6 +83,12 @@ int main(int argc, char *argv[])
 	// initialize log
 	muggle_log_simple_init(MUGGLE_LOG_LEVEL_INFO, MUGGLE_LOG_LEVEL_INFO);
 
+	// initialize socket lib
+	if (muggle_socket_lib_init() != 0) {
+		LOG_ERROR("failed initalize socket library");
+		exit(EXIT_FAILURE);
+	}
+
 	// initialize benchmark config
 	muggle_benchmark_config_t config;
 	muggle_benchmark_config_parse_cli(&config, argc, argv);
