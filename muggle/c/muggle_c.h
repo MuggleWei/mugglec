@@ -47,6 +47,7 @@
 #include "muggle/c/time/win_gmtime.h"
 #include "muggle/c/time/cpu_cycle.h"
 #include "muggle/c/time/realtime_get.h"
+#include "muggle/c/time/time_counter.h"
 
 // os
 #include "muggle/c/os/os.h"

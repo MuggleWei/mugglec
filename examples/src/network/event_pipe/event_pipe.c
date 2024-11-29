@@ -107,6 +107,8 @@ int main()
 
 	run_evloop(&ev_pipe);
 
+	muggle_thread_join(&th);
+
 	muggle_socket_evloop_pipe_destroy(&ev_pipe);
 
 	return 0;
