@@ -8,8 +8,9 @@
  *  @brief        socket event loop pipe
  *
  *  NOTE:
- *  write & read in muggle_socket_evloop_pipe_t will keep atomic, it's similar
- *  channel with lock write and busy read
+ *    - User must gurantee only one reader read event pipe at the same time
+ *    - When event pipe full, write will block until success or pipe close
+ *    - When event pipe empty, read will return NULL immediately
  *****************************************************************************/
 
 #ifndef MUGGLE_C_SOCKET_EVLOOP_PIPE_H_
