@@ -6,6 +6,10 @@
  *  @copyright    Copyright 2024 Muggle Wei
  *  @license      MIT License
  *  @brief        socket event loop pipe
+ *
+ *  NOTE:
+ *  write & read in muggle_socket_evloop_pipe_t will keep atomic, it's similar
+ *  channel with lock write and busy read
  *****************************************************************************/
 
 #ifndef MUGGLE_C_SOCKET_EVLOOP_PIPE_H_
@@ -17,11 +21,6 @@
 #include <stdbool.h>
 
 EXTERN_C_BEGIN
-
-enum {
-	MUGGLE_SOCKET_EVLOOP_PIPE_READER = 0,
-	MUGGLE_SOCKET_EVLOOP_PIPE_WRITER = 1,
-};
 
 typedef struct {
 	muggle_socket_context_t ctx[2];
@@ -67,7 +66,7 @@ bool muggle_socket_evloop_pipe_write(muggle_socket_evloop_pipe_t *ev_pipe,
  *
  * @param ev_pipe  socket event loop pipe
  *
- * @return  data that pipe write, when reader is non-blocking, maybe return NULL
+ * @return  data that pipe write
  */
 MUGGLE_C_EXPORT
 void *muggle_socket_evloop_pipe_read(muggle_socket_evloop_pipe_t *ev_pipe);
