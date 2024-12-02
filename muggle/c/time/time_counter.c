@@ -43,12 +43,20 @@ bool muggle_time_counter_init(muggle_time_counter_t *tc)
 
 void muggle_time_counter_start(muggle_time_counter_t *tc)
 {
+#if MUGGLE_PLATFORM_APPLE
+	clock_gettime(CLOCK_MONOTONIC, &tc->start_ts);
+#else
 	clock_gettime(CLOCK_BOOTTIME, &tc->start_ts);
+#endif
 }
 
 void muggle_time_counter_end(muggle_time_counter_t *tc)
 {
+#if MUGGLE_PLATFORM_APPLE
+	clock_gettime(CLOCK_MONOTONIC, &tc->end_ts);
+#else
 	clock_gettime(CLOCK_BOOTTIME, &tc->end_ts);
+#endif
 }
 
 int64_t muggle_time_counter_interval_ns(muggle_time_counter_t *tc)
