@@ -337,9 +337,6 @@ void muggle_evloop_run(muggle_event_loop_t *evloop)
 	// get thread id
 	evloop->tid = muggle_thread_current_id();
 
-	// reset timer last tick
-	muggle_realtime_get(evloop->last_ts);
-
 	// run
 	s_evloop_fn[evloop->evloop_type].fn_run(evloop);
 
