@@ -79,6 +79,14 @@ int64_t muggle_time_counter_interval_ns(muggle_time_counter_t *tc);
 MUGGLE_C_EXPORT
 int64_t muggle_time_counter_interval_ms(muggle_time_counter_t *tc);
 
+/**
+ * @brief move end time to start
+ *
+ * @param tc  time counter
+ */
+MUGGLE_C_EXPORT
+void muggle_time_counter_move_end_to_start(muggle_time_counter_t *tc);
+
 EXTERN_C_END
 
 #endif // !MUGGLE_C_TIME_COUNTER_H_

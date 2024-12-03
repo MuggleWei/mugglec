@@ -9,9 +9,8 @@
  *****************************************************************************/
 
 #include "event_loop_select.h"
+#include "muggle/c/time/time_counter.h"
 #include <string.h>
-
-void muggle_evloop_handle_timer(muggle_event_loop_t *evloop);
 
 static void muggle_evloop_select_handle_wakeup(muggle_event_loop_select_t *evloop_select, fd_set *rset)
 {
@@ -84,14 +83,13 @@ void muggle_evloop_run_select(muggle_event_loop_t *evloop)
 
 	// run loop
 	muggle_event_loop_select_t *evloop_select = (muggle_event_loop_select_t*)evloop;
+
+	muggle_time_counter_t tc;
+	muggle_time_counter_init(&tc);
+	muggle_time_counter_start(&tc);
+
 	while (1)
 	{
-		// reset timeout
-		if (p_timeout)
-		{
-			memcpy(&timeout, &save_timeout, sizeof(struct timeval));
-		}
-
 		// select loop
 		rset = evloop_select->allset;
 		int n = select(evloop_select->nfds + 1, &rset, NULL, NULL, p_timeout);
@@ -135,11 +133,14 @@ void muggle_evloop_run_select(muggle_event_loop_t *evloop)
 			}
 		}
 
-		// n == 0: timer trigger
-		// n > 0: when loop is busy, timeout will not trigger, use customize timer handle avoid that
-		if (n >= 0 && evloop->timeout >= 0)
-		{
-			muggle_evloop_handle_timer(evloop);
+		if ((p_timeout != NULL) && (evloop->cb_timer != NULL)) {
+			muggle_time_counter_end(&tc);
+			if ((int)muggle_time_counter_interval_ms(&tc) >= evloop->timeout) {
+				evloop->cb_timer(evloop);
+
+				memcpy(p_timeout, &save_timeout, sizeof(struct timeval));
+				muggle_time_counter_move_end_to_start(&tc);
+			}
 		}
 
 		if (evloop->to_exit)

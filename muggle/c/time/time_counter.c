@@ -33,6 +33,11 @@ int64_t muggle_time_counter_interval_ms(muggle_time_counter_t *tc)
 	return (int64_t)(elapsed * 1000);
 }
 
+void muggle_time_counter_move_end_to_start(muggle_time_counter_t *tc)
+{
+	memcpy(&tc->start, &tc->end, sizeof(tc->start));
+}
+
 #else
 
 bool muggle_time_counter_init(muggle_time_counter_t *tc)
@@ -71,6 +76,11 @@ int64_t muggle_time_counter_interval_ms(muggle_time_counter_t *tc)
 	int64_t elapsed = (tc->end_ts.tv_sec - tc->start_ts.tv_sec) * 1000LL +
 					  ((tc->end_ts.tv_nsec - tc->start_ts.tv_nsec) / 1000000LL);
 	return elapsed;
+}
+
+void muggle_time_counter_move_end_to_start(muggle_time_counter_t *tc)
+{
+	memcpy(&tc->start_ts, &tc->end_ts, sizeof(tc->start_ts));
 }
 
 #endif

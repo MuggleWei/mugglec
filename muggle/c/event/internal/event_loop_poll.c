@@ -9,10 +9,9 @@
  *****************************************************************************/
 
 #include "event_loop_poll.h"
+#include "muggle/c/time/time_counter.h"
 #include <stdlib.h>
 #include <string.h>
-
-void muggle_evloop_handle_timer(muggle_event_loop_t *evloop);
 
 static void muggle_evloop_poll_handle_wakeup(muggle_event_loop_poll_t *evloop_poll)
 {
@@ -88,12 +87,18 @@ void muggle_evloop_run_poll(muggle_event_loop_t *evloop)
 	muggle_event_loop_poll_t *evloop_poll = (muggle_event_loop_poll_t*)evloop;
 	struct pollfd *fds = evloop_poll->fds;
 	muggle_linked_list_node_t **nodes = (muggle_linked_list_node_t**)evloop_poll->nodes;
+
+	muggle_time_counter_t tc;
+	muggle_time_counter_init(&tc);
+	muggle_time_counter_start(&tc);
+
+	int remain_ms = evloop->timeout;
 	while (1)
 	{
 #if MUGGLE_PLATFORM_WINDOWS
-		int n = WSAPoll(evloop_poll->fds, evloop_poll->nfd, evloop->timeout);
+		int n = WSAPoll(evloop_poll->fds, evloop_poll->nfd, remain_ms);
 #else
-		int n = poll(evloop_poll->fds, evloop_poll->nfd, evloop->timeout);
+		int n = poll(evloop_poll->fds, evloop_poll->nfd, remain_ms);
 #endif
 		if (n > 0)
 		{
@@ -143,21 +148,27 @@ void muggle_evloop_run_poll(muggle_event_loop_t *evloop)
 					break;
 				}
 			}
-
-			// when loop is busy, timeout will not trigger, use customize timer handle avoid that
-			if (evloop->timeout >= 0)
-			{
-				muggle_evloop_handle_timer(evloop);
-			}
 		}
-		else if (n == 0)
-		{
-			muggle_evloop_handle_timer(evloop);
-		}
-		else
+		else if (n < 0)
 		{
 			if (MUGGLE_EVENT_LAST_ERRNO != MUGGLE_SYS_ERRNO_INTR) {
 				muggle_evloop_exit(evloop);
+			}
+		}
+
+		// NOTE:
+		// timeout >= 0 is required, if only > 0, the busy loop will never 
+		// trigger timer
+		// see also: comment of muggle_socket_evloop_handle_set_cb_timer
+		if ((evloop->timeout >= 0) && (evloop->cb_timer != NULL)) {
+			muggle_time_counter_end(&tc);
+			remain_ms = 
+				evloop->timeout - (int)muggle_time_counter_interval_ms(&tc);
+			if (remain_ms <= 0) {
+				evloop->cb_timer(evloop);
+
+				remain_ms = evloop->timeout;
+				muggle_time_counter_move_end_to_start(&tc);
 			}
 		}
 
