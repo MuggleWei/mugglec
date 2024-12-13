@@ -360,6 +360,11 @@ if (MUGGLE_BUILD_SANITIZER)
 	endif()
 endif()
 
+if ((${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") OR
+	(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang"))
+	target_compile_options(${muggle_c} PUBLIC -save-temps=obj)
+endif()
+
 # install
 include(GNUInstallDirs)
 install(TARGETS ${muggle_c}
