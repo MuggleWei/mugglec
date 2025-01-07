@@ -212,7 +212,7 @@ inline static void *muggle_ring_buffer_read_busy_loop(
 			return r->blocks[rpos].data;
 		}
 
-		muggle_thread_yield();
+		// muggle_thread_yield();
 	} while (1);
 
 	return NULL;
