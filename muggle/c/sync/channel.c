@@ -262,7 +262,7 @@ static void* muggle_channel_read_busy(muggle_channel_t *chan)
 			return data;
 		}
 
-		muggle_thread_yield();
+		// muggle_thread_yield();
 	}
 
 	return NULL;
