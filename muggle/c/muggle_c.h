@@ -47,6 +47,7 @@
 #include "muggle/c/time/win_gmtime.h"
 #include "muggle/c/time/cpu_cycle.h"
 #include "muggle/c/time/realtime_get.h"
+#include "muggle/c/time/time_counter.h"
 
 // os
 #include "muggle/c/os/os.h"
@@ -98,6 +99,7 @@
 #include "muggle/c/net/socket_context.h"
 #include "muggle/c/net/socket_utils.h"
 #include "muggle/c/net/socket_evloop_handle.h"
+#include "muggle/c/net/socket_evloop_pipe.h"
 
 // crypt
 #include "muggle/c/crypt/crypt_utils.h"

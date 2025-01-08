@@ -34,11 +34,11 @@ typedef struct muggle_log_src_loc
  */
 typedef struct muggle_log_msg
 {
-	int                  level;        //!< log level
-	struct timespec      ts;           //!< timestamp
-	muggle_thread_id     tid;          //!< thread id
-	muggle_log_src_loc_t src_loc;      //!< source location info
-	const char           *payload;     //!< payload
+	int                       level;    //!< log level
+	struct timespec           ts;       //!< timestamp
+	muggle_thread_readable_id tid;      //!< thread id
+	muggle_log_src_loc_t      src_loc;  //!< source location info
+	const char                *payload; //!< payload
 }muggle_log_msg_t;
 
 EXTERN_C_END

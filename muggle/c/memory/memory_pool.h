@@ -12,6 +12,7 @@
 #define MUGGLE_C_MEMORY_POOL_H_
 
 #include "muggle/c/base/macro.h"
+#include <stdint.h>
 #include <stdbool.h>
 
 EXTERN_C_BEGIN
@@ -21,23 +22,22 @@ EXTERN_C_BEGIN
 
 typedef struct muggle_memory_pool_tag
 {
-	void**			memory_pool_data_bufs;  //!< data buffer array
-	void**			memory_pool_ptr_buf;    //!< pointer buffer
+	void** memory_pool_data_bufs;  //!< data buffer array
+	void** memory_pool_ptr_buf;    //!< pointer buffer
 
-	unsigned int	alloc_index;            //!< next time, alloc pointer index in pointer buffer
-	unsigned int	free_index;             //!< next time, free pointer index in pointer buffer
+	uint32_t alloc_index; //!< next time, alloc pointer index in pointer buffer
+	uint32_t free_index;  //!< next time, free pointer index in pointer buffer
 
-	unsigned int	capacity;               //!< current memory pool capacity
-	unsigned int	used;                   //!< how many block in use
+	uint32_t capacity;    //!< current memory pool capacity
+	uint32_t used;        //!< how many block in use
 
-	unsigned int	block_size;             //!< size of single block
-	unsigned int	num_buf;                //!< the number of data buffer
+	uint32_t block_size;  //!< size of single block
+	uint32_t num_buf;     //!< the number of data buffer
 
-	unsigned int	flag;					//!< flags
+	uint32_t flag;        //!< flags
 
-#if MUGGLE_DEBUG
-	unsigned int	peak;                   //!< record max number of block in use
-#endif
+	uint32_t max_delta_cap; //!< max auto increase capacity in allocate, if it's 0, no limit
+	uint32_t peak;          //!< record max number of block in use (debug only)
 }muggle_memory_pool_t;
 
 /**
@@ -50,7 +50,7 @@ typedef struct muggle_memory_pool_tag
  * @return boolean
  */
 MUGGLE_C_EXPORT
-bool muggle_memory_pool_init(muggle_memory_pool_t* pool, unsigned int init_capacity, unsigned int block_size);
+bool muggle_memory_pool_init(muggle_memory_pool_t* pool, uint32_t init_capacity, uint32_t block_size);
 
 /**
  * @brief destroy memory pool
@@ -92,7 +92,7 @@ void muggle_memory_pool_free(muggle_memory_pool_t* pool, void* p_data);
  *     - return false, has no enough capactiy and failed allocate new capacity
  */
 MUGGLE_C_EXPORT 
-bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, unsigned int capacity);
+bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, uint32_t capacity);
 
 /**
  * @brief get memory pool flag
@@ -102,7 +102,7 @@ bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, unsigned int ca
  * @return memory pool's flag
  */
 MUGGLE_C_EXPORT
-unsigned int muggle_memory_pool_get_flag(muggle_memory_pool_t* pool);
+uint32_t muggle_memory_pool_get_flag(muggle_memory_pool_t* pool);
 
 /**
  * @brief set memory pool flag
@@ -111,7 +111,16 @@ unsigned int muggle_memory_pool_get_flag(muggle_memory_pool_t* pool);
  * @param flag  flag in MUGGLE_MEMORY_POOL_*
  */
 MUGGLE_C_EXPORT
-void muggle_memory_pool_set_flag(muggle_memory_pool_t* pool, unsigned int flag);
+void muggle_memory_pool_set_flag(muggle_memory_pool_t* pool, uint32_t flag);
+
+/**
+ * @brief set memory pool max auto increase capacity in allocate
+ *
+ * @param pool           memory pool pointer
+ * @param max_delta_cap  max increase capacity
+ */
+MUGGLE_C_EXPORT
+void muggle_memory_pool_set_max_delta_cap( muggle_memory_pool_t* pool, uint32_t max_delta_cap);
 
 EXTERN_C_END
 

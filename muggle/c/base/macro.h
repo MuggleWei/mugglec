@@ -189,9 +189,28 @@
 	#define MUGGLE_SUPPORT_FUTEX 1
 #endif
 
+// alignas
+#if MUGGLE_C_HAVE_ALIGNAS
+	#include <stdalign.h>
+	#define MUGGLE_ALIGNAS(n) alignas(n)
+#else
+	#define MUGGLE_ALIGNAS(n)
+#endif
+
 // cache line padding in structure
 #define MUGGLE_CACHE_LINE_SIZE 64
-#define MUGGLE_STRUCT_CACHE_LINE_PADDING(idx) char cache_line_padding_##idx[MUGGLE_CACHE_LINE_SIZE]
+#define MUGGLE_CACHE_LINE_X2_SIZE (MUGGLE_CACHE_LINE_SIZE * 2)
+#define MUGGLE_STRUCT_CACHE_LINE_PADDING(idx) \
+	char cache_line_padding_##idx[MUGGLE_CACHE_LINE_SIZE]
+#define MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(idx) \
+	char cache_line_x2_padding_##idx[MUGGLE_CACHE_LINE_X2_SIZE]
+
+// NOTE:
+//   consider compatibility, alignas may cause imperceptible bugs, so avoid use
+//   this in struct of mugglec
+#define MUGGLE_STRUCT_ALIGNAS_CACHE_LINE_PADDING(idx) \
+	MUGGLE_ALIGNAS(MUGGLE_CACHE_LINE_SIZE) \
+	MUGGLE_STRUCT_CACHE_LINE_PADDING(idx)
 
 // idx % capacity, capacity must be pow of 2
 #define IDX_IN_POW_OF_2_RING(idx, capacity) ((idx) & ((capacity) - 1))

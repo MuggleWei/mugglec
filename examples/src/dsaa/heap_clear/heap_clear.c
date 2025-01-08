@@ -4,17 +4,18 @@ typedef struct task
 {
 	int idx;
 	int priority;
-} task_t;
+} mysql_task_t;
 
 int priority_cmp(const void *d1, const void *d2)
 {
-	task_t *t1 = (task_t*)d1;
-	task_t *t2 = (task_t*)d2;
+	mysql_task_t *t1 = (mysql_task_t*)d1;
+	mysql_task_t *t2 = (mysql_task_t*)d2;
 	return t1->priority - t2->priority;
 }
 
 void do_free(void *pool, void *data)
 {
+	MUGGLE_UNUSED(pool);
 	free(data);
 }
 
@@ -29,7 +30,7 @@ int main()
 
 	for (int i = 0; i < 16; i++)
 	{
-		task_t *task = (task_t*)malloc(sizeof(task_t));
+		mysql_task_t *task = (mysql_task_t*)malloc(sizeof(mysql_task_t));
 		task->idx = i;
 		task->priority = 1 + rand() % 8;
 		LOG_INFO("generate task: idx=%d, priority=%d", task->idx, task->priority);

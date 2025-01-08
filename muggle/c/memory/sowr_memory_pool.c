@@ -28,9 +28,24 @@ int muggle_sowr_memory_pool_init(muggle_sowr_memory_pool_t *pool, muggle_sync_t 
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
+
+	// align block_size to MUGGLE_CACHE_LINE_X2_SIZE
+	muggle_sync_t block_size = 
+		(muggle_sync_t)sizeof(muggle_sowr_block_head_t) + data_size;
+	block_size = ROUND_UP_POW_OF_2_MUL(block_size, MUGGLE_CACHE_LINE_X2_SIZE);
+	if (block_size <= 0)
+	{
+		return MUGGLE_ERR_INVALID_PARAM;
+	}
+
 	pool->capacity = capacity;
-	pool->block_size = (muggle_sync_t)next_pow_of_2((uint64_t)(data_size + sizeof(muggle_sowr_block_head_t)));
+	pool->block_size = block_size;
+#if MUGGLE_C_HAVE_ALIGNED_ALLOC
+	pool->blocks = aligned_alloc(
+			MUGGLE_CACHE_LINE_X2_SIZE, pool->block_size * pool->capacity);
+#else
 	pool->blocks = malloc(pool->block_size * pool->capacity);
+#endif
 	pool->alloc_idx = 0;
 	pool->free_idx = 0;
 	pool->cached_free_pos = pool->capacity - 1;

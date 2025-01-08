@@ -24,7 +24,6 @@ struct muggle_ts_memory_pool;
  */
 typedef struct muggle_ts_memory_pool_head
 {
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
 	struct muggle_ts_memory_pool *pool;
 }muggle_ts_memory_pool_head_t;
 
@@ -33,8 +32,10 @@ typedef struct muggle_ts_memory_pool_head
  */
 typedef struct muggle_ts_memory_pool_head_ptr
 {
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
-	muggle_ts_memory_pool_head_t *ptr;
+	union {
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
+		muggle_ts_memory_pool_head_t *ptr;
+	};
 }muggle_ts_memory_pool_head_ptr_t;
 
 /**
@@ -47,13 +48,18 @@ typedef struct muggle_ts_memory_pool
 	void                             *data;
 	muggle_ts_memory_pool_head_ptr_t *ptrs;
 
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
-	muggle_sync_t alloc_cursor;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
-	muggle_sync_t free_cursor;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
-	muggle_mutex_t free_mutex;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
+	union {
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
+		muggle_sync_t alloc_cursor;
+	};
+	union {
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
+		muggle_sync_t free_cursor;
+	};
+	union {
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(2);
+		muggle_mutex_t free_mutex;
+	};
 }muggle_ts_memory_pool_t;
 
 /**

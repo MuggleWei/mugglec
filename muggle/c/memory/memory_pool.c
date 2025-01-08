@@ -10,7 +10,7 @@
 #include <string.h>
 #include <assert.h>
 
-bool muggle_memory_pool_init(muggle_memory_pool_t* pool, unsigned int init_capacity, unsigned int block_size)
+bool muggle_memory_pool_init(muggle_memory_pool_t* pool, uint32_t init_capacity, uint32_t block_size)
 {
 	memset(pool, 0, sizeof(muggle_memory_pool_t));
 	init_capacity = init_capacity == 0 ? 8 : init_capacity;
@@ -50,12 +50,20 @@ bool muggle_memory_pool_init(muggle_memory_pool_t* pool, unsigned int init_capac
 
 	pool->flag = 0;
 
-#if MUGGLE_DEBUG
+	// NOTE:
+	// avoid allocate more than 4G of memory, it may lead bug in 
+	// muggle_memory_pool_ensure_space, uint32_t overflow and truncate cause 
+	// expected allocation to be inconsistent with the actual allocation value
+	if (block_size > 8 * 1024) {
+		pool->max_delta_cap = init_capacity;
+	} else {
+		pool->max_delta_cap = 512 * 1024;
+	}
+
 	pool->peak = 0;
-#endif
 
 	void* ptr_buf = pool->memory_pool_data_bufs[0];
-	unsigned int i;
+	uint32_t i;
 	for (i = 0; i < init_capacity; ++i)
 	{
 		pool->memory_pool_ptr_buf[i] = (void*)((char*)ptr_buf + i * block_size);
@@ -65,8 +73,8 @@ bool muggle_memory_pool_init(muggle_memory_pool_t* pool, unsigned int init_capac
 }
 void muggle_memory_pool_destroy(muggle_memory_pool_t* pool)
 {
-	unsigned int i;
-	for (i = 0; i<pool->num_buf; ++i)
+	uint32_t i;
+	for (i = 0; i < pool->num_buf; ++i)
 	{
 		free((void*)pool->memory_pool_data_bufs[i]);
 	}
@@ -79,7 +87,13 @@ void* muggle_memory_pool_alloc(muggle_memory_pool_t* pool)
 {
 	if (pool->used == pool->capacity)
 	{
-		if (!muggle_memory_pool_ensure_space(pool, pool->capacity * 2))
+		uint32_t delta_cap = pool->capacity;
+		if ((pool->max_delta_cap > 0) && (delta_cap > pool->max_delta_cap)) {
+			delta_cap = pool->max_delta_cap;
+		}
+		uint32_t new_cap = pool->capacity + delta_cap;
+
+		if (!muggle_memory_pool_ensure_space(pool, new_cap))
 		{
 			return NULL;
 		}
@@ -111,7 +125,7 @@ void muggle_memory_pool_free(muggle_memory_pool_t* pool, void* p_data)
 	--pool->used;
 }
 
-bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, unsigned int capacity)
+bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, uint32_t capacity)
 {
 	// already have enough capacity
 	if (capacity <= pool->capacity)
@@ -126,7 +140,7 @@ bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, unsigned int ca
 	}
 
 	// allocate new data buffer
-	unsigned int delta_size = capacity - pool->capacity;
+	uint32_t delta_size = capacity - pool->capacity;
 	void** new_bufs = (void**)malloc(sizeof(void*) * (pool->num_buf + 1));
 	if (new_bufs == NULL)
 	{
@@ -156,8 +170,8 @@ bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, unsigned int ca
 	// get alloc and free section
 	void **free_section1 = NULL, **free_section2 = NULL;
 	void **alloc_section1 = NULL, **alloc_section2 = NULL;
-	unsigned int num_free_section1 = 0, num_free_section2 = 0;
-	unsigned int num_alloc_section1 = 0, num_alloc_section2 = 0;
+	uint32_t num_free_section1 = 0, num_free_section2 = 0;
+	uint32_t num_alloc_section1 = 0, num_alloc_section2 = 0;
 
 	if (pool->used == pool->capacity)
 	{
@@ -209,7 +223,7 @@ bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, unsigned int ca
 	}
 
 	// copy free section
-	unsigned int offset = 0;
+	uint32_t offset = 0;
 	pool->free_index = 0;
 	memcpy(&new_ptr_buf[offset], (void*)free_section1, sizeof(void*) * num_free_section1);
 	offset += num_free_section1;
@@ -233,7 +247,7 @@ bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, unsigned int ca
 	}
 
 	// init new section
-	unsigned int i;
+	uint32_t i;
 	for (i = 0; i < delta_size; ++i)
 	{
 		new_ptr_buf[offset + i] = (void*)((char*)pool->memory_pool_data_bufs[pool->num_buf] + i * pool->block_size);
@@ -250,12 +264,17 @@ bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, unsigned int ca
 	return true;
 }
 
-unsigned int muggle_memory_pool_get_flag(muggle_memory_pool_t* pool)
+uint32_t muggle_memory_pool_get_flag(muggle_memory_pool_t* pool)
 {
 	return pool->flag;
 }
 
-void muggle_memory_pool_set_flag(muggle_memory_pool_t* pool, unsigned int flag)
+void muggle_memory_pool_set_flag(muggle_memory_pool_t* pool, uint32_t flag)
 {
 	pool->flag = flag;
+}
+
+void muggle_memory_pool_set_max_delta_cap(muggle_memory_pool_t* pool, uint32_t max_delta_cap)
+{
+	pool->max_delta_cap = max_delta_cap;
 }

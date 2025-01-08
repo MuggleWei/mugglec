@@ -8,11 +8,7 @@ doc/compile_commands.json
 .vscode/
 
 # clangd
-.clangd/
 .cache/
-
-# clang-format
-.clang-format
 
 # doxygen
 /doxy

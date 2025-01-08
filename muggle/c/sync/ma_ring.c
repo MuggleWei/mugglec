@@ -1,6 +1,7 @@
 #include "ma_ring.h"
 #include "muggle/c/base/err.h"
 #include "muggle/c/base/sleep.h"
+#include "muggle/c/base/utils.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -154,7 +155,8 @@ void muggle_ma_ring_ctx_set_capacity(muggle_atomic_int capacity)
 void muggle_ma_ring_ctx_set_data_size(muggle_atomic_int data_size)
 {
 	muggle_ma_ring_context_t *ctx = muggle_ma_ring_ctx_get();
-	ctx->block_size = data_size + MUGGLE_MA_RING_CACHE_INTERVAL;
+	ctx->block_size =
+		ROUND_UP_POW_OF_2_MUL(data_size, MUGGLE_CACHE_LINE_X2_SIZE);
 }
 
 void muggle_ma_ring_ctx_set_callback(muggle_ma_ring_callback fn)
@@ -240,8 +242,13 @@ muggle_ma_ring_t *muggle_ma_ring_thread_ctx_init()
 		   sizeof(*s_muggle_ma_ring_thread_ctx));
 
 	muggle_ma_ring_context_t *ctx = muggle_ma_ring_ctx_get();
+#if MUGGLE_C_HAVE_ALIGNED_ALLOC
+	s_muggle_ma_ring_thread_ctx->buffer = aligned_alloc(
+		MUGGLE_CACHE_LINE_X2_SIZE, ctx->capacity * ctx->block_size);
+#else
 	s_muggle_ma_ring_thread_ctx->buffer =
 		malloc(ctx->capacity * ctx->block_size);
+#endif
 	if (s_muggle_ma_ring_thread_ctx->buffer == NULL) {
 		muggle_ma_ring_thread_ctx_cleanup();
 		return NULL;

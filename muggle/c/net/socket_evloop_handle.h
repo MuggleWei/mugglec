@@ -206,6 +206,10 @@ void muggle_socket_evloop_handle_set_cb_wake(
  *
  * @param handle  socket event loop handle
  * @param cb      callback function
+ *
+ * @NOTE
+ * when user need busy loop and timer in the same time, need to set timeout 0 
+ * and cusomize timer callback that calculate interval by self
  */
 MUGGLE_C_EXPORT
 void muggle_socket_evloop_handle_set_cb_timer(

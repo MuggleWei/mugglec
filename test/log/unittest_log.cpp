@@ -50,7 +50,7 @@ TEST(log, log_fmt)
 		"log formatter"
 	};
 	muggle_realtime_get(msg.ts);
-	msg.tid = muggle_thread_id();
+	msg.tid = muggle_thread_current_readable_id();
 
 	char buf[MUGGLE_LOG_MSG_MAX_LEN];
 	formatter.fmt_func(&msg, buf, sizeof(buf));

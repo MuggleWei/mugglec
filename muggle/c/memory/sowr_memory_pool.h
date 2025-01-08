@@ -41,8 +41,8 @@ struct muggle_sowr_memory_pool_tag;
 typedef struct muggle_sowr_block_head_tag
 {
 	struct muggle_sowr_memory_pool_tag *pool;
-	int block_idx;
-	int alignment_padding;
+	muggle_sync_t block_idx;
+	muggle_sync_t alignment_padding;
 }muggle_sowr_block_head_t;
 
 /**
@@ -53,8 +53,14 @@ typedef struct muggle_sowr_memory_pool_tag
 	void *blocks;
 	muggle_sync_t capacity;
 	muggle_sync_t block_size;
-	muggle_sync_t alloc_idx;
-	muggle_sync_t free_idx;
+	union {
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
+		muggle_sync_t alloc_idx;
+	};
+	union {
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
+		muggle_sync_t free_idx;
+	};
 	muggle_sync_t cached_free_pos;
 }muggle_sowr_memory_pool_t;
 

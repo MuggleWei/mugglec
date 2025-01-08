@@ -1276,3 +1276,89 @@ int muggle_mcast_leave(
 
 	return 0;
 }
+
+#if MUGGLE_PLATFORM_WINDOWS
+
+typedef struct {
+	muggle_socket_t *fd;
+	muggle_socket_t listen_fd;
+} muggle_socketpair_listen_th_args_t;
+
+static muggle_thread_ret_t muggle_socketpair_listen_routine(void *p_args)
+{
+	muggle_socketpair_listen_th_args_t *listen_args =
+		(muggle_socketpair_listen_th_args_t*)p_args;
+
+	muggle_socket_t fd = accept(listen_args->listen_fd, NULL, NULL);
+	if (fd == MUGGLE_INVALID_SOCKET) {
+		MUGGLE_LOG_ERROR("socketpair failed accept");
+		goto socketpair_listen_th_exit;
+	}
+	*listen_args->fd = fd;
+
+socketpair_listen_th_exit:
+	muggle_socket_close(listen_args->listen_fd);
+	return 0;
+}
+
+#endif
+
+int muggle_socketpair(
+	int domain,
+	int socket_type,
+	int protocol,
+	muggle_socket_t fds[2])
+{
+	fds[0] = MUGGLE_INVALID_SOCKET;
+	fds[1] = MUGGLE_INVALID_SOCKET;
+
+#if MUGGLE_PLATFORM_WINDOWS
+	muggle_socket_t listen_fd = muggle_tcp_listen("127.0.0.1", 0, 1);
+	if (listen_fd == MUGGLE_INVALID_SOCKET) {
+		char errmsg[256];
+		int errid = muggle_socket_lasterror();
+		muggle_socket_strerror(errid, errmsg, sizeof(errmsg));
+		MUGGLE_LOG_ERROR("failed socketpair listen, errno: %d, errmsg: %s",
+			errid, errmsg);
+		return -1;
+	}
+
+	char host[32];
+	int port;
+	if (muggle_socket_local_ip_port(
+			listen_fd, host, sizeof(host), &port) != 0) {
+		muggle_socket_close(listen_fd);
+		MUGGLE_LOG_ERROR("failed socketpair get listen port");
+		return -1;
+	}
+
+	muggle_socketpair_listen_th_args_t listen_args;
+	listen_args.listen_fd = listen_fd;
+	listen_args.fd = &fds[0];
+	muggle_thread_t th_listen;
+	muggle_thread_create(
+		&th_listen, muggle_socketpair_listen_routine, &listen_args);
+
+	char str_port[16];
+	snprintf(str_port, sizeof(str_port), "%d", port);
+
+	fds[1] = muggle_tcp_connect(host, str_port, 3);
+	muggle_thread_join(&th_listen);
+
+	if (fds[0] == MUGGLE_INVALID_SOCKET || fds[1] == MUGGLE_INVALID_SOCKET) {
+		if (fds[0] != MUGGLE_INVALID_SOCKET) {
+			muggle_socket_close(fds[0]);
+			fds[0] = MUGGLE_INVALID_SOCKET;
+		}
+		if (fds[1] != MUGGLE_INVALID_SOCKET) {
+			muggle_socket_close(fds[1]);
+			fds[1] = MUGGLE_INVALID_SOCKET;
+		}
+		return -1;
+	}
+
+	return 0;
+#else
+	return socketpair(domain, socket_type, protocol, fds);
+#endif
+}

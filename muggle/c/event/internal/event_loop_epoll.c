@@ -9,10 +9,10 @@
  *****************************************************************************/
 
 #include "event_loop_epoll.h"
+#include "muggle/c/log/log.h"
+#include "muggle/c/time/time_counter.h"
 #include <stdlib.h>
 #include <string.h>
-
-void muggle_evloop_handle_timer(muggle_event_loop_t *evloop);
 
 #if MUGGLE_PLATFORM_LINUX || MUGGLE_PLATFORM_ANDROID
 
@@ -90,9 +90,15 @@ void muggle_evloop_run_epoll(muggle_event_loop_t *evloop)
 	muggle_event_fd epfd = evloop_epoll->epfd;
 	struct epoll_event *events = evloop_epoll->events;
 	int capacity = evloop_epoll->capacity;
+
+	muggle_time_counter_t tc;
+	muggle_time_counter_init(&tc);
+	muggle_time_counter_start(&tc);
+
+	int remain_ms = evloop->timeout;
 	while (1)
 	{
-		int nfds = epoll_wait(epfd, events, capacity, evloop->timeout);
+		int nfds = epoll_wait(epfd, events, capacity, remain_ms);
 		for (int i = 0; i < nfds; i++)
 		{
 			muggle_linked_list_node_t *node = (muggle_linked_list_node_t*)events[i].data.ptr;
@@ -127,11 +133,20 @@ void muggle_evloop_run_epoll(muggle_event_loop_t *evloop)
 			}
 		}
 
-		// when loop is busy, timeout will not trigger, use
-		// customize timer handle avoid that
-		if (evloop->timeout >= 0 && nfds >= 0)
-		{
-			muggle_evloop_handle_timer(evloop);
+		// NOTE:
+		// timeout >= 0 is required, if only > 0, the busy loop will never 
+		// trigger timer
+		// see also: comment of muggle_socket_evloop_handle_set_cb_timer
+		if ((evloop->timeout >= 0) && (evloop->cb_timer != NULL)) {
+			muggle_time_counter_end(&tc);
+			remain_ms = 
+				evloop->timeout - (int)muggle_time_counter_interval_ms(&tc);
+			if (remain_ms <= 0) {
+				evloop->cb_timer(evloop);
+
+				remain_ms = evloop->timeout;
+				muggle_time_counter_move_end_to_start(&tc);
+			}
 		}
 
 		if (nfds < 0)

@@ -95,7 +95,7 @@ static int muggle_ring_buffer_get_mode(int flag, int *w_mode, int *r_mode)
 // muggle ring_buffer write functions
 inline static void muggle_ring_buffer_write_lock(muggle_ring_buffer_t *r, void *data)
 {
-	muggle_mutex_lock(&r->write_mutex);
+	muggle_spinlock_lock(&r->write_spin);
 
 	// assignment
 	r->blocks[r->cursor].data = data;
@@ -104,7 +104,7 @@ inline static void muggle_ring_buffer_write_lock(muggle_ring_buffer_t *r, void *
 	muggle_sync_t rpos = IDX_IN_POW_OF_2_RING(r->cursor + 1, r->capacity);
 	muggle_atomic_store(&r->cursor, rpos, muggle_memory_order_release);
 
-	muggle_mutex_unlock(&r->write_mutex);
+	muggle_spinlock_unlock(&r->write_spin);
 }
 
 inline static void muggle_ring_buffer_write_single(muggle_ring_buffer_t *r, void *data)
@@ -212,7 +212,7 @@ inline static void *muggle_ring_buffer_read_busy_loop(
 			return r->blocks[rpos].data;
 		}
 
-		muggle_thread_yield();
+		// muggle_thread_yield();
 	} while (1);
 
 	return NULL;
@@ -293,31 +293,31 @@ int muggle_ring_buffer_init(
 	r->cursor = 0;
 	r->read_cursor = 0;
 
-	ret = muggle_mutex_init(&r->write_mutex);
-	if (ret != MUGGLE_OK)
-	{
-		return ret;
-	}
+	muggle_spinlock_init(&r->write_spin);
 
 	ret = muggle_mutex_init(&r->read_mutex);
 	if (ret != MUGGLE_OK)
 	{
-		muggle_mutex_destroy(&r->write_mutex);
 		return ret;
 	}
 
 	ret = muggle_condition_variable_init(&r->read_cv);
 	if (ret != MUGGLE_OK)
 	{
-		muggle_mutex_destroy(&r->write_mutex);
 		muggle_mutex_destroy(&r->read_mutex);
 		return ret;
 	}
 
-	r->blocks = (muggle_ring_buffer_block_t*)malloc(sizeof(muggle_ring_buffer_block_t) * r->capacity);
+#if MUGGLE_C_HAVE_ALIGNED_ALLOC
+	r->blocks = (muggle_ring_buffer_block_t*)aligned_alloc(
+			MUGGLE_CACHE_LINE_X2_SIZE,
+			sizeof(muggle_ring_buffer_block_t) * r->capacity);
+#else
+	r->blocks = (muggle_ring_buffer_block_t*)malloc(
+			sizeof(muggle_ring_buffer_block_t) * r->capacity);
+#endif
 	if (r->blocks == NULL)
 	{
-		muggle_mutex_destroy(&r->write_mutex);
 		muggle_mutex_destroy(&r->read_mutex);
 		muggle_condition_variable_destroy(&r->read_cv);
 		return MUGGLE_ERR_MEM_ALLOC;
@@ -329,7 +329,6 @@ int muggle_ring_buffer_init(
 int muggle_ring_buffer_destroy(muggle_ring_buffer_t *r)
 {
 	free(r->blocks);
-	muggle_mutex_destroy(&r->write_mutex);
 	muggle_mutex_destroy(&r->read_mutex);
 	muggle_condition_variable_destroy(&r->read_cv);
 	return MUGGLE_OK;

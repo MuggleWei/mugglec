@@ -84,7 +84,7 @@ typedef struct muggle_channel_block
 {
 	union {
 		void *data;
-		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
 	};
 }muggle_channel_block_t;
 
@@ -93,32 +93,44 @@ typedef struct muggle_channel_block
  */
 typedef struct muggle_channel
 {
-	muggle_sync_t capacity;   //!< capacity of channel
-	int           flags;      //!< channel flags
-	int           init_flags; //!< initialized flags
+	// NOTE: 
+	//   Why don't use MUGGLE_STRUCT_ALIGNAS_CACHE_LINE_PADDING? see comment 
+	//   before MUGGLE_STRUCT_ALIGNAS_CACHE_LINE_PADDING
+	union {
+		struct {
+			muggle_sync_t capacity;   //!< capacity of channel
+			int           flags;      //!< channel flags
+			int           init_flags; //!< initialized flags
 
-	fn_muggle_channel_lock  fn_lock;    //!< write lock function
-	fn_muggle_channel_lock  fn_unlock;  //!< write unlock function
-	fn_muggle_channel_write fn_write;   //!< write function
-	fn_muggle_channel_wake  fn_wake;    //!< wake function
-	fn_muggle_channel_read  fn_read;    //!< read function
+			fn_muggle_channel_lock  fn_lock;    //!< write lock function
+			fn_muggle_channel_lock  fn_unlock;  //!< write unlock function
+			fn_muggle_channel_write fn_write;   //!< write function
+			fn_muggle_channel_wake  fn_wake;    //!< wake function
+			fn_muggle_channel_read  fn_read;    //!< read function
+		};
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
+	};
 
-	muggle_sync_t write_cursor;  //!< write cursor
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
-	muggle_sync_t read_cursor;  //!< read cursor
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
+	union {
+		muggle_sync_t write_cursor;  //!< write cursor
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
+	};
+	union {
+		muggle_sync_t read_cursor;  //!< read cursor
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(2);
+	};
 
 	union {
 		// write lock
 		muggle_sync_t     write_synclock;  //!< wirte lock with synclock
 		muggle_spinlock_t write_spinlock;  //!< write lock with spinlock
 		muggle_mutex_t    *write_mutex;    //!< write lock with mutex
-		MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(3);
 	};
+
 	// read lock
 	muggle_mutex_t *read_mutex;
 	muggle_condition_variable_t *read_cv;
-	MUGGLE_STRUCT_CACHE_LINE_PADDING(4);
 
 	muggle_channel_block_t *blocks;
 }muggle_channel_t;

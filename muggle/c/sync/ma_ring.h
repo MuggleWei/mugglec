@@ -29,8 +29,14 @@ enum {
  */
 typedef struct muggle_ma_ring {
 	void *buffer; //!< ring buffer datas
-	muggle_atomic_int wpos; //!< writer position
-	muggle_atomic_int rpos; //!< reader position
+	union {
+		muggle_atomic_int wpos; //!< writer position
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
+	};
+	union {
+		muggle_atomic_int rpos; //!< reader position
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
+	};
 	muggle_thread_readable_id tid; //!< thread id
 	muggle_atomic_int status; //!< status of ring
 } muggle_ma_ring_t;

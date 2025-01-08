@@ -83,9 +83,7 @@ typedef struct muggle_event_loop
 	muggle_event_signal_t *ev_signal; //!< event signal
 	muggle_thread_id      tid;        //!< event loop run thread id
 	int                   to_exit;    //!< to exit flags
-
-	struct timespec last_ts;  //!< last timer trigger
-	int             timeout;  //!< timeout expires in milliseconds
+	int                   timeout;    //!< timeout expires in milliseconds
 
 	fn_muggle_evloop_cb1 cb_read;  //!< on event context read callback
 	fn_muggle_evloop_cb1 cb_close; //!< on event context close callback

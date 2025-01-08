@@ -32,8 +32,10 @@ int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_sync_t capa
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
+	// align block_size to MUGGLE_CACHE_LINE_X2_SIZE
 	muggle_sync_t block_size =
-		(muggle_sync_t)next_pow_of_2((uint64_t)(sizeof(muggle_ts_memory_pool_head_t) + data_size));
+		(muggle_sync_t)sizeof(muggle_ts_memory_pool_head_t) + data_size;
+	block_size = ROUND_UP_POW_OF_2_MUL(block_size, MUGGLE_CACHE_LINE_X2_SIZE);
 	if (block_size <= 0)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
@@ -47,8 +49,16 @@ int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_sync_t capa
 
 	pool->capacity = capacity;
 	pool->block_size = block_size;
+#if MUGGLE_C_HAVE_ALIGNED_ALLOC
+	pool->data = aligned_alloc(MUGGLE_CACHE_LINE_X2_SIZE, capacity * block_size);
+	pool->ptrs = (muggle_ts_memory_pool_head_ptr_t*)aligned_alloc(
+			MUGGLE_CACHE_LINE_X2_SIZE,
+			capacity * sizeof(muggle_ts_memory_pool_head_ptr_t));
+#else
 	pool->data = malloc(capacity * block_size);
-	pool->ptrs = (muggle_ts_memory_pool_head_ptr_t*)malloc(capacity * sizeof(muggle_ts_memory_pool_head_ptr_t));
+	pool->ptrs = (muggle_ts_memory_pool_head_ptr_t*)malloc(
+			capacity * sizeof(muggle_ts_memory_pool_head_ptr_t));
+#endif
 	pool->alloc_cursor = 0;
 	pool->free_cursor = capacity;
 

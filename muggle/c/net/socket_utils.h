@@ -226,6 +226,25 @@ int muggle_mcast_leave(
 	const char *iface,
 	const char *src_grp);
 
+/**
+ * @brief create a pair of connected sockets
+ *
+ * @param domain       socket domain(ignore in windows)
+ * @param socket_type  socket type(ignore in windows)
+ * @param protocol     protocol(ignore in windows)
+ * @param fds[2]       socket file descriptors
+ *
+ * @return
+ *     - on success, return 0
+ *     - otherwise return -1
+ */
+MUGGLE_C_EXPORT
+int muggle_socketpair(
+	int domain,
+	int socket_type,
+	int protocol,
+	muggle_socket_t fds[2]);
+
 EXTERN_C_END
 
 #endif

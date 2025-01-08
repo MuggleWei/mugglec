@@ -44,26 +44,6 @@ static struct muggle_evloop_fn s_evloop_fn[] = {
 	{NULL, NULL, NULL, NULL}
 };
 
-void muggle_evloop_handle_timer(muggle_event_loop_t *evloop)
-{
-	if (evloop->cb_timer == NULL)
-	{
-		return;
-	}
-
-	struct timespec curr_ts;
-	muggle_realtime_get(curr_ts);
-	int interval_ms = 
-		(int)((curr_ts.tv_sec - evloop->last_ts.tv_sec) * 1000 +
-		(curr_ts.tv_nsec - evloop->last_ts.tv_nsec) / 1000000);
-	if (interval_ms >= evloop->timeout)
-	{
-		evloop->cb_timer(evloop);
-		evloop->last_ts.tv_sec = curr_ts.tv_sec;
-		evloop->last_ts.tv_nsec = curr_ts.tv_nsec;
-	}
-}
-
 /**
  * @brief initialize event loop
  *
@@ -356,9 +336,6 @@ void muggle_evloop_run(muggle_event_loop_t *evloop)
 {
 	// get thread id
 	evloop->tid = muggle_thread_current_id();
-
-	// reset timer last tick
-	muggle_realtime_get(evloop->last_ts);
 
 	// run
 	s_evloop_fn[evloop->evloop_type].fn_run(evloop);

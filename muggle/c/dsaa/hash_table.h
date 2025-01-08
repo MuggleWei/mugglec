@@ -40,7 +40,7 @@ typedef struct muggle_hash_table
 	muggle_memory_pool_t     *pool;       //!< memory pool of tree, if it's NULL, use malloc and free by default
 }muggle_hash_table_t;
 
-#define HASH_TABLE_SIZE_10007 10007
+#define MUGGLE_HASH_TABLE_SIZE_10007 10007
 
 /**
  * @brief initialize hash table

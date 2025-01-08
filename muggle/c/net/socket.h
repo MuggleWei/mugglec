@@ -150,6 +150,22 @@ int muggle_socket_set_nonblock(muggle_socket_t socket, int on);
 #define muggle_socket_write(fd, buf, len) muggle_ev_fd_write(fd, buf, len)
 
 /**
+ * @brief socket blocking write until success or failed
+ *
+ * @param fd       socket file descriptor
+ * @param data     data
+ * @param len      length of data
+ * @param wait_ns  wait nano-second between wait to write
+ *
+ * @return
+ *     - on success, return number of bytes writed(equal to data len)
+ *     - on failed, return 0 or MUGGLE_EVENT_ERROR
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_block_write(
+	muggle_socket_t fd, void *data, size_t len, unsigned long wait_ns);
+
+/**
  * @brief socket writev
  *
  * @param fd      socket file descriptor

@@ -262,7 +262,7 @@ static void* muggle_channel_read_busy(muggle_channel_t *chan)
 			return data;
 		}
 
-		muggle_thread_yield();
+		// muggle_thread_yield();
 	}
 
 	return NULL;
@@ -431,8 +431,13 @@ int muggle_channel_init(
 	chan->write_cursor = 0;
 	chan->read_cursor = capacity - 1;
 
+#if MUGGLE_C_HAVE_ALIGNED_ALLOC
+	chan->blocks = (muggle_channel_block_t*)aligned_alloc(
+		MUGGLE_CACHE_LINE_X2_SIZE, sizeof(muggle_channel_block_t) * capacity);
+#else
 	chan->blocks =(muggle_channel_block_t*)malloc(
 		sizeof(muggle_channel_block_t) * capacity);
+#endif
 	if (chan->blocks == NULL)
 	{
 		ret = MUGGLE_ERR_MEM_ALLOC;

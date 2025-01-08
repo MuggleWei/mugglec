@@ -238,6 +238,25 @@ include(CheckIncludeFile)
 check_include_file(linux/futex.h MUGGLE_C_HAVE_LINUX_FUTEX)
 check_include_file(sys/futex.h MUGGLE_C_HAVE_SYS_FUTEX)
 
+include(CheckCSourceCompiles)
+
+check_c_source_compiles("
+	#include <stdalign.h>
+	int main() {
+		alignas(128) int data;
+		return 0;
+	}
+" MUGGLE_C_HAVE_ALIGNAS)
+
+check_c_source_compiles("
+	#include <stdlib.h>
+	int main() {
+		void *p = aligned_alloc(128, 8);
+		free(p);
+		return 0;
+	}
+" MUGGLE_C_HAVE_ALIGNED_ALLOC)
+
 # detech endianness
 include(TestBigEndian)
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)  # NOTE: big endian is 1, little endian is 0
@@ -339,6 +358,11 @@ if (MUGGLE_BUILD_SANITIZER)
 			-fsanitize=address
 			-fsanitize=leak)
 	endif()
+endif()
+
+if ((${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") OR
+	(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang"))
+	target_compile_options(${muggle_c} PUBLIC -save-temps=obj)
 endif()
 
 # install

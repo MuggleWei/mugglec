@@ -24,7 +24,7 @@ typedef struct muggle_benchmark_thread_message
 {
 	union {
 		uint64_t id;
-		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
 	};
 } muggle_benchmark_thread_message_t;
 

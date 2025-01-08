@@ -79,7 +79,7 @@ void muggle_sync_logger_log(
 	// thread id
 	if (logger->fmt_hint & MUGGLE_LOG_FMT_THREAD)
 	{
-		msg.tid = muggle_thread_current_id();
+		msg.tid = muggle_thread_current_readable_id();
 	}
 
 	// source location
