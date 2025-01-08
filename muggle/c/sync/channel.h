@@ -112,7 +112,10 @@ typedef struct muggle_channel
 	};
 
 	union {
-		muggle_sync_t write_cursor;  //!< write cursor
+		struct {
+			muggle_sync_t write_cursor;  //!< write cursor
+			muggle_sync_t cached_r_cur;  //!< cached read pos
+		};
 		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
 	};
 	union {
