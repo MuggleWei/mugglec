@@ -264,7 +264,7 @@ static void* muggle_channel_read_busy(muggle_channel_t *chan)
 		{
 			void *data = chan->blocks[rpos].data;
 			muggle_atomic_store(
-				&chan->read_cursor, rpos, muggle_memory_order_relaxed);
+				&chan->read_cursor, rpos, muggle_memory_order_release);
 			return data;
 		}
 
