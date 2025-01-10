@@ -286,10 +286,10 @@ void muggle_benchmark_gen_latency_report_body(
 		sort_result ? "elapsed" : "idx");
 
 	// rounds,record_per_round,interval_ms,capacity,producer,consumer,
-	fprintf(fp, "%llu,%llu,%d,%d,%d,%d,",
+	fprintf(fp, "%llu,%llu,%lld,%d,%d,%d,",
 		(unsigned long long)config->rounds,
 		(unsigned long long)config->record_per_round,
-		config->round_interval_ms,
+		(long long)config->round_interval_ns,
 		config->capacity,
 		config->producer,
 		config->consumer);

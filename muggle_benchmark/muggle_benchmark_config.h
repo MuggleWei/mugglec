@@ -18,7 +18,7 @@ EXTERN_C_BEGIN
 enum
 {
 	MUGGLE_BENCHMARK_ELAPSED_UNIT_NS, //!< elapsed unit with nano second
-	MUGGLE_BENCHMARK_ELAPSED_UNIT_CPU_CYCLE, //!, elapsed unit with cpu cycle
+	MUGGLE_BENCHMARK_ELAPSED_UNIT_CPU_CYCLE, //!< elapsed unit with cpu cycle
 };
 
 /**
@@ -28,7 +28,7 @@ typedef struct muggle_benchmark_config
 {
 	uint64_t rounds;            //!< total rounds in benchmark
 	uint64_t record_per_round;  //!< how many times run in a round
-	int      round_interval_ms; //!< round interval in milliseconds
+	int64_t  round_interval_ns; //!< round interval in nanoseconds
 	int      elapsed_unit;      //!< elapsed time unit
 	int      capacity;          //!< [optional] usually refers to buffer capacity
 	int      block_size;        //!< [optional] data block size

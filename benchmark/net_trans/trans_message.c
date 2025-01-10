@@ -51,23 +51,20 @@ void sendPkgs(muggle_socket_context_t *ctx, int is_busy,
 			++idx;
 		}
 
-		if (config->round_interval_ms > 0) {
+		if (config->round_interval_ns > 0) {
 			if (is_busy) {
-				struct timespec ts_wait_begin;
-				struct timespec ts_wait_end;
-				muggle_realtime_get(ts_wait_begin);
+				muggle_time_counter_t tc;
+				muggle_time_counter_init(&tc);
+				muggle_time_counter_start(&tc);
 				while (1) {
-					muggle_realtime_get(ts_wait_end);
-					int64_t elapsed_ms =
-						(ts_wait_end.tv_sec - ts_wait_begin.tv_sec) * 1000 +
-						ts_wait_end.tv_nsec / 1000000 -
-						ts_wait_begin.tv_nsec / 1000000;
-					if (elapsed_ms > config->round_interval_ms) {
+					muggle_time_counter_end(&tc);
+					int64_t elapsed_ns = muggle_time_counter_interval_ns(&tc);
+					if (elapsed_ns > config->round_interval_ns) {
 						break;
 					}
 				}
 			} else {
-				muggle_msleep(config->round_interval_ms);
+				muggle_nsleep(config->round_interval_ns);
 			}
 		}
 	}
