@@ -9,6 +9,8 @@
  *****************************************************************************/
 
 #include "cpu_cycle.h"
+#include "muggle/c/base/sleep.h"
+#include "muggle/c/time/time_counter.h"
 
 #if MUGGLE_PLATFORM_WINDOWS
 	// see: https://learn.microsoft.com/en-us/cpp/intrinsics/compiler-intrinsics
@@ -57,4 +59,31 @@ uint64_t muggle_rdtscp()
 #else
 	return 0;
 #endif
+}
+
+double muggle_rdtsc_freq_calibrate()
+{
+#if MUGGLE_SUPPORT_RDTSC
+	muggle_time_counter_t tc;
+	muggle_time_counter_init(&tc);
+	muggle_time_counter_start(&tc);
+	uint64_t start_ticks = muggle_rdtsc();
+	muggle_nsleep(2 * 1000 * 1000);
+	uint64_t end_ticks = muggle_rdtsc();
+	muggle_time_counter_end(&tc);
+
+	uint64_t elapsed_ns = muggle_time_counter_interval_ns(&tc);
+	uint64_t elapsed_ticks = end_ticks - start_ticks;
+
+	double rdtsc_ticks_per_sec = (1e9 * elapsed_ticks) / elapsed_ns;
+	return rdtsc_ticks_per_sec;
+#else
+	return -1.0;
+#endif
+}
+
+double muggle_tsc_elapsed_ns(uint64_t start_ticks, uint64_t end_ticks,
+							 double ticks_per_sec)
+{
+	return (1e9 * (end_ticks - start_ticks)) / ticks_per_sec;
 }

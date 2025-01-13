@@ -60,6 +60,31 @@ uint64_t muggle_rdtsc();
 MUGGLE_C_EXPORT
 uint64_t muggle_rdtscp();
 
+/**
+ * @brief measure rdtsc ticks per second
+ *
+ * @return rdtsc ticks per second
+ *
+ * @NOTE
+ *   1. only support in x86/x64, check MUGGLE_SUPPORT_RDTSC
+ *   2. user need gurantee CPU support constant TSC
+ */
+MUGGLE_C_EXPORT
+double muggle_rdtsc_freq_calibrate();
+
+/**
+ * @brief measure elapsed ns
+ *
+ * @param start_ticks    start tsc tick
+ * @param end_ticks      end tsc tick
+ * @param ticks_per_sec  tsc ticks per second
+ *
+ * @return 
+ */
+MUGGLE_C_EXPORT
+double muggle_tsc_elapsed_ns(uint64_t start_ticks, uint64_t end_ticks,
+							 double ticks_per_sec);
+
 EXTERN_C_END
 
 #endif
