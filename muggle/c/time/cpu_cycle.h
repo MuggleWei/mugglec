@@ -37,6 +37,19 @@ MUGGLE_C_EXPORT
 uint64_t muggle_get_cpu_cycle();
 
 /**
+ * @brief measure elapsed ns
+ *
+ * @param start_ticks    start tsc tick
+ * @param end_ticks      end tsc tick
+ * @param ticks_per_sec  tsc ticks per second
+ *
+ * @return elapsed nanoseconds
+ */
+MUGGLE_C_EXPORT
+double muggle_cpu_cycle_elapsed_ns(uint64_t start_ticks, uint64_t end_ticks,
+								   double ticks_per_sec);
+
+/**
  * @brief rdtsc
  *
  * @return
@@ -71,19 +84,6 @@ uint64_t muggle_rdtscp();
  */
 MUGGLE_C_EXPORT
 double muggle_rdtsc_freq_calibrate();
-
-/**
- * @brief measure elapsed ns
- *
- * @param start_ticks    start tsc tick
- * @param end_ticks      end tsc tick
- * @param ticks_per_sec  tsc ticks per second
- *
- * @return 
- */
-MUGGLE_C_EXPORT
-double muggle_tsc_elapsed_ns(uint64_t start_ticks, uint64_t end_ticks,
-							 double ticks_per_sec);
 
 EXTERN_C_END
 

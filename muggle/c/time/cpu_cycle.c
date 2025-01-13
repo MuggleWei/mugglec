@@ -29,6 +29,12 @@ uint64_t muggle_get_cpu_cycle()
 #endif
 }
 
+double muggle_cpu_cycle_elapsed_ns(uint64_t start_ticks, uint64_t end_ticks,
+								   double ticks_per_sec)
+{
+	return (1e9 * (end_ticks - start_ticks)) / ticks_per_sec;
+}
+
 uint64_t muggle_rdtsc()
 {
 #if MUGGLE_PLATFORM_WINDOWS
@@ -74,10 +80,4 @@ double muggle_rdtsc_freq_calibrate()
 #else
 	return -1.0;
 #endif
-}
-
-double muggle_tsc_elapsed_ns(uint64_t start_ticks, uint64_t end_ticks,
-							 double ticks_per_sec)
-{
-	return (1e9 * (end_ticks - start_ticks)) / ticks_per_sec;
 }
