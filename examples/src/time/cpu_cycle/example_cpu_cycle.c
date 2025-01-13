@@ -13,6 +13,8 @@ int main()
 		muggle_tsc_elapsed_ns(start_ticks, end_ticks, ticks_per_sec);
 
 	LOG_INFO("tsc ticks per second: %f", ticks_per_sec);
+	LOG_INFO("elapsed ticks: %llu",
+			 (unsigned long long)(end_ticks - start_ticks));
 	LOG_INFO("elapsed ns: %f", elapsed_ns);
 
 	return 0;

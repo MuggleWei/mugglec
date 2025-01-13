@@ -64,19 +64,13 @@ uint64_t muggle_rdtscp()
 double muggle_rdtsc_freq_calibrate()
 {
 #if MUGGLE_SUPPORT_RDTSC
-	muggle_time_counter_t tc;
-	muggle_time_counter_init(&tc);
-	muggle_time_counter_start(&tc);
 	uint64_t start_ticks = muggle_rdtsc();
-	muggle_nsleep(2 * 1000 * 1000);
+	muggle_nsleep(1000000000ul);
 	uint64_t end_ticks = muggle_rdtsc();
-	muggle_time_counter_end(&tc);
 
-	uint64_t elapsed_ns = muggle_time_counter_interval_ns(&tc);
 	uint64_t elapsed_ticks = end_ticks - start_ticks;
 
-	double rdtsc_ticks_per_sec = (1e9 * elapsed_ticks) / elapsed_ns;
-	return rdtsc_ticks_per_sec;
+	return (double)elapsed_ticks;
 #else
 	return -1.0;
 #endif
