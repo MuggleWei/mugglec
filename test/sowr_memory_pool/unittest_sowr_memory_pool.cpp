@@ -12,6 +12,25 @@ struct sowr_data
 	int is_end;
 };
 
+TEST(sowr_memory_pool, block_size)
+{
+	muggle_atomic_int capacity = 8;
+	for (int j = 0; j < 16; ++j) {
+		int range_start = 1 + j * MUGGLE_CACHE_LINE_SIZE;
+		int range_end = 
+			(j + 1) * MUGGLE_CACHE_LINE_SIZE -
+			(int)sizeof(muggle_sowr_block_head_t);
+		int align_size = (j + 1) * MUGGLE_CACHE_LINE_SIZE;
+		int expect_block_size = align_size + MUGGLE_CACHE_LINE_X2_SIZE;
+		for (int i = range_start; i < range_end; ++i) {
+			muggle_sowr_memory_pool_t pool;
+			muggle_sowr_memory_pool_init(&pool, capacity, i);
+			ASSERT_EQ(pool.block_size, expect_block_size);
+			muggle_sowr_memory_pool_destroy(&pool);
+		}
+	}
+}
+
 TEST(sowr_memory_pool, basic)
 {
 	muggle_atomic_int capacity = 8;
