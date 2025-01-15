@@ -29,7 +29,7 @@ int muggle_sowr_memory_pool_init(muggle_sowr_memory_pool_t *pool, muggle_sync_t 
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	// align block_size to MUGGLE_CACHE_LINE_SIZE and add 1
+	// align block_size to cacheline and add another 2 cacheline
 	muggle_sync_t block_size = 
 		(muggle_sync_t)sizeof(muggle_sowr_block_head_t) + data_size;
 	muggle_sync_t align_size =
