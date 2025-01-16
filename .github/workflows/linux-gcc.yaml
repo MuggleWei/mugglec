@@ -22,5 +22,4 @@ jobs:
       - name: tests
         run: >
           cd build;
-          ./bin/test_channel
           make test;
