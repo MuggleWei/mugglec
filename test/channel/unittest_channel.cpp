@@ -124,7 +124,7 @@ TEST(channel, struct_size_and_align)
 	uintptr_t addr_blocks0 = (uintptr_t)&chan.blocks[0];
 	uintptr_t addr_blocks1 = (uintptr_t)&chan.blocks[1];
 
-	ASSERT_EQ(addr_blocks0 % MUGGLE_CACHE_LINE_X2_SIZE, 0);
+	ASSERT_EQ(addr_blocks0 % MUGGLE_CACHE_LINE_SIZE, 0);
 	ASSERT_EQ(addr_blocks1 - addr_blocks0, MUGGLE_CACHE_LINE_X2_SIZE);
 #endif
 
