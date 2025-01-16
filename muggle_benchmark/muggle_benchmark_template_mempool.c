@@ -53,9 +53,9 @@ static void muggle_benchmark_mempool_run_single_thread(muggle_benchmark_mempool_
 			idx++;
 		}
 
-		if (config->round_interval_ms > 0)
+		if (config->round_interval_ns > 0)
 		{
-			muggle_msleep(config->round_interval_ms);
+			muggle_nsleep(config->round_interval_ns);
 		}
 	}
 
@@ -126,7 +126,6 @@ static muggle_thread_ret_t muggle_benchmark_mempool_producer(void *p_args)
 	fn_muggle_benchmark_mempool_alloc fn_alloc = benchmark->fn_alloc;
 	void *pool = benchmark->pool;
 
-	uint64_t idx = 0;
 	void *data = NULL;
 	uint64_t count = config->rounds * config->record_per_round;
 	uint64_t offset = args->producer_id * count;
@@ -147,9 +146,9 @@ static muggle_thread_ret_t muggle_benchmark_mempool_producer(void *p_args)
 			muggle_ring_buffer_write(ring, data);
 		}
 
-		if (config->round_interval_ms > 0)
+		if (config->round_interval_ns > 0)
 		{
-			muggle_msleep(config->round_interval_ms);
+			muggle_nsleep(config->round_interval_ns);
 		}
 	}
 

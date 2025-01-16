@@ -24,7 +24,6 @@ static muggle_thread_ret_t muggle_benchmark_func_thread(void *p_args)
 	muggle_benchmark_record_t *after_records =
 		muggle_benchmark_handle_get_records(handle, MUGGLE_BENCHMARK_FUNC_ACTION_AFTER);
 
-	uint64_t idx = 0;
 	uint64_t count = config->rounds * config->record_per_round;
 	uint64_t offset = args->thread_id * count;
 	for (uint64_t round = 0; round < config->rounds; round++)
@@ -38,9 +37,9 @@ static muggle_thread_ret_t muggle_benchmark_func_thread(void *p_args)
 			fn_record(&after_records[idx]);
 		}
 
-		if (config->round_interval_ms > 0)
+		if (config->round_interval_ns > 0)
 		{
-			muggle_msleep(config->round_interval_ms);
+			muggle_nsleep(config->round_interval_ns);
 		}
 	}
 

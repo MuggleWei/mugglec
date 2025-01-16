@@ -29,10 +29,12 @@ int muggle_sowr_memory_pool_init(muggle_sowr_memory_pool_t *pool, muggle_sync_t 
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	// align block_size to MUGGLE_CACHE_LINE_X2_SIZE
+	// align block_size to cacheline and add another 2 cacheline
 	muggle_sync_t block_size = 
 		(muggle_sync_t)sizeof(muggle_sowr_block_head_t) + data_size;
-	block_size = ROUND_UP_POW_OF_2_MUL(block_size, MUGGLE_CACHE_LINE_X2_SIZE);
+	muggle_sync_t align_size =
+		ROUND_UP_POW_OF_2_MUL(block_size, MUGGLE_CACHE_LINE_SIZE);
+	block_size = align_size + MUGGLE_CACHE_LINE_X2_SIZE;
 	if (block_size <= 0)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
@@ -42,7 +44,7 @@ int muggle_sowr_memory_pool_init(muggle_sowr_memory_pool_t *pool, muggle_sync_t 
 	pool->block_size = block_size;
 #if MUGGLE_C_HAVE_ALIGNED_ALLOC
 	pool->blocks = aligned_alloc(
-			MUGGLE_CACHE_LINE_X2_SIZE, pool->block_size * pool->capacity);
+			MUGGLE_CACHE_LINE_SIZE, pool->block_size * pool->capacity);
 #else
 	pool->blocks = malloc(pool->block_size * pool->capacity);
 #endif
@@ -62,7 +64,10 @@ int muggle_sowr_memory_pool_init(muggle_sowr_memory_pool_t *pool, muggle_sync_t 
 
 void muggle_sowr_memory_pool_destroy(muggle_sowr_memory_pool_t *pool)
 {
-	free(pool->blocks);
+	if (pool->blocks != NULL) {
+		free(pool->blocks);
+		pool->blocks = NULL;
+	}
 }
 
 void* muggle_sowr_memory_pool_alloc(muggle_sowr_memory_pool_t *pool)

@@ -440,7 +440,7 @@ int muggle_channel_init(
 
 #if MUGGLE_C_HAVE_ALIGNED_ALLOC
 	chan->blocks = (muggle_channel_block_t*)aligned_alloc(
-		MUGGLE_CACHE_LINE_X2_SIZE, sizeof(muggle_channel_block_t) * capacity);
+		MUGGLE_CACHE_LINE_SIZE, sizeof(muggle_channel_block_t) * capacity);
 #else
 	chan->blocks =(muggle_channel_block_t*)malloc(
 		sizeof(muggle_channel_block_t) * capacity);

@@ -1,17 +1,24 @@
 #include "muggle/c/muggle_c.h"
 #include "muggle_benchmark/muggle_benchmark.h"
 
-void* threadsafe_memory_pool_alloc(void *pool, size_t block_size)
+void *threadsafe_memory_pool_alloc(void *pool, size_t block_size)
 {
-	return muggle_ts_memory_pool_alloc((muggle_ts_memory_pool_t*)pool);
+	MUGGLE_UNUSED(block_size);
+	void *data = NULL;
+	do {
+		data = muggle_ts_memory_pool_alloc((muggle_ts_memory_pool_t *)pool);
+	} while (data == NULL);
+	return data;
 }
 
 void threadsafe_memory_pool_free(void *pool, void *data)
 {
+	MUGGLE_UNUSED(pool);
 	muggle_ts_memory_pool_free(data);
 }
 
-void benchmark_threadsafe_memory_pool(muggle_benchmark_config_t *config, const char *name)
+void benchmark_threadsafe_memory_pool(muggle_benchmark_config_t *config,
+									  const char *name)
 {
 	// initialize threadsafe memory pool
 	muggle_ts_memory_pool_t pool;
@@ -19,13 +26,9 @@ void benchmark_threadsafe_memory_pool(muggle_benchmark_config_t *config, const c
 
 	// initialize benchmark memory pool handle
 	muggle_benchmark_mempool_t benchmark;
-	muggle_benchmark_mempool_init(
-		&benchmark,
-		config,
-		1,
-		(void*)&pool,
-		threadsafe_memory_pool_alloc,
-		threadsafe_memory_pool_free);
+	muggle_benchmark_mempool_init(&benchmark, config, 1, (void *)&pool,
+								  threadsafe_memory_pool_alloc,
+								  threadsafe_memory_pool_free);
 
 	// run
 	muggle_benchmark_mempool_run(&benchmark);
@@ -53,31 +56,54 @@ int main(int argc, char *argv[])
 
 	muggle_benchmark_config_output(&config);
 
-	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run threadsafe memory pool - block size: 128");
+
+	char name[64];
+	int num_producer = config.producer;
+
+	MUGGLE_LOG_INFO(
+			"--------------------------------------------------------");
+	config.producer = num_producer;
 	config.block_size = 128;
-	benchmark_threadsafe_memory_pool(&config, "threadsafe_memory_pool_128");
+	memset(name, 0, sizeof(name));
+	snprintf(name, sizeof(name), "ts_memory_pool_%d_w_128", num_producer);
+	MUGGLE_LOG_INFO("run %s", name);
+	benchmark_threadsafe_memory_pool(&config, name);
 
-	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run threadsafe memory pool - block size: 256");
+	MUGGLE_LOG_INFO(
+			"--------------------------------------------------------");
+	config.producer = num_producer;
 	config.block_size = 256;
-	benchmark_threadsafe_memory_pool(&config, "threadsafe_memory_pool_256");
+	memset(name, 0, sizeof(name));
+	snprintf(name, sizeof(name), "ts_memory_pool_%d_w_256", num_producer);
+	MUGGLE_LOG_INFO("run %s", name);
+	benchmark_threadsafe_memory_pool(&config, name);
 
-	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run threadsafe memory pool - block size: 512");
+	MUGGLE_LOG_INFO(
+			"--------------------------------------------------------");
+	config.producer = num_producer;
 	config.block_size = 512;
-	benchmark_threadsafe_memory_pool(&config, "threadsafe_memory_pool_512");
+	memset(name, 0, sizeof(name));
+	snprintf(name, sizeof(name), "ts_memory_pool_%d_w_512", num_producer);
+	MUGGLE_LOG_INFO("run %s", name);
+	benchmark_threadsafe_memory_pool(&config, name);
 
-	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run threadsafe memory pool - block size: 1024");
+	MUGGLE_LOG_INFO(
+			"--------------------------------------------------------");
+	config.producer = num_producer;
 	config.block_size = 1024;
-	benchmark_threadsafe_memory_pool(&config, "threadsafe_memory_pool_1024");
+	memset(name, 0, sizeof(name));
+	snprintf(name, sizeof(name), "ts_memory_pool_%d_w_1024", num_producer);
+	MUGGLE_LOG_INFO("run %s", name);
+	benchmark_threadsafe_memory_pool(&config, name);
 
-	MUGGLE_LOG_INFO("--------------------------------------------------------");
-	MUGGLE_LOG_INFO("run threadsafe memory pool - block size: 4096");
+	MUGGLE_LOG_INFO(
+			"--------------------------------------------------------");
+	config.producer = num_producer;
 	config.block_size = 4096;
-	benchmark_threadsafe_memory_pool(&config, "threadsafe_memory_pool_4096");
+	memset(name, 0, sizeof(name));
+	snprintf(name, sizeof(name), "ts_memory_pool_%d_w_4096", num_producer);
+	MUGGLE_LOG_INFO("run %s", name);
+	benchmark_threadsafe_memory_pool(&config, name);
 
 	return 0;
 }
-

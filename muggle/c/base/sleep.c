@@ -70,7 +70,10 @@ int muggle_nsleep(unsigned long ns)
 #else
 	#if _POSIX_C_SOURCE >= 199309L || MUGGLE_PLATFORM_APPLE || \
 		MUGGLE_PLATFORM_ANDROID
-	struct timespec ts = { .tv_sec = 0, .tv_nsec = ns };
+	struct timespec ts = {
+		.tv_sec = ns / 1000000000ll,
+		.tv_nsec = ns % 1000000000ll
+	};
 
 	int res = 0;
 	do {

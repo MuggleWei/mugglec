@@ -5,9 +5,9 @@ void muggle_benchmark_config_parse_cli(
 	int argc, char *argv[])
 {
 	memset(config, 0, sizeof(*config));
-	config->rounds = 100;
-	config->record_per_round = 10;
-	config->round_interval_ms = 1;
+	config->rounds = 1000;
+	config->record_per_round = 5;
+	config->round_interval_ns = 1000;
 	config->elapsed_unit = MUGGLE_BENCHMARK_ELAPSED_UNIT_NS;
 	config->capacity = 1024;
 	config->block_size = 64;
@@ -33,7 +33,9 @@ void muggle_benchmark_config_parse_cli(
 		} break;
 		case 'i':
 		{
-			muggle_str_toi(optarg, &config->round_interval_ms, 0);
+			long long v = 0;
+			muggle_str_toll(optarg, &v, 0);
+			config->round_interval_ns = v;
 		} break;
 		case 'e':
 		{
@@ -115,7 +117,7 @@ void muggle_benchmark_config_output(muggle_benchmark_config_t *config)
 {
 	MUGGLE_LOG_INFO("rounds: %llu", (unsigned long long)config->rounds);
 	MUGGLE_LOG_INFO("record per round: %llu", (unsigned long long)config->record_per_round);
-	MUGGLE_LOG_INFO("interval ms between round: %d", config->round_interval_ms);
+	MUGGLE_LOG_INFO("interval between round: %lld ns", (long long)config->round_interval_ns);
 	MUGGLE_LOG_INFO("elapsed unit: %s", config->elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_NS ? "ns" : "cpu_cycle");
 	MUGGLE_LOG_INFO("capacity: %d", config->capacity);
 	MUGGLE_LOG_INFO("block size: %d", config->block_size);

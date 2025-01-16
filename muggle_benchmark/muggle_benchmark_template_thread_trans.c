@@ -91,9 +91,9 @@ static muggle_thread_ret_t muggle_benchmark_thread_trans_producer(void *p_args)
 			fn_record(record_write_end);
 		}
 
-		if (config->round_interval_ms > 0)
+		if (config->round_interval_ns > 0)
 		{
-			muggle_msleep(config->round_interval_ms);
+			muggle_nsleep(config->round_interval_ns);
 		}
 	}
 

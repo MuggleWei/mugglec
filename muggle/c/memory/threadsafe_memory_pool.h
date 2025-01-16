@@ -12,8 +12,8 @@
 #define MUGGLE_C_THREADSAFE_MEMORY_POOL_H_
 
 #include "muggle/c/base/macro.h"
-#include "muggle/c/sync/mutex.h"
 #include "muggle/c/sync/sync_obj.h"
+#include "muggle/c/sync/spinlock.h"
 
 EXTERN_C_BEGIN
 
@@ -33,8 +33,8 @@ typedef struct muggle_ts_memory_pool_head
 typedef struct muggle_ts_memory_pool_head_ptr
 {
 	union {
-		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
 		muggle_ts_memory_pool_head_t *ptr;
+		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
 	};
 }muggle_ts_memory_pool_head_ptr_t;
 
@@ -43,23 +43,34 @@ typedef struct muggle_ts_memory_pool_head_ptr
  */
 typedef struct muggle_ts_memory_pool
 {
-	muggle_sync_t                    capacity;
-	muggle_sync_t                    block_size;
-	void                             *data;
-	muggle_ts_memory_pool_head_ptr_t *ptrs;
-
 	union {
-		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
-		muggle_sync_t alloc_cursor;
+		struct {
+			muggle_sync_t                    capacity;
+			muggle_sync_t                    block_size;
+			void                             *data;
+			muggle_ts_memory_pool_head_ptr_t *ptrs;
+		};
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
 	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
 	union {
-		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
-		muggle_sync_t free_cursor;
+		struct {
+			muggle_sync_t alloc_idx;
+			muggle_sync_t cached_free_pos;
+		};
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
 	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
 	union {
-		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(2);
-		muggle_mutex_t free_mutex;
+		muggle_sync_t free_idx;
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
 	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(2);
+	union {
+		muggle_spinlock_t free_spinlock;
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
+	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(3);
 }muggle_ts_memory_pool_t;
 
 /**

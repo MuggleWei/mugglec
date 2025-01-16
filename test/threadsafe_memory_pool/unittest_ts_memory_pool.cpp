@@ -19,8 +19,8 @@ TEST(ts_memory_pool, single_thread)
 	muggle_ts_memory_pool_t pool;
 	muggle_ts_memory_pool_init(&pool, capacity, sizeof(ts_data));
 
-	ts_data *arr[8];
-	for (int i = 0; i < capacity; i++)
+	ts_data *arr[8 - 1];
+	for (int i = 0; i < capacity - 1; i++)
 	{
 		arr[i] = (ts_data*)muggle_ts_memory_pool_alloc(&pool);
 		ASSERT_TRUE(arr[i] != NULL);
@@ -31,11 +31,11 @@ TEST(ts_memory_pool, single_thread)
 	arr[0] = (ts_data*)muggle_ts_memory_pool_alloc(&pool);
 	ASSERT_TRUE(arr[0] != NULL);
 
-	for (int i = 0; i < capacity; i++)
+	for (int i = 0; i < capacity - 1; i++)
 	{
 		muggle_ts_memory_pool_free(arr[i]);
 	}
-	for (int i = 0; i < capacity; i++)
+	for (int i = 0; i < capacity - 1; i++)
 	{
 		arr[i] = (ts_data*)muggle_ts_memory_pool_alloc(&pool);
 		ASSERT_TRUE(arr[i] != NULL);
@@ -90,7 +90,7 @@ TEST(ts_memory_pool, mul_thread)
 	}
 	threads.clear();
 
-	ASSERT_EQ(data_pos, (muggle_atomic_int)next_pow_of_2(capacity));
+	ASSERT_EQ(data_pos, (muggle_atomic_int)next_pow_of_2(capacity) - 1);
 	ASSERT_EQ(muggle_ts_memory_pool_alloc(&pool), nullptr);
 
 	std::map<int, int> thread_count;
@@ -108,7 +108,7 @@ TEST(ts_memory_pool, mul_thread)
 //		printf("%d - %d\n", i, thread_count[i]);
 //	}
 
-	ASSERT_EQ(pool.alloc_cursor, pool.free_cursor);
+	ASSERT_EQ(IDX_IN_POW_OF_2_RING(pool.alloc_idx + 1, pool.capacity), pool.free_idx);
 
 	// free
 	ready = false;
@@ -142,7 +142,7 @@ TEST(ts_memory_pool, mul_thread)
 	}
 	threads.clear();
 
-	ASSERT_EQ(pool.alloc_cursor + (muggle_atomic_int)next_pow_of_2(capacity), pool.free_cursor);
+	ASSERT_EQ(pool.alloc_idx, pool.free_idx);
 
 	muggle_ts_memory_pool_destroy(&pool);
 	free(datas);

@@ -178,7 +178,6 @@ void muggle_benchmark_handle_gen_records_report(
 
 void muggle_benchmark_gen_latency_report_head(FILE *fp, struct muggle_benchmark_config *config)
 {
-	char buf[4096] = {0};
 	if (config->elapsed_unit == MUGGLE_BENCHMARK_ELAPSED_UNIT_NS)
 	{
 		fprintf(fp, "elapsed unit[ns]\n");
@@ -188,7 +187,7 @@ void muggle_benchmark_gen_latency_report_head(FILE *fp, struct muggle_benchmark_
 		fprintf(fp, "elapsed unit[cpu cycle]\n");
 	}
 
-	fprintf(fp, "case_name,rounds,record_per_round,interval_ms,capacity,producer,consumer,avg,");
+	fprintf(fp, "case_name,rounds,record_per_round,interval_ns,capacity,producer,consumer,avg,");
 	for (int i = 0; i < 100; i += config->report_step)
 	{
 		fprintf(fp, "%d,", i);
@@ -286,10 +285,10 @@ void muggle_benchmark_gen_latency_report_body(
 		sort_result ? "elapsed" : "idx");
 
 	// rounds,record_per_round,interval_ms,capacity,producer,consumer,
-	fprintf(fp, "%llu,%llu,%d,%d,%d,%d,",
+	fprintf(fp, "%llu,%llu,%lld,%d,%d,%d,",
 		(unsigned long long)config->rounds,
 		(unsigned long long)config->record_per_round,
-		config->round_interval_ms,
+		(long long)config->round_interval_ns,
 		config->capacity,
 		config->producer,
 		config->consumer);

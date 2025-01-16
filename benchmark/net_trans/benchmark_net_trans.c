@@ -14,7 +14,7 @@ typedef struct args {
 	int is_busy;
 	int round;
 	int cnt_per_round;
-	int round_interval; // nano seconds
+	int64_t round_interval_ns;
 } args_t;
 
 #define OPT_ROUND 1001
@@ -33,7 +33,7 @@ bool parse_args(int argc, char **argv, args_t *args)
 	args->is_busy = 1;
 	args->round = 100;
 	args->cnt_per_round = 10;
-	args->round_interval = 1;
+	args->round_interval_ns = 10ll * 1000ll;
 
 	while (1) {
 		int option_index = 0;
@@ -67,7 +67,7 @@ bool parse_args(int argc, char **argv, args_t *args)
 					"    -b, --busy           on or off\n"
 					"      , --round          round of run\n"
 					"      , --cnt_per_round  number of message of per round\n"
-					"      , --interval       round interval (milli-seconds)\n"
+					"      , --interval       round interval (nanoseconds)\n"
 					"",
 					argv[0]);
 			exit(EXIT_SUCCESS);
@@ -122,9 +122,9 @@ bool parse_args(int argc, char **argv, args_t *args)
 			}
 		} break;
 		case OPT_ROUND_INTERVAL: {
-			uint32_t v = 0;
-			if (muggle_str_tou(optarg, &v, 10)) {
-				args->round_interval = (int)v;
+			long long v = 0;
+			if (muggle_str_toll(optarg, &v, 10)) {
+				args->round_interval_ns = v;
 			} else {
 				LOG_ERROR("invalid 'interval' value: %s", optarg);
 				return false;
@@ -142,12 +142,13 @@ bool parse_args(int argc, char **argv, args_t *args)
 			"busy:          %s\n"
 			"round:         %d\n"
 			"cnt_per_round: %d\n"
-			"interval:      %d ms\n"
+			"interval:      %lld ns\n"
 			"----------------\n"
 			"",
 			args->role, args->host, args->port,
 			args->is_multiplexing ? "ON" : "OFF", args->is_busy ? "ON" : "OFF",
-			args->round, args->cnt_per_round, args->round_interval);
+			args->round, args->cnt_per_round,
+			(long long)args->round_interval_ns);
 
 	return true;
 }
@@ -212,7 +213,7 @@ int main(int argc, char *argv[])
 	memset(&config, 0, sizeof(config));
 	config.rounds = args.round;
 	config.record_per_round = args.cnt_per_round;
-	config.round_interval_ms = args.round_interval;
+	config.round_interval_ns = args.round_interval_ns;
 	config.elapsed_unit = MUGGLE_BENCHMARK_ELAPSED_UNIT_NS;
 	config.producer = 1;
 	config.consumer = 1;

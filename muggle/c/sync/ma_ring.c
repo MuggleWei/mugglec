@@ -42,8 +42,8 @@ static void muggle_ma_ring_handle_remove(muggle_ma_ring_context_t *ctx)
 	muggle_ma_ring_list_node_t *prev = &ctx->ring_list;
 	muggle_ma_ring_list_node_t *node = prev->next;
 	while (node) {
-		muggle_atomic_int status = muggle_atomic_load(
-			&node->ring->status, muggle_memory_order_relaxed);
+		muggle_sync_t status = muggle_atomic_load(&node->ring->status,
+												  muggle_memory_order_relaxed);
 		if (status == MUGGLE_MA_RING_STATUS_WAIT_REMOVE) {
 			muggle_atomic_store(&node->ring->status, MUGGLE_MA_RING_STATUS_DONE,
 								muggle_memory_order_relaxed);
@@ -66,9 +66,9 @@ static int muggle_ma_ring_consume(muggle_ma_ring_context_t *ctx,
 	int num_consume = 0;
 	char *block = (char *)ring->buffer;
 
-	muggle_atomic_int w =
+	muggle_sync_t w =
 		muggle_atomic_load(&ring->wpos, muggle_memory_order_acquire);
-	muggle_atomic_int r = ring->rpos;
+	muggle_sync_t r = ring->rpos;
 	while (r != w) {
 		char *data = block + ctx->block_size * r;
 		ctx->cb(ring, data);
@@ -146,17 +146,20 @@ muggle_ma_ring_context_t *muggle_ma_ring_ctx_get()
 	return &s_ctx;
 }
 
-void muggle_ma_ring_ctx_set_capacity(muggle_atomic_int capacity)
+void muggle_ma_ring_ctx_set_capacity(muggle_sync_t capacity)
 {
 	muggle_ma_ring_context_t *ctx = muggle_ma_ring_ctx_get();
 	ctx->capacity = capacity;
 }
 
-void muggle_ma_ring_ctx_set_data_size(muggle_atomic_int data_size)
+void muggle_ma_ring_ctx_set_data_size(muggle_sync_t data_size)
 {
 	muggle_ma_ring_context_t *ctx = muggle_ma_ring_ctx_get();
-	ctx->block_size =
-		ROUND_UP_POW_OF_2_MUL(data_size, MUGGLE_CACHE_LINE_X2_SIZE);
+
+	// align block_size to cacheline and add another 2 cacheline
+	muggle_sync_t align_size =
+		ROUND_UP_POW_OF_2_MUL(data_size, MUGGLE_CACHE_LINE_SIZE);
+	ctx->block_size = align_size + MUGGLE_CACHE_LINE_X2_SIZE;
 }
 
 void muggle_ma_ring_ctx_set_callback(muggle_ma_ring_callback fn)
@@ -218,7 +221,7 @@ static void muggle_ma_ring_remove_thread_ctx(muggle_ma_ring_t *ring)
 static void muggle_ma_ring_join(muggle_ma_ring_t *ring)
 {
 	do {
-		muggle_atomic_int r =
+		muggle_sync_t r =
 			muggle_atomic_load(&ring->rpos, muggle_memory_order_relaxed);
 		if (r == ring->wpos) {
 			break;
@@ -243,8 +246,8 @@ muggle_ma_ring_t *muggle_ma_ring_thread_ctx_init()
 
 	muggle_ma_ring_context_t *ctx = muggle_ma_ring_ctx_get();
 #if MUGGLE_C_HAVE_ALIGNED_ALLOC
-	s_muggle_ma_ring_thread_ctx->buffer = aligned_alloc(
-		MUGGLE_CACHE_LINE_X2_SIZE, ctx->capacity * ctx->block_size);
+	s_muggle_ma_ring_thread_ctx->buffer =
+		aligned_alloc(MUGGLE_CACHE_LINE_SIZE, ctx->capacity * ctx->block_size);
 #else
 	s_muggle_ma_ring_thread_ctx->buffer =
 		malloc(ctx->capacity * ctx->block_size);
@@ -286,9 +289,9 @@ void *muggle_ma_ring_alloc(muggle_ma_ring_t *ring)
 
 void muggle_ma_ring_move(muggle_ma_ring_t *ring)
 {
-	static muggle_thread_local muggle_atomic_int r = 0;
+	static muggle_thread_local muggle_sync_t r = 0;
 	muggle_ma_ring_context_t *ctx = muggle_ma_ring_ctx_get();
-	muggle_atomic_int next_w = ring->wpos + 1;
+	muggle_sync_t next_w = ring->wpos + 1;
 	if (next_w >= ctx->capacity) {
 		next_w = 0;
 	}
