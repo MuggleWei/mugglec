@@ -108,28 +108,33 @@ typedef struct muggle_channel
 			fn_muggle_channel_wake  fn_wake;    //!< wake function
 			fn_muggle_channel_read  fn_read;    //!< read function
 		};
-		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
 	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
 
 	union {
 		struct {
 			muggle_sync_t write_cursor;  //!< write cursor
 			muggle_sync_t cached_r_cur;  //!< cached read pos
 		};
-		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
 	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
+
 	union {
 		muggle_sync_t read_cursor;  //!< read cursor
-		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(2);
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
 	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(2);
 
 	union {
 		// write lock
 		muggle_sync_t     write_synclock;  //!< wirte lock with synclock
 		muggle_spinlock_t write_spinlock;  //!< write lock with spinlock
 		muggle_mutex_t    *write_mutex;    //!< write lock with mutex
-		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(3);
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
 	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(3);
 
 	// read lock
 	muggle_mutex_t *read_mutex;
