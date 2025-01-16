@@ -60,9 +60,6 @@ int main(int argc, char *argv[])
 	// initialize benchmark config
 	muggle_benchmark_config_t config;
 	muggle_benchmark_config_parse_cli(&config, argc, argv);
-
-	config.producer = 0;
-
 	muggle_benchmark_config_output(&config);
 
 	// channel must guarantee only one reader
@@ -74,16 +71,6 @@ int main(int argc, char *argv[])
 	}
 
 	int flags = 0;
-
-	int hc = (int)muggle_thread_hardware_concurrency();
-	if (hc <= 0)
-	{
-		hc = 2;
-	}
-
-	int producer_nums[] = {
-		1, 2, 4, hc / 2, hc, hc * 2, hc * 4
-	};
 
 	int w_flags[] = {
 		MUGGLE_CHANNEL_FLAG_WRITE_SYNC,
@@ -101,23 +88,21 @@ int main(int argc, char *argv[])
 	const char *str_w_flags = NULL;
 	const char *str_r_flags = NULL;
 	char name[64];
-	for (int i = 0; i < (int)(sizeof(producer_nums) / sizeof(producer_nums[0])); i++)
+	for (int w = 0; w < (int)(sizeof(w_flags) / sizeof(w_flags[0])); w++)
 	{
-		for (int w = 0; w < (int)(sizeof(w_flags) / sizeof(w_flags[0])); w++)
+		for (int r = 0; r < (int)(sizeof(r_flags) / sizeof(r_flags[0])); r++)
 		{
-			for (int r = 0; r < (int)(sizeof(r_flags) / sizeof(r_flags[0])); r++)
+			int wflag = w_flags[w];
+			int rflag = r_flags[r];
+			int num_producer = config.producer;
+
+			if (wflag == MUGGLE_CHANNEL_FLAG_WRITE_SINGLE && num_producer != 1)
 			{
-				int wflag = w_flags[w];
-				int rflag = r_flags[r];
-				int num_producer = producer_nums[i];
+				continue;
+			}
 
-				if (wflag == MUGGLE_CHANNEL_FLAG_WRITE_SINGLE && num_producer != 1)
-				{
-					continue;
-				}
-
-				switch (wflag)
-				{
+			switch (wflag)
+			{
 				case MUGGLE_CHANNEL_FLAG_WRITE_SYNC:
 					{
 						str_w_flags = "sync";
@@ -139,10 +124,10 @@ int main(int argc, char *argv[])
 						MUGGLE_LOG_ERROR("unrecognized write flags: %d", w);
 						exit(EXIT_FAILURE);
 					}break;
-				}
+			}
 
-				switch (rflag)
-				{
+			switch (rflag)
+			{
 				case MUGGLE_CHANNEL_FLAG_READ_SYNC:
 					{
 						str_r_flags = "sync";
@@ -160,20 +145,19 @@ int main(int argc, char *argv[])
 						MUGGLE_LOG_ERROR("unrecognized read flags: %d", w);
 						exit(EXIT_FAILURE);
 					}break;
-				}
-
-				flags = wflag | rflag;
-				memset(name, 0, sizeof(name));
-				snprintf(name, sizeof(name), "channel_%d_%s_w_%s_r",
-					num_producer, str_w_flags, str_r_flags);
-
-				config.producer = num_producer;
-
-				MUGGLE_LOG_INFO("--------------------------------------------------------");
-				MUGGLE_LOG_INFO("run channel - %d %s write and %s read",
-					num_producer, str_w_flags, str_r_flags);
-				benchmark_chan(&config, flags, name);
 			}
+
+			flags = wflag | rflag;
+			memset(name, 0, sizeof(name));
+			snprintf(name, sizeof(name), "channel_%d_%s_w_%s_r",
+					num_producer, str_w_flags, str_r_flags);
+
+			config.producer = num_producer;
+
+			MUGGLE_LOG_INFO("--------------------------------------------------------");
+			MUGGLE_LOG_INFO("run channel - %d %s write and %s read",
+					num_producer, str_w_flags, str_r_flags);
+			benchmark_chan(&config, flags, name);
 		}
 	}
 

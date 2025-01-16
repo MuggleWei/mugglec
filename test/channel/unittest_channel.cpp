@@ -101,7 +101,7 @@ uint32_t getProducerNum()
 
 TEST(channel, struct_size_and_align)
 {
-	MUGGLE_ALIGNAS(MUGGLE_CACHE_LINE_X2_SIZE) muggle_channel_t chan;
+	MUGGLE_ALIGNAS(MUGGLE_CACHE_LINE_SIZE) muggle_channel_t chan;
 	muggle_channel_init(&chan, 16, 0);
 
 	uintptr_t addr_chan = (uintptr_t)&chan;

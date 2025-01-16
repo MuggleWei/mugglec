@@ -53,67 +53,57 @@ int main(int argc, char *argv[])
 	muggle_benchmark_config_parse_cli(&config, argc, argv);
 
 	config.block_size = 0;
-	config.producer = 0;
 
 	muggle_benchmark_config_output(&config);
 
-	int hc = (int)muggle_thread_hardware_concurrency();
-	if (hc <= 0) {
-		hc = 2;
-	}
-
-	int producer_nums[] = { 1, 2, 4, hc / 2, hc, hc * 2, hc * 4 };
 
 	char name[64];
-	for (int i = 0; i < (int)(sizeof(producer_nums) / sizeof(producer_nums[0]));
-		 i++) {
-		int num_producer = producer_nums[i];
+	int num_producer = config.producer;
 
-		MUGGLE_LOG_INFO(
+	MUGGLE_LOG_INFO(
 			"--------------------------------------------------------");
-		config.producer = num_producer;
-		config.block_size = 128;
-		memset(name, 0, sizeof(name));
-		snprintf(name, sizeof(name), "ts_memory_pool_%d_w_128", num_producer);
-		MUGGLE_LOG_INFO("run %s", name);
-		benchmark_threadsafe_memory_pool(&config, name);
+	config.producer = num_producer;
+	config.block_size = 128;
+	memset(name, 0, sizeof(name));
+	snprintf(name, sizeof(name), "ts_memory_pool_%d_w_128", num_producer);
+	MUGGLE_LOG_INFO("run %s", name);
+	benchmark_threadsafe_memory_pool(&config, name);
 
-		MUGGLE_LOG_INFO(
+	MUGGLE_LOG_INFO(
 			"--------------------------------------------------------");
-		config.producer = num_producer;
-		config.block_size = 256;
-		memset(name, 0, sizeof(name));
-		snprintf(name, sizeof(name), "ts_memory_pool_%d_w_256", num_producer);
-		MUGGLE_LOG_INFO("run %s", name);
-		benchmark_threadsafe_memory_pool(&config, name);
+	config.producer = num_producer;
+	config.block_size = 256;
+	memset(name, 0, sizeof(name));
+	snprintf(name, sizeof(name), "ts_memory_pool_%d_w_256", num_producer);
+	MUGGLE_LOG_INFO("run %s", name);
+	benchmark_threadsafe_memory_pool(&config, name);
 
-		MUGGLE_LOG_INFO(
+	MUGGLE_LOG_INFO(
 			"--------------------------------------------------------");
-		config.producer = num_producer;
-		config.block_size = 512;
-		memset(name, 0, sizeof(name));
-		snprintf(name, sizeof(name), "ts_memory_pool_%d_w_512", num_producer);
-		MUGGLE_LOG_INFO("run %s", name);
-		benchmark_threadsafe_memory_pool(&config, name);
+	config.producer = num_producer;
+	config.block_size = 512;
+	memset(name, 0, sizeof(name));
+	snprintf(name, sizeof(name), "ts_memory_pool_%d_w_512", num_producer);
+	MUGGLE_LOG_INFO("run %s", name);
+	benchmark_threadsafe_memory_pool(&config, name);
 
-		MUGGLE_LOG_INFO(
+	MUGGLE_LOG_INFO(
 			"--------------------------------------------------------");
-		config.producer = num_producer;
-		config.block_size = 1024;
-		memset(name, 0, sizeof(name));
-		snprintf(name, sizeof(name), "ts_memory_pool_%d_w_1024", num_producer);
-		MUGGLE_LOG_INFO("run %s", name);
-		benchmark_threadsafe_memory_pool(&config, name);
+	config.producer = num_producer;
+	config.block_size = 1024;
+	memset(name, 0, sizeof(name));
+	snprintf(name, sizeof(name), "ts_memory_pool_%d_w_1024", num_producer);
+	MUGGLE_LOG_INFO("run %s", name);
+	benchmark_threadsafe_memory_pool(&config, name);
 
-		MUGGLE_LOG_INFO(
+	MUGGLE_LOG_INFO(
 			"--------------------------------------------------------");
-		config.producer = num_producer;
-		config.block_size = 4096;
-		memset(name, 0, sizeof(name));
-		snprintf(name, sizeof(name), "ts_memory_pool_%d_w_4096", num_producer);
-		MUGGLE_LOG_INFO("run %s", name);
-		benchmark_threadsafe_memory_pool(&config, name);
-	}
+	config.producer = num_producer;
+	config.block_size = 4096;
+	memset(name, 0, sizeof(name));
+	snprintf(name, sizeof(name), "ts_memory_pool_%d_w_4096", num_producer);
+	MUGGLE_LOG_INFO("run %s", name);
+	benchmark_threadsafe_memory_pool(&config, name);
 
 	return 0;
 }
