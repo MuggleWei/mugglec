@@ -44,20 +44,39 @@ typedef struct muggle_ring_buffer_block
 
 typedef struct muggle_ring_buffer
 {
-	muggle_atomic_int capacity;
-	int flag;
-	int write_mode;
-	int read_mode;
-	muggle_spinlock_t write_spin;
 	union {
-		muggle_sync_t cursor;
-		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
+		struct {
+			muggle_atomic_int capacity;
+			int flag;
+			int write_mode;
+			int read_mode;
+		};
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
 	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
+
+	union {
+		struct {
+			muggle_spinlock_t write_spin;
+		};
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
+	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
+
+	union {
+		struct {
+			muggle_sync_t cursor;
+		};
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(2);
+	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(2);
+
 	// for MUGGLE_RING_BUFFER_FLAG_MSG_READ_ONCE
 	union {
 		muggle_sync_t read_cursor;
-		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
 	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(3);
 	muggle_mutex_t read_mutex;
 	muggle_condition_variable_t read_cv;
 	muggle_ring_buffer_block_t *blocks;

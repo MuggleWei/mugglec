@@ -104,6 +104,17 @@ int main(int argc, char *argv[])
 		MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP;
 	benchmark_ring_buffer(&config, flags, "ringbuffer_lock_busy", 0);
 
+	if (config.producer == 1) {
+		// ring_buffer - single write and wait read
+		MUGGLE_LOG_INFO("-------------------------------------------------------");
+		MUGGLE_LOG_INFO("run ring_buffer - single write and busy read");
+		memset(r_cursors, 0, sizeof(int) * config.consumer);
+		flags =
+			MUGGLE_RING_BUFFER_FLAG_SINGLE_WRITER |
+			MUGGLE_RING_BUFFER_FLAG_READ_BUSY_LOOP;
+		benchmark_ring_buffer(&config, flags, "ringbuffer_single_busy", 0);
+	}
+
 	// ring buffer - lock write and read once
 	MUGGLE_LOG_INFO("-------------------------------------------------------");
 	MUGGLE_LOG_INFO("run ring_buffer - lock write and read once");
