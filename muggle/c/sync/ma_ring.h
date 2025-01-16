@@ -15,6 +15,7 @@
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/thread.h"
 #include "muggle/c/sync/spinlock.h"
+#include "muggle/c/sync/sync_obj.h"
 
 EXTERN_C_BEGIN
 
@@ -30,15 +31,16 @@ enum {
 typedef struct muggle_ma_ring {
 	void *buffer; //!< ring buffer datas
 	union {
-		muggle_atomic_int wpos; //!< writer position
-		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
+		muggle_sync_t wpos; //!< writer position
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
 	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
 	union {
-		muggle_atomic_int rpos; //!< reader position
-		MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
+		muggle_sync_t rpos; //!< reader position
+		MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
 	};
 	muggle_thread_readable_id tid; //!< thread id
-	muggle_atomic_int status; //!< status of ring
+	muggle_sync_t status; //!< status of ring
 } muggle_ma_ring_t;
 
 /**
@@ -66,8 +68,8 @@ typedef void (*muggle_ma_ring_before_run_callback)();
  */
 typedef struct muggle_ma_ring_context {
 	muggle_spinlock_t spinlock; //!< context spinlock
-	muggle_atomic_int capacity; //!< capacity of ring elements
-	muggle_atomic_int block_size; //!< size of ring block
+	muggle_sync_t capacity; //!< capacity of ring elements
+	muggle_sync_t block_size; //!< size of ring block
 	muggle_ma_ring_list_node_t add_list; //!< add list
 	muggle_ma_ring_list_node_t ring_list; //!< ring list
 	muggle_ma_ring_callback cb; //!< message callback
@@ -94,7 +96,7 @@ muggle_ma_ring_context_t *muggle_ma_ring_ctx_get();
  * @param capacity  capacity of ma_ring
  */
 MUGGLE_C_EXPORT
-void muggle_ma_ring_ctx_set_capacity(muggle_atomic_int capacity);
+void muggle_ma_ring_ctx_set_capacity(muggle_sync_t capacity);
 
 /**
  * @brief set ma_ring data size
@@ -102,7 +104,7 @@ void muggle_ma_ring_ctx_set_capacity(muggle_atomic_int capacity);
  * @param data_size  data size of ma_ring
  */
 MUGGLE_C_EXPORT
-void muggle_ma_ring_ctx_set_data_size(muggle_atomic_int data_size);
+void muggle_ma_ring_ctx_set_data_size(muggle_sync_t data_size);
 
 /**
  * @brief set callback of ma_ring
