@@ -58,6 +58,7 @@ typedef struct muggle_sowr_memory_pool_tag
 		};
 		MUGGLE_STRUCT_CACHE_LINE_PADDING(0);
 	};
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
 	union {
 		struct {
 			muggle_sync_t alloc_idx;
@@ -65,7 +66,7 @@ typedef struct muggle_sowr_memory_pool_tag
 		};
 		MUGGLE_STRUCT_CACHE_LINE_PADDING(1);
 	};
-	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(0);
+	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(1);
 	union {
 		struct {
 			muggle_sync_t free_idx;

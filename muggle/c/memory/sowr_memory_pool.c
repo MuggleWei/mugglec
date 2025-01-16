@@ -64,7 +64,10 @@ int muggle_sowr_memory_pool_init(muggle_sowr_memory_pool_t *pool, muggle_sync_t 
 
 void muggle_sowr_memory_pool_destroy(muggle_sowr_memory_pool_t *pool)
 {
-	free(pool->blocks);
+	if (pool->blocks != NULL) {
+		free(pool->blocks);
+		pool->blocks = NULL;
+	}
 }
 
 void* muggle_sowr_memory_pool_alloc(muggle_sowr_memory_pool_t *pool)
