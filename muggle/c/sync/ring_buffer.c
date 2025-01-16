@@ -310,7 +310,7 @@ int muggle_ring_buffer_init(
 
 #if MUGGLE_C_HAVE_ALIGNED_ALLOC
 	r->blocks = (muggle_ring_buffer_block_t*)aligned_alloc(
-			MUGGLE_CACHE_LINE_X2_SIZE,
+			MUGGLE_CACHE_LINE_SIZE,
 			sizeof(muggle_ring_buffer_block_t) * r->capacity);
 #else
 	r->blocks = (muggle_ring_buffer_block_t*)malloc(
