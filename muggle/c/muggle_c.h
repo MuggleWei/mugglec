@@ -72,6 +72,8 @@
 #include "muggle/c/sync/ref_cnt.h"
 #include "muggle/c/sync/call_once.h"
 #include "muggle/c/sync/ma_ring.h"
+#include "muggle/c/sync/shm.h"
+#include "muggle/c/sync/shm_ring_buffer.h"
 
 // log
 #include "muggle/c/log/log_level.h"
