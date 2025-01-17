@@ -111,8 +111,16 @@ void muggle_shm_ringbuf_update_cached_remain(muggle_shm_ringbuf_t *shm_rbuf,
 				muggle_shm_ringbuf_data_hdr_t *hdr =
 					muggle_shm_ringbuf_get_data(shm_rbuf,
 												shm_rbuf->write_cursor);
-				hdr->n_bytes = 0;
-				hdr->n_cachelines = 0;
+
+				// if w == end, right_remain is 0
+				//
+				//               r                 (w|end)
+				// ================================
+				//
+				if (right_remain != 0) {
+					hdr->n_bytes = 0;
+					hdr->n_cachelines = 0;
+				}
 				muggle_atomic_store(&shm_rbuf->write_cursor, 0,
 									muggle_memory_order_release);
 
@@ -125,6 +133,10 @@ void muggle_shm_ringbuf_update_cached_remain(muggle_shm_ringbuf_t *shm_rbuf,
 			// ================================
 			//
 			// contiguous writable is: (end - w - 1)
+			//
+			// NOTE:
+			//   don't need worry about end == w, cause r is 0, w will not move
+			//   to end
 			if (shm_rbuf->n_cacheline == shm_rbuf->write_cursor) {
 				// there has no enough space
 			} else {
