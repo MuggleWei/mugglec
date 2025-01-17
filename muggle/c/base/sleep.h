@@ -12,6 +12,7 @@
 #define MUGGLE_C_SLEEP_H_
 
 #include "muggle/c/base/macro.h"
+#include <stdint.h>
 
 EXTERN_C_BEGIN
 
@@ -37,7 +38,7 @@ int muggle_msleep(unsigned long ms);
  *   - interupt by signal will return MUGGLE_ERR_INTERRUPT
  */
 MUGGLE_C_EXPORT
-int muggle_nsleep(unsigned long ns);
+int muggle_nsleep(uint64_t ns);
 
 EXTERN_C_END
 

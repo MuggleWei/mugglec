@@ -45,7 +45,7 @@ int muggle_msleep(unsigned long ms)
 #endif
 }
 
-int muggle_nsleep(unsigned long ns)
+int muggle_nsleep(uint64_t ns)
 {
 #if MUGGLE_PLATFORM_WINDOWS
 	HANDLE timer;
