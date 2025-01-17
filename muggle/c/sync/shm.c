@@ -5,20 +5,51 @@
 void *muggle_shm_open(muggle_shm_t *shm, const char *k_name, int k_num,
 					  int flag, uint32_t nbytes)
 {
-	// TODO: to be continued ......
-	return -1;
+	memset(shm, 0, sizeof(*shm));
+
+	if (flag & MUGGLE_SHM_FLAG_CREAT) {
+		shm->hMapFile = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL,
+										  PAGE_READWRITE, 0, nbytes, k_name);
+	} else {
+		shm->hMapFile = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, k_name);
+	}
+
+	if (shm->hMapFile == NULL) {
+		return NULL;
+	}
+
+	shm->ptr = MapViewOfFile(shm->hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, nbytes);
+	if (shm->ptr == NULL) {
+		CloseHandle(shm->hMapFile);
+		return NULL;
+	}
+
+	shm->nbytes = nbytes;
+
+	return shm->ptr;
 }
 
 int muggle_shm_detach(muggle_shm_t *shm)
 {
-	// TODO: to be continued ......
-	return -1;
+	if (shm->ptr == NULL) {
+		return -1;
+	}
+
+	if (!UnmapViewOfFile(shm->ptr)) {
+		return -1;
+	}
+	shm->ptr = NULL;
+
+	CloseHandle(shm->hMapFile);
+
+	return 0;
 }
 
 int muggle_shm_rm(muggle_shm_t *shm)
 {
-	// TODO: to be continued ......
-	return -1;
+	// in windows, shared memory auto removed when has no reference
+	MUGGLE_UNUSED(shm);
+	return 0;
 }
 
 #else

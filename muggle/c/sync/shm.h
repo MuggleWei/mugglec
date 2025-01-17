@@ -12,6 +12,10 @@
 #define MUGGLE_C_SHM_H_
 
 #include "muggle/c/base/macro.h"
+#if MUGGLE_PLATFORM_WINDOWS
+	#include <windows.h>
+#endif
+
 #include <stdint.h>
 
 EXTERN_C_BEGIN
@@ -28,13 +32,13 @@ enum {
 };
 
 typedef struct {
-#if MUGGLE_PLATFORM_WINDOWS
-		// TODO:
-#else
 	void *ptr; //!< pointer to shared memory
+#if MUGGLE_PLATFORM_WINDOWS
+	HANDLE hMapFile;
+#else
 	int shm_id; //!< shared memory id
-	uint32_t nbytes; //!< number of bytes (user input, possible 0)
 #endif
+	uint32_t nbytes; //!< number of bytes (user input, possible 0)
 } muggle_shm_t;
 
 /**
