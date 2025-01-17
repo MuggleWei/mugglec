@@ -39,7 +39,8 @@ TEST_F(ShmFixture, repeated_create)
 	ASSERT_TRUE(ptr != NULL);
 
 #if MUGGLE_PLATFORM_WINDOWS
-	void *ptr2 = muggle_shm_open(&shm, k_name, k_num, MUGGLE_SHM_FLAG_CREAT, 0);
+	muggle_shm_t shm2;
+	void *ptr2 = muggle_shm_open(&shm2, k_name, k_num, MUGGLE_SHM_FLAG_CREAT, 0);
 	ASSERT_TRUE(ptr2 == NULL);
 #else
 	ret = muggle_shm_detach(&shm);
@@ -74,7 +75,6 @@ TEST_F(ShmFixture, open_size_zero)
 
 #if MUGGLE_PLATFORM_WINDOWS
 	muggle_shm_t shm2;
-
 	void *ptr2 = muggle_shm_open(&shm2, k_name, k_num, MUGGLE_SHM_FLAG_OPEN, 0);
 	ASSERT_EQ(*(uint32_t *)ptr2, nbytes);
 
