@@ -273,5 +273,12 @@ int main(int argc, char *argv[])
 	} break;
 	}
 
+#if MUGGLE_PLATFORM_WINDOWS
+#else
+	if (argv[1][0] == 'r') {
+		muggle_os_remove(k_name);
+	}
+#endif
+
 	return 0;
 }
