@@ -163,10 +163,7 @@ void muggle_shm_ringbuf_update_cached_remain(muggle_shm_ringbuf_t *shm_rbuf,
 void *muggle_shm_ringbuf_w_alloc_bytes(muggle_shm_ringbuf_t *shm_rbuf,
 									   uint32_t n_bytes)
 {
-	uint32_t n_cacheline =
-		ROUND_UP_POW_OF_2_MUL(n_bytes, MUGGLE_CACHE_LINE_SIZE) /
-		MUGGLE_CACHE_LINE_SIZE;
-	n_cacheline += 2;
+	uint32_t n_cacheline = MUGGLE_SHM_RINGBUF_CAL_BYTES_CACHELINE(n_bytes);
 	return muggle_shm_ringbuf_w_alloc_cachelines(shm_rbuf, n_bytes,
 												 n_cacheline);
 }
