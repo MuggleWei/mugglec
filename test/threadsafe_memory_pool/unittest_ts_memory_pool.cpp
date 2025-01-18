@@ -12,7 +12,7 @@ struct ts_data
 
 TEST(ts_memory_pool, single_thread)
 {
-	muggle_atomic_int capacity = (muggle_atomic_int)next_pow_of_2((uint64_t)5); // real capacity is 8, real allocate capacity = capacity - 1
+	muggle_atomic_int capacity = (muggle_atomic_int)muggle_next_pow_of_2((uint64_t)5); // real capacity is 8, real allocate capacity = capacity - 1
 
 	ASSERT_EQ(capacity, 8);
 
@@ -58,7 +58,7 @@ TEST(ts_memory_pool, mul_thread)
 	}
 	bool ready = false;
 	std::vector<std::thread> threads;
-	ts_data **datas = (ts_data**)malloc(sizeof(ts_data*) * next_pow_of_2(capacity));
+	ts_data **datas = (ts_data**)malloc(sizeof(ts_data*) * muggle_next_pow_of_2(capacity));
 	muggle_atomic_int data_pos = 0;
 
 	// allocate
@@ -90,7 +90,7 @@ TEST(ts_memory_pool, mul_thread)
 	}
 	threads.clear();
 
-	ASSERT_EQ(data_pos, (muggle_atomic_int)next_pow_of_2(capacity) - 1);
+	ASSERT_EQ(data_pos, (muggle_atomic_int)muggle_next_pow_of_2(capacity) - 1);
 	ASSERT_EQ(muggle_ts_memory_pool_alloc(&pool), nullptr);
 
 	std::map<int, int> thread_count;

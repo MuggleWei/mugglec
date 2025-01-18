@@ -3,7 +3,7 @@
 #include <string.h>
 #include <assert.h>
 
-#define MUGGLE_SHM_ALIGN_4K_PAGE(n) ROUND_UP_POW_OF_2_MUL(n, 4096)
+#define MUGGLE_SHM_ALIGN_4K_PAGE(n) MUGGLE_ROUND_UP_POW_OF_2_MUL(n, 4096)
 
 // 'M', 'S', 'H', 'M'
 #define MUGGLE_SHM_RINGBUF_MAGIC 0x4D53484D
@@ -24,9 +24,10 @@ muggle_shm_ringbuf_t *muggle_shm_ringbuf_open(muggle_shm_t *shm,
 	if (nbytes == 0) {
 		total_bytes = 0;
 	} else {
-		data_bytes = ROUND_UP_POW_OF_2_MUL(nbytes, MUGGLE_CACHE_LINE_SIZE);
+		data_bytes =
+			MUGGLE_ROUND_UP_POW_OF_2_MUL(nbytes, MUGGLE_CACHE_LINE_SIZE);
 		n_cacheline = data_bytes / MUGGLE_CACHE_LINE_SIZE;
-		n_cacheline = (uint32_t)next_pow_of_2(n_cacheline);
+		n_cacheline = (uint32_t)muggle_next_pow_of_2(n_cacheline);
 		data_bytes = n_cacheline * MUGGLE_CACHE_LINE_SIZE;
 
 		total_bytes = sizeof(muggle_shm_ringbuf_t) + data_bytes;

@@ -14,7 +14,7 @@ int muggle_ring_memory_pool_init(muggle_ring_memory_pool_t *pool,
 		capacity = 2;
 	}
 
-	capacity = (muggle_sync_t)next_pow_of_2((muggle_sync_t)capacity);
+	capacity = (muggle_sync_t)muggle_next_pow_of_2((muggle_sync_t)capacity);
 	if (capacity < 2) {
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
@@ -26,7 +26,7 @@ int muggle_ring_memory_pool_init(muggle_ring_memory_pool_t *pool,
 	muggle_spinlock_init(&pool->write_spinlock);
 	pool->capacity = capacity;
 	pool->block_size =
-		next_pow_of_2(data_size + sizeof(muggle_ring_mpool_block_head_t));
+		muggle_next_pow_of_2(data_size + sizeof(muggle_ring_mpool_block_head_t));
 	pool->alloc_idx = 0;
 
 	pool->blocks = malloc(pool->block_size * pool->capacity);

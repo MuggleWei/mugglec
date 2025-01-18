@@ -77,7 +77,7 @@ typedef struct {
 
 // calculate required number of cacheline
 #define MUGGLE_SHM_RINGBUF_CAL_BYTES_CACHELINE(n_bytes)        \
-	((ROUND_UP_POW_OF_2_MUL(                                   \
+	((MUGGLE_ROUND_UP_POW_OF_2_MUL(                            \
 		  (sizeof(muggle_shm_ringbuf_data_hdr_t) + (n_bytes)), \
 		  MUGGLE_CACHE_LINE_SIZE) /                            \
 	  MUGGLE_CACHE_LINE_SIZE) +                                \

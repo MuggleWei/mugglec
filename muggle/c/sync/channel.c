@@ -295,7 +295,7 @@ int muggle_channel_init(
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	capacity = (muggle_sync_t)next_pow_of_2((uint64_t)capacity);
+	capacity = (muggle_sync_t)muggle_next_pow_of_2((uint64_t)capacity);
 	if (capacity <= 0)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;

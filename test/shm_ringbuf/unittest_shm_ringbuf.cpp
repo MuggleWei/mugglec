@@ -7,7 +7,7 @@ public:
 	{
 		k_name = "/tmp/";
 		k_num = 1;
-		uint32_t n_cacheline = next_pow_of_2(1024);
+		uint32_t n_cacheline = muggle_next_pow_of_2(1024);
 		uint32_t n_bytes = n_cacheline * MUGGLE_CACHE_LINE_SIZE;
 
 		// close already exists shm_ringbuf

@@ -156,7 +156,7 @@ void muggle_ma_ring_ctx_set_data_size(muggle_sync_t data_size)
 {
 	muggle_ma_ring_context_t *ctx = muggle_ma_ring_ctx_get();
 
-	ctx->block_size = ALIGN_TRUE_SHARING(data_size);
+	ctx->block_size = MUGGLE_ALIGN_TRUE_SHARING(data_size);
 }
 
 void muggle_ma_ring_ctx_set_callback(muggle_ma_ring_callback fn)
