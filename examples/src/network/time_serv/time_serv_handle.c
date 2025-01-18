@@ -163,8 +163,11 @@ void on_close(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
 	else
 	{
 		char addr[MUGGLE_SOCKET_ADDR_STRLEN];
-		muggle_socket_remote_addr(ctx->base.fd, addr, sizeof(addr), 0);
-		LOG_INFO("TCP disconnection: %s", addr);
+		if (muggle_socket_remote_addr(ctx->base.fd, addr, sizeof(addr), 0)) {
+			LOG_INFO("TCP disconnection: %s", addr);
+		} else {
+			LOG_INFO("TCP disconnection: (failed get addr)");
+		}
 	}
 }
 
@@ -178,8 +181,11 @@ void on_release(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
 	}
 
 	char addr[MUGGLE_SOCKET_ADDR_STRLEN];
-	muggle_socket_remote_addr(ctx->base.fd, addr, sizeof(addr), 0);
-	LOG_INFO("TCP context release user data: %s", addr);
+	if (muggle_socket_remote_addr(ctx->base.fd, addr, sizeof(addr), 0)) {
+		LOG_INFO("TCP context release user data: %s", addr);
+	} else {
+		LOG_INFO("TCP context release user data: (failed get addr)");
+	}
 
 	muggle_linked_list_node_t *node = (muggle_linked_list_node_t*)muggle_socket_ctx_get_data(ctx);
 	muggle_linked_list_remove(&data->conn_list, node, NULL, NULL);

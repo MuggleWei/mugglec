@@ -277,7 +277,7 @@ int muggle_ring_buffer_init(
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	r->capacity = (muggle_atomic_int)next_pow_of_2((uint64_t)capacity);
+	r->capacity = (muggle_atomic_int)muggle_next_pow_of_2((uint64_t)capacity);
 	if (r->capacity <= 0)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;

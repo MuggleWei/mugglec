@@ -16,8 +16,12 @@
 
 EXTERN_C_BEGIN
 
-#define IS_POW_OF_2(x)             (!((x)&((x)-1)))
-#define ROUND_UP_POW_OF_2_MUL(x,n) (((x)+(n)-1)&~((n)-1))
+#define MUGGLE_IS_POW_OF_2(x)             (!((x)&((x)-1)))
+#define MUGGLE_ROUND_UP_POW_OF_2_MUL(x,n) (((x)+(n)-1)&~((n)-1))
+
+#define MUGGLE_ALIGN_TRUE_SHARING(n) \
+	(MUGGLE_ROUND_UP_POW_OF_2_MUL(n, MUGGLE_CACHE_LINE_SIZE) \
+	 + MUGGLE_CACHE_LINE_X2_SIZE)
 
 #define MUGGLE_CHECK_RET(x, err_enum) \
 	if (!(x)) \
@@ -26,7 +30,7 @@ EXTERN_C_BEGIN
 	}
 
 MUGGLE_C_EXPORT
-uint64_t next_pow_of_2(uint64_t x);
+uint64_t muggle_next_pow_of_2(uint64_t x);
 
 EXTERN_C_END
 

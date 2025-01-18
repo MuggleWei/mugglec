@@ -26,18 +26,15 @@ int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_sync_t capa
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	capacity = (muggle_sync_t)next_pow_of_2((uint64_t)capacity);
+	capacity = (muggle_sync_t)muggle_next_pow_of_2((uint64_t)capacity);
 	if (capacity <= 0)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
 	}
 
-	// align block_size to cacheline and add another 2 cacheline
 	muggle_sync_t block_size =
 		(muggle_sync_t)sizeof(muggle_ts_memory_pool_head_t) + data_size;
-	muggle_sync_t align_size =
-		ROUND_UP_POW_OF_2_MUL(block_size, MUGGLE_CACHE_LINE_SIZE);
-	block_size = align_size + MUGGLE_CACHE_LINE_X2_SIZE;
+	block_size = MUGGLE_ALIGN_TRUE_SHARING(block_size);
 	if (block_size <= 0)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;

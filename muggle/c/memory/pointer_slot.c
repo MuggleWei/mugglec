@@ -19,7 +19,7 @@ int muggle_pointer_slot_init(muggle_pointer_slot_t *pointer_slot, unsigned int c
 {
 	memset(pointer_slot, 0, sizeof(muggle_pointer_slot_t));
 	capacity = capacity > 0 ? capacity : 1;
-	pointer_slot->capacity = (unsigned int)next_pow_of_2((uint64_t)capacity);
+	pointer_slot->capacity = (unsigned int)muggle_next_pow_of_2((uint64_t)capacity);
 
 	pointer_slot->slots = (muggle_pointer_slot_item_t*)malloc(sizeof(muggle_pointer_slot_item_t) * capacity);
 	pointer_slot->pp_slots = (muggle_pointer_slot_item_t**)malloc(sizeof(muggle_pointer_slot_item_t*) * capacity);
