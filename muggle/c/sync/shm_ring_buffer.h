@@ -30,6 +30,8 @@ typedef struct {
 		struct {
 			uint32_t magic; //!< magic word
 			uint32_t n_bytes; //!< number of data bytes
+			uint32_t total_bytes; //!< total bytes
+			uint32_t reserved1; //!< reserved bytes
 			muggle_sync_t n_cacheline; //!< number of data cachelines
 			muggle_sync_t ready; //!< is ready
 		};

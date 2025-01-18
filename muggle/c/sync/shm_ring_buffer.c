@@ -17,9 +17,21 @@ muggle_shm_ringbuf_t *muggle_shm_ringbuf_open(muggle_shm_t *shm,
 											  const char *k_name, int k_num,
 											  int flag, uint32_t nbytes)
 {
-	uint32_t data_bytes = ROUND_UP_POW_OF_2_MUL(nbytes, MUGGLE_CACHE_LINE_SIZE);
-	uint32_t total_bytes = sizeof(muggle_shm_ringbuf_t) + data_bytes;
-	total_bytes = MUGGLE_SHM_ALIGN_4K_PAGE(total_bytes);
+	uint32_t data_bytes = 0;
+	uint32_t n_cacheline = 0;
+	uint32_t total_bytes = 0;
+
+	if (nbytes == 0) {
+		total_bytes = 0;
+	} else {
+		data_bytes = ROUND_UP_POW_OF_2_MUL(nbytes, MUGGLE_CACHE_LINE_SIZE);
+		n_cacheline = data_bytes / MUGGLE_CACHE_LINE_SIZE;
+		n_cacheline = (uint32_t)next_pow_of_2(n_cacheline);
+		data_bytes = n_cacheline * MUGGLE_CACHE_LINE_SIZE;
+
+		total_bytes = sizeof(muggle_shm_ringbuf_t) + data_bytes;
+		total_bytes = MUGGLE_SHM_ALIGN_4K_PAGE(total_bytes);
+	}
 
 	muggle_shm_ringbuf_t *ptr = (muggle_shm_ringbuf_t *)muggle_shm_open(
 		shm, k_name, k_num, flag, total_bytes);
@@ -32,7 +44,8 @@ muggle_shm_ringbuf_t *muggle_shm_ringbuf_open(muggle_shm_t *shm,
 		memset(ptr, 0, sizeof(*ptr));
 
 		ptr->n_bytes = data_bytes;
-		ptr->n_cacheline = data_bytes / MUGGLE_CACHE_LINE_SIZE;
+		ptr->total_bytes = total_bytes;
+		ptr->n_cacheline = n_cacheline;
 
 		ptr->write_cursor = 0;
 		ptr->cached_remain = ptr->n_cacheline - 1;
@@ -40,7 +53,7 @@ muggle_shm_ringbuf_t *muggle_shm_ringbuf_open(muggle_shm_t *shm,
 		ptr->read_cursor = 0;
 
 		muggle_spinlock_init(&ptr->write_lock);
-		muggle_spinlock_init(&ptr->write_lock);
+		muggle_spinlock_init(&ptr->read_lock);
 
 		ptr->magic = MUGGLE_SHM_RINGBUF_MAGIC;
 		muggle_atomic_store(&ptr->ready, 1, muggle_memory_order_release);
@@ -153,6 +166,7 @@ void *muggle_shm_ringbuf_w_alloc_bytes(muggle_shm_ringbuf_t *shm_rbuf,
 	uint32_t n_cacheline =
 		ROUND_UP_POW_OF_2_MUL(n_bytes, MUGGLE_CACHE_LINE_SIZE) /
 		MUGGLE_CACHE_LINE_SIZE;
+	n_cacheline += 2;
 	return muggle_shm_ringbuf_w_alloc_cachelines(shm_rbuf, n_bytes,
 												 n_cacheline);
 }
@@ -230,10 +244,8 @@ void *muggle_shm_ringbuf_r_fetch(muggle_shm_ringbuf_t *shm_rbuf,
 void muggle_shm_ringbuf_r_move(muggle_shm_ringbuf_t *shm_rbuf)
 {
 	uint32_t n = shm_rbuf->cached_r_hdr->n_cachelines;
-	uint32_t r_pos = shm_rbuf->read_cursor + n;
-	if (r_pos == shm_rbuf->n_cacheline) {
-		r_pos = 0;
-	}
+	uint32_t r_pos =
+		IDX_IN_POW_OF_2_RING(shm_rbuf->read_cursor + n, shm_rbuf->n_cacheline);
 	muggle_atomic_store(&shm_rbuf->read_cursor, r_pos,
 						muggle_memory_order_release);
 }
