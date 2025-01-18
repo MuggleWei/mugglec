@@ -92,6 +92,11 @@ void benchmark_shm_ringbuf(muggle_benchmark_config_t *config, const char *name)
 	// cleanup shm_ringbuf
 	muggle_shm_detach(&shm);
 	muggle_shm_rm(&shm);
+
+#if MUGGLE_PLATFORM_WINDOWS
+#else
+	muggle_os_remove(k_name);
+#endif
 }
 
 int main(int argc, char *argv[])
