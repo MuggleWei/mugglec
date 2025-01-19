@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
+#include <thread>
 
 class ShmRingBufFixture : public testing::Test {
 public:
@@ -250,4 +251,101 @@ TEST_F(ShmRingBufFixture, w_r_case3)
 
 	muggle_shm_ringbuf_r_move(shm_rbuf);
 	ASSERT_EQ(shm_rbuf->read_cursor, shm_rbuf->write_cursor);
+}
+
+TEST_F(ShmRingBufFixture, lock)
+{
+	muggle_shm_ringbuf_t *rbuf = shm_rbuf;
+	int n = 10000;
+	const int N_THREAD = 4;
+	std::thread *th_producers[N_THREAD];
+	std::thread *th_consumers[N_THREAD];
+	int32_t consumers[N_THREAD];
+
+	for (int idx = 0; idx < N_THREAD; ++idx) {
+		th_producers[idx] = new std::thread([rbuf, n, idx] {
+			muggle_spinlock_t *w_lock = muggle_shm_ringbuf_get_wlock(rbuf);
+			for (int i = 0; i < n; ++i) {
+				muggle_spinlock_lock(w_lock);
+				while (true) {
+					int32_t *ptr = (int32_t *)muggle_shm_ringbuf_w_alloc_bytes(
+						rbuf, sizeof(int32_t));
+					if (ptr == NULL) {
+						muggle_thread_yield();
+					} else {
+						*ptr = idx + 1;
+						muggle_shm_ringbuf_w_move(rbuf);
+						break;
+					}
+				}
+				muggle_spinlock_unlock(w_lock);
+			}
+
+			muggle_spinlock_lock(w_lock);
+			while (true) {
+				int32_t *ptr = (int32_t *)muggle_shm_ringbuf_w_alloc_bytes(
+					rbuf, sizeof(int32_t));
+				if (ptr == NULL) {
+					muggle_thread_yield();
+				} else {
+					*ptr = 0;
+					muggle_shm_ringbuf_w_move(rbuf);
+					break;
+				}
+			}
+			muggle_spinlock_unlock(w_lock);
+		});
+	}
+
+	for (int idx = 0; idx < N_THREAD; ++idx) {
+		th_consumers[idx] = new std::thread([rbuf, &consumers, idx] {
+			consumers[idx] = 0;
+
+			muggle_spinlock_t *r_lock = muggle_shm_ringbuf_get_rlock(rbuf);
+			while (true) {
+				muggle_spinlock_lock(r_lock);
+
+				uint32_t n_bytes = 0;
+				int32_t *ptr =
+					(int32_t *)muggle_shm_ringbuf_r_fetch(rbuf, &n_bytes);
+				if (ptr == NULL) {
+					muggle_thread_yield();
+				} else {
+					ASSERT_EQ(n_bytes, sizeof(int32_t));
+					consumers[idx] += *ptr;
+					muggle_shm_ringbuf_r_move(rbuf);
+				}
+
+				muggle_spinlock_unlock(r_lock);
+
+				if (ptr && *ptr == 0) {
+					break;
+				}
+			}
+		});
+	}
+
+	for (int i = 0; i < N_THREAD; ++i) {
+		th_producers[i]->join();
+		delete th_producers[i];
+		th_producers[i] = NULL;
+	}
+
+	for (int i = 0; i < N_THREAD; ++i) {
+		th_consumers[i]->join();
+		delete th_consumers[i];
+		th_consumers[i] = NULL;
+	}
+
+	int32_t total = 0;
+	for (int i = 0; i < N_THREAD; ++i) {
+		total += consumers[i];
+	}
+
+	int32_t expect_total = 0;
+	for (int i = 0; i < N_THREAD; ++i) {
+		expect_total += (i + 1) * n;
+	}
+
+	ASSERT_EQ(total, expect_total);
 }
