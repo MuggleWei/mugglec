@@ -11,12 +11,14 @@
 #include "os.h"
 #include "muggle/c/base/err.h"
 #include "muggle/c/os/path.h"
+#include "muggle/c/log/log.h"
 #include <stdlib.h>
 
 #if MUGGLE_PLATFORM_WINDOWS
 
 #include <windows.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 int muggle_os_process_path(char *path, unsigned int size)
 {
@@ -152,14 +154,19 @@ muggle_file_list_node_t *muggle_os_listdir(const char *dirpath, int ftype)
 		return NULL;
 	}
 
-	dir_file_list_node_t *head = NULL;
-	dir_file_list_node_t *tail = NULL;
+	muggle_file_list_node_t *head = NULL;
+	muggle_file_list_node_t *tail = NULL;
 	do {
+		if ((strcmp(direntp->d_name, ".") == 0) ||
+			(strcmp(direntp->d_name, "..") == 0)) {
+			continue;
+		}
+
 		bool filter_pass = true;
 		if (ftype != MUGGLE_FILE_TYPE_NULL) {
 			switch (ftype) {
 				case MUGGLE_FILE_TYPE_REGULAR: {
-					if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_NORMAL)) {
+					if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE)) {
 						filter_pass = false;
 					}
 				}break;
@@ -177,6 +184,10 @@ muggle_file_list_node_t *muggle_os_listdir(const char *dirpath, int ftype)
 					filter_pass = false;
 				}break;
 			}
+		}
+
+		if (!filter_pass) {
+			continue;
 		}
 
 		muggle_file_list_node_t *node =
@@ -219,8 +230,6 @@ muggle_file_list_node_t *muggle_os_listdir(const char *dirpath, int ftype)
 #if MUGGLE_PLATFORM_APPLE
 #include <libproc.h>
 #endif
-
-#include "muggle/c/log/log.h"
 
 int muggle_os_process_path(char *path, unsigned int size)
 {
