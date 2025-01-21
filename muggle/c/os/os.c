@@ -199,9 +199,9 @@ muggle_file_list_node_t *muggle_os_listdir(const char *dirpath, int ftype)
 
 		node->next = NULL;
 		size_t len = strlen(ffd.cFileName);
-		node->filepath = (char *)malloc(len + 1);
-		memcpy(node->filepath, ffd.cFileName, len);
-		node->filepath[len] = '\0';
+		node->filename = (char *)malloc(len + 1);
+		memcpy(node->filename, ffd.cFileName, len);
+		node->filename[len] = '\0';
 
 		if (tail == NULL) {
 			head = node;
