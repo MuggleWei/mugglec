@@ -157,8 +157,8 @@ muggle_file_list_node_t *muggle_os_listdir(const char *dirpath, int ftype)
 	muggle_file_list_node_t *head = NULL;
 	muggle_file_list_node_t *tail = NULL;
 	do {
-		if ((strcmp(direntp->d_name, ".") == 0) ||
-			(strcmp(direntp->d_name, "..") == 0)) {
+		if ((strcmp(ffd.cFileName, ".") == 0) ||
+			(strcmp(ffd.cFileName, "..") == 0)) {
 			continue;
 		}
 
