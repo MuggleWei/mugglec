@@ -16,6 +16,21 @@
 
 EXTERN_C_BEGIN
 
+enum {
+	MUGGLE_FILE_TYPE_NULL = 0,
+	MUGGLE_FILE_TYPE_REGULAR, //!< regular file
+	MUGGLE_FILE_TYPE_DIR, //!< directory
+	MUGGLE_FILE_TYPE_LINK, //!< symbol link
+};
+
+/**
+ * @brief file node
+ */
+typedef struct {
+	void *next;
+	char *filepath;
+} muggle_file_list_node_t;
+
 /**
  * @brief get current process file path
  *
@@ -100,7 +115,27 @@ int muggle_os_rename(const char *src, const char *dst);
  *     - on failed, NULL is returned
  */
 MUGGLE_C_EXPORT
-FILE* muggle_os_fopen(const char *filepath, const char *mode);
+FILE *muggle_os_fopen(const char *filepath, const char *mode);
+
+/**
+ * @brief list file in directory
+ *
+ * @param dirpath  directory path
+ * @param ftype    file type filter; MUGGLE_FILE_TYPE_*
+ *                 0 represent without filter
+ *
+ * @return file list nodes
+ */
+MUGGLE_C_EXPORT
+muggle_file_list_node_t *muggle_os_listdir(const char *dirpath, int ftype);
+
+/**
+ * @brief free file nodes
+ *
+ * @param nodes  file nodes pointer
+ */
+MUGGLE_C_EXPORT
+void muggle_os_free_file_nodes(muggle_file_list_node_t *nodes);
 
 EXTERN_C_END
 
