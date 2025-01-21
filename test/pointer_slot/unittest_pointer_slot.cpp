@@ -103,15 +103,15 @@ TEST(pointer_slot, idx_truncate)
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[1], &idx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(IDX_IN_POW_OF_2_RING(start_idx + 1, capacity), IDX_IN_POW_OF_2_RING(idx, capacity));
+	ASSERT_EQ(MUGGLE_IDX_IN_POW_OF_2_RING(start_idx + 1, capacity), MUGGLE_IDX_IN_POW_OF_2_RING(idx, capacity));
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[2], &idx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(IDX_IN_POW_OF_2_RING(start_idx + 2, capacity), IDX_IN_POW_OF_2_RING(idx, capacity));
+	ASSERT_EQ(MUGGLE_IDX_IN_POW_OF_2_RING(start_idx + 2, capacity), MUGGLE_IDX_IN_POW_OF_2_RING(idx, capacity));
 
 	ret = muggle_pointer_slot_insert(&ptr_slot, &arr[3], &idx);
 	ASSERT_EQ(ret, 0);
-	ASSERT_EQ(IDX_IN_POW_OF_2_RING(start_idx + 3, capacity), IDX_IN_POW_OF_2_RING(idx, capacity));
+	ASSERT_EQ(MUGGLE_IDX_IN_POW_OF_2_RING(start_idx + 3, capacity), MUGGLE_IDX_IN_POW_OF_2_RING(idx, capacity));
 
 	muggle_pointer_slot_destroy(&ptr_slot);
 }

@@ -61,7 +61,7 @@ void *muggle_ring_memory_pool_alloc(muggle_ring_memory_pool_t *pool)
 												   pool->block_size *
 													   pool->alloc_idx);
 		++pool->alloc_idx;
-		pool->alloc_idx = IDX_IN_POW_OF_2_RING(pool->alloc_idx, pool->capacity);
+		pool->alloc_idx = MUGGLE_IDX_IN_POW_OF_2_RING(pool->alloc_idx, pool->capacity);
 
 		if (muggle_atomic_load(&block->in_use, muggle_memory_order_relaxed) ==
 			0) {

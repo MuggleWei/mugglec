@@ -31,25 +31,25 @@ TEST(ring_buffer, usage_utils)
 	// -2147483648 > 0 is true in some compiler, don't compare it with 0
 	// ASSERT_LT(pos + 1, 0);
 
-	muggle_sync_t idx_in_ring = IDX_IN_POW_OF_2_RING(pos, capacity);
+	muggle_sync_t idx_in_ring = MUGGLE_IDX_IN_POW_OF_2_RING(pos, capacity);
 	ASSERT_GE(idx_in_ring, 0);
 	ASSERT_LT(idx_in_ring, capacity);
 	if (idx_in_ring == capacity - 1)
 	{
-		ASSERT_EQ(IDX_IN_POW_OF_2_RING(pos+1, capacity), 0);
+		ASSERT_EQ(MUGGLE_IDX_IN_POW_OF_2_RING(pos+1, capacity), 0);
 	}
 	else
 	{
-		ASSERT_EQ(IDX_IN_POW_OF_2_RING(pos+1, capacity), idx_in_ring + 1);
+		ASSERT_EQ(MUGGLE_IDX_IN_POW_OF_2_RING(pos+1, capacity), idx_in_ring + 1);
 	}
 
 	int k = 8;
 	pos = pos - capacity * k - 1;
-	muggle_sync_t last_idx_in_ring = IDX_IN_POW_OF_2_RING(pos, capacity);
+	muggle_sync_t last_idx_in_ring = MUGGLE_IDX_IN_POW_OF_2_RING(pos, capacity);
 	++pos;
 	for (muggle_sync_t i = 0; i < capacity * k * 2; ++i)
 	{
-		idx_in_ring = IDX_IN_POW_OF_2_RING(pos, capacity);
+		idx_in_ring = MUGGLE_IDX_IN_POW_OF_2_RING(pos, capacity);
 		ASSERT_GE(idx_in_ring, 0);
 		ASSERT_LT(idx_in_ring, capacity);
 		if (last_idx_in_ring == capacity - 1)
@@ -61,7 +61,7 @@ TEST(ring_buffer, usage_utils)
 			ASSERT_EQ(idx_in_ring, last_idx_in_ring + 1);
 		}
 		last_idx_in_ring = idx_in_ring;
-		pos = IDX_IN_POW_OF_2_RING(pos + 1, capacity);
+		pos = MUGGLE_IDX_IN_POW_OF_2_RING(pos + 1, capacity);
 	}
 }
 

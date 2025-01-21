@@ -77,10 +77,10 @@ void muggle_pointer_slot_destroy(muggle_pointer_slot_t *pointer_slot)
 
 int muggle_pointer_slot_insert(muggle_pointer_slot_t *pointer_slot, void *data, unsigned int *slot_idx)
 {
-	unsigned int alloc_idx = IDX_IN_POW_OF_2_RING(pointer_slot->alloc_index, pointer_slot->capacity);
+	unsigned int alloc_idx = MUGGLE_IDX_IN_POW_OF_2_RING(pointer_slot->alloc_index, pointer_slot->capacity);
 	if (pointer_slot->pp_slots[alloc_idx]->in_used == 1)
 	{
-		MUGGLE_ASSERT(alloc_idx == IDX_IN_POW_OF_2_RING(pointer_slot->free_index, pointer_slot->capacity));
+		MUGGLE_ASSERT(alloc_idx == MUGGLE_IDX_IN_POW_OF_2_RING(pointer_slot->free_index, pointer_slot->capacity));
 		return MUGGLE_ERR_MEM_ALLOC;
 	}
 
@@ -114,7 +114,7 @@ int muggle_pointer_slot_remove(muggle_pointer_slot_t *pointer_slot, unsigned int
 		return MUGGLE_ERR_MEM_DUPLICATE_FREE;
 	}
 
-	unsigned int free_idx = IDX_IN_POW_OF_2_RING(pointer_slot->free_index, pointer_slot->capacity);
+	unsigned int free_idx = MUGGLE_IDX_IN_POW_OF_2_RING(pointer_slot->free_index, pointer_slot->capacity);
 	muggle_pointer_slot_item_t *p_slot = &pointer_slot->slots[slot_idx];
 	pointer_slot->pp_slots[free_idx] = p_slot;
 

@@ -91,7 +91,7 @@ static int muggle_channel_write_sync(muggle_channel_t *chan, void *data)
 	muggle_sync_t rpos =
 		muggle_atomic_load(&chan->read_cursor, muggle_memory_order_relaxed);
 	muggle_sync_t wpos =
-		IDX_IN_POW_OF_2_RING(chan->write_cursor + 1, chan->capacity);
+		MUGGLE_IDX_IN_POW_OF_2_RING(chan->write_cursor + 1, chan->capacity);
 	if (wpos == rpos)
 	{
 		return MUGGLE_ERR_FULL;
@@ -148,7 +148,7 @@ static void muggle_channel_wake_sync(muggle_channel_t *chan)
 static void* muggle_channel_read_sync(muggle_channel_t *chan)
 {
 	muggle_sync_t rpos =
-		IDX_IN_POW_OF_2_RING(chan->read_cursor + 1, chan->capacity);
+		MUGGLE_IDX_IN_POW_OF_2_RING(chan->read_cursor + 1, chan->capacity);
 	muggle_sync_t wpos;
 	while (1)
 	{
@@ -177,7 +177,7 @@ static int muggle_channel_write_mutex(muggle_channel_t *chan, void *data)
 	muggle_mutex_lock(chan->read_mutex);
 
 	muggle_sync_t wpos =
-		IDX_IN_POW_OF_2_RING(chan->write_cursor + 1, chan->capacity);
+		MUGGLE_IDX_IN_POW_OF_2_RING(chan->write_cursor + 1, chan->capacity);
 
 	if (wpos == chan->read_cursor)
 	{
@@ -205,7 +205,7 @@ static void* muggle_channel_read_mutex(muggle_channel_t *chan)
 	while (1)
 	{
 		muggle_sync_t rpos =
-			IDX_IN_POW_OF_2_RING(chan->read_cursor + 1, chan->capacity);
+			MUGGLE_IDX_IN_POW_OF_2_RING(chan->read_cursor + 1, chan->capacity);
 		if (rpos != chan->write_cursor)
 		{
 			void *data = chan->blocks[rpos].data;
@@ -224,7 +224,7 @@ static void* muggle_channel_read_mutex(muggle_channel_t *chan)
 static int muggle_channel_write_busy(muggle_channel_t *chan, void *data)
 {
 	muggle_sync_t wpos =
-		IDX_IN_POW_OF_2_RING(chan->write_cursor + 1, chan->capacity);
+		MUGGLE_IDX_IN_POW_OF_2_RING(chan->write_cursor + 1, chan->capacity);
 	if (wpos != chan->cached_r_cur) {
 		chan->blocks[chan->write_cursor].data = data;
 		muggle_atomic_store(
@@ -254,7 +254,7 @@ static void muggle_channel_wake_busy(muggle_channel_t *chan)
 static void* muggle_channel_read_busy(muggle_channel_t *chan)
 {
 	muggle_sync_t rpos =
-		IDX_IN_POW_OF_2_RING(chan->read_cursor + 1, chan->capacity);
+		MUGGLE_IDX_IN_POW_OF_2_RING(chan->read_cursor + 1, chan->capacity);
 	muggle_sync_t wpos;
 	while (1)
 	{

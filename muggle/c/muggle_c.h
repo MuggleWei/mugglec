@@ -48,6 +48,8 @@
 #include "muggle/c/time/cpu_cycle.h"
 #include "muggle/c/time/realtime_get.h"
 #include "muggle/c/time/time_counter.h"
+#include "muggle/c/time/flow_controller.h"
+#include "muggle/c/time/fast_flow_controller.h"
 
 // os
 #include "muggle/c/os/os.h"

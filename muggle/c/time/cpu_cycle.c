@@ -70,9 +70,9 @@ uint64_t muggle_rdtscp()
 double muggle_rdtsc_freq_calibrate()
 {
 #if MUGGLE_SUPPORT_RDTSC
-	uint64_t start_ticks = muggle_rdtsc();
+	uint64_t start_ticks = muggle_rdtscp();
 	muggle_nsleep(1000000000ul);
-	uint64_t end_ticks = muggle_rdtsc();
+	uint64_t end_ticks = muggle_rdtscp();
 
 	uint64_t elapsed_ticks = end_ticks - start_ticks;
 

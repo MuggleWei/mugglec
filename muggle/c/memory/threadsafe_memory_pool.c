@@ -106,7 +106,7 @@ void* muggle_ts_memory_pool_alloc(muggle_ts_memory_pool_t *pool)
 	muggle_sync_t expected = pool->alloc_idx;
 	muggle_sync_t alloc_pos = 0;
 	do {
-		alloc_pos = IDX_IN_POW_OF_2_RING(expected + 1, pool->capacity);
+		alloc_pos = MUGGLE_IDX_IN_POW_OF_2_RING(expected + 1, pool->capacity);
 		if (alloc_pos == pool->cached_free_pos) {
 			pool->cached_free_pos =
 				muggle_atomic_load(&pool->free_idx, muggle_memory_order_acquire);
@@ -132,7 +132,7 @@ void muggle_ts_memory_pool_free(void *data)
 	pool->ptrs[pool->free_idx].ptr = block;
 
 	muggle_sync_t free_pos =
-		IDX_IN_POW_OF_2_RING(pool->free_idx + 1, pool->capacity);
+		MUGGLE_IDX_IN_POW_OF_2_RING(pool->free_idx + 1, pool->capacity);
 	muggle_atomic_store(&pool->free_idx, free_pos, muggle_memory_order_release);
 
 	muggle_spinlock_unlock(&pool->free_spinlock);

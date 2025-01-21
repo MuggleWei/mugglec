@@ -242,8 +242,8 @@ void *muggle_shm_ringbuf_r_fetch(muggle_shm_ringbuf_t *shm_rbuf,
 void muggle_shm_ringbuf_r_move(muggle_shm_ringbuf_t *shm_rbuf)
 {
 	uint32_t n = shm_rbuf->cached_r_hdr->n_cachelines;
-	uint32_t r_pos =
-		IDX_IN_POW_OF_2_RING(shm_rbuf->read_cursor + n, shm_rbuf->n_cacheline);
+	uint32_t r_pos = MUGGLE_IDX_IN_POW_OF_2_RING(shm_rbuf->read_cursor + n,
+												 shm_rbuf->n_cacheline);
 	muggle_atomic_store(&shm_rbuf->read_cursor, r_pos,
 						muggle_memory_order_release);
 }
