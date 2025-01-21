@@ -3,7 +3,7 @@
 void output_files(muggle_file_list_node_t *node)
 {
 	while (node) {
-		fprintf(stdout, "%s\n", node->filepath);
+		fprintf(stdout, "%s\n", node->filename);
 		node = (muggle_file_list_node_t *)node->next;
 	}
 	fprintf(stdout, "\n");

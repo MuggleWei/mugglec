@@ -27,8 +27,8 @@ enum {
  * @brief file node
  */
 typedef struct {
-	void *next;
-	char *filepath;
+	void *next; //!< next file_list_node
+	char *filename; //!< filename
 } muggle_file_list_node_t;
 
 /**
