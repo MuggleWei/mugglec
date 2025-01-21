@@ -69,7 +69,7 @@ void muggle_sowr_memory_pool_destroy(muggle_sowr_memory_pool_t *pool)
 
 void* muggle_sowr_memory_pool_alloc(muggle_sowr_memory_pool_t *pool)
 {
-	muggle_sync_t alloc_pos = IDX_IN_POW_OF_2_RING(pool->alloc_idx, pool->capacity);
+	muggle_sync_t alloc_pos = MUGGLE_IDX_IN_POW_OF_2_RING(pool->alloc_idx, pool->capacity);
 	if (alloc_pos != pool->cached_free_pos)
 	{
 		muggle_sowr_block_head_t *block = (muggle_sowr_block_head_t*)((char*)pool->blocks + pool->block_size * alloc_pos);
@@ -79,7 +79,7 @@ void* muggle_sowr_memory_pool_alloc(muggle_sowr_memory_pool_t *pool)
 
 	pool->cached_free_pos = muggle_atomic_load(&pool->free_idx, muggle_memory_order_relaxed);
 	pool->cached_free_pos -= 1;
-	pool->cached_free_pos = IDX_IN_POW_OF_2_RING(pool->cached_free_pos, pool->capacity);
+	pool->cached_free_pos = MUGGLE_IDX_IN_POW_OF_2_RING(pool->cached_free_pos, pool->capacity);
 	if (alloc_pos != pool->cached_free_pos)
 	{
 		muggle_sowr_block_head_t *block = (muggle_sowr_block_head_t*)((char*)pool->blocks + pool->block_size * alloc_pos);
@@ -101,8 +101,8 @@ void muggle_sowr_memory_pool_free(void *data)
 int muggle_sowr_memory_pool_is_all_free(muggle_sowr_memory_pool_t *pool)
 {
 	muggle_sync_t free_idx = muggle_atomic_load(&pool->free_idx, muggle_memory_order_relaxed);
-	muggle_sync_t free_pos = IDX_IN_POW_OF_2_RING(free_idx, pool->capacity);
-	muggle_sync_t alloc_pos = IDX_IN_POW_OF_2_RING(pool->alloc_idx, pool->capacity);
+	muggle_sync_t free_pos = MUGGLE_IDX_IN_POW_OF_2_RING(free_idx, pool->capacity);
+	muggle_sync_t alloc_pos = MUGGLE_IDX_IN_POW_OF_2_RING(pool->alloc_idx, pool->capacity);
 
 	return free_pos == alloc_pos ? 1 : 0;
 }

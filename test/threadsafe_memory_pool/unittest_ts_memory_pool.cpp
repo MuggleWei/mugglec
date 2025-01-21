@@ -108,7 +108,7 @@ TEST(ts_memory_pool, mul_thread)
 //		printf("%d - %d\n", i, thread_count[i]);
 //	}
 
-	ASSERT_EQ(IDX_IN_POW_OF_2_RING(pool.alloc_idx + 1, pool.capacity), pool.free_idx);
+	ASSERT_EQ(MUGGLE_IDX_IN_POW_OF_2_RING(pool.alloc_idx + 1, pool.capacity), pool.free_idx);
 
 	// free
 	ready = false;

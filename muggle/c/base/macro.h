@@ -213,7 +213,7 @@
 	MUGGLE_STRUCT_CACHE_LINE_PADDING(idx)
 
 // idx % capacity, capacity must be pow of 2
-#define IDX_IN_POW_OF_2_RING(idx, capacity) ((idx) & ((capacity) - 1))
+#define MUGGLE_IDX_IN_POW_OF_2_RING(idx, capacity) ((idx) & ((capacity) - 1))
 
 // convert macro value to string
 // extra level of indirection will allow the preprocessor to
