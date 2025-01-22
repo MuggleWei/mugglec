@@ -107,56 +107,36 @@ void muggle_shm_ringbuf_update_cached_remain(muggle_shm_ringbuf_t *shm_rbuf,
 		// contiguous writable is: r - w - 1
 		shm_rbuf->cached_remain = r_pos - shm_rbuf->write_cursor - 1;
 	} else {
-		if (r_pos != 0) {
-			//             r        w          end
-			// ================================
-			//
-			//               (rw)              end
-			// ================================
-			//
-			// contiguous writable is: (end - w) or (r - 1)
-			uint32_t right_remain =
-				shm_rbuf->n_cacheline - shm_rbuf->write_cursor;
-			uint32_t left_remain = r_pos - 1;
-			if (right_remain >= required_cacheline) {
-				shm_rbuf->cached_remain = right_remain;
-			} else if (left_remain >= required_cacheline) {
-				// fillup current hdr 0 and move w to 0
-				muggle_shm_ringbuf_data_hdr_t *hdr =
-					muggle_shm_ringbuf_get_data(shm_rbuf,
-												shm_rbuf->write_cursor);
+		//             r        w          end
+		// ================================
+		//
+		//               (rw)              end
+		// ================================
+		//
+		// contiguous writable is: (end - w - 1) or (r - 1)
+		//
+		// NOTE:
+		//   right_remain use (end - w - 1) instead of (end - w), it's can 
+		//   reduce branch judgment in codes
+		uint32_t right_remain =
+			shm_rbuf->n_cacheline - shm_rbuf->write_cursor - 1;
+		int32_t left_remain = (int32_t)r_pos - 1;
+		if (right_remain >= required_cacheline) {
+			shm_rbuf->cached_remain = right_remain;
+		} else if (left_remain >= (int32_t)required_cacheline) {
+			// fillup current hdr 0 and move w to 0
+			muggle_shm_ringbuf_data_hdr_t *hdr =
+				muggle_shm_ringbuf_get_data(shm_rbuf,
+						shm_rbuf->write_cursor);
+			hdr->n_bytes = 0;
+			hdr->n_cachelines = 0;
 
-				// if w == end, right_remain is 0
-				//
-				//               r                 (w|end)
-				// ================================
-				//
-				if (right_remain != 0) {
-					hdr->n_bytes = 0;
-					hdr->n_cachelines = 0;
-				}
-				muggle_atomic_store(&shm_rbuf->write_cursor, 0,
-									muggle_memory_order_release);
+			muggle_atomic_store(&shm_rbuf->write_cursor, 0,
+					muggle_memory_order_release);
 
-				shm_rbuf->cached_remain = left_remain;
-			} else {
-				// there has no enough space
-			}
+			shm_rbuf->cached_remain = left_remain;
 		} else {
-			// r                    w          end
-			// ================================
-			//
-			// contiguous writable is: (end - w - 1)
-			//
-			// NOTE:
-			//   don't need worry about end == w, cause r is 0, w will not move
-			//   to end
-			if (shm_rbuf->n_cacheline == shm_rbuf->write_cursor) {
-				// there has no enough space
-			} else {
-				shm_rbuf->cached_remain =
-					shm_rbuf->n_cacheline - shm_rbuf->write_cursor - 1;
-			}
+			// there has no enough space
 		}
 	}
 }
@@ -242,8 +222,12 @@ void *muggle_shm_ringbuf_r_fetch(muggle_shm_ringbuf_t *shm_rbuf,
 void muggle_shm_ringbuf_r_move(muggle_shm_ringbuf_t *shm_rbuf)
 {
 	uint32_t n = shm_rbuf->cached_r_hdr->n_cachelines;
-	uint32_t r_pos = MUGGLE_IDX_IN_POW_OF_2_RING(shm_rbuf->read_cursor + n,
-												 shm_rbuf->n_cacheline);
+
+	// NOTE: cause right_remain use (end - w - 1), this don't consider ring
+	// uint32_t r_pos = MUGGLE_IDX_IN_POW_OF_2_RING(shm_rbuf->read_cursor + n,
+	//                                              shm_rbuf->n_cacheline);
+	uint32_t r_pos = shm_rbuf->read_cursor + n;
+
 	muggle_atomic_store(&shm_rbuf->read_cursor, r_pos,
 						muggle_memory_order_release);
 }
