@@ -69,7 +69,7 @@ TEST_F(ShmRingBufFixture, cap)
 	uint32_t data_cacheline = MUGGLE_SHM_RINGBUF_CAL_BYTES_CACHELINE(data_size);
 	ASSERT_EQ(data_cacheline, 3);
 
-	uint32_t n = (uint32_t)shm_rbuf->n_cacheline / data_cacheline;
+	uint32_t n = (uint32_t)(shm_rbuf->n_cacheline - 1) / data_cacheline;
 	for (uint32_t i = 0; i < n; ++i) {
 		void *ptr = muggle_shm_ringbuf_w_alloc_bytes(shm_rbuf, data_size);
 		ASSERT_TRUE(ptr != NULL);
@@ -164,7 +164,7 @@ TEST_F(ShmRingBufFixture, w_r_case2)
 	muggle_shm_ringbuf_r_move(shm_rbuf);
 
 	// w move to end
-	n_bytes = (shm_rbuf->n_cacheline - shm_rbuf->write_cursor - 2) *
+	n_bytes = (shm_rbuf->n_cacheline - 1 - shm_rbuf->write_cursor - 2) *
 				  MUGGLE_CACHE_LINE_SIZE -
 			  sizeof(muggle_shm_ringbuf_data_hdr_t);
 	ptr = muggle_shm_ringbuf_w_alloc_bytes(shm_rbuf, n_bytes);
@@ -172,12 +172,12 @@ TEST_F(ShmRingBufFixture, w_r_case2)
 	*(uint32_t *)ptr = w_cnt++;
 	muggle_shm_ringbuf_w_move(shm_rbuf);
 	ASSERT_EQ(shm_rbuf->cached_remain, 0);
-	ASSERT_EQ(shm_rbuf->write_cursor, shm_rbuf->n_cacheline);
+	ASSERT_EQ(shm_rbuf->write_cursor, shm_rbuf->n_cacheline - 1);
 
 	// w move 1 step
 	ptr = muggle_shm_ringbuf_w_alloc_bytes(shm_rbuf, data_size);
 	ASSERT_TRUE(ptr == NULL);
-	ASSERT_EQ(shm_rbuf->write_cursor, shm_rbuf->n_cacheline);
+	ASSERT_EQ(shm_rbuf->write_cursor, shm_rbuf->n_cacheline - 1);
 	ASSERT_EQ(shm_rbuf->read_cursor, 3);
 }
 
