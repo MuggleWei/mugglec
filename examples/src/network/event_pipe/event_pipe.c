@@ -102,6 +102,38 @@ int main()
 		exit(EXIT_FAILURE);
 	}
 
+	const int require_pipe_size = 4 * 1024 * 1024;
+	int r_bufsize = 0;
+	int w_bufsize = 0;
+	r_bufsize = muggle_socket_evloop_pipe_get_r_size(&ev_pipe);
+	w_bufsize = muggle_socket_evloop_pipe_get_w_size(&ev_pipe);
+	LOG_INFO("default pipe size: r=%d, w=%d", r_bufsize, w_bufsize);
+
+	if (muggle_socket_evloop_pipe_set_r_size(&ev_pipe, require_pipe_size)) {
+		LOG_INFO("success set pipe r size: %d", require_pipe_size);
+	} else {
+		int errnum = muggle_event_lasterror();
+		char errmsg[256];
+		muggle_event_strerror(errnum, errmsg, sizeof(errmsg));
+		LOG_ERROR("failed set pipe r size: %d, errno: %d, errmsg: %s",
+				  require_pipe_size, errnum, errmsg);
+	}
+	if (muggle_socket_evloop_pipe_set_w_size(&ev_pipe, require_pipe_size)) {
+		LOG_INFO("success set pipe w size: %d", require_pipe_size);
+	} else {
+		int errnum = muggle_event_lasterror();
+		char errmsg[256];
+		muggle_event_strerror(errnum, errmsg, sizeof(errmsg));
+		LOG_ERROR("failed set pipe w size: %d, errno: %d, errmsg: %s",
+				  require_pipe_size, errnum, errmsg);
+	}
+
+	r_bufsize = muggle_socket_evloop_pipe_get_r_size(&ev_pipe);
+	w_bufsize = muggle_socket_evloop_pipe_get_w_size(&ev_pipe);
+	LOG_INFO("current pipe size: r=%d, w=%d", r_bufsize, w_bufsize);
+
+	muggle_msleep(1000);
+
 	muggle_thread_t th;
 	muggle_thread_create(&th, run_pipe_write, &ev_pipe);
 
