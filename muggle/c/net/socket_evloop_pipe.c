@@ -39,37 +39,6 @@ int muggle_socket_evloop_pipe_init(muggle_socket_evloop_pipe_t *ev_pipe)
 
 	for (int i = 0; i < 2; i++) {
 		muggle_socket_set_nonblock(fds[i], 1);
-
-#if MUGGLE_PLATFORM_LINUX
-		const int require_pipe_size = 32 * 1024 * sizeof(void *);
-		int pipe_size = fcntl(fds[i], F_GETPIPE_SZ);
-		if (pipe_size < require_pipe_size) {
-			pipe_size = fcntl(fds[i], F_SETPIPE_SZ, require_pipe_size);
-			if (pipe_size == -1) {
-				MUGGLE_LOG_ERROR("failed set pipe size");
-			}
-		}
-#elif MUGGLE_PLATFORM_WINDOWS
-		const int require_socket_bufsize = 32 * 1024 * sizeof(void *);
-		int bufsize = 0;
-		socklen_t len_bufsize = sizeof(bufsize);
-		int optname = SO_RCVBUF;
-		if (i == MUGGLE_SOCKET_EVLOOP_PIPE_READER) {
-			optname = SO_RCVBUF;
-		} else if (i == MUGGLE_SOCKET_EVLOOP_PIPE_WRITER) {
-			optname = SO_SNDBUF;
-		}
-
-		muggle_getsockopt(fds[i], SOL_SOCKET, optname, &bufsize, &len_bufsize);
-		if (bufsize < require_socket_bufsize) {
-			if (muggle_setsockopt(fds[i], SOL_SOCKET, optname, &bufsize,
-								  sizeof(require_socket_bufsize)) != 0) {
-				MUGGLE_LOG_ERROR("failed set socket %s buf size",
-								 i == MUGGLE_SOCKET_EVLOOP_PIPE_READER ? "rcv" :
-																		 "snd");
-			}
-		}
-#endif
 	}
 
 	if (muggle_socket_ctx_init(&ev_pipe->ctx[0], fds[0], ev_pipe,
@@ -168,4 +137,72 @@ muggle_socket_context_t *
 muggle_socket_evloop_pipe_get_reader(muggle_socket_evloop_pipe_t *ev_pipe)
 {
 	return &ev_pipe->ctx[MUGGLE_SOCKET_EVLOOP_PIPE_READER];
+}
+
+int muggle_socket_evloop_pipe_get_r_size(muggle_socket_evloop_pipe_t *ev_pipe)
+{
+	muggle_socket_t fd = ev_pipe->ctx[MUGGLE_SOCKET_EVLOOP_PIPE_READER].base.fd;
+#if MUGGLE_PLATFORM_WINDOWS
+	int bufsize = 0;
+	socklen_t len_bufsize = sizeof(bufsize);
+	muggle_getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &bufsize, &len_bufsize);
+	return bufsize;
+#elif MUGGLE_PLATFORM_APPLE
+	MUGGLE_UNUSED(fd);
+	MUGGLE_UNUSED(ev_pipe);
+	return -1;
+#else
+	return fcntl(fd, F_GETPIPE_SZ);
+#endif
+}
+
+bool muggle_socket_evloop_pipe_set_r_size(muggle_socket_evloop_pipe_t *ev_pipe,
+										  int buf_size)
+{
+	muggle_socket_t fd = ev_pipe->ctx[MUGGLE_SOCKET_EVLOOP_PIPE_READER].base.fd;
+#if MUGGLE_PLATFORM_WINDOWS
+	return muggle_setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &buf_size,
+							 sizeof(buf_size)) == 0;
+#elif MUGGLE_PLATFORM_APPLE
+	MUGGLE_UNUSED(fd);
+	MUGGLE_UNUSED(ev_pipe);
+	return false;
+#else
+	int ret = fcntl(fd, F_SETPIPE_SZ, buf_size);
+	return ret != -1;
+#endif
+}
+
+int muggle_socket_evloop_pipe_get_w_size(muggle_socket_evloop_pipe_t *ev_pipe)
+{
+	muggle_socket_t fd = ev_pipe->ctx[MUGGLE_SOCKET_EVLOOP_PIPE_WRITER].base.fd;
+#if MUGGLE_PLATFORM_WINDOWS
+	int bufsize = 0;
+	socklen_t len_bufsize = sizeof(bufsize);
+	muggle_getsockopt(fd, SOL_SOCKET, SO_SNDBUF, &bufsize, &len_bufsize);
+	return bufsize;
+#elif MUGGLE_PLATFORM_APPLE
+	MUGGLE_UNUSED(fd);
+	MUGGLE_UNUSED(ev_pipe);
+	return -1;
+#else
+	return fcntl(fd, F_GETPIPE_SZ);
+#endif
+}
+
+bool muggle_socket_evloop_pipe_set_w_size(muggle_socket_evloop_pipe_t *ev_pipe,
+										  int buf_size)
+{
+	muggle_socket_t fd = ev_pipe->ctx[MUGGLE_SOCKET_EVLOOP_PIPE_WRITER].base.fd;
+#if MUGGLE_PLATFORM_WINDOWS
+	return muggle_setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &buf_size,
+							 sizeof(buf_size)) == 0;
+#elif MUGGLE_PLATFORM_APPLE
+	MUGGLE_UNUSED(fd);
+	MUGGLE_UNUSED(ev_pipe);
+	return false;
+#else
+	int ret = fcntl(fd, F_SETPIPE_SZ, buf_size);
+	return ret != -1;
+#endif
 }

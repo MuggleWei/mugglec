@@ -60,7 +60,7 @@ void muggle_socket_evloop_pipe_destroy(muggle_socket_evloop_pipe_t *ev_pipe);
  */
 MUGGLE_C_EXPORT
 bool muggle_socket_evloop_pipe_write(muggle_socket_evloop_pipe_t *ev_pipe,
-									void *data);
+									 void *data);
 
 /**
  * @brief socket event loop pipe read
@@ -93,6 +93,52 @@ muggle_socket_evloop_pipe_get_writer(muggle_socket_evloop_pipe_t *ev_pipe);
 MUGGLE_C_EXPORT
 muggle_socket_context_t *
 muggle_socket_evloop_pipe_get_reader(muggle_socket_evloop_pipe_t *ev_pipe);
+
+/**
+ * @brief get pipe read bufsize
+ *
+ * @param ev_pipe  socket event loop pipe
+ *
+ * @return pipe read bufsize
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_evloop_pipe_get_r_size(muggle_socket_evloop_pipe_t *ev_pipe);
+
+/**
+ * @brief set pipe read bufsize
+ *
+ * @param ev_pipe  socket event loop pipe
+ * @param buf_size required buffer size
+ *
+ * @return boolean
+ */
+MUGGLE_C_EXPORT
+bool muggle_socket_evloop_pipe_set_r_size(muggle_socket_evloop_pipe_t *ev_pipe,
+										  int buf_size);
+
+/**
+ * @brief set pipe write bufsize
+ *
+ * @param ev_pipe  socket event loop pipe
+ * @param buf_size required buffer size
+ *
+ * @return boolean
+ */
+MUGGLE_C_EXPORT
+bool muggle_socket_evloop_pipe_set_w_size(muggle_socket_evloop_pipe_t *ev_pipe,
+										  int buf_size);
+
+/**
+ * @brief get pipe write bufsize
+ *
+ * @param ev_pipe  socket event loop pipe
+ *
+ * @return
+ *   - on success, return pipe write bufsize
+ *   - otherwise, return -1
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_evloop_pipe_get_w_size(muggle_socket_evloop_pipe_t *ev_pipe);
 
 EXTERN_C_END
 
