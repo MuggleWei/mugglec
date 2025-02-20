@@ -49,7 +49,7 @@ bool codec_bytes_decode(
 		int n = muggle_socket_ctx_read(ctx, p, evloop_data->recv_unit_size);
 		if (n > 0)
 		{
-			muggle_bytes_buffer_writer_move(bytes_buf, n);
+			muggle_bytes_buffer_writer_move_n(bytes_buf, p, n);
 		}
 
 		if (n < (int)evloop_data->recv_unit_size)

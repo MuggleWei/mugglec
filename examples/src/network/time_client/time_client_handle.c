@@ -115,7 +115,7 @@ static void on_tcp_msg(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx
 		int n = muggle_socket_ctx_read(ctx, ptr, MAX_MSG_SIZE);
 		if (n > 0)
 		{
-			if (!muggle_bytes_buffer_writer_move(bytes_buf, n))
+			if (!muggle_bytes_buffer_writer_move_n(bytes_buf, ptr, n))
 			{
 				MUGGLE_ASSERT(0);
 				MUGGLE_LOG_ERROR("bytes buffer inner error!");

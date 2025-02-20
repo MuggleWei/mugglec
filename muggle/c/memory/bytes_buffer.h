@@ -142,9 +142,52 @@ void* muggle_bytes_buffer_writer_fc(muggle_bytes_buffer_t *bytes_buf, int num_by
  * @return 
  *     if has enough contiguous memory for writer move forward (include after 
  *     jump), return true, otherwise return false
+ *
+ * --------------------------------
+ * NOTE: this function is deprecated, use writer_move_n instead
+ *
+ * cause this function usually used with muggle_bytes_buffer_writer_fc, but 
+ * num_bytes maybe not equal to second param of muggle_bytes_buffer_writer_fc.
+ *
+ * consider the following scenario
+ *
+ * ```
+ * muggle_bytes_buffer_t bytes_buf;
+ * muggle_bytes_buffer_init(&bytes_buf, 64);
+ * bytes_buf.w = 50;
+ * bytes_buf.r = 49;
+ * void *ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, 16);
+ * int n = muggle_socket_ctx_read(ctx, p, 16);
+ * if (n > 0) {
+ *     muggle_bytes_buffer_writer_move(bytes_buf, n);
+ * }
+ * ```
+ *
+ * ptr equal to bytes_buf.buf, but muggle_socket_ctx_read only read 8 bytes, 
+ * we expect w be 8 after muggle_bytes_buffer_writer_move, but w will be 58
+ *
  */
 MUGGLE_C_EXPORT
+MUGGLE_DEPRECATED
 bool muggle_bytes_buffer_writer_move(muggle_bytes_buffer_t *bytes_buf, int num_bytes);
+
+/**
+ * @brief move writer forward in contiguous memory
+ *
+ * NOTE: usually use with muggle_bytes_buffer_writer_fc
+ *
+ * @param bytes_buf  pointer to bytes buffer
+ * @param ptr        pointer return from muggle_bytes_buffer_writer_fc
+ * @param num_bytes  move forward number bytes
+ *
+ * @return 
+ *     if has enough contiguous memory for writer move forward (include after 
+ *     jump), return true, otherwise return false
+ *
+ * @return 
+ */
+MUGGLE_C_EXPORT
+bool muggle_bytes_buffer_writer_move_n(muggle_bytes_buffer_t *bytes_buf, void *ptr, int num_bytes);
 
 /**
  * @brief find contiguous memory for read without move reader

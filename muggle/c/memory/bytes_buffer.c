@@ -324,6 +324,33 @@ bool muggle_bytes_buffer_writer_move(muggle_bytes_buffer_t *bytes_buf, int num_b
 	}
 }
 
+bool muggle_bytes_buffer_writer_move_n(muggle_bytes_buffer_t *bytes_buf, void *ptr, int num_bytes)
+{
+	if (ptr == (void*)bytes_buf->buffer) {
+		// start or jump
+		if (bytes_buf->w > 0) {
+			// jump
+			bytes_buf->t = bytes_buf->w;
+		}
+
+		bytes_buf->w = num_bytes;
+	} else {
+		// without jump
+		bytes_buf->w += num_bytes;
+
+		if (bytes_buf->t < bytes_buf->w)
+		{
+			bytes_buf->t = bytes_buf->c;
+		}
+		if (bytes_buf->w == bytes_buf->c)
+		{
+			bytes_buf->w = 0;
+		}
+	}
+
+	return true;
+}
+
 void* muggle_bytes_buffer_reader_fc(muggle_bytes_buffer_t *bytes_buf, int num_bytes)
 {
 	int cr = muggle_bytes_buffer_contiguous_readable(bytes_buf);

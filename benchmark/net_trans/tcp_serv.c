@@ -18,7 +18,7 @@ static void tcp_recv_message(muggle_socket_context_t *ctx,
 
 		int n = muggle_socket_ctx_recv(ctx, p, read_bytes, 0);
 		if (n > 0) {
-			muggle_bytes_buffer_writer_move(bytes_buf, n);
+			muggle_bytes_buffer_writer_move_n(bytes_buf, p, n);
 		}
 
 		if (n < read_bytes) {
