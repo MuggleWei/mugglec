@@ -34,7 +34,7 @@ int main()
 	ptr = muggle_bytes_buffer_writer_fc(&buf, num_bytes);
 	MUGGLE_ASSERT(ptr != NULL);
 	memset(ptr, 0, num_bytes);
-	muggle_bytes_buffer_writer_move(&buf, num_bytes);
+	muggle_bytes_buffer_writer_move_n(&buf, ptr, num_bytes);
 	LOG_INFO("write contiguous %d bytes", num_bytes);
 	LOG_INFO("remain writable=%d, readable=%d, contiguous_readable=%d",
 		muggle_bytes_buffer_writable(&buf),
@@ -89,7 +89,7 @@ int main()
 	ptr = muggle_bytes_buffer_writer_fc(&buf, num_bytes);
 	MUGGLE_ASSERT(ptr != NULL);
 	memset(ptr, 0, num_bytes);
-	muggle_bytes_buffer_writer_move(&buf, num_bytes);
+	muggle_bytes_buffer_writer_move_n(&buf, ptr, num_bytes);
 	LOG_INFO("write contiguous %d bytes", num_bytes);
 	LOG_INFO("remain writable=%d, readable=%d, contiguous_readable=%d",
 		muggle_bytes_buffer_writable(&buf),

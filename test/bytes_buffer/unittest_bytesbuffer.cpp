@@ -474,3 +474,99 @@ TEST(bytes_buffer, truncate)
 
 	muggle_bytes_buffer_destroy(&bytes_buf);
 }
+
+TEST(bytes_buffer, error_fc_and_move)
+{
+	int cap = 64;
+	int w = 50;
+	int fc = 16;
+	int n = 8;
+
+	muggle_bytes_buffer_t bytes_buf;
+	bool ret = muggle_bytes_buffer_init(&bytes_buf, cap);
+	ASSERT_TRUE(ret);
+
+	bytes_buf.w = w;
+	bytes_buf.r = w - 1;
+	void *ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, fc);
+	ASSERT_EQ(ptr, (void*)bytes_buf.buffer);
+
+	ret = muggle_bytes_buffer_writer_move(&bytes_buf, n);
+	ASSERT_TRUE(ret);
+
+	// NOTE:
+	// this is why muggle_bytes_buffer_writer_move is deprecated. cause second 
+	// param pass to writer_fc and writer_move is different
+	//
+	// ASSERT_EQ(bytes_buf.w, n);
+	ASSERT_EQ(bytes_buf.w, w + n);
+
+	muggle_bytes_buffer_destroy(&bytes_buf);
+}
+
+TEST(bytes_buffer, fc_and_move_n_case1)
+{
+	muggle_bytes_buffer_t bytes_buf;
+	bool ret = muggle_bytes_buffer_init(&bytes_buf, 64);
+	ASSERT_TRUE(ret);
+
+	void *ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, 16);
+	ASSERT_TRUE(ptr != NULL);
+
+	ret = muggle_bytes_buffer_writer_move_n(&bytes_buf, ptr, 16);
+	ASSERT_TRUE(ret);
+
+	ret = muggle_bytes_buffer_reader_move(&bytes_buf, 8);
+	ASSERT_TRUE(ret);
+	ASSERT_EQ(bytes_buf.w, 16);
+	ASSERT_EQ(bytes_buf.r, 8);
+	ASSERT_EQ(bytes_buf.t, bytes_buf.c);
+
+	ret = muggle_bytes_buffer_reader_move(&bytes_buf, 8);
+	ASSERT_TRUE(ret);
+	ASSERT_EQ(bytes_buf.w, 0);
+	ASSERT_EQ(bytes_buf.r, 0);
+	ASSERT_EQ(bytes_buf.t, bytes_buf.c);
+
+	muggle_bytes_buffer_destroy(&bytes_buf);
+}
+
+TEST(bytes_buffer, fc_and_move_n_case2)
+{
+	muggle_bytes_buffer_t bytes_buf;
+	bool ret = muggle_bytes_buffer_init(&bytes_buf, 64);
+	ASSERT_TRUE(ret);
+
+	bytes_buf.w = 50;
+	bytes_buf.r = 49;
+
+	void *ptr = muggle_bytes_buffer_writer_fc(&bytes_buf, 16);
+	ASSERT_EQ(ptr, bytes_buf.buffer);
+
+	ret = muggle_bytes_buffer_writer_move_n(&bytes_buf, ptr, 8);
+	ASSERT_TRUE(ret);
+	ASSERT_EQ(bytes_buf.w, 8);
+	ASSERT_EQ(bytes_buf.r, 49);
+	ASSERT_EQ(bytes_buf.t, 50);
+
+	int readable = muggle_bytes_buffer_readable(&bytes_buf);
+	ASSERT_EQ(readable , 9);
+
+	ptr = muggle_bytes_buffer_reader_fc(&bytes_buf, 9);
+	ASSERT_TRUE(ptr == NULL);
+
+	char buf[64];
+	ret = muggle_bytes_buffer_read(&bytes_buf, 1, buf);
+	ASSERT_TRUE(ret);
+	ASSERT_EQ(bytes_buf.w, 8);
+	ASSERT_EQ(bytes_buf.r, 0);
+	ASSERT_EQ(bytes_buf.t, 50);
+
+	ptr = muggle_bytes_buffer_reader_fc(&bytes_buf, 8);
+	ASSERT_EQ(ptr, (void*)bytes_buf.buffer);
+
+	ret = muggle_bytes_buffer_reader_move(&bytes_buf, 8);
+	ASSERT_TRUE(ret);
+
+	muggle_bytes_buffer_destroy(&bytes_buf);
+}
