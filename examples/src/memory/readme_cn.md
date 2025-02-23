@@ -291,9 +291,10 @@ void* muggle_bytes_buffer_writer_fc(muggle_bytes_buffer_t *bytes_buf, int num_by
 
 在获取到连续可写的缓冲区内存后, 用户可以直接往返回值的地址当中写入数据, 写入完毕后, 记得移动连续可写的指针
 ```
-bool muggle_bytes_buffer_writer_move(muggle_bytes_buffer_t *bytes_buf, int num_bytes);
+bool muggle_bytes_buffer_writer_move_n(muggle_bytes_buffer_t *bytes_buf, void *ptr, int num_bytes);
 ```
 * bytes_buf: 指向字节缓冲区的指针
+* ptr: 由 `muggle_bytes_buffer_writer_fc` 返回的指针
 * num_bytes: 移动的字节数量
 * **注意: 这里的移动起始点是连续内存的起始点, 所以有时当剩余可写大小为N, 找到连续内存大小n, 移动后剩余缓冲区大小 <= N-n**
 
