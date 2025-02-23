@@ -1,4 +1,4 @@
-- [Event & Network](#event--network)
+- [Event \& Network](#event--network)
 	- [事件模块](#事件模块)
 		- [事件描述符](#事件描述符)
 		- [事件上下文](#事件上下文)
@@ -7,16 +7,17 @@
 	- [网络模块](#网络模块)
 		- [一个简单的Echo服务](#一个简单的echo服务)
 		- [Socket事件回调](#socket事件回调)
-			- [cb_conn](#cb_conn)
-			- [cb_msg](#cb_msg)
-			- [cb_close](#cb_close)
-			- [cb_release](#cb_release)
-			- [cb_add_ctx](#cb_add_ctx)
-			- [cb_wake](#cb_wake)
-			- [cb_timer](#cb_timer)
+			- [cb\_conn](#cb_conn)
+			- [cb\_msg](#cb_msg)
+			- [cb\_close](#cb_close)
+			- [cb\_release](#cb_release)
+			- [cb\_add\_ctx](#cb_add_ctx)
+			- [cb\_wake](#cb_wake)
+			- [cb\_timer](#cb_timer)
 		- [简单的时间服务](#简单的时间服务)
 		- [组播](#组播)
 		- [多线程](#多线程)
+		- [事件管道](#事件管道)
 		- [自定义协议](#自定义协议)
 			- [事件循环回调](#事件循环回调)
 			- [协议头](#协议头)
@@ -396,6 +397,48 @@ static void ctx_release(muggle_socket_context_t *ctx)
 	}
 }
 ```
+
+### 事件管道
+有的时候, 我们还需要在另一个线程向 `socket evloop` 中传递消息, 此时可以使用 `muggle_socket_evloop_pipe_t`  
+[event_pipe](./event_pipe/event_pipe.c) 是一个展示事件管道的例子  
+
+```
+muggle_socket_evloop_pipe_t ev_pipe;
+if (muggle_socket_evloop_pipe_init(&ev_pipe) != 0) {
+	LOG_ERROR("failed init event pipe");
+}
+
+....
+
+muggle_socket_context_t *pipe_reader =
+		muggle_socket_evloop_pipe_get_reader(ev_pipe);
+muggle_socket_evloop_add_ctx(evloop, pipe_reader);
+```
+首先通过 `muggle_socket_evloop_pipe_init` 初始化一个事件管道, 接着通过 `muggle_socket_evloop_pipe_get_reader` 获取管道的读端, 并通过 `muggle_socket_evloop_add_ctx` 加入到事件循环当中  
+
+```
+void on_message(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
+{
+	MUGGLE_UNUSED(evloop);
+
+	MUGGLE_ASSERT(ctx->sock_type == MUGGLE_SOCKET_CTX_TYPE_PIPE);
+
+	muggle_socket_evloop_pipe_t *ev_pipe =
+		(muggle_socket_evloop_pipe_t *)muggle_ev_ctx_data(
+			(muggle_event_context_t *)ctx);
+
+	void *data = NULL;
+	while ((data = muggle_socket_evloop_pipe_read(ev_pipe)) != NULL) {
+		char *s = (char *)data;
+		LOG_INFO("on evloop pipe message: %s", s);
+		free(s);
+
+		// simulate blocking
+		// muggle_msleep(500);
+	}
+}
+```
+接下来, 用户可以通过 `muggle_socket_evloop_pipe_write` 向管道中写入数据, 之后会正常触发事件循环的消息回调, 此时的 `ctx->sock_type` 为 `MUGGLE_SOCKET_CTX_TYPE_PIPE` 类型, 其中带的数据就是指向 `muggle_socket_evloop_pipe_t` 的指针  
 
 ### 自定义协议
 到现在为止, 我们已经看到一些很直观的例子, 当然真实的服务还要处理更多的问题, 比如TCP会遇到粘包, UDP需要自己处理丢包与重传, 还有需要传输自定义的消息而不是单纯的字符串. 下面的例子[foo.c](./foo/foo.c), 我们展示一个自定义协议的TCP服务器/客户端, 其中使用了在[内存模块](../memory/readme_cn.md)中提到的字节缓冲区来收取TCP的消息, 并且自定了消息分发器和编解码处理器.  

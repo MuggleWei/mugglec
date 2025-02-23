@@ -11,9 +11,9 @@
 	- [引用计数](#引用计数)
 	- [互斥锁与条件变量](#互斥锁与条件变量)
 	- [自旋锁](#自旋锁)
-	- [BlockingQueue](#blockingqueue)
 	- [Channel](#channel)
 	- [Ring Buffer](#ring-buffer)
+	- [Shared Memory Ring Buffer](#shared-memory-ring-buffer)
 
 # sync
 本节讲解**mugglec**中线程, 原子操作以及线程间同步的对象
@@ -179,51 +179,8 @@ int muggle_ref_cnt_release(muggle_ref_cnt_t *ref);
 除了互斥锁之外, **mugglec**还提供了自旋锁  
 例子 [example_spinlock.c](./spinlock/example_spinlock.c) 展示了使用自旋锁来实现一个简单的生产者-消费者的程序  
 
-## BlockingQueue
-上面使用互斥锁/自旋锁来实现了简单的生产者-消费者的程序, **mugglec**当中还提供了方便用于不同线程交换数据的对象. `muggle_array_blocking_queue_t`是一个线程安全的阻塞队列, 当队列满时, `put`操作将阻塞; 当队列空时, `take`操作将阻塞. 我们使用它来实现一个生产者-消费者的例子 [blocking_queue.c](./blocking_queue/blocking_queue.c)  
-
-生产者: 往`muggle_array_blocking_queue_t`中`put`目标数量的数据, 生产者线程退出时, 推送一个`block_id`为-1的数据
-```
-for (int i = 0; i < args->target_cnt; i++)
-{
-	block_data_t *data = (block_data_t*)malloc(sizeof(block_data_t));
-	data->thread_id = args->id;
-	data->block_id = i;
-
-	muggle_array_blocking_queue_put(queue, (void*)data);
-}
-
-block_data_t *data = (block_data_t*)malloc(sizeof(block_data_t));
-data->thread_id = args->id;
-data->block_id = -1;
-muggle_array_blocking_queue_put(queue, (void*)data);
-```
-
-消费者: 从`muggle_array_blocking_queue_t`中`take`数据, 当收到生产者退出数据的数量和生产者数量相等时, 消费者退出
-```
-while (1)
-{
-	block_data_t *data = muggle_array_blocking_queue_take(&queue);
-	if (data->block_id == -1)
-	{
-		LOG_INFO("recv [%d] exit data", data->thread_id);
-		completed_cnt++;
-		if (completed_cnt == PRODUCER_NUM)
-		{
-			break;
-		}
-	}
-	else
-	{
-		LOG_INFO("consume #%d[%d]", data->block_id, data->thread_id);
-		free(data);
-	}
-}
-```
-
 ## Channel
-除了`BlockingQueue`, **mugglec**还提供了几个特殊的用于线程交换数据的对象.  
-`muggle_channel_t`是一个特殊的管道, 它用于线程间交换数据的效率要高于`muggle_array_blocking_queue_t`, 但是**用户需要保证同时间最多只有1个消费者在从管道中读取数据**. 当`muggle_channel_t`管道满时, 不会阻塞, 而是返回错误消息`MUGGLE_ERR_FULL`; 而当`muggle_channel_t`管道为空时, 读取的表现为等待  
+`muggle_channel_t`是一个特殊的管道, 用于线程间交换数据, 但是**用户需要保证同时间最多只有1个消费者在从管道中读取数据**. 当`muggle_channel_t`管道满时, 不会阻塞, 而是返回错误消息`MUGGLE_ERR_FULL`; 而当`muggle_channel_t`管道为空时, 读取的表现为等待  
 `muggle_channel_t`在初始化时, 可以选择不同的读/写模式:
 ```
 // 写模式
@@ -320,3 +277,27 @@ while (1)
 ```
 
 在例子当中, 我们将`muggle_ring_buffer_t`的容量初始化为16, 小于要发的消息的大小32, 而在生产者发送消息的过程中, 每发送一个消息都sleep了5毫秒. 可以试着将这行代码注释掉, 有概率将会观察到, 有些消费者最终收到的消息条目数是16, 被生产者套圈的结果是丢失了"一整圈"的消息  
+
+## Shared Memory Ring Buffer
+`muggle_shm_ringbuf_t` 是 **mugglec** 当中一个用于进程间交换数据的对象, 不同于 `muggle_channel_t` 和 `muggle_ring_buffer_t`, `muggle_shm_ringbuf_t` 需要直接将数据写入其中, 而不是传递指针  
+
+[shm_ringbuf](./shm_ringbuf/example_shm_ringbuf.c) 是一个使用 `muggle_shm_ringbuf_t` 的例子
+```
+data_t *ptr = muggle_shm_ringbuf_w_alloc_bytes(shm_rbuf, sizeof(data_t));
+if (ptr) {
+	// TODO: fillup ptr
+	muggle_shm_ringbuf_w_move(shm_rbuf);
+}
+```
+在生产者端, 通过 `muggle_shm_ringbuf_w_alloc_bytes` 从 `muggle_shm_ringbuf_t` 分配一块内存区域, 接着写入数据, 最后通过 `muggle_shm_ringbuf_w_move` 将数据提交  
+
+```
+data_t *ptr = (data_t *)muggle_shm_ringbuf_r_fetch(shm_rbuf, &n_bytes);
+if (ptr) {
+	// TODO: consume data
+	muggle_shm_ringbuf_r_move(shm_rbuf);
+}
+```
+在消费者端, 通过 `muggle_shm_ringbuf_r_fetch` 获取生产者写入的一条数据以及此数据的长度, 接着消费数据, 在消费完成之后, 使用 `muggle_shm_ringbuf_r_move` 告知 `muggle_shm_ringbuf_t`, 此条数据已被消费  
+
+这里需要注意的是, 与 `muggle_channel_t` 或 `muggle_ring_buffer_t` 不同, `muggle_shm_ringbuf_t` 并不提供多种通知模式, 所以通常情况下消费者端总是在全速运行, 类似于 `muggle_channel_t` 的 `MUGGLE_CHANNEL_FLAG_READ_BUSY`
