@@ -1,9 +1,13 @@
-* [ChangeLog EN](./CHANGELOG.md)
-* [ChangeLog 中文](./CHANGELOG_cn.md)
+# 变更记录 
+[English](./CHANGELOG.md) | 中文
 
 | 日期 | 版本 |
 | ---- | ---- |
+| 2025-02-24 | [v2.0.1](#v201) |
 | 2025-02-23 | [v2.0.0](#v200) |
+
+## v2.0.1
+* 增加了 `MUGGLE_EV_LOOP_EXIT_STATUS`, 非本线程调用 `evloop_exit` 时不直接将状态设为退出, 防止出现 **heap-use-after-free**
 
 ## v2.0.0
 相对于 **release_1.x** 的最后一个版本 **v1.10.3**, 做出了如下变更

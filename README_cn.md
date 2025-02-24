@@ -6,10 +6,8 @@
 ![macos-clang](https://github.com/MuggleWei/mugglec/actions/workflows/macos-clang.yaml/badge.svg?branch=master)
 ![android](https://github.com/MuggleWei/mugglec/actions/workflows/android-cmake.yaml/badge.svg?branch=master)
 
-<b>跨平台c语言基础库</b>
-* [readme EN](./README.md)
-* [readme 中文](./README_cn.md)
-
+<p align="center"><b>一个跨平台 C 语言基础库</b></p>
+<p align="center"><a href="./README.md">English</a> | 中文</p>
 
 mugglec是一个c语言编写, 跨平台基础库, 提供了一系列常用的功能, 比如基础的数据结构, 网络, 并发, 日志, 密码学, 内存池, 常用路径操作等等
 

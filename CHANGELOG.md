@@ -1,9 +1,13 @@
-* [ChangeLog EN](./CHANGELOG.md)
-* [ChangeLog 中文](./CHANGELOG_cn.md)
+# ChangeLog 
+English | [简体中文](./CHANGELOG_cn.md)
 
 | date | version |
 | ---- | ---- |
+| 2025-02-24 | [v2.0.1](#v201) |
 | 2025-02-23 | [v2.0.0](#v200) |
+
+## v2.0.1
+* Added `MUGGLE_EV_LOOP_EXIT_STATUS`, when calling `evloop_exit` from a non-current thread, the status is not set to exit directly, to avoid **heap-use-after-free**
 
 ## v2.0.0
 Compared with the last version of **release_1.x**, **v1.10.3**, the following changes have been made
