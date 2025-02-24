@@ -1,5 +1,5 @@
 # ChangeLog 
-English | [简体中文](./CHANGELOG_cn.md)
+English | [中文](./CHANGELOG_cn.md)
 
 | date | version |
 | ---- | ---- |
