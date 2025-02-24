@@ -6,9 +6,8 @@
 ![macos-clang](https://github.com/MuggleWei/mugglec/actions/workflows/macos-clang.yaml/badge.svg?branch=master)
 ![android](https://github.com/MuggleWei/mugglec/actions/workflows/android-cmake.yaml/badge.svg?branch=master)
 
-<b>Cross platform c base library</b>
-* [readme EN](./README.md)
-* [readme 中文](./README_cn.md)
+<p align="center"><b>A Cross Platform C Base Library</b></p>
+<p align="center">English | <a href="./README_cn.md">中文</a></p>
 
 mugglec is a cross platform C base library, contains utilities like basic data structure, network, concurrency, log, crypt, memory pool, path operation and so on.
 

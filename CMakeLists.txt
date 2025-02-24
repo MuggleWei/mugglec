@@ -251,7 +251,7 @@ check_c_source_compiles("
 check_c_source_compiles("
 	#include <stdlib.h>
 	int main() {
-		void *p = aligned_alloc(128, 8);
+		void *p = aligned_alloc(128, 128 * 16);
 		free(p);
 		return 0;
 	}

@@ -51,6 +51,9 @@ void muggle_evloop_destroy_##impl(muggle_event_loop_t *evloop); \
 void muggle_evloop_run_##impl(muggle_event_loop_t *evloop); \
 int muggle_evloop_add_ctx_##impl(muggle_event_loop_t *evloop, muggle_event_context_t *ctx, void *node);
 
+#define MUGGLE_EV_LOOP_EXIT_STATUS_WAKE 2
+#define MUGGLE_EV_LOOP_EXIT_STATUS_EXIT 1
+
 /**
  * @brief event loop callback prototypes
  *

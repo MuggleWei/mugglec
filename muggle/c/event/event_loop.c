@@ -295,10 +295,24 @@ int muggle_evloop_wakeup(muggle_event_loop_t *evloop)
 
 void muggle_evloop_exit(muggle_event_loop_t *evloop)
 {
-	evloop->to_exit = 1;
+	// NOTE:
+	//   if set exit status in other thread, it will lead heap-use-after-free
+	//
+	// evloop->to_exit = MUGGLE_EV_LOOP_EXIT_STATUS_EXIT;
+	// muggle_msleep(1000);
+	// if (!muggle_thread_equal(evloop->tid, muggle_thread_current_id()))
+	// {
+	//     muggle_evloop_wakeup(evloop);
+	// }
+
 	if (!muggle_thread_equal(evloop->tid, muggle_thread_current_id()))
 	{
+		evloop->to_exit = MUGGLE_EV_LOOP_EXIT_STATUS_WAKE;
 		muggle_evloop_wakeup(evloop);
+	}
+	else
+	{
+		evloop->to_exit = MUGGLE_EV_LOOP_EXIT_STATUS_EXIT;
 	}
 }
 
