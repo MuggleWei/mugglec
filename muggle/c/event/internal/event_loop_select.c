@@ -24,6 +24,11 @@ static void muggle_evloop_select_handle_wakeup(muggle_event_loop_select_t *evloo
 		{
 			evloop->cb_wake(evloop);
 		}
+
+		if (evloop->to_exit == MUGGLE_EV_LOOP_EXIT_STATUS_WAKE)
+		{
+			evloop->to_exit = MUGGLE_EV_LOOP_EXIT_STATUS_EXIT;
+		}
 	}
 	FD_SET(evfd, &evloop_select->allset);
 	evloop_select->nfds = evfd;
@@ -143,7 +148,7 @@ void muggle_evloop_run_select(muggle_event_loop_t *evloop)
 			}
 		}
 
-		if (evloop->to_exit)
+		if (evloop->to_exit == MUGGLE_EV_LOOP_EXIT_STATUS_EXIT)
 		{
 			break;
 		}

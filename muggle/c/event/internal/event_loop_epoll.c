@@ -25,6 +25,11 @@ static void muggle_evloop_epoll_handle_wakeup(muggle_event_loop_t *evloop, struc
 		{
 			evloop->cb_wake(evloop);
 		}
+
+		if (evloop->to_exit == MUGGLE_EV_LOOP_EXIT_STATUS_WAKE)
+		{
+			evloop->to_exit = MUGGLE_EV_LOOP_EXIT_STATUS_EXIT;
+		}
 	}
 }
 
@@ -156,7 +161,7 @@ void muggle_evloop_run_epoll(muggle_event_loop_t *evloop)
 			}
 		}
 
-		if (evloop->to_exit)
+		if (evloop->to_exit == MUGGLE_EV_LOOP_EXIT_STATUS_EXIT)
 		{
 			break;
 		}

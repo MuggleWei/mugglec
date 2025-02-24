@@ -23,6 +23,11 @@ static void muggle_evloop_poll_handle_wakeup(muggle_event_loop_poll_t *evloop_po
 		{
 			evloop->cb_wake(evloop);
 		}
+
+		if (evloop->to_exit == MUGGLE_EV_LOOP_EXIT_STATUS_WAKE)
+		{
+			evloop->to_exit = MUGGLE_EV_LOOP_EXIT_STATUS_EXIT;
+		}
 	}
 }
 
@@ -172,7 +177,7 @@ void muggle_evloop_run_poll(muggle_event_loop_t *evloop)
 			}
 		}
 
-		if (evloop->to_exit)
+		if (evloop->to_exit == MUGGLE_EV_LOOP_EXIT_STATUS_EXIT)
 		{
 			break;
 		}
