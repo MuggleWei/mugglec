@@ -534,7 +534,7 @@ FILE* muggle_os_fopen(const char *filepath, const char *mode)
 	}
 
 	WCHAR unicode_mode[16];
-	ret = MultiByteToWideChar(CP_UTF8, 0, mode, -1, unicode_mode, MUGGLE_MAX_PATH);
+	ret = MultiByteToWideChar(CP_UTF8, 0, mode, -1, unicode_mode, 16);
 	if (ret == 0)
 	{
 		return NULL;
