@@ -16,6 +16,14 @@ int main(int argc, char *argv[])
 		dirpath = argv[1];
 	}
 
+	char cur_dir[MUGGLE_MAX_PATH];
+    if (muggle_os_curdir(cur_dir, sizeof(cur_dir)) != 0) {
+        fprintf(stderr, "failed get current dir\n");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(stdout, "current directory: %s\n", cur_dir);
+	fprintf(stdout, "list dirpath: %s\n", dirpath);
+
 	muggle_file_list_node_t *nodes = NULL;
 
 	fprintf(stdout, "--------------------------------\n");
