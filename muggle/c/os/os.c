@@ -31,7 +31,7 @@ int muggle_os_process_path(char *path, unsigned int size)
 	}
 
 	// convert to utf8
-	ret = WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, path, size - 1, NULL, FALSE);
+	ret = WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, path, size, NULL, FALSE);
 	if (ret == 0)
 	{
 		return MUGGLE_ERR_SYS_CALL;
@@ -51,7 +51,7 @@ int muggle_os_curdir(char *path, unsigned int size)
 	}
 
 	// convert to utf8
-	ret = WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, path, size - 1, NULL, FALSE);
+	ret = WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, path, size, NULL, FALSE);
 	if (ret == 0)
 	{
 		return MUGGLE_ERR_SYS_CALL;
@@ -62,7 +62,28 @@ int muggle_os_curdir(char *path, unsigned int size)
 
 int muggle_os_chdir(const char *path)
 {
-	return SetCurrentDirectoryA(path) ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
+	// convert to unicode characters
+	WCHAR unicode_buf[MUGGLE_MAX_PATH];
+	int ret = MultiByteToWideChar(CP_UTF8, 0, path, -1, unicode_buf, MUGGLE_MAX_PATH);
+	if (ret == 0)
+	{
+		return MUGGLE_ERR_SYS_CALL;
+	}
+
+	return SetCurrentDirectoryW(unicode_buf) ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
+}
+
+static BOOL muggle_windows_create_dir_utf8(const char *path)
+{
+	// convert to unicode characters
+	WCHAR unicode_buf[MUGGLE_MAX_PATH];
+	int ret = MultiByteToWideChar(CP_UTF8, 0, path, -1, unicode_buf, MUGGLE_MAX_PATH);
+	if (ret == 0)
+	{
+		return FALSE;
+	}
+
+	return CreateDirectoryW(unicode_buf, NULL);
 }
 
 int muggle_os_mkdir(const char *path)
@@ -97,7 +118,7 @@ int muggle_os_mkdir(const char *path)
 			{
 				// don't need to create windows drive letter
 			}
-			else if (!CreateDirectoryA(_path, NULL))
+			else if (!muggle_windows_create_dir_utf8(_path))
 			{
 				DWORD err = GetLastError();
 				if(err != ERROR_ALREADY_EXISTS)
@@ -114,7 +135,7 @@ int muggle_os_mkdir(const char *path)
 	{
 		// don't need to create windows drive letter
 	}
-	else if (!CreateDirectoryA(_path, NULL))
+	else if (!muggle_windows_create_dir_utf8(_path))
 	{
 		DWORD err = GetLastError();
 		if(err != ERROR_ALREADY_EXISTS)
@@ -128,28 +149,68 @@ int muggle_os_mkdir(const char *path)
 
 int muggle_os_remove(const char *path)
 {
-	return DeleteFileA(path) ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
+	// convert to unicode characters
+	WCHAR unicode_buf[MUGGLE_MAX_PATH];
+	int ret = MultiByteToWideChar(CP_UTF8, 0, path, -1, unicode_buf, MUGGLE_MAX_PATH);
+	if (ret == 0)
+	{
+		return MUGGLE_ERR_SYS_CALL;
+	}
+
+	return DeleteFileW(unicode_buf) ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
 }
 
 int muggle_os_rmdir(const char *path)
 {
-	return RemoveDirectoryA(path) ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
+	// convert to unicode characters
+	WCHAR unicode_buf[MUGGLE_MAX_PATH];
+	int ret = MultiByteToWideChar(CP_UTF8, 0, path, -1, unicode_buf, MUGGLE_MAX_PATH);
+	if (ret == 0)
+	{
+		return MUGGLE_ERR_SYS_CALL;
+	}
+
+	return RemoveDirectoryW(unicode_buf) ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
 }
 
 int muggle_os_rename(const char *src, const char *dst)
 {
-	return rename(src, dst) == 0 ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
+	// convert to unicode characters
+	int ret = 0;
+	WCHAR unicode_src[MUGGLE_MAX_PATH];
+	WCHAR unicode_dst[MUGGLE_MAX_PATH];
+	ret = MultiByteToWideChar(CP_UTF8, 0, src, -1, unicode_src, MUGGLE_MAX_PATH);
+	if (ret == 0)
+	{
+		return MUGGLE_ERR_SYS_CALL;
+	}
+	ret = MultiByteToWideChar(CP_UTF8, 0, dst, -1, unicode_dst, MUGGLE_MAX_PATH);
+	if (ret == 0)
+	{
+		return MUGGLE_ERR_SYS_CALL;
+	}
+
+	return _wrename(unicode_src, unicode_dst) == 0 ? MUGGLE_OK : MUGGLE_ERR_SYS_CALL;
 }
 
 muggle_file_list_node_t *muggle_os_listdir(const char *dirpath, int ftype)
 {
 	HANDLE hFind;
-	WIN32_FIND_DATAA ffd;
+	WIN32_FIND_DATAW ffd;
+	int ret = 0;
 
 	char win_dirpath[MUGGLE_MAX_PATH];
 	muggle_path_join(dirpath, "\\*", win_dirpath, sizeof(win_dirpath));
 
-	hFind = FindFirstFileA(win_dirpath, &ffd);
+	// convert to unicode characters
+	WCHAR unicode_win_dirpath[MUGGLE_MAX_PATH];
+	ret = MultiByteToWideChar(CP_UTF8, 0, win_dirpath, -1, unicode_win_dirpath, MUGGLE_MAX_PATH);
+	if (ret == 0)
+	{
+		return NULL;
+	}
+
+	hFind = FindFirstFileW(unicode_win_dirpath, &ffd);
 	if (hFind == INVALID_HANDLE_VALUE) {
 		return NULL;
 	}
@@ -157,8 +218,16 @@ muggle_file_list_node_t *muggle_os_listdir(const char *dirpath, int ftype)
 	muggle_file_list_node_t *head = NULL;
 	muggle_file_list_node_t *tail = NULL;
 	do {
-		if ((strcmp(ffd.cFileName, ".") == 0) ||
-			(strcmp(ffd.cFileName, "..") == 0)) {
+		// convert to utf8
+		char filename[MUGGLE_MAX_PATH];
+		ret = WideCharToMultiByte(CP_UTF8, 0, ffd.cFileName, -1, filename, sizeof(filename), NULL, FALSE);
+		if (ret == 0)
+		{
+			continue;
+		}
+
+		if ((strcmp(filename, ".") == 0) ||
+			(strcmp(filename, "..") == 0)) {
 			continue;
 		}
 
@@ -198,9 +267,9 @@ muggle_file_list_node_t *muggle_os_listdir(const char *dirpath, int ftype)
 		}
 
 		node->next = NULL;
-		size_t len = strlen(ffd.cFileName);
+		size_t len = strlen(filename);
 		node->filename = (char *)malloc(len + 1);
-		memcpy(node->filename, ffd.cFileName, len);
+		memcpy(node->filename, filename, len);
 		node->filename[len] = '\0';
 
 		if (tail == NULL) {
@@ -210,7 +279,7 @@ muggle_file_list_node_t *muggle_os_listdir(const char *dirpath, int ftype)
 			tail->next = node;
 			tail = node;
 		}
-	} while (FindNextFileA(hFind, &ffd) != 0);
+	} while (FindNextFileW(hFind, &ffd) != 0);
 	FindClose(hFind);
 
 	return head;
@@ -455,7 +524,26 @@ FILE* muggle_os_fopen(const char *filepath, const char *mode)
 		}
 	}
 
+#if MUGGLE_PLATFORM_WINDOWS
+	// convert to unicode characters
+	WCHAR unicode_abs_filepath[MUGGLE_MAX_PATH];
+	ret = MultiByteToWideChar(CP_UTF8, 0, abs_filepath, -1, unicode_abs_filepath, MUGGLE_MAX_PATH);
+	if (ret == 0)
+	{
+		return NULL;
+	}
+
+	WCHAR unicode_mode[16];
+	ret = MultiByteToWideChar(CP_UTF8, 0, mode, -1, unicode_mode, MUGGLE_MAX_PATH);
+	if (ret == 0)
+	{
+		return NULL;
+	}
+
+	return _wfopen(unicode_abs_filepath, unicode_mode);
+#else
 	return fopen(abs_filepath, mode);
+#endif
 }
 
 void muggle_os_free_file_nodes(muggle_file_list_node_t *node)
