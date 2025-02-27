@@ -3,8 +3,12 @@ English | [中文](./CHANGELOG_cn.md)
 
 | date | version |
 | ---- | ---- |
+| 2025-02-27 | [v2.0.2](#v202) |
 | 2025-02-24 | [v2.0.1](#v201) |
 | 2025-02-23 | [v2.0.0](#v200) |
+
+## v2.0.2
+* Fixed issue with operating non-ASCII character paths in Windows
 
 ## v2.0.1
 * Added `MUGGLE_EV_LOOP_EXIT_STATUS`, when calling `evloop_exit` from a non-current thread, the status is not set to exit directly, to avoid **heap-use-after-free**
