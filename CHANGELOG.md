@@ -8,6 +8,9 @@ English | [中文](./CHANGELOG_cn.md)
 | 2025-02-24 | [v2.0.1](#v201) |
 | 2025-02-23 | [v2.0.0](#v200) |
 
+## (Next Version)
+* Fixed incorrect `BUILD_TYPE` in build.bat
+
 ## v2.1.0
 * Add `muggle_socket_blocking_write` to support blocking write with timeout
 
