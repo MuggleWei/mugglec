@@ -97,10 +97,23 @@ muggle_thread_ret_t run_client(void *args)
 		// int n = muggle_socket_write(fd, buf, write_n);
 
 		// block write
-		int n = muggle_socket_block_write(fd, buf, write_n, 400);
+		// int n = muggle_socket_block_write(fd, buf, write_n, 400);
+
+		// blocking write
+		muggle_time_counter_t tc;
+		muggle_time_counter_init(&tc);
+		muggle_time_counter_start(&tc);
+
+		unsigned long timeout_ms = 3000;
+		int n = muggle_socket_blocking_write(fd, buf, write_n, 400, timeout_ms);
+
+		muggle_time_counter_end(&tc);
 
 		if (n != write_n) {
-			LOG_ERROR("socket write return %d", n);
+			LOG_ERROR("socket write return %d, write elapsed: %lld ms", n,
+					  (long long)muggle_time_counter_interval_ms(&tc));
+			LOG_ERROR("write elapsed should approximately equal to %lu ms",
+					  timeout_ms);
 			break;
 		}
 	}

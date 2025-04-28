@@ -11,6 +11,7 @@
 #include "socket.h"
 #include "muggle/c/base/sleep.h"
 #include "muggle/c/os/sys.h"
+#include "muggle/c/time/time_counter.h"
 #include <string.h>
 
 int muggle_socket_lib_init()
@@ -49,7 +50,7 @@ int muggle_socket_set_nonblock(muggle_socket_t socket, int on)
 }
 
 int muggle_socket_block_write(
-	muggle_socket_t fd, void *data, size_t len, unsigned long wait_ns)
+	muggle_socket_t fd, void *data, size_t len, unsigned long interval_ns)
 {
 	char *p = (char *)data;
 	int total_bytes = (int)len;
@@ -64,9 +65,55 @@ int muggle_socket_block_write(
 			if (last_errnum == MUGGLE_SYS_ERRNO_WOULDBLOCK ||
 					last_errnum == MUGGLE_SYS_ERROR_AGAIN ||
 					last_errnum == MUGGLE_SYS_ERRNO_INTR) {
-				if (wait_ns > 0) {
-					muggle_nsleep(wait_ns);
+				if (interval_ns > 0) {
+					muggle_nsleep(interval_ns);
 				}
+				continue;
+			} else {
+				return MUGGLE_EVENT_ERROR;
+			}
+		} else {
+			// LOG_ERROR("failed block write message: return=%d", send_bytes);
+			return 0;
+		}
+	} while (remain_bytes > 0);
+
+	return total_bytes;
+}
+
+int muggle_socket_blocking_write(
+	muggle_socket_t fd, void *data, size_t len, unsigned long interval_ns,
+	unsigned long timeout_ms)
+{
+	char *p = (char *)data;
+	int total_bytes = (int)len;
+	int remain_bytes = total_bytes;
+
+	muggle_time_counter_t tc;
+	muggle_time_counter_init(&tc);
+	muggle_time_counter_start(&tc);
+	do {
+		int send_bytes = muggle_socket_write(
+				fd, p + (total_bytes - remain_bytes), remain_bytes);
+		if (send_bytes > 0) {
+			remain_bytes -= send_bytes;
+		} else if (send_bytes == MUGGLE_EVENT_ERROR) {
+			int last_errnum = muggle_sys_lasterror();
+			if (last_errnum == MUGGLE_SYS_ERRNO_WOULDBLOCK ||
+					last_errnum == MUGGLE_SYS_ERROR_AGAIN ||
+					last_errnum == MUGGLE_SYS_ERRNO_INTR) {
+				if (timeout_ms > 0) {
+					muggle_time_counter_end(&tc);
+					int64_t elapsed_ms = muggle_time_counter_interval_ms(&tc);
+					if (elapsed_ms > (int64_t)timeout_ms) {
+						return MUGGLE_EVENT_ERROR;
+					}
+				}
+
+				if (interval_ns > 0) {
+					muggle_nsleep(interval_ns);
+				}
+
 				continue;
 			} else {
 				return MUGGLE_EVENT_ERROR;
