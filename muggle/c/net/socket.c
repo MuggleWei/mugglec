@@ -102,10 +102,12 @@ int muggle_socket_blocking_write(
 			if (last_errnum == MUGGLE_SYS_ERRNO_WOULDBLOCK ||
 					last_errnum == MUGGLE_SYS_ERROR_AGAIN ||
 					last_errnum == MUGGLE_SYS_ERRNO_INTR) {
-				muggle_time_counter_end(&tc);
-				int64_t elapsed_ms = muggle_time_counter_interval_ms(&tc);
-				if ((timeout_ms > 0) && (elapsed_ms > (int64_t)timeout_ms)) {
-					return MUGGLE_EVENT_ERROR;
+				if (timeout_ms > 0) {
+					muggle_time_counter_end(&tc);
+					int64_t elapsed_ms = muggle_time_counter_interval_ms(&tc);
+					if (elapsed_ms > (int64_t)timeout_ms) {
+						return MUGGLE_EVENT_ERROR;
+					}
 				}
 
 				if (interval_ns > 0) {
