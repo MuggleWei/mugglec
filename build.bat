@@ -61,5 +61,5 @@ cmake ^
 	-DCMAKE_INSTALL_PREFIX=%install_dir%
 
 :: cmake --build . --config Release --target INSTALL
-cmake --build . --config Release
-cmake --build . --config Release --target install
+cmake --build . --config %BUILD_TYPE%
+cmake --build . --config %BUILD_TYPE% --target install
