@@ -499,6 +499,15 @@ muggle_socket_t muggle_tcp_bind(const char *bind_host, const char *bind_serv)
 			continue;
         }
 
+		// always set SO_REUSEADDR for bind socket
+		int on = 1;
+		if (muggle_setsockopt(client, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) != 0)
+		{
+			char err_msg[1024] = {0};
+			muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
+			MUGGLE_LOG_WARNING("failed setsockopt SO_REUSEADDR on - %s", err_msg);
+		}
+
 		if (bind(client, res->ai_addr, (muggle_socklen_t)res->ai_addrlen) == 0) {
 			break;
 		} else {
