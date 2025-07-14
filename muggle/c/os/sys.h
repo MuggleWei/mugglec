@@ -52,7 +52,7 @@ int muggle_sys_strerror(int errnum, char *buf, size_t bufsize);
 	char err_msg_buf[512]; \
 	if (muggle_sys_strerror(last_errnum, err_msg_buf, sizeof(err_msg_buf)) != -1) \
 	{ \
-		MUGGLE_LOG_DEFAULT(log_level, "%s: %s", msg, err_msg_buf); \
+		MUGGLE_LOG_DEFAULT(log_level, "%s: (errno=%d) %s", msg, last_errnum, err_msg_buf); \
 	} \
 }
 

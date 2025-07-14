@@ -14,12 +14,17 @@ static muggle_socket_t muggle_socket_evloop_on_accept(muggle_socket_context_t *c
 		fd = accept(ctx->base.fd, NULL, NULL);
 		if (fd == MUGGLE_INVALID_SOCKET)
 		{
-			if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
+			if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
+			{
+				break;
+			}
+			else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_INTR)
 			{
 				continue;
 			}
-			else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERRNO_WOULDBLOCK)
+			else if (MUGGLE_SOCKET_LAST_ERRNO == MUGGLE_SYS_ERROR_EMFILE)
 			{
+				MUGGLE_LOG_SYS_ERR(MUGGLE_LOG_LEVEL_ERROR, "failed accept");
 				break;
 			}
 			else
