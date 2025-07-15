@@ -84,6 +84,7 @@ option(BUILD_TESTING "Build testing" OFF)
 
 option(MUGGLE_BUILD_STATIC_PIC "build static library with position independent code flag" ON)
 option(MUGGLE_BUILD_EXAMPLE "Build mugglec example" OFF)
+option(MUGGLE_BUILD_STRESS_TEST "Build mugglec stress test" OFF)
 option(MUGGLE_BUILD_BENCHMARK_UTILS "Build mugglec benchmark utils" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build mugglec benchmark" OFF)
 option(MUGGLE_BUILD_TRACE "If build type is debug then build with trace info in source codes" OFF)
@@ -221,6 +222,7 @@ message("# mugglec option MUGGLE_BUILD_WITH_COV: ${MUGGLE_BUILD_WITH_COV}")
 message("# mugglec option MUGGLE_BUILD_SANITIZER: ${MUGGLE_BUILD_SANITIZER}")
 message("# mugglec option BUILD_TESTING: ${BUILD_TESTING}")
 message("# mugglec option MUGGLE_BUILD_EXAMPLE: ${MUGGLE_BUILD_EXAMPLE}")
+message("# mugglec option MUGGLE_BUILD_STRESS_TEST: ${MUGGLE_BUILD_STRESS_TEST}")
 message("# mugglec option MUGGLE_BUILD_BENCHMARK_UTILS: ${MUGGLE_BUILD_BENCHMARK_UTILS}")
 message("# mugglec option MUGGLE_BUILD_BENCHMARK: ${MUGGLE_BUILD_BENCHMARK}")
 message("# mugglec option MUGGLE_CRYPT_OPTIMIZATION: ${MUGGLE_CRYPT_OPTIMIZATION}")
@@ -531,6 +533,50 @@ function(add_example name folder)
 	endif()
 endfunction()
 
+function(add_stress_test name folder)
+	message("add stress_test ${name} ${folder}")
+
+	set(name stress_test_${name})
+
+	file(GLOB_RECURSE tmp_h ${folder}/*.h)
+	file(GLOB_RECURSE tmp_c ${folder}/*.c)
+	file(GLOB_RECURSE tmp_cpp ${folder}/*.cpp)
+	file(GLOB_RECURSE tmp_cc ${folder}/*.cc)
+
+	if (MSVC OR MINGW)
+		add_executable(${name} ${tmp_h} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+		set_target_properties(${name}
+			PROPERTIES
+			FOLDER "stress_test"
+			VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
+		)
+	else()
+		add_executable(${name} ${tmp_c} ${tmp_cpp} ${tmp_cc})
+		if (APPLE)
+			set_target_properties(${name}
+				PROPERTIES
+				INSTALL_RPATH "@executable_path/../lib"
+			)
+		else ()
+			set_target_properties(${name}
+				PROPERTIES
+				INSTALL_RPATH "\$ORIGIN/../lib"
+			)
+		endif()
+	endif(MSVC OR MINGW)
+	add_dependencies(${name} ${muggle_c})
+	target_include_directories(${name} PUBLIC
+		${folder}
+	)
+	target_link_libraries(${name} ${muggle_c})
+
+	target_compile_definitions(${name} PRIVATE MUGGLE_HOLD_LOG_MACRO)
+
+	if (MUGGLE_INSTALL_BIN)
+		install(TARGETS ${name} RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+	endif()
+endfunction()
+
 function(add_benchmark name folder)
 	message("add benchmark ${name} ${folder}")
 	
@@ -722,6 +768,14 @@ if (${MUGGLE_BUILD_EXAMPLE})
 			add_example(${example_dir}_${sub_example_dir}
 				${CMAKE_CURRENT_LIST_DIR}/examples/src/${example_dir}/${sub_example_dir})
 		ENDFOREACH()
+	ENDFOREACH()
+endif()
+
+if (${MUGGLE_BUILD_STRESS_TEST})
+	message("---------------------- stress tests ----------------------")
+	SUBDIRLIST(stress_test_root_dir ${CMAKE_CURRENT_LIST_DIR}/stress_tests)
+	FOREACH(subdir ${stress_test_root_dir})
+		add_stress_test(${subdir} ${CMAKE_CURRENT_LIST_DIR}/stress_tests/${subdir})
 	ENDFOREACH()
 endif()
 

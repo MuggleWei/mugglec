@@ -337,7 +337,9 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
 
     if (res == NULL)
     {
-        MUGGLE_LOG_ERROR("failed create socket for %s:%s", host, serv);
+		int last_errnum = MUGGLE_SOCKET_LAST_ERRNO;
+		MUGGLE_LOG_ERROR("failed create socket for %s:%s - (errno=%d)", 
+				host, serv, last_errnum);
         freeaddrinfo(ressave);
         return MUGGLE_INVALID_SOCKET;
     }
@@ -365,9 +367,11 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
         if (MUGGLE_SOCKET_LAST_ERRNO != EINPROGRESS)
 #endif
         {
+			int last_errnum = MUGGLE_SOCKET_LAST_ERRNO;
             char err_msg[1024] = {0};
-            muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-            MUGGLE_LOG_ERROR("failed connect for %s:%s - %s", host, serv, err_msg);
+            muggle_socket_strerror(last_errnum, err_msg, sizeof(err_msg));
+            MUGGLE_LOG_ERROR("failed connect for %s:%s - (errno=%d) %s",
+				host, serv, last_errnum, err_msg);
 
             muggle_socket_close(client);
             freeaddrinfo(ressave);
