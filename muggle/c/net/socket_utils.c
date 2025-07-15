@@ -300,6 +300,150 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 	return listen_socket;
 }
 
+#define MUGGLE_OUTPUT_WAIT_TCP_CONN_LAST_ERROR(host, serv)                    \
+	int last_errnum = MUGGLE_SOCKET_LAST_ERRNO;                           \
+	char err_msg[1024] = { 0 };                                           \
+	muggle_socket_strerror(last_errnum, err_msg, sizeof(err_msg));        \
+	MUGGLE_LOG_DEBUG(                                                     \
+		"failed nonblocking tcp connect for %s:%s - (errno=%d) %s", host, \
+		serv, last_errnum, err_msg);
+
+#define MUGGLE_WAIT_TCP_CONN_USE_POLL 1
+
+#if MUGGLE_WAIT_TCP_CONN_USE_POLL
+
+static bool muggle_wait_tcp_connect_poll(
+	muggle_socket_t client, int timeout_sec, const char *host, const char *serv)
+{
+	struct pollfd pfd;
+	memset(&pfd, 0, sizeof(pfd));
+	pfd.fd = client;
+	pfd.events = POLLIN | POLLOUT;
+
+#if MUGGLE_PLATFORM_WINDOWS
+	int n = WSAPoll(&pfd, 1, timeout_sec * 1000);
+#else
+	int n = poll(&pfd, 1, timeout_sec * 1000);
+#endif
+	if (n == 0)
+	{
+		MUGGLE_LOG_DEBUG(
+			"failed nonblocking tcp connect for %s:%s - timeout(%d sec)",
+			host, serv, timeout_sec);
+		return false;
+	}
+	else if (n == MUGGLE_SOCKET_ERROR)
+	{
+		MUGGLE_OUTPUT_WAIT_TCP_CONN_LAST_ERROR(host, serv);
+		return false;
+	}
+
+	if (pfd.revents & POLLOUT)
+	{
+		int err = 0;
+        muggle_socklen_t len = sizeof(err);
+        if (getsockopt(client, SOL_SOCKET, SO_ERROR, (void*)&err, &len) < 0)
+        {
+			MUGGLE_OUTPUT_WAIT_TCP_CONN_LAST_ERROR(host, serv);
+            return false;
+        }
+		if (err != 0)
+		{
+			char err_msg[1024] = {0};
+			muggle_socket_strerror(err, err_msg, sizeof(err_msg));
+			MUGGLE_LOG_DEBUG(
+				"failed nonblocking tcp connect for %s:%s - (so_error=%d) %s",
+				host, serv, err, err_msg);
+			return false;
+		}
+	}
+	else
+	{
+        MUGGLE_LOG_DEBUG(
+			"failed nonblocking tcp connect for %s:%s - socket not set",
+			host, serv);
+        return false;
+	}
+
+	return true;
+}
+
+#else
+
+static bool muggle_wait_tcp_connect_select(
+	muggle_socket_t client, int timeout_sec, const char *host, const char *serv)
+{
+    // select
+    fd_set rset, wset;
+    FD_ZERO(&rset);
+    FD_SET(client, &rset);
+    wset = rset;
+
+    struct timeval tval;
+    tval.tv_sec = timeout_sec;
+    tval.tv_usec = 0;
+
+    int nfds = 0;
+#if !MUGGLE_PLATFORM_WINDOWS
+    nfds = client + 1;
+#endif
+
+    int n = select(nfds, &rset, &wset, NULL, timeout_sec ? &tval : NULL);
+    if (n == 0)
+    {
+        MUGGLE_LOG_DEBUG(
+			"failed nonblocking tcp connect for %s:%s - timeout(%d sec)",
+			host, serv, timeout_sec);
+        return false;
+    }
+    else if (n == MUGGLE_SOCKET_ERROR)
+    {
+		MUGGLE_OUTPUT_WAIT_TCP_CONN_LAST_ERROR(host, serv);
+        return false;
+    }
+
+    if (FD_ISSET(client, &rset) || FD_ISSET(client, &wset))
+    {
+		int err = 0;
+        muggle_socklen_t len = sizeof(err);
+        if (getsockopt(client, SOL_SOCKET, SO_ERROR, (void*)&err, &len) < 0)
+        {
+			MUGGLE_OUTPUT_WAIT_TCP_CONN_LAST_ERROR(host, serv);
+            return false;
+        }
+		if (err != 0)
+		{
+			char err_msg[1024] = {0};
+			muggle_socket_strerror(err, err_msg, sizeof(err_msg));
+			MUGGLE_LOG_DEBUG(
+				"failed nonblocking tcp connect for %s:%s - (so_error=%d) %s",
+				host, serv, err, err_msg);
+			return false;
+		}
+    }
+    else
+    {
+        MUGGLE_LOG_DEBUG(
+			"failed nonblocking tcp connect for %s:%s - socket not set",
+			host, serv);
+        return false;
+    }
+
+	return true;
+}
+
+#endif
+
+static bool muggle_wait_tcp_connect(
+	muggle_socket_t client, int timeout_sec, const char *host, const char *serv)
+{
+#if MUGGLE_WAIT_TCP_CONN_USE_POLL
+	return muggle_wait_tcp_connect_poll(client, timeout_sec, host, serv);
+#else
+	return muggle_wait_tcp_connect_select(client, timeout_sec, host, serv);
+#endif
+}
+
 muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeout_sec)
 {
     muggle_socket_t client = MUGGLE_INVALID_SOCKET;
@@ -394,68 +538,13 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
         return client;
     }
 
-    // select
-    fd_set rset, wset;
-    FD_ZERO(&rset);
-    FD_SET(client, &rset);
-    wset = rset;
-
-    struct timeval tval;
-    tval.tv_sec = timeout_sec;
-    tval.tv_usec = 0;
-
-    int nfds = 0;
-#if !MUGGLE_PLATFORM_WINDOWS
-    nfds = client + 1;
-#endif
-
-    n = select(nfds, &rset, &wset, NULL, timeout_sec ? &tval : NULL);
-    if (n == 0)
-    {
+	// wait connect completed
+	if (!muggle_wait_tcp_connect(client, timeout_sec, host, serv))
+	{
         muggle_socket_close(client);
-        MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - timeout(%d sec)", host, serv, timeout_sec);
-        return MUGGLE_INVALID_SOCKET;
-    }
-    else if (n == MUGGLE_SOCKET_ERROR)
-    {
-        char err_msg[1024] = {0};
-        muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-        MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
-
-        muggle_socket_close(client);
-        return MUGGLE_INVALID_SOCKET;
-    }
-
-    int error = 0;
-    if (FD_ISSET(client, &rset) || FD_ISSET(client, &wset))
-    {
-        muggle_socklen_t len = sizeof(error);
-        if (getsockopt(client, SOL_SOCKET, SO_ERROR, (void*)&error, &len) < 0)
-        {
-            char err_msg[1024] = {0};
-            muggle_socket_strerror(MUGGLE_SOCKET_LAST_ERRNO, err_msg, sizeof(err_msg));
-            MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
-
-            muggle_socket_close(client);
-            return MUGGLE_INVALID_SOCKET;
-        }
-    }
-    else
-    {
-        MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - socket not set", host, serv);
-        muggle_socket_close(client);
-        return MUGGLE_INVALID_SOCKET;
-    }
-
-    if (error != 0)
-    {
-        char err_msg[1024] = {0};
-        muggle_socket_strerror(error, err_msg, sizeof(err_msg));
-        MUGGLE_LOG_DEBUG("failed nonblocking tcp connect for %s:%s - %s", host, serv, err_msg);
-
-        muggle_socket_close(client);
-        return MUGGLE_INVALID_SOCKET;
-    }
+		client = MUGGLE_INVALID_SOCKET;
+		return MUGGLE_INVALID_SOCKET;
+	}
 
     // restore file status flags
 #if MUGGLE_PLATFORM_WINDOWS

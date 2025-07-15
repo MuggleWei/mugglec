@@ -43,8 +43,13 @@ void run_conn_thread(stress_test_tcp_conn_args_t *args)
 void on_add_ctx(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
 {
 	MUGGLE_UNUSED(evloop);
-	LOG_INFO("socket context ready, idx=%d",
-			 (int)(intptr_t)muggle_socket_ctx_get_data(ctx));
+
+	char ip[128];
+	int port;
+	muggle_socket_local_ip_port(ctx->base.fd, ip, sizeof(ip), &port);
+
+	LOG_INFO("socket context ready, idx=%d, local_addr=%s:%d",
+			 (int)(intptr_t)muggle_socket_ctx_get_data(ctx), ip, port);
 }
 
 void on_message(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
