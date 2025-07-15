@@ -11,7 +11,7 @@ English | [中文](./CHANGELOG_cn.md)
 | 2025-02-23 | [v2.0.0](#v200) |
 
 ## v2.1.2
-* Fixed: use `poll` wait TCP connect completed by default, avoid the problem of incorrectly judging a normal connection as time out when `fd` greater than or equal to 1024
+* Fixed: use `poll` wait Active TCP connection completed by default, to avoid the problem that when `fd` is greater than or equal to 1024, the normal connection is mistakenly judged as timeout when using `select` wait
 * Fixed: handle `EMFILE` error in `muggle_socket_evloop_on_accept`
 
 ## v2.1.1
