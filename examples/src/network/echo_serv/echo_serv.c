@@ -130,6 +130,9 @@ int main(int argc, char *argv[])
 	// init socket event loop handle
 	muggle_socket_evloop_handle_t handle;
 	muggle_socket_evloop_handle_init(&handle);
+	muggle_socket_evloop_handle_set_cb_conn(&handle, on_connect);
+	muggle_socket_evloop_handle_set_cb_close(&handle, on_close);
+	muggle_socket_evloop_handle_set_cb_release(&handle, on_release);
 	muggle_socket_evloop_handle_set_cb_msg(&handle, on_message);
 	muggle_socket_evloop_handle_attach(&handle, evloop);
 	LOG_INFO("socket handle attached event loop");
