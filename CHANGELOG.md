@@ -3,12 +3,17 @@ English | [中文](./CHANGELOG_cn.md)
 
 | date | version |
 | ---- | ---- |
+| 2025-07-22 | [v2.1.3](#v213) |
 | 2025-07-15 | [v2.1.2](#v212) |
 | 2025-05-13 | [v2.1.1](#v211) |
 | 2025-04-28 | [v2.1.0](#v210) |
 | 2025-02-27 | [v2.0.2](#v202) |
 | 2025-02-24 | [v2.0.1](#v201) |
 | 2025-02-23 | [v2.0.0](#v200) |
+
+## v2.1.3
+* update memory pool, support preallocate >= 4GB at a time
+* update threadsafe memory pool, use `size_t` in initialize allocate
 
 ## v2.1.2
 * Fixed: use `poll` wait Active TCP connection completed by default, to avoid the problem that when `fd` is greater than or equal to 1024, the normal connection is mistakenly judged as timeout when using `select` wait
