@@ -10,6 +10,11 @@
 #include <string.h>
 #include <assert.h>
 
+#define MUGGLE_MEMPOOL_SIZE_2GB \
+	((uint64_t)2llu * (uint64_t)1024llu * (uint64_t)1024llu * (uint64_t)1024llu)
+#define MUGGLE_MEMPOOL_SIZE_4GB \
+	((uint64_t)4llu * (uint64_t)1024llu * (uint64_t)1024llu * (uint64_t)1024llu)
+
 bool muggle_memory_pool_init(muggle_memory_pool_t* pool, uint32_t init_capacity, uint32_t block_size)
 {
 	memset(pool, 0, sizeof(muggle_memory_pool_t));
@@ -31,7 +36,15 @@ bool muggle_memory_pool_init(muggle_memory_pool_t* pool, uint32_t init_capacity,
 		pool->memory_pool_data_bufs = NULL;
 		return false;
 	}
-	pool->memory_pool_data_bufs[0] = (void*)malloc(block_size * init_capacity);
+
+	// avoid total_bytes >= 4GB in 32bit platform
+	uint64_t total_bytes = (uint64_t)block_size * (uint64_t)init_capacity;
+	if ((sizeof(size_t) < 8) && (total_bytes >= MUGGLE_MEMPOOL_SIZE_4GB))
+	{
+		return false;
+	}
+
+	pool->memory_pool_data_bufs[0] = (void*)malloc((size_t)total_bytes);
 	if (pool->memory_pool_data_bufs[0] == NULL)
 	{
 		free(pool->memory_pool_data_bufs);
@@ -51,14 +64,9 @@ bool muggle_memory_pool_init(muggle_memory_pool_t* pool, uint32_t init_capacity,
 	pool->flag = 0;
 
 	// NOTE:
-	// avoid allocate more than 4G of memory, it may lead bug in 
-	// muggle_memory_pool_ensure_space, uint32_t overflow and truncate cause 
-	// expected allocation to be inconsistent with the actual allocation value
-	if (block_size > 8 * 1024) {
-		pool->max_delta_cap = init_capacity;
-	} else {
-		pool->max_delta_cap = 512 * 1024;
-	}
+	// avoid allocate >= 4G of memory in muggle_memory_pool_ensure_space, it 
+	// will lead bug in 32bit platform
+	pool->max_delta_cap = MUGGLE_MEMPOOL_SIZE_2GB / block_size;
 
 	pool->peak = 0;
 
@@ -140,14 +148,16 @@ bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, uint32_t capaci
 	}
 
 	// allocate new data buffer
-	uint32_t delta_size = capacity - pool->capacity;
+	uint32_t delta_cap = capacity - pool->capacity;
 	void** new_bufs = (void**)malloc(sizeof(void*) * (pool->num_buf + 1));
 	if (new_bufs == NULL)
 	{
 		return false;
 	}
 	memcpy(new_bufs, pool->memory_pool_data_bufs, sizeof(void*) * pool->num_buf);
-	new_bufs[pool->num_buf] = (void*)malloc(pool->block_size * delta_size);
+
+	size_t delta_bytes = (size_t)pool->block_size * (size_t)delta_cap;
+	new_bufs[pool->num_buf] = (void*)malloc(delta_bytes);
 	if (new_bufs[pool->num_buf] == NULL)
 	{
 		free(new_bufs);
@@ -248,7 +258,7 @@ bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, uint32_t capaci
 
 	// init new section
 	uint32_t i;
-	for (i = 0; i < delta_size; ++i)
+	for (i = 0; i < delta_cap; ++i)
 	{
 		new_ptr_buf[offset + i] = (void*)((char*)pool->memory_pool_data_bufs[pool->num_buf] + i * pool->block_size);
 	}
