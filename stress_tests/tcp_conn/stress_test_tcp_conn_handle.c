@@ -6,7 +6,13 @@ muggle_thread_ret_t conn_thread_routine(void *p_args)
 {
 	stress_test_tcp_conn_args_t *args = (stress_test_tcp_conn_args_t *)p_args;
 	for (int i = 0; i < args->total_conns; ++i) {
-		muggle_socket_t fd = muggle_tcp_connect(args->host, args->serv, 3);
+		muggle_socket_t fd = MUGGLE_INVALID_SOCKET;
+		if (1) {
+			fd = muggle_tcp_connect(args->host, args->serv, 3);
+		} else {
+			fd = muggle_tcp_bind_connect("127.0.0.1", NULL, args->host,
+										 args->serv, 3);
+		}
 
 		if (fd == MUGGLE_INVALID_SOCKET) {
 			LOG_ERROR("failed create socket: %s %s", args->host, args->serv);
