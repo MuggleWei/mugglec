@@ -3,6 +3,7 @@ English | [中文](./CHANGELOG_cn.md)
 
 | date | version |
 | ---- | ---- |
+| 2025-07-29 | [v2.1.4](#v214) |
 | 2025-07-22 | [v2.1.3](#v213) |
 | 2025-07-15 | [v2.1.2](#v212) |
 | 2025-05-13 | [v2.1.1](#v211) |
@@ -10,6 +11,9 @@ English | [中文](./CHANGELOG_cn.md)
 | 2025-02-27 | [v2.0.2](#v202) |
 | 2025-02-24 | [v2.0.1](#v201) |
 | 2025-02-23 | [v2.0.0](#v200) |
+
+## v2.1.4
+* Fixed: keep `muggle_tcp_bind_connect` and `muggle_tcp_connect` consistent, use `muggle_wait_tcp_connect` to wait for the connection be ready
 
 ## v2.1.3
 * update memory pool, support preallocate >= 4GB at a time
