@@ -55,7 +55,29 @@ int muggle_event_strerror(int errnum, char *buf, size_t bufsize)
 
 	return ret > 0 ? 0 : -1;
 #else
-	// return strerror_r(errnum, buf, bufsize);
+	/*
+	 * NOTE:
+	 *   On GCC compiler, this function may do nothing, cause error message not 
+	 *   fillup the buf param, it return from strerror_r.
+	 *
+	 *   The return type of strerror_r may be different on different platform, 
+	 *   although it can be determined by `(_POSIX_C_SOURCE >= 200112L) && !_GNU_SOURCE`
+	 *   on gcc, it's still difficult to determine the return type when 
+	 *   considering all different system.
+	 *
+	 *   So here neigher the GNU-specific nor the XSI-compliant handle is used, 
+	 *   but return value of strerror_r is ignored here.
+	 *
+	 * # handle GNU-specific
+	 * const char *s = strerror_r(errnum, buf, bufsize);
+	 * if ((buf[0] == '\0') && s) {
+	 *     strncpy(buf, s, bufsize - 1);
+	 * }
+	 * return buf[0] != '\0' ? 0 : -1;
+	 *
+	 * # handle XSI-compliant
+	 * return strerror_r(errnum, buf, bufsize);
+	 * */
 	strerror_r(errnum, buf, bufsize);
 	return 0;
 #endif
