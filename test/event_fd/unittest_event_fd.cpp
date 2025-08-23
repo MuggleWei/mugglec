@@ -1,12 +1,18 @@
 #include "gtest/gtest.h"
 #include "muggle/c/muggle_c.h"
+#include <mutex>
+#include <thread>
 
 #define BUFSIZE_16K (8 * 1024)
+
+std::once_flag init_socket_flag;
 
 class TestEventFdFixture : public ::testing::Test {
 public:
 	virtual void SetUp() override
 	{
+		std::call_once(init_socket_flag, []() { muggle_socket_lib_init(); });
+
 #if MUGGLE_PLATFORM_WINDOWS
 		int ret = muggle_socketpair(AF_INET, SOCK_STREAM, 0, fds);
 #else
