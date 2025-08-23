@@ -42,6 +42,7 @@ There are some cmake build options to decide build this library as shared or sta
 | BUILD_TESTING | OFF | build unittests |
 | MUGGLE_BUILD_TRACE | OFF | build with trace info in debug |
 | MUGGLE_BUILD_SANITIZER | OFF | build with sanitizer |
+| MUGGLE_BUILD_COVERAGE | OFF | build with coverage(support with gcc and clang) |
 | MUGGLE_BUILD_EXAMPLE | OFF | build examples |
 | MUGGLE_BUILD_STRESS_TEST | OFF | build stress testing |
 | MUGGLE_BUILD_BENCHMARK_UTILS | OFF | build benchmark utils |

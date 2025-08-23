@@ -43,6 +43,7 @@ cmake ..
 | BUILD_TESTING | OFF | 构建单元测试 |
 | MUGGLE_BUILD_TRACE | OFF | 当构建的是Debug时, 是否增加一些额外的调试信息 |
 | MUGGLE_BUILD_SANITIZER | OFF | 构建时增加 sanitizer 的编译选项 |
+| MUGGLE_BUILD_COVERAGE | OFF | 增加覆盖率测试编译选项(支持 gcc 与 clang) |
 | MUGGLE_BUILD_EXAMPLE | OFF | 构建例子 |
 | MUGGLE_BUILD_STRESS_TEST | OFF | 构建压力测试 |
 | MUGGLE_BUILD_BENCHMARK_UTILS | OFF | 构建性能测试工具 |

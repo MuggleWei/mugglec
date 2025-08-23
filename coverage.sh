@@ -37,7 +37,7 @@ cd $build_dir
 
 cmake \
 	-S $origin_dir -B $build_dir \
-	-DCMAKE_BUILD_TYPE=Coverage \
+	-DCMAKE_BUILD_TYPE=Debug \
 	-DCMAKE_PREFIX_PATH=$dep_search_path \
 	-DBUILD_SHARED_LIBS=ON \
 	-DMUGGLE_BUILD_STATIC_PIC=ON \
@@ -45,6 +45,7 @@ cmake \
 	-DBUILD_TESTING=OFF \
 	-DMUGGLE_BUILD_EXAMPLE=OFF \
 	-DMUGGLE_BUILD_BENCHMARK=OFF \
+	-DMUGGLE_BUILD_COVERAGE=ON \
 	-DMUGGLE_INSTALL_BIN=OFF
 
 # run test & coverage
