@@ -313,8 +313,8 @@ TEST_F(TestArrayListFixture, failed_find)
 	ASSERT_TRUE(node != NULL);
 	ASSERT_EQ(node->data, p);
 
-	int *q = test_utils_.allocateInteger();
-	*q = 5;
+	int val = 5;
+	int *q = &val;
 	int idx = muggle_array_list_find(p_arr, 0, q, test_utils_cmp_int);
 	ASSERT_EQ(idx, 0);
 
