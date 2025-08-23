@@ -303,3 +303,48 @@ TEST_F(TestArrayListFixture, find)
 		}
 	}
 }
+
+TEST_F(TestArrayListFixture, failed_find)
+{
+	int *p = test_utils_.allocateInteger();
+	*p = 5;
+	muggle_array_list_t *p_arr = &list_[1];
+	muggle_array_list_node_t *node = muggle_array_list_append(p_arr, -1, (void*)p);
+	ASSERT_TRUE(node != NULL);
+	ASSERT_EQ(node->data, p);
+
+	int *q = test_utils_.allocateInteger();
+	*q = 5;
+	int idx = muggle_array_list_find(p_arr, 0, q, test_utils_cmp_int);
+	ASSERT_EQ(idx, 0);
+
+	// beyond the size
+	idx = muggle_array_list_find(p_arr, 1, q, test_utils_cmp_int);
+	ASSERT_EQ(idx, -1);
+
+	// not found
+	*q = 6;
+	idx = muggle_array_list_find(p_arr, 0, q, test_utils_cmp_int);
+	ASSERT_EQ(idx, -1);
+}
+
+TEST_F(TestArrayListFixture, init)
+{
+	muggle_array_list_t arr_list;
+	size_t cap = 1ULL << 31;
+	ASSERT_FALSE(muggle_array_list_init(&arr_list, cap));
+}
+
+TEST_F(TestArrayListFixture, ensure_cap)
+{
+	muggle_array_list_t *p_arr = &list_[1];
+	size_t cap = p_arr->capacity;
+	size_t new_cap = cap;
+	ASSERT_TRUE(cap > 2);
+	ASSERT_TRUE(muggle_array_list_ensure_capacity(p_arr, new_cap / 2));
+	ASSERT_EQ(cap, p_arr->capacity);
+
+	new_cap = 1ULL << 31;
+	ASSERT_FALSE(muggle_array_list_ensure_capacity(p_arr, new_cap));
+	ASSERT_EQ(cap, p_arr->capacity);
+}
