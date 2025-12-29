@@ -10,7 +10,9 @@
 #include <string.h>
 #include <assert.h>
 #include "muggle/c/base/utils.h"
-#if MUGGLE_C_HAVE_MADV_HUGEPAGE
+#if MUGGLE_PLATFORM_LINUX && \
+	MUGGLE_C_HAVE_ALIGNED_ALLOC && \
+	MUGGLE_C_HAVE_MADV_HUGEPAGE 
 #include <sys/mman.h>
 #include <errno.h>
 #endif
@@ -147,11 +149,15 @@ bool muggle_memory_pool_init_thp(muggle_memory_pool_t *pool, uint32_t init_capac
 		goto mempool_init_thp_exit;
 	}
 #if MUGGLE_C_HAVE_MADV_POPULATE_WRITE 
+	if (madvise(pool->memory_pool_ptr_buf, n_bytes_ptr, MADV_POPULATE_WRITE) != 0) {
+		memset(pool->memory_pool_ptr_buf, 0, n_bytes_ptr);
+	}
 	if (madvise(pool->memory_pool_data_bufs[0], total_bytes, MADV_POPULATE_WRITE) != 0) {
-		memset(pool->memory_pool_data_bufs, 0, total_bytes);
+		memset(pool->memory_pool_data_bufs[0], 0, total_bytes);
 	}
 #else
-	memset(pool->memory_pool_data_bufs, 0, n_bytes_ptr);
+	memset(pool->memory_pool_ptr_buf, 0, n_bytes_ptr);
+	memset(pool->memory_pool_data_bufs[0], 0, total_bytes);
 #endif
 
 	pool->alloc_index = pool->free_index = 0;
@@ -282,6 +288,7 @@ bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, uint32_t capaci
 	MUGGLE_C_HAVE_ALIGNED_ALLOC && \
 	MUGGLE_C_HAVE_MADV_HUGEPAGE 
 	if (pool->flag & MUGGLE_MEMORY_POOL_THP) {
+		// allocate delta datas
 		delta_bytes = 
 			MUGGLE_ROUND_UP_POW_OF_2_MUL(delta_bytes, MUGGLE_MEMPOOL_SIZE_2MB);
 		new_bufs[pool->num_buf] =
@@ -303,17 +310,29 @@ bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, uint32_t capaci
 			return false;
 		}
 
+		if (madvise(new_ptr_buf, (size_t)n_bytes_ptr, MADV_HUGEPAGE) != 0) {
+			free(new_bufs[pool->num_buf]);
+			free(new_bufs);
+			free(new_ptr_buf);
+			return false;
+		}
+
 		if (madvise(new_bufs[pool->num_buf], (size_t)delta_bytes, MADV_HUGEPAGE) != 0) {
 			free(new_bufs[pool->num_buf]);
 			free(new_bufs);
+			free(new_ptr_buf);
 			return false;
 		}
 
 #if MUGGLE_C_HAVE_MADV_POPULATE_WRITE 
+		if (madvise(new_ptr_buf, n_bytes_ptr, MADV_POPULATE_WRITE) != 0) {
+			memset(new_ptr_buf, 0, n_bytes_ptr);
+		}
 		if (madvise(new_bufs[pool->num_buf], delta_bytes, MADV_POPULATE_WRITE) != 0) {
 			memset(new_bufs[pool->num_buf], 0, delta_bytes);
 		}
 #else
+		memset(new_ptr_buf, 0, n_bytes_ptr);
 		memset(new_bufs[pool->num_buf], 0, delta_bytes);
 #endif
 
