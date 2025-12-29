@@ -260,6 +260,13 @@ check_c_source_compiles("
 	}
 " MUGGLE_C_HAVE_ALIGNED_ALLOC)
 
+include(CheckSymbolExists)
+
+check_symbol_exists(MADV_HUGEPAGE "sys/mman.h"
+	MUGGLE_C_HAVE_MADV_HUGEPAGE)
+check_symbol_exists(MADV_POPULATE_WRITE "sys/mman.h"
+	MUGGLE_C_HAVE_MADV_POPULATE_WRITE)
+
 # detech endianness
 include(TestBigEndian)
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)  # NOTE: big endian is 1, little endian is 0

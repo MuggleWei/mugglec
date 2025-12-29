@@ -19,6 +19,7 @@ EXTERN_C_BEGIN
 
 // memory pool flag
 #define MUGGLE_MEMORY_POOL_CONSTANT_SIZE	0x01  //!< memory pool use constant size
+#define MUGGLE_MEMORY_POOL_THP              0x02  //!< memory pool use THP
 
 typedef struct muggle_memory_pool_tag
 {
@@ -51,6 +52,20 @@ typedef struct muggle_memory_pool_tag
  */
 MUGGLE_C_EXPORT
 bool muggle_memory_pool_init(muggle_memory_pool_t* pool, uint32_t init_capacity, uint32_t block_size);
+
+/**
+ * @brief initialize memory pool and use THP
+ * 
+ * @param pool           memory pool pointer
+ * @param init_capacity  init capacity of memory pool
+ * @param block_size     data size of memory pool
+ *
+ * @return boolean
+ *
+ * @NOTE  this is Linux only, in other platform, equivalent to muggle_memory_pool_init
+ */
+MUGGLE_C_EXPORT
+bool muggle_memory_pool_init_thp(muggle_memory_pool_t *pool, uint32_t init_capacity, uint32_t block_size);
 
 /**
  * @brief destroy memory pool
