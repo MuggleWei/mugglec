@@ -33,6 +33,10 @@ TEST(str, startswith)
 	EXPECT_FALSE(muggle_str_startswith(s, "ello wor"));
 	EXPECT_FALSE(muggle_str_startswith(s, "ello worl"));
 	EXPECT_FALSE(muggle_str_startswith(s, "ello world"));
+
+	EXPECT_FALSE(muggle_str_startswith(s, NULL));
+	EXPECT_FALSE(muggle_str_startswith(NULL, "hello"));
+	EXPECT_FALSE(muggle_str_startswith(s, "hello world\n"));
 }
 
 TEST(str, endswith)
@@ -62,6 +66,10 @@ TEST(str, endswith)
 	EXPECT_FALSE(muggle_str_endswith(s, "rl"));
 	EXPECT_FALSE(muggle_str_endswith(s, "l"));
 	EXPECT_FALSE(muggle_str_endswith(s, ""));
+
+	EXPECT_FALSE(muggle_str_endswith(s, NULL));
+	EXPECT_FALSE(muggle_str_endswith(NULL, "hello"));
+	EXPECT_FALSE(muggle_str_endswith(s, "hello world\n"));
 }
 
 TEST(str, count)
@@ -151,6 +159,13 @@ TEST(str, count)
 	EXPECT_EQ(muggle_str_count(s, "oooo", 0, 1), 0);
 	EXPECT_EQ(muggle_str_count(s, "ooooo", 0, 1), 0);
 	EXPECT_EQ(muggle_str_count(s, "oooooo", 0, 1), 0);
+
+	EXPECT_EQ(muggle_str_count(s, NULL, 0, 1), 0);
+	EXPECT_EQ(muggle_str_count(NULL, "o", 0, 1), 0);
+	EXPECT_EQ(muggle_str_count(s, "oo", -1, 1), 0);
+	EXPECT_EQ(muggle_str_count(s, "oo", 0, -1), 0);
+	EXPECT_EQ(muggle_str_count(s, "oo", 1, 1), 0);
+	EXPECT_EQ(muggle_str_count(s, "oo", 2, 1), 0);
 }
 
 TEST(str, find)
@@ -183,6 +198,14 @@ TEST(str, find)
 	EXPECT_EQ(muggle_str_find(s, "w", 0, 7), 6);
 	EXPECT_EQ(muggle_str_find(s, "w", 0, 8), 6);
 	EXPECT_EQ(muggle_str_find(s, "w", 0, 9), 6);
+
+	EXPECT_EQ(muggle_str_find(s, NULL, 0, 0), -1);
+	EXPECT_EQ(muggle_str_find(NULL, "w", 0, 0), -1);
+	EXPECT_EQ(muggle_str_find(s, "w", -1, 0), -1);
+	EXPECT_EQ(muggle_str_find(s, "w", 0, -1), -1);
+	EXPECT_EQ(muggle_str_find(s, "w", strlen(s), 0), -1);
+	EXPECT_EQ(muggle_str_find(s, "w", 0, strlen(s) + 1), 6);
+	EXPECT_EQ(muggle_str_find(s, "w", 5, 1), -1);
 }
 
 TEST(str, lstrip)
@@ -192,6 +215,9 @@ TEST(str, lstrip)
 
 	EXPECT_EQ(muggle_str_lstrip_idx(s1), 1);
 	EXPECT_EQ(muggle_str_lstrip_idx(s2), 1);
+
+	EXPECT_EQ(muggle_str_lstrip_idx(NULL), -1);
+	EXPECT_EQ(muggle_str_lstrip_idx(" "), -1);
 }
 
 TEST(str, rstrip)
@@ -201,6 +227,9 @@ TEST(str, rstrip)
 
 	EXPECT_EQ(muggle_str_rstrip_idx(s1), 4);
 	EXPECT_EQ(muggle_str_rstrip_idx(s2), 4);
+
+	EXPECT_EQ(muggle_str_rstrip_idx(NULL), -1);
+	EXPECT_EQ(muggle_str_rstrip_idx(" "), -1);
 }
 
 TEST(str, stoi)
@@ -242,6 +271,8 @@ TEST(str, stoi)
 	EXPECT_EQ(ret, 10);
 
 	EXPECT_FALSE(muggle_str_toi("100000000000000000000000", &ret, 10));
+	EXPECT_FALSE(muggle_str_toi("4294967296", &ret, 10));
+	EXPECT_FALSE(muggle_str_toi(NULL, &ret, 10));
 }
 
 TEST(str, stou)
@@ -278,6 +309,7 @@ TEST(str, stou)
 	EXPECT_EQ(ret, (unsigned int)10);
 
 	EXPECT_FALSE(muggle_str_tou("100000000000000000000000", &ret, 10));
+	EXPECT_FALSE(muggle_str_tou(NULL, &ret, 10));
 }
 
 TEST(str, stol)
@@ -318,6 +350,7 @@ TEST(str, stol)
 	EXPECT_EQ(ret, (long)10);
 
 	EXPECT_FALSE(muggle_str_tol("100000000000000000000000", &ret, 10));
+	EXPECT_FALSE(muggle_str_tol(NULL, &ret, 10));
 }
 
 TEST(str, stoul)
@@ -354,6 +387,7 @@ TEST(str, stoul)
 	EXPECT_EQ(ret, (unsigned long)10);
 
 	EXPECT_FALSE(muggle_str_toul("100000000000000000000000", &ret, 10));
+	EXPECT_FALSE(muggle_str_toul(NULL, &ret, 10));
 }
 
 TEST(str, stoll)
@@ -394,6 +428,7 @@ TEST(str, stoll)
 	EXPECT_EQ(ret, (long long)10);
 
 	EXPECT_FALSE(muggle_str_toll("100000000000000000000000", &ret, 10));
+	EXPECT_FALSE(muggle_str_toll(NULL, &ret, 10));
 }
 
 TEST(str, stoull)
@@ -430,6 +465,7 @@ TEST(str, stoull)
 	EXPECT_EQ(ret, (unsigned long long)10);
 
 	EXPECT_FALSE(muggle_str_toull("100000000000000000000000", &ret, 10));
+	EXPECT_FALSE(muggle_str_toull(NULL, &ret, 10));
 }
 
 TEST(str, stof)
@@ -451,6 +487,8 @@ TEST(str, stof)
 	EXPECT_TRUE(std::isnan(ret));
 	EXPECT_FALSE(muggle_str_tof("10e300", &ret));
 	EXPECT_FALSE(muggle_str_tof("hello", &ret));
+
+	EXPECT_FALSE(muggle_str_tof(NULL, &ret));
 }
 
 TEST(str, stod)
@@ -472,6 +510,8 @@ TEST(str, stod)
 	EXPECT_TRUE(std::isnan(ret));
 	EXPECT_FALSE(muggle_str_tod("10e10000", &ret));
 	EXPECT_FALSE(muggle_str_tod("hello", &ret));
+
+	EXPECT_FALSE(muggle_str_tod(NULL, &ret));
 }
 
 TEST(str, stold)
@@ -493,5 +533,7 @@ TEST(str, stold)
 	EXPECT_TRUE(std::isnan(ret));
 	EXPECT_FALSE(muggle_str_told("10e10000", &ret));
 	EXPECT_FALSE(muggle_str_told("hello", &ret));
+
+	EXPECT_FALSE(muggle_str_told(NULL, &ret));
 }
 

@@ -89,6 +89,7 @@ option(MUGGLE_BUILD_BENCHMARK_UTILS "Build mugglec benchmark utils" OFF)
 option(MUGGLE_BUILD_BENCHMARK "Build mugglec benchmark" OFF)
 option(MUGGLE_BUILD_TRACE "If build type is debug then build with trace info in source codes" OFF)
 option(MUGGLE_BUILD_SANITIZER "Compile mugglec with sanitizer" OFF)
+option(MUGGLE_BUILD_COVERAGE "Compile with coverage" OFF)
 option(MUGGLE_INSTALL_BIN "Install example, unittest and benchmark binaries" OFF)
 # option(MUGGLE_CRYPT_OPTIMIZATION "Enable crypt optimization(use source codes extract from openssl)" ON)
 set(MUGGLE_CRYPT_OPTIMIZATION ON)
@@ -109,7 +110,7 @@ endif()
 # coverage
 ################################
 
-if (${CMAKE_BUILD_TYPE} MATCHES "[Cc]overage")
+if (MUGGLE_BUILD_COVERAGE)
 	set(BUILD_TESTING ON)
 
 	if (${CMAKE_C_COMPILER_ID} MATCHES Clang)
@@ -258,6 +259,13 @@ check_c_source_compiles("
 		return 0;
 	}
 " MUGGLE_C_HAVE_ALIGNED_ALLOC)
+
+include(CheckSymbolExists)
+
+check_symbol_exists(MADV_HUGEPAGE "sys/mman.h"
+	MUGGLE_C_HAVE_MADV_HUGEPAGE)
+check_symbol_exists(MADV_POPULATE_WRITE "sys/mman.h"
+	MUGGLE_C_HAVE_MADV_POPULATE_WRITE)
 
 # detech endianness
 include(TestBigEndian)
