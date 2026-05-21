@@ -171,16 +171,16 @@ void muggle_ev_signal_destroy(muggle_event_signal_t *ev_signal)
 		ev_signal->mtx = NULL;
 	}
 
-	if (ev_signal->socket_fds[0] != INVALID_SOCKET)
+	if (ev_signal->socket_fds[0] != MUGGLE_INVALID_EVENT_FD)
 	{
 		closesocket(ev_signal->socket_fds[0]);
-		ev_signal->socket_fds[0] = INVALID_SOCKET;
+		ev_signal->socket_fds[0] = MUGGLE_INVALID_EVENT_FD;
 	}
 
-	if (ev_signal->socket_fds[1] != INVALID_SOCKET)
+	if (ev_signal->socket_fds[1] != MUGGLE_INVALID_EVENT_FD)
 	{
 		closesocket(ev_signal->socket_fds[1]);
-		ev_signal->socket_fds[1] = INVALID_SOCKET;
+		ev_signal->socket_fds[1] = MUGGLE_INVALID_EVENT_FD;
 	}
 }
 
