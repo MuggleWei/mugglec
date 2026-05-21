@@ -32,15 +32,15 @@ int test_utils_cmp_int(const void *p1, const void *p2)
 		return 0;
 	}
 
-	if (p1 == NULL && p2 != NULL)
-	{
-		return -1;
-	}
+	// if (p1 == NULL && p2 != NULL)
+	// {
+	//     return -1;
+	// }
 
-	if (p1 != NULL && p2 == NULL)
-	{
-		return 1;
-	}
+	// if (p1 != NULL && p2 == NULL)
+	// {
+	//     return 1;
+	// }
 
 	return *(int*)p1 - *(int*)p2;
 }
@@ -52,15 +52,15 @@ int test_utils_cmp_str(const void *p1, const void *p2)
 		return 0;
 	}
 
-	if (p1 == NULL && p2 != NULL)
-	{
-		return -1;
-	}
+	// if (p1 == NULL && p2 != NULL)
+	// {
+	//     return -1;
+	// }
 
-	if (p1 != NULL && p2 == NULL)
-	{
-		return 1;
-	}
+	// if (p1 != NULL && p2 == NULL)
+	// {
+	//     return 1;
+	// }
 
 	return strncmp((char*)p1, (char*)p2, TEST_UTILS_STR_SIZE);
 }
