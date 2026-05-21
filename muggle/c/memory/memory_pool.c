@@ -33,6 +33,13 @@ bool muggle_memory_pool_init(muggle_memory_pool_t* pool, uint32_t init_capacity,
 		return false;
 	}
 
+	// avoid total_bytes >= 4GB in 32bit platform
+	uint64_t total_bytes = (uint64_t)block_size * (uint64_t)init_capacity;
+	if ((sizeof(size_t) < 8) && (total_bytes >= MUGGLE_MEMPOOL_SIZE_4GB))
+	{
+		return false;
+	}
+
 	pool->memory_pool_data_bufs = (void**)malloc(sizeof(void*));
 	if (pool->memory_pool_data_bufs == NULL)
 	{
@@ -43,13 +50,6 @@ bool muggle_memory_pool_init(muggle_memory_pool_t* pool, uint32_t init_capacity,
 	{
 		free(pool->memory_pool_data_bufs);
 		pool->memory_pool_data_bufs = NULL;
-		return false;
-	}
-
-	// avoid total_bytes >= 4GB in 32bit platform
-	uint64_t total_bytes = (uint64_t)block_size * (uint64_t)init_capacity;
-	if ((sizeof(size_t) < 8) && (total_bytes >= MUGGLE_MEMPOOL_SIZE_4GB))
-	{
 		return false;
 	}
 
@@ -225,7 +225,11 @@ void* muggle_memory_pool_alloc(muggle_memory_pool_t* pool)
 		if ((pool->max_delta_cap > 0) && (delta_cap > pool->max_delta_cap)) {
 			delta_cap = pool->max_delta_cap;
 		}
+
 		uint32_t new_cap = pool->capacity + delta_cap;
+		if (new_cap <= pool->capacity) {
+			return NULL;
+		}
 
 		if (!muggle_memory_pool_ensure_space(pool, new_cap))
 		{
