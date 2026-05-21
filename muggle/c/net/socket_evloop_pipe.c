@@ -43,8 +43,8 @@ int muggle_socket_evloop_pipe_init(muggle_socket_evloop_pipe_t *ev_pipe)
 
 	if (muggle_socket_ctx_init(&ev_pipe->ctx[0], fds[0], ev_pipe,
 							   MUGGLE_SOCKET_CTX_TYPE_PIPE) != 0) {
-		close(fds[0]);
-		close(fds[1]);
+		muggle_socket_close(fds[0]);
+		muggle_socket_close(fds[1]);
 		ev_pipe->ctx[0].base.fd = MUGGLE_INVALID_SOCKET;
 		ev_pipe->ctx[1].base.fd = MUGGLE_INVALID_SOCKET;
 		return -1;
@@ -52,8 +52,8 @@ int muggle_socket_evloop_pipe_init(muggle_socket_evloop_pipe_t *ev_pipe)
 
 	if (muggle_socket_ctx_init(&ev_pipe->ctx[1], fds[1], ev_pipe,
 							   MUGGLE_SOCKET_CTX_TYPE_PIPE) != 0) {
-		close(fds[0]);
-		close(fds[1]);
+		muggle_socket_close(fds[0]);
+		muggle_socket_close(fds[1]);
 		ev_pipe->ctx[0].base.fd = MUGGLE_INVALID_SOCKET;
 		ev_pipe->ctx[1].base.fd = MUGGLE_INVALID_SOCKET;
 		return -1;

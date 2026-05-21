@@ -40,6 +40,10 @@ int muggle_socket_ctx_writev(
 {
 	int n = muggle_socket_writev(ctx->base.fd, iov, iovcnt);
 #if MUGGLE_ENABLE_TRACE
+	int len = 0;
+	for (int i = 0; i < iovcnt; ++i) {
+		len += MUGGLE_SOCKET_IOVEC_GET_LEN(iov[i]);
+	}
 	if (n != (int)len)
 	{
 		if (n == MUGGLE_EVENT_ERROR)
