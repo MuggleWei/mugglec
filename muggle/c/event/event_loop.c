@@ -220,6 +220,7 @@ muggle_event_loop_t* muggle_evloop_new(muggle_event_loop_init_args_t *args)
 	int ret = muggle_evloop_init(evloop, args);
 	if (ret != 0)
 	{
+		free(evloop);
 		return NULL;
 	}
 
