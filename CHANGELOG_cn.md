@@ -3,6 +3,7 @@
 
 | 日期 | 版本 |
 | ---- | ---- |
+| 2026-05-22 | [v2.2.1](#v221) |
 | 2025-12-29 | [v2.2.0](#v220) |
 | 2025-07-29 | [v2.1.4](#v214) |
 | 2025-07-22 | [v2.1.3](#v213) |
@@ -12,6 +13,18 @@
 | 2025-02-27 | [v2.0.2](#v202) |
 | 2025-02-24 | [v2.0.1](#v201) |
 | 2025-02-23 | [v2.0.0](#v200) |
+
+## v2.2.1
+* 修复 `heap` 在 `cmp` 没做空指针判断时, 删除最后一个元素会导致崩溃的问题
+* 更新 `muggle_array_list_destroy`, 销毁时将指针重置为 NULL
+* 更新 `muggle_stack_destroy`, 销毁时将指针重置为 NULL
+* 更新 `muggle_hex_from_bytes`, 使得更加缓存友好, 提升效率
+* 修复 `muggle_evloop_new` 当中, 当初始化失败, 可能导致的内存泄露的问题
+* 更新 `muggle_ev_signal_destroy`, 无效的 `socket_fd` 统一使用 `MUGGLE_INVALID_EVENT_FD`, 使得语义更加统一
+* 修复 `muggle_memory_pool_init` 当中, 当是 32 位系统遇到非法参数, 可能导致的内存泄露问题
+* 修复 `muggle_memory_pool_alloc` 当中, 出现了 `uint32_t` 溢出时, 没有对新内存大小进行检测的问题
+* 修复在 Windows 平台下, `muggle_mcast_join` 当地址为 IPv6 类型, 错误的将比较写为赋值的问题
+* 修复在 Windows 平台下, `muggle_socket_evloop_pipe_init` 失败时, 掉了了不正确的关闭 socket 的函数
 
 ## v2.2.0
 * 更新内存池, 支持初始化时指定使用 THP(透明大页)
