@@ -917,7 +917,7 @@ muggle_socket_t muggle_mcast_join(
 		{
 			iface = ipv4_host_any;
 		}
-		else if (multicast_addrinfo.ai_family = AF_INET6)
+		else if (multicast_addrinfo.ai_family == AF_INET6)
 		{
 			iface = ipv6_host_any;
 		}
@@ -1184,7 +1184,7 @@ int muggle_mcast_leave(
 		{
 			iface = ipv4_host_any;
 		}
-		else if (multicast_addrinfo.ai_family = AF_INET6)
+		else if (multicast_addrinfo.ai_family == AF_INET6)
 		{
 			iface = ipv6_host_any;
 		}

@@ -68,11 +68,12 @@ void muggle_array_list_destroy(muggle_array_list_t *p_array_list, muggle_dsaa_da
 {
 	muggle_array_list_clear(p_array_list, func_free, pool);
 
-	if (p_array_list)
+	if (p_array_list->nodes)
 	{
 		free(p_array_list->nodes);
-		p_array_list = NULL;
+		p_array_list->nodes = NULL;
 	}
+	p_array_list->capacity = 0;
 }
 
 bool muggle_array_list_is_empty(muggle_array_list_t *p_array_list)
@@ -244,7 +245,7 @@ bool muggle_array_list_remove(muggle_array_list_t *p_array_list, int index, mugg
 	index = muggle_array_list_get_index(p_array_list, index);
 	if (index < 0)
 	{
-		return 0;
+		return false;
 	}
 
 	if (func_free)

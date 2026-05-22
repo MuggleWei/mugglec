@@ -261,6 +261,12 @@ bool muggle_heap_remove(muggle_heap_t *p_heap, muggle_heap_node_t *node,
 	}
 
 	uint64_t idx = (uint64_t)tmp;
+	if (idx == p_heap->size) {
+		// remove last element, no sifting needed
+		--p_heap->size;
+		return true;
+	}
+
 	muggle_heap_node_t *last_node = &p_heap->nodes[p_heap->size--];
 	uint64_t parent_idx = 0;
 	uint64_t child_idx = 0;

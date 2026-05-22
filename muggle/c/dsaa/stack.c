@@ -38,7 +38,11 @@ void muggle_stack_destroy(muggle_stack_t *p_stack, muggle_dsaa_data_free func_fr
 {
 	muggle_stack_clear(p_stack, func_free, pool);
 
-	free(p_stack->nodes);
+	if (p_stack->nodes) {
+		free(p_stack->nodes);
+		p_stack->nodes = NULL;
+	}
+	p_stack->capacity = 0;
 }
 
 bool muggle_stack_is_empty(muggle_stack_t *p_stack)
