@@ -31,6 +31,9 @@ bool codec_bytes_decode(
 	muggle_socket_context_t *ctx,
 	void *data, uint32_t data_len)
 {
+	MUGGLE_UNUSED(data);
+	MUGGLE_UNUSED(data_len);
+
 	foo_evloop_data_t *evloop_data = (foo_evloop_data_t*)muggle_evloop_get_data(evloop);
 
 	foo_socket_ctx_data_t *ctx_data = (foo_socket_ctx_data_t*)muggle_socket_ctx_get_data(ctx);
@@ -50,10 +53,7 @@ bool codec_bytes_decode(
 		if (n > 0)
 		{
 			muggle_bytes_buffer_writer_move_n(bytes_buf, p, n);
-		}
-
-		if (n < (int)evloop_data->recv_unit_size)
-		{
+		} else {
 			break;
 		}
 	}
