@@ -3,6 +3,7 @@ English | [中文](./CHANGELOG_cn.md)
 
 | date | version |
 | ---- | ---- |
+| 2026-06-10 | [v2.3.0](#v230) |
 | 2026-05-22 | [v2.2.1](#v221) |
 | 2025-12-29 | [v2.2.0](#v220) |
 | 2025-07-29 | [v2.1.4](#v214) |
@@ -13,6 +14,11 @@ English | [中文](./CHANGELOG_cn.md)
 | 2025-02-27 | [v2.0.2](#v202) |
 | 2025-02-24 | [v2.0.1](#v201) |
 | 2025-02-23 | [v2.0.0](#v200) |
+
+## v2.3.0
+* Add `muggle_tcp_listen_with_cb` to facilitate setting values such as SO_SNDBUF or SO_RCVBUF in callbacks.
+* Add `muggle_tcp_connect_with_cb` to facilitate setting values such as SO_SNDBUF or SO_RCVBUF in callbacks.
+* Add `muggle_tcp_bind_connect_with_cb` to facilitate setting values such as SO_SNDBUF or SO_RCVBUF in callbacks.
 
 ## v2.2.1
 * fixed an issue where deleting the last element in `heap` would cause a crash if `cmp` didn't perform a null pointer check
