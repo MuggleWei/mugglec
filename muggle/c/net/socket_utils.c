@@ -221,6 +221,13 @@ int muggle_socket_remote_ip_port(muggle_socket_t fd, char *buf, size_t bufsize, 
 
 muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlog)
 {
+	return muggle_tcp_listen_with_cb(host, serv, backlog, NULL, NULL);
+}
+
+muggle_socket_t muggle_tcp_listen_with_cb(
+		const char *host, const char *serv, int backlog,
+		fn_muggle_tcp_create_callback cb, void *user_data)
+{
 	muggle_socket_t listen_socket = MUGGLE_INVALID_SOCKET;
 
 	struct addrinfo hints, *res;
@@ -282,6 +289,11 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
 		MUGGLE_LOG_ERROR("failed to create and bind tcp socket for %s:%s", host, serv);
 		freeaddrinfo(ressave);
 		return MUGGLE_INVALID_SOCKET;
+	}
+
+	if (cb)
+	{
+		cb(listen_socket, user_data);
 	}
 
 	if (listen(listen_socket, backlog) != 0)
@@ -446,6 +458,13 @@ static bool muggle_wait_tcp_connect(
 
 muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeout_sec)
 {
+	return muggle_tcp_connect_with_cb(host, serv, timeout_sec, NULL, NULL);
+}
+
+muggle_socket_t muggle_tcp_connect_with_cb(
+	const char *host, const char *serv, int timeout_sec,
+	fn_muggle_tcp_create_callback cb, void *user_data)
+{
     muggle_socket_t client = MUGGLE_INVALID_SOCKET;
 
     struct addrinfo hints, *res;
@@ -500,6 +519,12 @@ muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeo
     flags = fcntl(client, F_GETFL, 0);
     fcntl(client, F_SETFL, flags | O_NONBLOCK);
 #endif
+
+	// callback
+	if (cb)
+	{
+		cb(client, user_data);
+	}
 
     // connect
     n = connect(client, res->ai_addr, (muggle_socklen_t)res->ai_addrlen);
@@ -735,11 +760,24 @@ muggle_socket_t muggle_tcp_bind_connect(
 		const char *host, const char *serv,
 		int timeout_sec)
 {
+	return muggle_tcp_bind_connect_with_cb(
+		bind_host, bind_serv, host, serv, timeout_sec, NULL, NULL);
+}
+
+muggle_socket_t muggle_tcp_bind_connect_with_cb(
+		const char *bind_host, const char *bind_serv,
+		const char *host, const char *serv, int timeout_sec,
+		fn_muggle_tcp_create_callback cb, void *user_data)
+{
 	muggle_socket_t client = muggle_tcp_bind(bind_host, bind_serv);
 	if (client == MUGGLE_INVALID_SOCKET) {
 		MUGGLE_LOG_ERROR("failed tcp bind %s:%s",
 			bind_host, bind_serv == NULL ? "(null)" : bind_serv);
 		return client;
+	}
+
+	if (cb) {
+		cb(client, user_data);
 	}
 
 	return muggle_tcp_binded_socket_connect(client, host, serv, timeout_sec);
