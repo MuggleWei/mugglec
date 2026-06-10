@@ -16,6 +16,14 @@
 EXTERN_C_BEGIN
 
 /**
+ * @brief tcp create callback function
+ *
+ * @param fd         socket fd
+ * @param user_data  user data pointer
+ */
+typedef void (*fn_muggle_tcp_create_callback)(muggle_socket_t fd, void *user_data);
+
+/**
  * @brief convert sockaddr to presentation string
  *
  * @param sa         pointer to sockaddr
@@ -121,6 +129,24 @@ MUGGLE_C_EXPORT
 muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlog);
 
 /**
+ * @brief tcp listen with callback
+ *
+ * @param host      internet host
+ * @param serv      internet service or port
+ * @param backlog   maximum length to which the queue of pending connections
+ * @param cb        callback before socket listen
+ * @param user_data user data pass to cb
+ *
+ * @return
+ *   - on success, listen socket description is returned
+ *   - on failed, return MUGGLE_INVALID_SOCKET
+ */
+MUGGLE_C_EXPORT
+muggle_socket_t muggle_tcp_listen_with_cb(
+	const char *host, const char *serv, int backlog,
+	fn_muggle_tcp_create_callback cb, void *user_data);
+
+/**
  * @brief tcp connect
  *
  * @param host        target host
@@ -131,6 +157,24 @@ muggle_socket_t muggle_tcp_listen(const char *host, const char *serv, int backlo
  */
 MUGGLE_C_EXPORT
 muggle_socket_t muggle_tcp_connect(const char *host, const char *serv, int timeout_sec);
+
+/**
+ * @brief tcp connect with callback
+ *
+ * @param host        target host
+ * @param serv        target service or port
+ * @param timeout_sec max seconds for wait connect complete
+ * @param cb          callback before socket connect
+ * @param user_data   user data pass to cb
+ *
+ * @return
+ *   - on success, connected socket description is returned
+ *   - on failed, return MUGGLE_INVALID_SOCKET
+ */
+MUGGLE_C_EXPORT
+muggle_socket_t muggle_tcp_connect_with_cb(
+	const char *host, const char *serv, int timeout_sec,
+	fn_muggle_tcp_create_callback cb, void *user_data);
 
 /**
  * @brief bind tcp
@@ -163,6 +207,27 @@ muggle_socket_t muggle_tcp_bind_connect(
 		const char *bind_host, const char *bind_serv,
 		const char *host, const char *serv,
 		int timeout_sec);
+
+/**
+ * @brief tcp bind and connect with callback
+ *
+ * @param bind_host   bind host
+ * @param bind_serv   bind service or port, if it's null, bind port randomly
+ * @param host        target host
+ * @param serv        target service or port
+ * @param timeout_sec max seconds for wait connect complete
+ * @param cb          callback before socket connect
+ * @param user_data   user data pass to cb
+ *
+ * @return
+ *     - on success, connected socket description is returned
+ *     - otherwise return MUGGLE_INVALID_SOCKET
+ */
+MUGGLE_C_EXPORT
+muggle_socket_t muggle_tcp_bind_connect_with_cb(
+		const char *bind_host, const char *bind_serv,
+		const char *host, const char *serv, int timeout_sec,
+		fn_muggle_tcp_create_callback cb, void *user_data);
 
 /**
  * @brief udp bind
