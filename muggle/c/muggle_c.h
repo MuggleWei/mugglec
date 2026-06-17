@@ -124,6 +124,7 @@
 #include "muggle/c/dsaa/avl_tree.h"
 #include "muggle/c/dsaa/hash_table.h"
 #include "muggle/c/dsaa/heap.h"
+#include "muggle/c/dsaa/time_wheel.h"
 #include "muggle/c/dsaa/sort.h"
 
 // encoding
