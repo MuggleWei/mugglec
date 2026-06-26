@@ -3,6 +3,7 @@ English | [中文](./CHANGELOG_cn.md)
 
 | date | version |
 | ---- | ---- |
+| 2026-06-26 | [v2.4.1](#v241) |
 | 2026-06-17 | [v2.4.0](#v240) |
 | 2026-06-10 | [v2.3.0](#v230) |
 | 2026-05-22 | [v2.2.1](#v221) |
@@ -15,6 +16,9 @@ English | [中文](./CHANGELOG_cn.md)
 | 2025-02-27 | [v2.0.2](#v202) |
 | 2025-02-24 | [v2.0.1](#v201) |
 | 2025-02-23 | [v2.0.0](#v200) |
+
+## v2.4.1
+* Fix `muggle_log_file_rotate_handler_t::use_local_time` was not set in time during init phase
 
 ## v2.4.0
 * Add `muggle_time_wheel_t`

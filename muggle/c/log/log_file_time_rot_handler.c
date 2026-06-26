@@ -293,6 +293,9 @@ int muggle_log_file_time_rot_handler_init(
 	// truncated warning
 	handler->filepath[sizeof(handler->filepath) - 1] = '\0';
 
+	handler->rotate_unit = rotate_unit;
+	handler->rotate_mod = rotate_mod;
+	handler->use_local_time = use_local_time;
 	handler->last_sec = time(NULL);
 	if (handler->use_local_time)
 	{
@@ -302,9 +305,6 @@ int muggle_log_file_time_rot_handler_init(
 	{
 		gmtime_r(&handler->last_sec, &handler->last_tm);
 	}
-	handler->rotate_mod = rotate_mod;
-	handler->rotate_unit = rotate_unit;
-	handler->use_local_time = use_local_time;
 
 	ret = muggle_log_file_time_rot_handler_rotate(handler);
 	if (ret != 0)
