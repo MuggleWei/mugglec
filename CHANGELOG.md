@@ -19,7 +19,7 @@ English | [中文](./CHANGELOG_cn.md)
 | 2025-02-23 | [v2.0.0](#v200) |
 
 ## v2.4.2
-* Fix memory_pool/ts_memory_pool init beyond 4GB
+* Fixed issue that occurred when `muggle_memory_pool_t`/`muggle_ts_memory_pool_t` init exceeding 4GB
 
 ## v2.4.1
 * Fix `muggle_log_file_rotate_handler_t::use_local_time` was not set in time during init phase
