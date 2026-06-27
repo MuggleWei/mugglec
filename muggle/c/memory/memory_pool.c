@@ -80,10 +80,10 @@ bool muggle_memory_pool_init(muggle_memory_pool_t* pool, uint32_t init_capacity,
 	pool->peak = 0;
 
 	void* ptr_buf = pool->memory_pool_data_bufs[0];
-	uint32_t i;
-	for (i = 0; i < init_capacity; ++i)
+	size_t i;
+	for (i = 0; i < (size_t)init_capacity; ++i)
 	{
-		pool->memory_pool_ptr_buf[i] = (void*)((char*)ptr_buf + i * block_size);
+		pool->memory_pool_ptr_buf[i] = (void*)((char*)ptr_buf + i * (size_t)block_size);
 	}
 
 	return true;
@@ -177,10 +177,10 @@ bool muggle_memory_pool_init_thp(muggle_memory_pool_t *pool, uint32_t init_capac
 	pool->peak = 0;
 
 	void* ptr_buf = pool->memory_pool_data_bufs[0];
-	uint32_t i;
-	for (i = 0; i < init_capacity; ++i)
+	size_t i;
+	for (i = 0; i < (size_t)init_capacity; ++i)
 	{
-		pool->memory_pool_ptr_buf[i] = (void*)((char*)ptr_buf + i * block_size);
+		pool->memory_pool_ptr_buf[i] = (void*)((char*)ptr_buf + i * (size_t)block_size);
 	}
 
 mempool_init_thp_exit:

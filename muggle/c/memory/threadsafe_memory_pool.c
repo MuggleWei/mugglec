@@ -75,10 +75,10 @@ int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_sync_t capa
 		return MUGGLE_ERR_MEM_ALLOC;
 	}
 
-	for (muggle_sync_t i = 0; i < capacity; i++)
+	for (size_t i = 0; i < (size_t)capacity; i++)
 	{
 		muggle_ts_memory_pool_head_t *block =
-			(muggle_ts_memory_pool_head_t*)((char*)pool->data + block_size * i);
+			(muggle_ts_memory_pool_head_t*)((char*)pool->data + (size_t)block_size * i);
 		block->pool = pool;
 		pool->ptrs[i].ptr = block;
 	}
