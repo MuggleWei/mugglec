@@ -447,10 +447,10 @@ bool muggle_memory_pool_ensure_space(muggle_memory_pool_t* pool, uint32_t capaci
 	}
 
 	// init new section
-	uint32_t i;
-	for (i = 0; i < delta_cap; ++i)
+	size_t i;
+	for (i = 0; i < (size_t)delta_cap; ++i)
 	{
-		new_ptr_buf[offset + i] = (void*)((char*)pool->memory_pool_data_bufs[pool->num_buf] + i * pool->block_size);
+		new_ptr_buf[offset + i] = (void*)((char*)pool->memory_pool_data_bufs[pool->num_buf] + i * (size_t)pool->block_size);
 	}
 
 	// free old pointer buffer and reset pointer buffer
