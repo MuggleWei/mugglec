@@ -3,6 +3,7 @@ English | [中文](./CHANGELOG_cn.md)
 
 | date | version |
 | ---- | ---- |
+| 2026-07-06 | [v2.5.0](#v250) |
 | 2026-06-27 | [v2.4.2](#v242) |
 | 2026-06-26 | [v2.4.1](#v241) |
 | 2026-06-17 | [v2.4.0](#v240) |
@@ -17,6 +18,9 @@ English | [中文](./CHANGELOG_cn.md)
 | 2025-02-27 | [v2.0.2](#v202) |
 | 2025-02-24 | [v2.0.1](#v201) |
 | 2025-02-23 | [v2.0.0](#v200) |
+
+## v2.5.0
+* Add `muggle_socket_evloop_pipe_read_n` to support `evloop_pipe` batch read
 
 ## v2.4.2
 * Fixed issue that occurred when `muggle_memory_pool_t`/`muggle_ts_memory_pool_t` init exceeding 4GB
