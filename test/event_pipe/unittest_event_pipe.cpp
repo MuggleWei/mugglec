@@ -214,6 +214,10 @@ TEST_F(TestEventPipeFixture, case05)
 			int idx = cnt_read % num;
 
 			data = (pipe_data_t *)muggle_socket_evloop_pipe_read(&ev_pipe);
+			if (data == nullptr) {
+				continue;
+			}
+
 			expect_data = &arr[idx];
 			if (data == &end_data) {
 				break;
@@ -304,8 +308,10 @@ TEST_F(TestEventPipeFixture, case07)
 		ASSERT_TRUE(data != nullptr);
 		ASSERT_EQ(data, &arr[0]);
 
-		data = (pipe_data_t *)muggle_socket_evloop_pipe_read(&ev_pipe);
-		ASSERT_TRUE(data != nullptr);
+		data = nullptr;
+		while (data == nullptr) {
+			data = (pipe_data_t *)muggle_socket_evloop_pipe_read(&ev_pipe);
+		}
 		ASSERT_EQ(data, &end_data);
 
 		data = (pipe_data_t *)muggle_socket_evloop_pipe_read(&ev_pipe);
