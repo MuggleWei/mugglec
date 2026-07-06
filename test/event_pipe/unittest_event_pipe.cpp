@@ -8,10 +8,14 @@ typedef struct {
 	uint32_t val;
 } pipe_data_t;
 
+std::once_flag init_socket_flag;
+
 class TestEventPipeFixture : public ::testing::Test {
 public:
 	virtual void SetUp() override
 	{
+		std::call_once(init_socket_flag, []() { muggle_socket_lib_init(); });
+
 		muggle_socket_evloop_pipe_init(&ev_pipe);
 
 		num = 1024;
