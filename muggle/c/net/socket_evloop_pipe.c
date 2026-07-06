@@ -106,7 +106,7 @@ void *muggle_socket_evloop_pipe_read(muggle_socket_evloop_pipe_t *ev_pipe)
 				break;
 			}
 		} else if (n == MUGGLE_EVENT_ERROR) {
-			int last_errnum = muggle_sys_lasterror();
+			int last_errnum = MUGGLE_EVENT_LAST_ERRNO;
 			if (last_errnum == MUGGLE_SYS_ERRNO_WOULDBLOCK ||
 				last_errnum == MUGGLE_SYS_ERROR_AGAIN ||
 				last_errnum == MUGGLE_SYS_ERRNO_INTR) {
@@ -125,6 +125,52 @@ void *muggle_socket_evloop_pipe_read(muggle_socket_evloop_pipe_t *ev_pipe)
 	muggle_atomic_thread_fence(muggle_memory_order_acquire);
 
 	return data;
+}
+
+int muggle_socket_evloop_pipe_read_n(muggle_socket_evloop_pipe_t *ev_pipe,
+									 char *addr, int nbytes)
+{
+	int n = muggle_socket_ctx_read(
+		&ev_pipe->ctx[MUGGLE_SOCKET_EVLOOP_PIPE_READER], (void *)addr, nbytes);
+	muggle_atomic_thread_fence(muggle_memory_order_acquire);
+
+	return n;
+}
+
+int muggle_socket_evloop_pipe_block_read_n(muggle_socket_evloop_pipe_t *ev_pipe,
+										   char *addr, int nbytes)
+{
+	int offset = 0;
+	int remain_bytes = nbytes;
+	do {
+		int n = muggle_socket_ctx_read(
+			&ev_pipe->ctx[MUGGLE_SOCKET_EVLOOP_PIPE_READER], addr + offset,
+			remain_bytes);
+		if (n > 0) {
+			offset += n;
+			remain_bytes -= n;
+			if (remain_bytes == 0) {
+				break;
+			}
+		} else if (n == MUGGLE_EVENT_ERROR) {
+			int last_errnum = MUGGLE_EVENT_LAST_ERRNO;
+			if (last_errnum == MUGGLE_SYS_ERRNO_WOULDBLOCK ||
+				last_errnum == MUGGLE_SYS_ERROR_AGAIN) {
+				muggle_nsleep(400);
+			} else if (last_errnum == MUGGLE_SYS_ERRNO_INTR) {
+				continue;
+			} else {
+				// maybe closed
+				break;
+			}
+		} else if (n == 0) {
+			// maybe closed
+			break;
+		}
+	} while (1);
+	muggle_atomic_thread_fence(muggle_memory_order_acquire);
+
+	return offset;
 }
 
 muggle_socket_context_t *

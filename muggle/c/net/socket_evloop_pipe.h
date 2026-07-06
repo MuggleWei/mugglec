@@ -73,6 +73,39 @@ MUGGLE_C_EXPORT
 void *muggle_socket_evloop_pipe_read(muggle_socket_evloop_pipe_t *ev_pipe);
 
 /**
+ * @brief read n pointer size data from pip
+ *
+ * @param ev_pipe  socket event loop pipe
+ * @param addr     address
+ * @param nbytes   number of bytes
+ *
+ * @return
+ *   - on success, return number of bytes
+ *   - otherwise, failed or would block
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_evloop_pipe_read_n(muggle_socket_evloop_pipe_t *ev_pipe,
+									 char *addr, int nbytes);
+
+/**
+ * @brief block read n bytes
+ *
+ * @param ev_pipe  socket event loop pipe
+ * @param addr     address
+ * @param nbytes   number of bytes
+ *
+ * @return
+ *   - on success, return number of bytes
+ *   - otherwise, failed
+ *
+ * @NOTE
+ *   this function for read the data that was not fully read in read_n
+ */
+MUGGLE_C_EXPORT
+int muggle_socket_evloop_pipe_block_read_n(muggle_socket_evloop_pipe_t *ev_pipe,
+										   char *addr, int nbytes);
+
+/**
  * @brief get writer of pipe
  *
  * @param ev_pipe  socket event loop pipe
