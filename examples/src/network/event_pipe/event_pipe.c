@@ -1,5 +1,54 @@
 #include "muggle/c/muggle_c.h"
 
+void evpipe_batch_read(muggle_socket_evloop_pipe_t *ev_pipe)
+{
+	const int cap = 128;
+	int total_read = 0;
+	void *arr[cap];
+	int offset = 0;
+	int remain = cap * sizeof(void *);
+	int n = 0;
+	while (true) {
+		char *p = (char *)arr + offset;
+		n = muggle_socket_evloop_pipe_read_n(ev_pipe, p, remain);
+		if (n <= 0) {
+			if (offset % sizeof(void *) != 0) {
+				remain = sizeof(void *) - (offset % sizeof(void *));
+				n = muggle_socket_evloop_pipe_block_read_n(ev_pipe, p, remain);
+				if (n != remain) {
+					LOG_FATAL("something wrong!!!");
+				}
+				offset += n;
+			}
+
+			break;
+		}
+
+		offset += n;
+		remain -= n;
+		if (remain == 0) {
+			for (int i = 0; i < cap; ++i) {
+				char *s = (char *)arr[i];
+				LOG_TRACE("on evloop pipe message: %s", s);
+				++total_read;
+				free(s);
+			}
+
+			offset = 0;
+			remain = cap * sizeof(void *);
+		}
+	}
+
+	for (size_t i = 0; i < offset / sizeof(void *); ++i) {
+		char *s = (char *)arr[i];
+		LOG_TRACE("on evloop pipe message: %s", s);
+		++total_read;
+		free(s);
+	}
+
+	LOG_INFO("batch read: %d", total_read);
+}
+
 void on_message(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
 {
 	MUGGLE_UNUSED(evloop);
@@ -10,14 +59,19 @@ void on_message(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
 		(muggle_socket_evloop_pipe_t *)muggle_ev_ctx_data(
 			(muggle_event_context_t *)ctx);
 
-	void *data = NULL;
-	while ((data = muggle_socket_evloop_pipe_read(ev_pipe)) != NULL) {
-		char *s = (char *)data;
-		LOG_INFO("on evloop pipe message: %s", s);
-		free(s);
+	int batch_read = 1;
+	if (batch_read) {
+		evpipe_batch_read(ev_pipe);
+	} else {
+		void *data = NULL;
+		while ((data = muggle_socket_evloop_pipe_read(ev_pipe)) != NULL) {
+			char *s = (char *)data;
+			LOG_INFO("on evloop pipe message: %s", s);
+			free(s);
 
-		// simulate blocking
-		// muggle_msleep(500);
+			// simulate blocking
+			// muggle_msleep(500);
+		}
 	}
 }
 
@@ -27,21 +81,13 @@ muggle_thread_ret_t run_pipe_write(void *args)
 
 	int idx = 0;
 	while (true) {
-		muggle_nsleep(100);
+		if (idx % 64 == 0) {
+			muggle_msleep(100);
+		}
 
 		char *s = malloc(16);
 		snprintf(s, 16, "%08d", ++idx);
-
-		do {
-			if (!muggle_socket_evloop_pipe_write(ev_pipe, s)) {
-				LOG_ERROR("failed pipe write: %s", s);
-
-				muggle_msleep(1000);
-				LOG_INFO("retry pipe write: %s", s);
-			} else {
-				break;
-			}
-		} while (true);
+		muggle_socket_evloop_pipe_write(ev_pipe, s);
 	}
 }
 
