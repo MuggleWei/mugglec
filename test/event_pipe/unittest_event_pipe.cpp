@@ -294,12 +294,25 @@ TEST_F(TestEventPipeFixture, case07)
 
 	char *p = (char *)&arr[0];
 
+	int len1 = 0;
+	int len2 = 0;
+	if (sizeof(void *) == 8) {
+		len1 = 2;
+		len2 = 6;
+	} else if (sizeof(void *) == 4) {
+		len1 = 1;
+		len2 = 3;
+	} else {
+		len1 = sizeof(void *) / 2;
+		len2 = sizeof(void *) / 2;
+	}
+
 	// write half
 	muggle_spinlock_lock(&ev_pipe.lock);
 	muggle_atomic_thread_fence(muggle_memory_order_release);
-	n = muggle_socket_block_write(writer->base.fd, &p, sizeof(void *) / 2, 400);
+	n = muggle_socket_block_write(writer->base.fd, &p, len1, 400);
 	muggle_spinlock_unlock(&ev_pipe.lock);
-	ASSERT_EQ(n, sizeof(void *) / 2);
+	ASSERT_EQ(n, len1);
 
 	// run consumer
 	std::thread th_consumer([this] {
@@ -323,11 +336,10 @@ TEST_F(TestEventPipeFixture, case07)
 	// write another half
 	muggle_spinlock_lock(&ev_pipe.lock);
 	muggle_atomic_thread_fence(muggle_memory_order_release);
-	n = muggle_socket_block_write(writer->base.fd,
-								  (char *)&p + sizeof(void *) / 2,
-								  sizeof(void *) / 2, 400);
+	n = muggle_socket_block_write(writer->base.fd, (char *)&p + len1, len2,
+								  400);
 	muggle_spinlock_unlock(&ev_pipe.lock);
-	ASSERT_EQ(n, sizeof(void *) / 2);
+	ASSERT_EQ(n, len2);
 
 	// write end
 	ret = muggle_socket_evloop_pipe_write(&ev_pipe, &end_data);
@@ -347,12 +359,25 @@ TEST_F(TestEventPipeFixture, case08)
 
 	char *p = (char *)&arr[0];
 
+	int len1 = 0;
+	int len2 = 0;
+	if (sizeof(void *) == 8) {
+		len1 = 2;
+		len2 = 6;
+	} else if (sizeof(void *) == 4) {
+		len1 = 1;
+		len2 = 3;
+	} else {
+		len1 = sizeof(void *) / 2;
+		len2 = sizeof(void *) / 2;
+	}
+
 	// write half
 	muggle_spinlock_lock(&ev_pipe.lock);
 	muggle_atomic_thread_fence(muggle_memory_order_release);
-	n = muggle_socket_block_write(writer->base.fd, &p, sizeof(void *) / 2, 400);
+	n = muggle_socket_block_write(writer->base.fd, &p, len1, 400);
 	muggle_spinlock_unlock(&ev_pipe.lock);
-	ASSERT_EQ(n, sizeof(void *) / 2);
+	ASSERT_EQ(n, len1);
 
 	// run consumer
 	std::thread th_consumer([this] {
@@ -370,11 +395,10 @@ TEST_F(TestEventPipeFixture, case08)
 	// write another half
 	muggle_spinlock_lock(&ev_pipe.lock);
 	muggle_atomic_thread_fence(muggle_memory_order_release);
-	n = muggle_socket_block_write(writer->base.fd,
-								  (char *)&p + sizeof(void *) / 2,
-								  sizeof(void *) / 2, 400);
+	n = muggle_socket_block_write(writer->base.fd, (char *)&p + len1, len2,
+								  400);
 	muggle_spinlock_unlock(&ev_pipe.lock);
-	ASSERT_EQ(n, sizeof(void *) / 2);
+	ASSERT_EQ(n, len2);
 
 	// write end
 	ret = muggle_socket_evloop_pipe_write(&ev_pipe, &end_data);
