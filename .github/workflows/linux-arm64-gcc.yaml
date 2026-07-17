@@ -1,11 +1,11 @@
-name: Linux GCC
+name: Linux ARM64 GCC
 
 on: [push, pull_request]
 
 jobs:
   build:
-    name: Linux GCC
-    runs-on: ubuntu-latest
+    name: Linux ARM64 GCC
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v2
       - uses: lukka/get-cmake@latest

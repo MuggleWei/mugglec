@@ -19,10 +19,21 @@ void muggle_synclock_lock(muggle_sync_t *synclock)
 	muggle_sync_t expected = MUGGLE_SYNCLOCK_STATUS_UNLOCK;
 	while (!muggle_atomic_cmp_exch_weak(
 		synclock, &expected, MUGGLE_SYNCLOCK_STATUS_LOCK,
-		muggle_memory_order_acquire)
-		&& expected != MUGGLE_SYNCLOCK_STATUS_UNLOCK)
+		muggle_memory_order_acquire))
 	{
-		muggle_sync_wait(synclock, expected, NULL);
+		// when CAS exch_weak failed
+		//
+		// |    failure type     |        expected          |
+		// | ------------------- | ------------------------ |
+		// |    real failure     | current lock value(LOCK) |
+		// |  spurious failure   |         UNLOCK           |
+
+		// CAS exch_weak real failure, wait lock
+		if (expected != MUGGLE_SYNCLOCK_STATUS_UNLOCK)
+		{
+			muggle_sync_wait(synclock, expected, NULL);
+		}
+
 		expected = MUGGLE_SYNCLOCK_STATUS_UNLOCK;
 	}
 }

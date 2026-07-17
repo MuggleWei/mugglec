@@ -1,13 +1,17 @@
 #include "muggle/c/muggle_c.h"
 
-void evpipe_batch_read(muggle_socket_evloop_pipe_t *ev_pipe)
+static int s_batch_read = 0;
+static int s_write_n = 1;
+
+int evpipe_batch_read(muggle_socket_evloop_pipe_t *ev_pipe)
 {
-	const int cap = 128;
+	const int cap = 1024;
 	int total_read = 0;
 	void *arr[cap];
 	int offset = 0;
 	int remain = cap * sizeof(void *);
 	int n = 0;
+
 	while (true) {
 		char *p = (char *)arr + offset;
 		n = muggle_socket_evloop_pipe_read_n(ev_pipe, p, remain);
@@ -31,7 +35,6 @@ void evpipe_batch_read(muggle_socket_evloop_pipe_t *ev_pipe)
 				char *s = (char *)arr[i];
 				LOG_TRACE("on evloop pipe message: %s", s);
 				++total_read;
-				free(s);
 			}
 
 			offset = 0;
@@ -43,10 +46,9 @@ void evpipe_batch_read(muggle_socket_evloop_pipe_t *ev_pipe)
 		char *s = (char *)arr[i];
 		LOG_TRACE("on evloop pipe message: %s", s);
 		++total_read;
-		free(s);
 	}
 
-	LOG_INFO("batch read: %d", total_read);
+	return total_read;
 }
 
 void on_message(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
@@ -59,35 +61,52 @@ void on_message(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
 		(muggle_socket_evloop_pipe_t *)muggle_ev_ctx_data(
 			(muggle_event_context_t *)ctx);
 
-	int batch_read = 1;
-	if (batch_read) {
-		evpipe_batch_read(ev_pipe);
+	int total_read = 0;
+	muggle_time_counter_t tc;
+	muggle_time_counter_init(&tc);
+	muggle_time_counter_start(&tc);
+	if (s_batch_read) {
+		total_read = evpipe_batch_read(ev_pipe);
 	} else {
 		void *data = NULL;
 		while ((data = muggle_socket_evloop_pipe_read(ev_pipe)) != NULL) {
 			char *s = (char *)data;
-			LOG_INFO("on evloop pipe message: %s", s);
-			free(s);
+			LOG_TRACE("on evloop pipe message: %s", s);
+			++total_read;
 
 			// simulate blocking
 			// muggle_msleep(500);
 		}
 	}
+	muggle_time_counter_end(&tc);
+
+	long long elpased = (long long)muggle_time_counter_interval_ns(&tc);
+	long long mean = elpased / total_read;
+	LOG_INFO("read: %2d, elapsed: %6lld ns, mean: %3lld", total_read, elpased,
+			 mean);
 }
 
 muggle_thread_ret_t run_pipe_write(void *args)
 {
 	muggle_socket_evloop_pipe_t *ev_pipe = (muggle_socket_evloop_pipe_t *)args;
 
+	const int bufsize = 16;
+	const int num = 1024;
+	char *str_array = (char *)malloc(sizeof(char *) * num * bufsize);
+	for (int i = 0; i < num; ++i) {
+		char *s = str_array + bufsize * i;
+		snprintf(s, bufsize, "%08d", i);
+	}
+
 	int idx = 0;
 	while (true) {
-		if (idx % 64 == 0) {
+		if (idx % s_write_n == 0) {
 			muggle_msleep(100);
 		}
 
-		char *s = malloc(16);
-		snprintf(s, 16, "%08d", ++idx);
+		char *s = str_array + bufsize * idx;
 		muggle_socket_evloop_pipe_write(ev_pipe, s);
+		idx = (idx + 1) % num;
 	}
 }
 
@@ -111,6 +130,7 @@ void run_evloop(muggle_socket_evloop_pipe_t *ev_pipe)
 	muggle_socket_evloop_handle_t handle;
 	muggle_socket_evloop_handle_init(&handle);
 	muggle_socket_evloop_handle_set_cb_msg(&handle, on_message);
+	muggle_socket_evloop_handle_set_timer_interval(&handle, 0);
 	muggle_socket_evloop_handle_attach(&handle, evloop);
 	LOG_INFO("socket handle attached event loop");
 
@@ -130,8 +150,25 @@ void run_evloop(muggle_socket_evloop_pipe_t *ev_pipe)
 	muggle_evloop_delete(evloop);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+	if (argc < 3) {
+		fprintf(stderr,
+				"Usage: %s <batch_read> <write_n>\n"
+				"  - batch_read: read use batch or one by one\n"
+				"  - write_n: write number of data once\n"
+				"e.g.\n"
+				"  %s 0 64\n"
+				"  %s 1 64\n"
+				"  %s 0 1\n"
+				"  %s 1 1\n"
+				"",
+				argv[0], argv[0], argv[0], argv[0], argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	s_batch_read = atoi(argv[1]);
+	s_write_n = atoi(argv[2]);
+
 	if (muggle_log_complicated_init(LOG_LEVEL_INFO, -1, NULL) != 0) {
 		LOG_ERROR("failed initalize log");
 		exit(EXIT_FAILURE);
