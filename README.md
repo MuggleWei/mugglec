@@ -2,6 +2,7 @@
 
 ![linux-gcc](https://github.com/MuggleWei/mugglec/actions/workflows/linux-gcc.yaml/badge.svg?branch=master)
 ![linux-clang](https://github.com/MuggleWei/mugglec/actions/workflows/linux-clang.yaml/badge.svg?branch=master)
+![linux-arm64-gcc](https://github.com/MuggleWei/mugglec/actions/workflows/linux-arm64-gcc.yaml/badge.svg?branch=master)
 ![win-msvc](https://github.com/MuggleWei/mugglec/actions/workflows/win-msvc.yaml/badge.svg?branch=master)
 ![macos-clang](https://github.com/MuggleWei/mugglec/actions/workflows/macos-clang.yaml/badge.svg?branch=master)
 ![android](https://github.com/MuggleWei/mugglec/actions/workflows/android-cmake.yaml/badge.svg?branch=master)
