@@ -447,113 +447,118 @@ void on_message(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
 #### 事件循环回调
 和上几个小节一样, 首先我们在main当中初始化事件循环, 并指定事件循环的回调函数以及相关的上下文附带数据的结构.  
 
-**TCP Server** [foo_serv_handle.c](./foo/serv/foo_serv_handle.c)  
+**TCP Server** [foo_server.c](./foo/foo_server.c)  
 注册事件循环回调
 ```
 muggle_socket_evloop_handle_init(handle);
-muggle_socket_evloop_handle_set_cb_conn(handle, tcp_serv_on_connect);
-muggle_socket_evloop_handle_set_cb_msg(handle, tcp_serv_on_message);
-muggle_socket_evloop_handle_set_cb_close(handle, tcp_serv_on_close);
-muggle_socket_evloop_handle_set_cb_release(handle, tcp_serv_on_release);
-muggle_socket_evloop_handle_set_cb_timer(handle, tcp_serv_on_timer);
-muggle_socket_evloop_handle_set_timer_interval(handle, 5000);
+muggle_socket_evloop_handle_set_cb_add_ctx(handle, foo_server_on_add_ctx);
+muggle_socket_evloop_handle_set_cb_conn(handle, foo_server_on_connect);
+muggle_socket_evloop_handle_set_cb_msg(handle, foo_server_on_message);
+muggle_socket_evloop_handle_set_cb_close(handle, foo_server_on_close);
+muggle_socket_evloop_handle_set_cb_release(handle, foo_server_on_release);
+muggle_socket_evloop_handle_set_cb_timer(handle, foo_server_on_timer);
+muggle_socket_evloop_handle_set_timer_interval(handle, 0);
+muggle_socket_evloop_handle_set_alloc_free(handle, foo_handle,
+                                           foo_handle_alloc_session,
+                                           foo_handle_recycle_session);
 muggle_socket_evloop_handle_attach(handle, evloop);
 ```
 
 创建TCP监听socket并加入事件循环中
 ```
-static muggle_thread_ret_t tcp_server_listen(void *p_args)
+static void server_listen(muggle_event_loop_t *evloop, foo_handle_t *foo_handle)
 {
-	foo_server_thread_args_t *args = (foo_server_thread_args_t*)p_args;
+	foo_config_t *cfg = foo_handle->cfg;
 
-	// tcp listen
 	muggle_socket_t fd = MUGGLE_INVALID_SOCKET;
 	do {
-		fd = muggle_tcp_listen(args->args->host, args->args->port, 512);
-		if (fd == MUGGLE_INVALID_SOCKET)
-		{
-			LOG_ERROR("failed tcp listen %s %s", args->args->host, args->args->port);
+		fd = muggle_tcp_listen_with_cb(cfg->host, cfg->port, 512,
+									   foo_set_socket_opt_before_conn, NULL);
+		if (fd == MUGGLE_INVALID_SOCKET) {
+			LOG_ERROR("failed tcp listen %s:%s", cfg->host, cfg->port);
 			muggle_msleep(3000);
 		}
 	} while (fd == MUGGLE_INVALID_SOCKET);
 
-	// new context
-	muggle_socket_context_t *ctx =
-		(muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
-	muggle_socket_ctx_init(ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_LISTEN);
-
-	muggle_socket_evloop_add_ctx(args->evloop, ctx);
-
-	// free arguments
-	free(args);
-
-	return 0;
+	foo_session_t *session =
+		(foo_session_t *)foo_handle_alloc_session(foo_handle);
+	foo_session_init(session);
+	muggle_socket_ctx_init((muggle_socket_context_t *)session, fd, NULL,
+						   MUGGLE_SOCKET_CTX_TYPE_TCP_LISTEN);
+	muggle_socket_evloop_add_ctx(evloop, (muggle_socket_context_t *)session);
 }
 ```
 
-**TCP Client** [foo_client_handle.c](./foo/client/foo_client_handle.c)  
+**TCP Client** [foo_client.c](./foo/foo_client.c)  
 注册事件循环回调
 ```
 muggle_socket_evloop_handle_init(handle);
-muggle_socket_evloop_handle_set_cb_add_ctx(handle, tcp_client_on_add_ctx);
-muggle_socket_evloop_handle_set_cb_msg(handle, tcp_client_on_message);
-muggle_socket_evloop_handle_set_cb_close(handle, tcp_client_on_close);
+muggle_socket_evloop_handle_set_cb_add_ctx(handle, foo_client_on_add_ctx);
+muggle_socket_evloop_handle_set_cb_msg(handle, foo_client_on_message);
+muggle_socket_evloop_handle_set_cb_close(handle, foo_client_on_close);
+muggle_socket_evloop_handle_set_cb_release(handle, foo_client_on_release);
+muggle_socket_evloop_handle_set_cb_timer(handle, foo_client_on_timer);
+muggle_socket_evloop_handle_set_timer_interval(handle, 0);
+muggle_socket_evloop_handle_set_alloc_free(handle, foo_handle,
+                                           foo_handle_alloc_session,
+                                           foo_handle_recycle_session);
 muggle_socket_evloop_handle_attach(handle, evloop);
 ```
 
 创建TCP连接socket并加入事件循环当中
 ```
-static muggle_thread_ret_t tcp_client_connect(void *p_args)
+static void client_connect(muggle_event_loop_t *evloop)
 {
-	foo_client_thread_args_t *args = (foo_client_thread_args_t*)p_args;
+	foo_handle_t *handle = (foo_handle_t *)muggle_evloop_get_data(evloop);
+	foo_config_t *cfg = handle->cfg;
 
-	// tcp connect
 	muggle_socket_t fd = MUGGLE_INVALID_SOCKET;
 	do {
-		fd = muggle_tcp_connect(args->args->host, args->args->port, 3);
-		if (fd == MUGGLE_INVALID_SOCKET)
-		{
-			LOG_ERROR("failed tcp connect %s %s", args->args->host, args->args->port);
+		fd = muggle_tcp_connect_with_cb(cfg->host, cfg->port, 3,
+										foo_set_socket_opt_before_conn, NULL);
+		if (fd == MUGGLE_INVALID_SOCKET) {
+			LOG_ERROR("failed tcp connect %s:%s", cfg->host, cfg->port);
 			muggle_msleep(3000);
 		}
 	} while (fd == MUGGLE_INVALID_SOCKET);
 
-	// new context
-	muggle_socket_context_t *ctx =
-		(muggle_socket_context_t*)malloc(sizeof(muggle_socket_context_t));
-	muggle_socket_ctx_init(ctx, fd, NULL, MUGGLE_SOCKET_CTX_TYPE_TCP_CLIENT);
+	foo_set_socket_opt_after_conn(fd, NULL);
 
-	muggle_socket_evloop_add_ctx(args->evloop, ctx);
-
-	// free arguments
-	free(args);
-
-	return 0;
-};
+	foo_session_t *session = (foo_session_t *)foo_handle_alloc_session(handle);
+	foo_session_init(session);
+	muggle_socket_ctx_init((muggle_socket_context_t *)session, fd, NULL,
+						   MUGGLE_SOCKET_CTX_TYPE_TCP_CLIENT);
+	muggle_socket_evloop_add_ctx(evloop, (muggle_socket_context_t *)session);
+}
 ```
 
 #### 协议头
 由于我们要处理不同类型的消息, 我们需要先定义协议头, 每个消息都带有协议头, 定义如下
 ```
-|<---         head       --->|<---  body   --->|
-| message type | body length |    body bytes   |
-|    4 bytes   |   4 bytes   | variable length |
+|<---                     head                   --->|<---  body   --->|<---     tail    --->|
+|----------------------------------------------------|-----------------|---------------------|
+| magic word |  flags  | message id | payload length |  payload bytes  | checksum | reserved |
+|------------|---------|------------|----------------|-----------------|----------|----------|
+|   4 bytes  | 4 bytes |   4 bytes  |     4 bytes    | variable length |  4 bytes |  4 bytes |
+|----------------------------------------------------|-----------------|---------------------|
 ```
-
-* 包头前4字节是用户自定义的消息类型
-* 包头后4字节, 用于指明body的长度
-* body是消息中携带的数据
 
 头定义
 ```
 #pragma pack(push)
 #pragma pack(1)
 
-typedef struct foo_msg_header
-{
-	uint32_t msg_type;
-	uint32_t body_len;
-}foo_msg_header_t;
+typedef struct {
+	char magic[4]; //!< magic word
+	char flags[4]; //!< flags
+	uint32_t msg_id; //!< message id
+	uint32_t payload_len; //!< payload length (not include head and tail)
+} foo_msg_hdr_t;
+
+typedef struct {
+	uint32_t checksum; //!< message checksum
+	uint32_t reserved; //!< reserved
+} foo_msg_tail_t;
 
 #pragma pack(pop)
 ```
@@ -561,59 +566,63 @@ typedef struct foo_msg_header
 #### 消息
 接着, 我们定义消息ID与结构
 * 登录消息, 由客户端发起, 服务器回复
-* 求和消息, 由客户端发送一组int32型数组列表, 服务器返回相加的结果
 * 心跳消息, 由服务器每隔一段时间字段发送的消息
 
-可在[foo_msg.h](./foo/foo/foo_msg.h)中看到消息头与消息的定义
+可在[foo_msg.h](./foo/foo_msg.h)中看到消息头与消息的定义
 
 #### 编解码与消息分发
-有了消息定义和事件循环回调之后, 我们现在需要考虑接收/发送消息时的编解码(比如处理协议格式, 大小端, 加解密, 压缩/解压等等)以及消息分发. 这里为了展示用法, 我们规定协议头和数据均为为网络字节序, 所以例子中我们分别定义两个编解码器, 分别是:
-* 字节流编解码`foo_codec_bytes_t`: 用于转换协议头的大小端, 以及解决TCP的粘包问题
-* 大小端编解码`foo_codec_endian_t`: 用于转换消息数据的大小端
+有了消息定义和事件循环回调之后, 我们现在需要考虑接收/发送消息时的编解码(比如处理协议格式, 大小端, 加解密, 压缩/解压等等)以及消息分发. 这里为了展示用法和简单起见, 我们规定协议头和数据均为本地字节序, 并且没有加解密  
 
-接着, 我们初始化消息分发器, 将编解码按照编码的顺序加入消息分发器当中 [foo_handle.c](./foo/foo/foo_handle.c)
+消息编码与发送: 当我们要发送一条消息时, 编码函数会填充消息头与消息尾部的字段, 并更新写 idle 时间, 最后是真实的发送
 ```
-foo_dispatcher_init(&evloop_data->dispatcher);
-
-foo_codec_endian_t *endian_codec = (foo_codec_endian_t*)malloc(sizeof(foo_codec_endian_t));
-foo_codec_endian_init(endian_codec);
-foo_dispatcher_append_codec(&evloop_data->dispatcher, (foo_codec_t*)endian_codec);
-
-foo_codec_bytes_t *bytes_codec = (foo_codec_bytes_t*)malloc(sizeof(foo_codec_bytes_t));
-foo_codec_bytes_init(bytes_codec);
-foo_dispatcher_append_codec(&evloop_data->dispatcher, (foo_codec_t*)bytes_codec);
-```
-
-现在我们已经将编解码与消息分发准备就绪, 接着, 我们只需要在初始化的时候注册消息与回调函数的映射关系 [foo.c](./foo/foo.c), 剩下的只需专心处理业务逻辑就可以了.  
-```
-switch (args.app_type)
+int foo_handle_msg_encode_send(foo_session_t *session, foo_msg_hdr_t *hdr,
+							   uint32_t datalen)
 {
-case APP_TYPE_TCP_SERV:
-{
-	init_tcp_server_handle(evloop, &handle, &args);
+	// fillup hdr
+	memcpy(hdr->magic, FOO_MSG_HDR_MAGIC_WORD, 4);
+	hdr->flags[FOO_MSG_HDR_FLAG_VERSION] = FOO_PROTOCOL_VERSION;
 
-	// register message callbacks
-	foo_dispatcher_t *dispatcher = foo_handle_dipatcher(evloop);
-	foo_dispatcher_register(dispatcher, FOO_MSG_TYPE_REQ_LOGIN, tcp_server_on_req_login);
-	foo_dispatcher_register(dispatcher, FOO_MSG_TYPE_PONG, tcp_server_on_msg_pong);
-	foo_dispatcher_register(dispatcher, FOO_MSG_TYPE_REQ_SUM, tcp_server_on_req_sum);
-}break;
-case APP_TYPE_TCP_CLIENT:
-{
-	init_tcp_client_handle(evloop, &handle, &args);
+	// fillup tail
+	foo_msg_tail_t *tail =
+		(foo_msg_tail_t *)((char *)(hdr + 1) + hdr->payload_len);
+	tail->checksum = cal_checksum_adler32(
+		(uint8_t *)hdr, sizeof(foo_msg_hdr_t) + hdr->payload_len);
 
-	// register message callbacks
-	foo_dispatcher_t *dispatcher = foo_handle_dipatcher(evloop);
-	foo_dispatcher_register(dispatcher, FOO_MSG_TYPE_RSP_LOGIN, tcp_client_on_rsp_login);
-	foo_dispatcher_register(dispatcher, FOO_MSG_TYPE_PING, tcp_client_on_msg_ping);
-	foo_dispatcher_register(dispatcher, FOO_MSG_TYPE_RSP_SUM, tcp_server_on_rsp_sum);
-}break;
-default:
-{
-	LOG_ERROR("invalid app type, exit");
-	exit(EXIT_FAILURE);
-}break;
+	// update write idle tc
+	muggle_time_counter_start(&session->write_idle_tc);
+
+	// send
+	return foo_session_write(session, hdr, datalen);
 }
 ```
 
-注意: 当前在endian codec中, 我们需要为每一个消息编写独立的大小端处理函数, 这可太无趣了, 那么是否能将这部分代码自动化完成呢. 很可惜, 由于c语言本身没有反射机制, 在不借助外部工具的情况下, 很难做到结构体的自动序列化与反序列化. 好在存在很多开源的项目, 来完成这件事, 比如protobuf, thrift; 或者也可以不使用结构体, 直接使用指定的数据交换格式, 比如json, xml等. 这有些偏离了这篇文章的主题了, 关于自动序列化/反序列化的主题就不在这里展开了.  
+消息解码与分发: 当读事件触发被触发时, 会先将网络数据都读入到 `bytes_buf` 当中, 然后从其中取消息逐个解码, 并且更新读 idle 时间, 最后根据读到的消息 id 进行分发
+```
+void foo_handle_on_message(foo_handle_t *handle, foo_session_t *session)
+{
+	// read bytes into bytes buffer
+	muggle_bytes_buffer_t *bytes_buf = &session->bytes_buf;
+	foo_session_read(session, bytes_buf);
+
+	// decode message and dispatch
+	foo_handle_msg_decode_dispatch(handle, session, bytes_buf);
+}
+```
+
+现在我们已经将编解码与消息分发准备就绪, 接着, 我们只需要在初始化的时候注册消息与回调函数的映射关系, 剩下的只需专心处理业务逻辑就可以了.  
+
+[foo_server.c](./foo/foo_server.c)
+```
+foo_dispatcher_t *dispatcher = &foo_handle->dispatcher;
+foo_dispatcher_register(dispatcher, FOO_MSG_ID_PING, foo_server_on_ping);
+foo_dispatcher_register(dispatcher, FOO_MSG_ID_REQ_LOGIN,
+						foo_server_on_req_login);
+```
+
+[foo_client.c](./foo/foo_client.c)
+```
+foo_dispatcher_t *dispatcher = &foo_handle->dispatcher;
+foo_dispatcher_register(dispatcher, FOO_MSG_ID_PING, foo_client_on_ping);
+foo_dispatcher_register(dispatcher, FOO_MSG_ID_RSP_LOGIN,
+foo_client_on_rsp_login);
+```
