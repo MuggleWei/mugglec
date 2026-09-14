@@ -441,7 +441,7 @@ void on_message(muggle_event_loop_t *evloop, muggle_socket_context_t *ctx)
 接下来, 用户可以通过 `muggle_socket_evloop_pipe_write` 向管道中写入数据, 之后会正常触发事件循环的消息回调, 此时的 `ctx->sock_type` 为 `MUGGLE_SOCKET_CTX_TYPE_PIPE` 类型, 其中带的数据就是指向 `muggle_socket_evloop_pipe_t` 的指针  
 
 ### 自定义协议
-到现在为止, 我们已经看到一些很直观的例子, 当然真实的服务还要处理更多的问题, 比如TCP会遇到粘包, UDP需要自己处理丢包与重传, 还有需要传输自定义的消息而不是单纯的字符串. 下面的例子[foo.c](./foo/foo.c), 我们展示一个自定义协议的TCP服务器/客户端, 其中使用了在[内存模块](../memory/readme_cn.md)中提到的字节缓冲区来收取TCP的消息, 并且自定了消息分发器和编解码处理器.  
+到现在为止, 我们已经看到一些很直观的例子, 当然真实的服务还要处理更多的问题, 比如TCP会遇到粘包, UDP需要自己处理丢包与重传, 还有需要传输自定义的消息而不是单纯的字符串. 下面的例子[foo.c](./foo/main.c), 我们展示一个自定义协议的TCP服务器/客户端, 其中使用了在[内存模块](../memory/readme_cn.md)中提到的字节缓冲区来收取TCP的消息, 并且自定了消息分发器和编解码处理器.  
 那么现在, 让我们从头开始一步一步的构建这个服务/客户端吧
 
 #### 事件循环回调
