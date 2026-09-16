@@ -1,6 +1,6 @@
 #include "muggle/c/muggle_c.h"
 
-#define N_BYTES (16 * MUGGLE_MEMORY_RES_PAGE_SIZE_2MB)
+#define N_BYTES (1 * MUGGLE_MEMORY_RES_PAGE_SIZE_1GB)
 #define BLOCKSIZE 512
 
 void run_alloc(muggle_memory_resource_t *res)
@@ -14,9 +14,6 @@ void run_alloc(muggle_memory_resource_t *res)
 		}
 
 		++cnt;
-		if (cnt % 1000 == 0) {
-			LOG_INFO("cnt: %lu", cnt);
-		}
 	}
 
 	LOG_INFO("total allocate %lu blocksize", (unsigned long)cnt);

@@ -400,6 +400,6 @@ void *muggle_memory_res_alloc_cache_line(muggle_memory_resource_t *res,
 
 void *muggle_memory_res_alloc(muggle_memory_resource_t *res, size_t nbytes)
 {
-	size_t n = MUGGLE_ALIGN_TRUE_SHARING(nbytes);
+	size_t n = MUGGLE_ALIGN_TRUE_SHARING(nbytes) / MUGGLE_CACHE_LINE_SIZE;
 	return muggle_memory_res_alloc_cache_line(res, n);
 }
