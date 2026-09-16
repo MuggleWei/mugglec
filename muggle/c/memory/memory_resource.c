@@ -55,7 +55,7 @@ static bool muggle_memory_res_init_huge_private(muggle_memory_resource_t *res,
 
 	#if MUGGLE_C_HAVE_MAP_HUGE_NBYTES
 
-	switch (res->flags.mem_huge_type) {
+	switch (res->flags.huge_type) {
 	case MUGGLE_MEMORY_RES_HUGE_2MB: {
 		flags |= MAP_HUGE_2MB;
 	} break;
@@ -114,7 +114,7 @@ static bool muggle_memory_res_init_huge_share(muggle_memory_resource_t *res,
 	}
 
 	#if MUGGLE_C_HAVE_SHM_HUGE_NBYTES
-	switch (res->flags.mem_huge_type) {
+	switch (res->flags.huge_type) {
 	case MUGGLE_MEMORY_RES_HUGE_2MB: {
 		flag_huge |= SHM_HUGE_2MB;
 	} break;
@@ -188,7 +188,7 @@ static bool muggle_memory_res_init_huge_private(muggle_memory_resource_t *res,
 	}
 
 	void *datas = NULL;
-	switch (res->flags.mem_huge_type) {
+	switch (res->flags.huge_type) {
 	#if MUGGLE_C_HAVE_VIRTUALALLOC2
 	case MUGGLE_MEMORY_RES_HUGE_1GB: {
 		MEM_EXTENDED_PARAMETER extended = { 0 };
@@ -345,7 +345,7 @@ void muggle_memory_res_destroy(muggle_memory_resource_t *res)
 		return;
 	}
 
-	switch (res->flags.mem_huge_type) {
+	switch (res->flags.mem_type) {
 	case MUGGLE_MEMORY_RES_TYPE_HUGE_PRIVATE: {
 		muggle_memory_res_destroy_huge_private(res);
 	} break;

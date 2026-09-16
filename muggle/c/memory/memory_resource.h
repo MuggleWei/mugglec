@@ -52,7 +52,7 @@ typedef union {
 	uint64_t val;
 	struct {
 		uint8_t mem_type; //!< memory type; MUGGLE_MEMORY_RES_TYPE_*
-		uint8_t mem_huge_type; //!< huge page type; MUGGLE_MEMORY_RES_HUGE_*
+		uint8_t huge_type; //!< huge page type; MUGGLE_MEMORY_RES_HUGE_*
 		uint8_t populate_type; //!< populate type
 		uint8_t share_flag; //!< huge page share flag
 	};
