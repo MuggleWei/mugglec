@@ -53,7 +53,7 @@ void run_huge_private()
 	flags.mem_type = MUGGLE_MEMORY_RES_TYPE_HUGE_PRIVATE;
 	flags.populate_type = MUGGLE_MEMORY_RES_POPULATE_WRITE;
 	if (!muggle_memory_res_init(&res, N_BYTES, flags.val, NULL, 0)) {
-		LOG_ERROR("failed init memory resource with default flags");
+		LOG_ERROR("failed init memory resource with huge private flags");
 		return;
 	}
 

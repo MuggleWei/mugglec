@@ -20,6 +20,8 @@
 	#include <fcntl.h>
 	#include <sys/ipc.h>
 	#include <sys/shm.h>
+#elif MUGGLE_PLATFORM_WINDOWS
+	#include <memoryapi.h>
 #endif
 
 static bool muggle_memory_res_init_default(muggle_memory_resource_t *res,
@@ -149,6 +151,126 @@ static void muggle_memory_res_destroy_huge_share(muggle_memory_resource_t *res)
 	}
 }
 
+#elif MUGGLE_PLATFORM_WINDOWS
+
+BOOL EnableLockMemoryPrivilege()
+{
+	HANDLE hToken;
+	TOKEN_PRIVILEGES tp;
+	LUID luid;
+
+	if (!OpenProcessToken(GetCurrentProcess(),
+						  TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+		return FALSE;
+
+	if (!LookupPrivilegeValue(NULL, SE_LOCK_MEMORY_NAME, &luid)) {
+		CloseHandle(hToken);
+		return FALSE;
+	}
+
+	tp.PrivilegeCount = 1;
+	tp.Privileges[0].Luid = luid;
+	tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+	BOOL result =
+		AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(tp), NULL, NULL);
+	DWORD err = GetLastError();
+
+	CloseHandle(hToken);
+	return (result && err == ERROR_SUCCESS);
+}
+
+static bool muggle_memory_res_init_huge_private(muggle_memory_resource_t *res,
+												size_t nbytes)
+{
+	if (!EnableLockMemoryPrivilege()) {
+		return false;
+	}
+
+	void *datas = NULL;
+	switch (res->flags.mem_huge_type) {
+	#if MUGGLE_C_HAVE_VIRTUALALLOC2
+	case MUGGLE_MEMORY_RES_HUGE_1GB: {
+		MEM_EXTENDED_PARAMETER extended = { 0 };
+		extended.Type = MemExtendedParameterAttributeFlags;
+		extended.ULong64 = MEM_EXTENDED_PARAMETER_NONPAGED_HUGE;
+		datas = VirtualAlloc2(GetCurrentProcess(), NULL, nbytes,
+							  MEM_LARGE_PAGES | MEM_RESERVE | MEM_COMMIT,
+							  PAGE_READWRITE, &extended, 1);
+
+	} break;
+	#endif
+	default: {
+		datas = VirtualAlloc(NULL, nbytes,
+							 MEM_RESERVE | MEM_COMMIT | MEM_LARGE_PAGES,
+							 PAGE_READWRITE);
+	} break;
+	}
+
+	if (datas == NULL) {
+		return false;
+	}
+
+	res->data = datas;
+	res->n_bytes = nbytes;
+
+	return true;
+}
+
+static void
+muggle_memory_res_destroy_huge_private(muggle_memory_resource_t *res)
+{
+	if (res->data) {
+		VirtualFree(res->data, 0, MEM_RELEASE);
+		res->data = NULL;
+	}
+}
+
+static bool muggle_memory_res_init_huge_share(muggle_memory_resource_t *res,
+											  size_t nbytes, const char *k_name,
+											  int k_num)
+{
+	if (!EnableLockMemoryPrivilege()) {
+		return false;
+	}
+
+	if (res->flags.share_flag & MUGGLE_MEMORY_RES_SHM_CREATE) {
+		DWORD flags = PAGE_READWRITE | SEC_COMMIT | SEC_LARGE_PAGES;
+		LARGE_INTEGER li;
+		li.QuadPart = nbytes;
+		res->shm.hMapFile = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL,
+											   flags, (DWORD)li.HighPart,
+											   (DWORD)li.LowPart, k_name);
+	} else {
+		res->shm.hMapFile =
+			OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, k_name);
+	}
+
+	if (res->shm.hMapFile == NULL) {
+		return false;
+	}
+
+	res->data = MapViewOfFile(
+		res->shm.hMapFile, FILE_MAP_ALL_ACCESS | FILE_MAP_LARGE_PAGES, 0, 0, 0);
+	if (res->data == NULL) {
+		CloseHandle(res->shm.hMapFile);
+		return false;
+	}
+	res->n_bytes = nbytes;
+
+	return true;
+}
+
+static void muggle_memory_res_destroy_huge_share(muggle_memory_resource_t *res)
+{
+	if (res->data) {
+		UnmapViewOfFile(res->data);
+		res->data = NULL;
+
+		CloseHandle(res->shm.hMapFile);
+	}
+}
+
 #else
 
 static bool muggle_memory_res_init_huge_private(muggle_memory_resource_t *res,
@@ -257,8 +379,8 @@ bool muggle_memory_res_rm_shm(const char *k_name, int k_num)
 		return -1;
 	}
 #else
-	MUGGLE_UNUSE(k_name);
-	MUGGLE_UNUSE(k_num);
+	MUGGLE_UNUSED(k_name);
+	MUGGLE_UNUSED(k_num);
 #endif
 	return 0;
 }

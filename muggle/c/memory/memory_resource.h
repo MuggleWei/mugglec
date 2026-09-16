@@ -91,6 +91,7 @@ typedef struct {
  *
  * @return boolean
  */
+MUGGLE_C_EXPORT
 bool muggle_memory_res_init(muggle_memory_resource_t *res, size_t nbytes,
 							uint64_t flags, const char *k_name, int k_num);
 
@@ -99,6 +100,7 @@ bool muggle_memory_res_init(muggle_memory_resource_t *res, size_t nbytes,
  *
  * @param res  memory resource
  */
+MUGGLE_C_EXPORT
 void muggle_memory_res_destroy(muggle_memory_resource_t *res);
 
 /**
@@ -111,6 +113,7 @@ void muggle_memory_res_destroy(muggle_memory_resource_t *res);
  *                  - use with MUGGLE_MEMORY_RES_TYPE_HUGE_SHARE
  *                  - range in [1, 255]
  */
+MUGGLE_C_EXPORT
 bool muggle_memory_res_rm_shm(const char *k_name, int k_num);
 
 /**
@@ -123,6 +126,7 @@ bool muggle_memory_res_rm_shm(const char *k_name, int k_num);
  *   - on success, return memory address
  *   - on failed, return NULL
  */
+MUGGLE_C_EXPORT
 void *muggle_memory_res_alloc_cache_line(muggle_memory_resource_t *res,
 										 size_t n);
 
@@ -136,6 +140,7 @@ void *muggle_memory_res_alloc_cache_line(muggle_memory_resource_t *res,
  *   - on success, return memory address
  *   - on failed, return NULL
  */
+MUGGLE_C_EXPORT
 void *muggle_memory_res_alloc(muggle_memory_resource_t *res, size_t nbytes);
 
 EXTERN_C_END
