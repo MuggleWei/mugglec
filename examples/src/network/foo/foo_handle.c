@@ -161,6 +161,7 @@ void foo_handle_msg_decode_dispatch(foo_handle_t *handle,
 		// check magic word
 		if (memcmp(&msg_hdr.magic, FOO_MSG_HDR_MAGIC_WORD, 4) != 0) {
 			LOG_ERROR("failed check message magic word");
+			foo_session_shutdown(session);
 			break;
 		}
 
@@ -171,6 +172,7 @@ void foo_handle_msg_decode_dispatch(foo_handle_t *handle,
 			// continuous memory
 			if (!check_checksum(p_hdr)) {
 				LOG_ERROR("failed check message checksum");
+				foo_session_shutdown(session);
 				break;
 			}
 
@@ -186,6 +188,7 @@ void foo_handle_msg_decode_dispatch(foo_handle_t *handle,
 			// check checksum
 			if (!check_checksum((foo_msg_hdr_t *)buf)) {
 				LOG_ERROR("failed checksum");
+				foo_session_shutdown(session);
 				break;
 			}
 

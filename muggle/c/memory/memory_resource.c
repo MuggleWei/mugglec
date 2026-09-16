@@ -1,5 +1,5 @@
 /******************************************************************************
- *  @file         memory_resource.h
+ *  @file         memory_resource.c
  *  @author       Muggle Wei
  *  @email        mugglewei@gmail.com
  *  @date         2026-09-16
@@ -27,8 +27,6 @@
 static bool muggle_memory_res_init_default(muggle_memory_resource_t *res,
 										   size_t nbytes)
 {
-	res->flags.mem_type = MUGGLE_MEMORY_RES_TYPE_NULL;
-
 	res->data = malloc(nbytes);
 	if (res->data == NULL) {
 		return false;
@@ -94,7 +92,7 @@ static bool muggle_memory_res_init_huge_share(muggle_memory_resource_t *res,
 	// get shm key
 	key_t shm_key = ftok(k_name, k_num);
 	if (shm_key == -1) {
-		return NULL;
+		return false;
 	}
 
 	// get shm id or create a new shm
@@ -153,7 +151,7 @@ static void muggle_memory_res_destroy_huge_share(muggle_memory_resource_t *res)
 
 #elif MUGGLE_PLATFORM_WINDOWS
 
-BOOL EnableLockMemoryPrivilege()
+static BOOL EnableLockMemoryPrivilege()
 {
 	HANDLE hToken;
 	TOKEN_PRIVILEGES tp;
@@ -230,6 +228,8 @@ static bool muggle_memory_res_init_huge_share(muggle_memory_resource_t *res,
 											  size_t nbytes, const char *k_name,
 											  int k_num)
 {
+	MUGGLE_UNUSED(k_num);
+
 	if (!EnableLockMemoryPrivilege()) {
 		return false;
 	}
@@ -376,13 +376,13 @@ bool muggle_memory_res_rm_shm(const char *k_name, int k_num)
 	}
 
 	if (shmctl(shm_id, IPC_RMID, NULL) == -1) {
-		return -1;
+		return false;
 	}
 #else
 	MUGGLE_UNUSED(k_name);
 	MUGGLE_UNUSED(k_num);
 #endif
-	return 0;
+	return true;
 }
 
 void *muggle_memory_res_alloc_cache_line(muggle_memory_resource_t *res,
