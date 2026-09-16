@@ -266,6 +266,27 @@ check_c_source_compiles("
 	}
 " MUGGLE_C_HAVE_ALIGNED_ALLOC)
 
+check_c_source_compiles("
+	#include <sys/mman.h>
+	int main() {
+		int flags = 0;
+		flags |= MAP_HUGE_2MB;
+		flags |= MAP_HUGE_1GB;
+		return 0;
+	}
+" MUGGLE_C_HAVE_MAP_HUGE_NBYTES)
+
+check_c_source_compiles("
+	#include <sys/ipc.h>
+	#include <sys/shm.h>
+	int main() {
+		int flags = 0;
+		flags |= SHM_HUGE_2MB;
+		flags |= SHM_HUGE_1GB;
+		return 0;
+	}
+" MUGGLE_C_HAVE_SHM_HUGE_NBYTES)
+
 include(CheckSymbolExists)
 
 check_symbol_exists(MADV_HUGEPAGE "sys/mman.h"
