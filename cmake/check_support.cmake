@@ -46,6 +46,19 @@ check_c_source_compiles("
 	}
 " MUGGLE_C_HAVE_SHM_HUGE_NBYTES)
 
+if (MSVC)
+
+check_c_source_compiles("
+	#include <memoryapi.h>
+	int main() {
+		int flags = 0;
+		flags |= FILE_MAP_LARGE_PAGES;
+		return 0;
+	}
+" MUGGLE_C_HAVE_MSVC_LARGE_PAGE)
+
+endif()
+
 # check symbol
 check_symbol_exists(MADV_HUGEPAGE "sys/mman.h"
 	MUGGLE_C_HAVE_MADV_HUGEPAGE)
