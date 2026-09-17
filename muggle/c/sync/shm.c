@@ -144,6 +144,9 @@ void *muggle_shm_open(muggle_shm_t *shm, const char *k_name, int k_num,
 	// shm attach
 	void *ptr = (void *)shmat(shm_id, NULL, 0);
 	if (ptr == (void *)(-1)) {
+		if (flag & MUGGLE_SHM_FLAG_CREAT) {
+			shmctl(shm_id, IPC_RMID, NULL);
+		}
 		return NULL;
 	}
 
