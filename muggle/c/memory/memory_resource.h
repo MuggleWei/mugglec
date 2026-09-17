@@ -25,6 +25,7 @@ enum {
 	MUGGLE_MEMORY_RES_TYPE_NULL = 0, //!< ordinary memory
 	MUGGLE_MEMORY_RES_TYPE_HUGE_PRIVATE = 1, //!< private huge page
 	MUGGLE_MEMORY_RES_TYPE_HUGE_SHARE = 2, //!< share huge page
+	MUGGLE_MEMORY_RES_TYPE_HUGE_THP = 3, //!< transparent huge page
 };
 
 enum {

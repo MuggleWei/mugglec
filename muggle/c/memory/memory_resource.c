@@ -44,6 +44,35 @@ static void muggle_memory_res_destroy_default(muggle_memory_resource_t *res)
 	}
 }
 
+static bool muggle_memory_res_init_thp(muggle_memory_resource_t *res,
+									   size_t nbytes)
+{
+#if MUGGLE_PLATFORM_LINUX && MUGGLE_C_HAVE_ALIGNED_ALLOC && \
+	MUGGLE_C_HAVE_MADV_HUGEPAGE
+
+	res->data = aligned_alloc(MUGGLE_MEMORY_RES_PAGE_SIZE_2MB, nbytes);
+	if (res->data == NULL) {
+		return false;
+	}
+	res->n_bytes = nbytes;
+
+	return true;
+
+#else
+	MUGGLE_UNUSED(res);
+	MUGGLE_UNUSED(nbytes);
+	return false;
+#endif
+}
+
+static void muggle_memory_res_destroy_thp(muggle_memory_resource_t *res)
+{
+	if (res->data) {
+		free(res->data);
+		res->data = NULL;
+	}
+}
+
 #if MUGGLE_PLATFORM_LINUX
 
 static bool muggle_memory_res_init_huge_private(muggle_memory_resource_t *res,
@@ -327,6 +356,9 @@ bool muggle_memory_res_init(muggle_memory_resource_t *res, size_t nbytes,
 	case MUGGLE_MEMORY_RES_TYPE_HUGE_SHARE: {
 		ret = muggle_memory_res_init_huge_share(res, nbytes, k_name, k_num);
 	} break;
+	case MUGGLE_MEMORY_RES_TYPE_HUGE_THP: {
+		ret = muggle_memory_res_init_thp(res, nbytes);
+	} break;
 	default: {
 		ret = muggle_memory_res_init_default(res, nbytes);
 	} break;
@@ -361,6 +393,9 @@ void muggle_memory_res_destroy(muggle_memory_resource_t *res)
 	} break;
 	case MUGGLE_MEMORY_RES_TYPE_HUGE_SHARE: {
 		muggle_memory_res_destroy_huge_share(res);
+	} break;
+	case MUGGLE_MEMORY_RES_TYPE_HUGE_THP: {
+		muggle_memory_res_destroy_thp(res);
 	} break;
 	default: {
 		muggle_memory_res_destroy_default(res);
