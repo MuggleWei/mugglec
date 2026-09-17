@@ -241,13 +241,23 @@ static bool muggle_memory_res_init_huge_share(muggle_memory_resource_t *res,
 		res->shm.hMapFile = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL,
 											   flags, (DWORD)li.HighPart,
 											   (DWORD)li.LowPart, k_name);
+
+		if (res->shm.hMapFile == NULL) {
+			return false;
+		}
+
+		DWORD err = GetLastError();
+		if (err == ERROR_ALREADY_EXISTS) {
+			CloseHandle(res->shm.hMapFile);
+			return false;
+		}
 	} else {
 		res->shm.hMapFile =
 			OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, k_name);
-	}
 
-	if (res->shm.hMapFile == NULL) {
-		return false;
+		if (res->shm.hMapFile == NULL) {
+			return false;
+		}
 	}
 
 	res->data = MapViewOfFile(

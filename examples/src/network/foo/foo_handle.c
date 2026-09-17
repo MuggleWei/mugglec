@@ -131,6 +131,7 @@ bool check_checksum(foo_msg_hdr_t *hdr)
 	return expect_checksum == tail->checksum;
 }
 
+#define MAX_PAYLOAD_LEN (2 * 1024 * 1024)
 void foo_handle_msg_decode_dispatch(foo_handle_t *handle,
 									foo_session_t *session,
 									muggle_bytes_buffer_t *bytes_buf)
@@ -150,11 +151,17 @@ void foo_handle_msg_decode_dispatch(foo_handle_t *handle,
 		}
 
 		// check message length
-		uint32_t total_bytes =
-			(uint32_t)(sizeof(foo_msg_hdr_t) + msg_hdr.payload_len +
-					   sizeof(foo_msg_tail_t));
+		size_t total_bytes = sizeof(foo_msg_hdr_t) +
+							 (size_t)msg_hdr.payload_len +
+							 sizeof(foo_msg_tail_t);
 		int readable = muggle_bytes_buffer_readable(bytes_buf);
-		if ((uint32_t)readable < total_bytes) {
+		if ((size_t)readable < total_bytes) {
+			break;
+		}
+
+		if (total_bytes >= MAX_PAYLOAD_LEN) {
+			LOG_ERROR("invalid message length");
+			foo_session_shutdown(session);
 			break;
 		}
 
@@ -189,6 +196,7 @@ void foo_handle_msg_decode_dispatch(foo_handle_t *handle,
 			if (!check_checksum((foo_msg_hdr_t *)buf)) {
 				LOG_ERROR("failed checksum");
 				foo_session_shutdown(session);
+				free(buf);
 				break;
 			}
 

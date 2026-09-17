@@ -10,12 +10,22 @@ void *muggle_shm_open(muggle_shm_t *shm, const char *k_name, int k_num,
 	if (flag & MUGGLE_SHM_FLAG_CREAT) {
 		shm->hMapFile = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL,
 										   PAGE_READWRITE, 0, nbytes, k_name);
+
+		if (shm->hMapFile == NULL) {
+			return NULL;
+		}
+
+		DWORD err = GetLastError();
+		if (err == ERROR_ALREADY_EXISTS) {
+			CloseHandle(shm->hMapFile);
+			return false;
+		}
 	} else {
 		shm->hMapFile = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, k_name);
-	}
 
-	if (shm->hMapFile == NULL) {
-		return NULL;
+		if (shm->hMapFile == NULL) {
+			return NULL;
+		}
 	}
 
 	shm->ptr = MapViewOfFile(shm->hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, nbytes);
@@ -64,7 +74,6 @@ void *muggle_shm_open(muggle_shm_t *shm, const char *k_name, int k_num,
 	MUGGLE_UNUSED(nbytes);
 	return NULL;
 }
-
 
 int muggle_shm_detach(muggle_shm_t *shm)
 {
