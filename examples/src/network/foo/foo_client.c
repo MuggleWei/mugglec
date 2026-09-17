@@ -129,7 +129,9 @@ void foo_client_on_release(muggle_event_loop_t *evloop,
 	case MUGGLE_SOCKET_CTX_TYPE_TCP_CLIENT: {
 		LOG_INFO("server session release, remote_ip: %s, remote_port: %d",
 				 session->remote_ip, session->remote_port);
-		client_connect(evloop);
+		if (!evloop->to_exit) {
+			client_connect(evloop);
+		}
 	} break;
 	default: {
 		LOG_ERROR("unknown session(type=%d) closed", ctx->sock_type);
