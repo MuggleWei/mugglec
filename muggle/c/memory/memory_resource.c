@@ -54,6 +54,8 @@ static bool muggle_memory_res_init_thp(muggle_memory_resource_t *res,
 	if (res->data == NULL) {
 		return false;
 	}
+	madvise(res->data, nbytes, MADV_HUGEPAGE);
+
 	res->n_bytes = nbytes;
 
 	return true;
@@ -366,7 +368,7 @@ bool muggle_memory_res_init(muggle_memory_resource_t *res, size_t nbytes,
 
 	if (ret) {
 		// populate
-#if MUGGLE_C_HAVE_MADV_POPULATE_WRITE
+#if MUGGLE_PLATFORM_LINUX && MUGGLE_C_HAVE_MADV_POPULATE_WRITE
 		if (res->flags.populate_type & MUGGLE_MEMORY_RES_POPULATE_WRITE) {
 			madvise(res->data, res->n_bytes, MADV_POPULATE_WRITE);
 		}
