@@ -18,7 +18,6 @@ static void client_connect(muggle_event_loop_t *evloop)
 	foo_set_socket_opt_after_conn(fd, NULL);
 
 	foo_session_t *session = (foo_session_t *)foo_handle_alloc_session(handle);
-	foo_session_init(session);
 	muggle_socket_ctx_init((muggle_socket_context_t *)session, fd, NULL,
 						   MUGGLE_SOCKET_CTX_TYPE_TCP_CLIENT);
 	muggle_socket_evloop_add_ctx(evloop, (muggle_socket_context_t *)session);
@@ -47,8 +46,8 @@ void foo_client_run(muggle_event_loop_t *evloop)
 	muggle_socket_evloop_handle_set_cb_close(handle, foo_client_on_close);
 	muggle_socket_evloop_handle_set_cb_release(handle, foo_client_on_release);
 	muggle_socket_evloop_handle_set_cb_timer(handle, foo_client_on_timer);
-	muggle_socket_evloop_handle_set_timer_interval(handle,
-												   cfg->evloop_timer_interval_ms);
+	muggle_socket_evloop_handle_set_timer_interval(
+		handle, cfg->evloop_timer_interval_ms);
 	muggle_socket_evloop_handle_set_alloc_free(handle, foo_handle,
 											   foo_handle_alloc_session,
 											   foo_handle_recycle_session);
@@ -171,7 +170,12 @@ void foo_client_on_rsp_login(muggle_event_loop_t *evloop,
 							 void *data)
 {
 	MUGGLE_UNUSED(evloop);
-	MUGGLE_UNUSED(hdr);
+
+	if (hdr->payload_len != sizeof(foo_msg_rsp_login_t)) {
+		LOG_ERROR("invalid message payload length, msg_id=%u", hdr->msg_id);
+		foo_session_shutdown(session);
+		return;
+	}
 
 	foo_msg_rsp_login_t *rsp = (foo_msg_rsp_login_t *)data;
 

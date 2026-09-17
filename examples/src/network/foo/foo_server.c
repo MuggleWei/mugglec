@@ -48,8 +48,8 @@ void foo_server_run(muggle_event_loop_t *evloop)
 	muggle_socket_evloop_handle_set_cb_close(handle, foo_server_on_close);
 	muggle_socket_evloop_handle_set_cb_release(handle, foo_server_on_release);
 	muggle_socket_evloop_handle_set_cb_timer(handle, foo_server_on_timer);
-	muggle_socket_evloop_handle_set_timer_interval(handle,
-												   cfg->evloop_timer_interval_ms);
+	muggle_socket_evloop_handle_set_timer_interval(
+		handle, cfg->evloop_timer_interval_ms);
 	muggle_socket_evloop_handle_set_alloc_free(handle, foo_handle,
 											   foo_handle_alloc_session,
 											   foo_handle_recycle_session);
@@ -181,7 +181,12 @@ void foo_server_on_req_login(muggle_event_loop_t *evloop,
 							 void *data)
 {
 	MUGGLE_UNUSED(evloop);
-	MUGGLE_UNUSED(hdr);
+
+	if (hdr->payload_len != sizeof(foo_msg_req_login_t)) {
+		LOG_ERROR("invalid message payload length, msg_id=%u", hdr->msg_id);
+		foo_session_shutdown(session);
+		return;
+	}
 
 	foo_msg_req_login_t *req = (foo_msg_req_login_t *)data;
 	LOG_INFO("rcv req login message, "

@@ -50,6 +50,9 @@ static bool muggle_memory_res_init_thp(muggle_memory_resource_t *res,
 #if MUGGLE_PLATFORM_LINUX && MUGGLE_C_HAVE_ALIGNED_ALLOC && \
 	MUGGLE_C_HAVE_MADV_HUGEPAGE
 
+	nbytes =
+		MUGGLE_ROUND_UP_POW_OF_2_MUL(nbytes, MUGGLE_MEMORY_RES_PAGE_SIZE_2MB);
+
 	res->data = aligned_alloc(MUGGLE_MEMORY_RES_PAGE_SIZE_2MB, nbytes);
 	if (res->data == NULL) {
 		return false;
@@ -162,6 +165,9 @@ static bool muggle_memory_res_init_huge_share(muggle_memory_resource_t *res,
 	// shm attach
 	void *ptr = (void *)shmat(shm_id, NULL, flag_privilege);
 	if (ptr == (void *)(-1)) {
+		if (res->flags.share_flag & MUGGLE_MEMORY_RES_SHM_CREATE) {
+			shmctl(shm_id, IPC_RMID, NULL);
+		}
 		return false;
 	}
 
