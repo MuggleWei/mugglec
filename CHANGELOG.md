@@ -3,6 +3,7 @@ English | [中文](./CHANGELOG_cn.md)
 
 | date | version |
 | ---- | ---- |
+| 2026-09-17 | [v2.6.1](#v261) |
 | 2026-09-17 | [v2.6.0](#v260) |
 | 2026-07-17 | [v2.5.1](#v251) |
 | 2026-07-06 | [v2.5.0](#v250) |
@@ -20,6 +21,9 @@ English | [中文](./CHANGELOG_cn.md)
 | 2025-02-27 | [v2.0.2](#v202) |
 | 2025-02-24 | [v2.0.1](#v201) |
 | 2025-02-23 | [v2.0.0](#v200) |
+
+## v2.6.1
+* Fix `muggle_memory_resource_t` compile error in old MSVC compiler
 
 ## v2.6.0
 * Add `muggle_memory_resource_t`

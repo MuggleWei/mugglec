@@ -186,7 +186,7 @@ static void muggle_memory_res_destroy_huge_share(muggle_memory_resource_t *res)
 	}
 }
 
-#elif MUGGLE_PLATFORM_WINDOWS
+#elif MUGGLE_PLATFORM_WINDOWS & MUGGLE_C_HAVE_MSVC_LARGE_PAGE
 
 static BOOL EnableLockMemoryPrivilege()
 {
