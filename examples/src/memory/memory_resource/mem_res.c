@@ -1,6 +1,8 @@
 #include "muggle/c/muggle_c.h"
+#include <inttypes.h>
 
-#define N_BYTES (1 * MUGGLE_MEMORY_RES_PAGE_SIZE_1GB)
+// #define N_BYTES (1 * MUGGLE_MEMORY_RES_PAGE_SIZE_1GB)
+#define N_BYTES (32 * MUGGLE_MEMORY_RES_PAGE_SIZE_2MB)
 #define BLOCKSIZE 512
 
 void run_alloc(muggle_memory_resource_t *res)

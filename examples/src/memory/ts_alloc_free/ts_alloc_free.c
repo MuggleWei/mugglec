@@ -54,13 +54,47 @@ int main()
 {
 	muggle_log_complicated_init(LOG_LEVEL_TRACE, -1, NULL);
 
+	bool use_mem_res = false;
+	int iret = 0;
+
+	muggle_memory_resource_t mem_res;
+	if (use_mem_res) {
+		muggle_memory_res_flags_t mem_res_flag;
+		memset(&mem_res_flag, 0, sizeof(mem_res_flag));
+		mem_res_flag.mem_type = MUGGLE_MEMORY_RES_TYPE_HUGE_PRIVATE;
+		mem_res_flag.huge_type = MUGGLE_MEMORY_RES_HUGE_DEFAULT;
+		size_t nbytes = MUGGLE_MEMORY_RES_PAGE_SIZE_2MB;
+		if (!muggle_memory_res_init(&mem_res, nbytes, mem_res_flag.val, NULL,
+									0)) {
+			LOG_ERROR("failed initialize memory resource");
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	// initiailize channel
 	muggle_channel_t chan;
-	muggle_channel_init(&chan, 512, 0);
+	if (use_mem_res) {
+		iret = muggle_channel_init_with_memres(&chan, 512, 0, &mem_res);
+	} else {
+		iret = muggle_channel_init(&chan, 512, 0);
+	}
+	if (iret != 0) {
+		LOG_ERROR("failed init channel");
+		exit(EXIT_FAILURE);
+	}
 
 	// initiailize memory pool
 	muggle_ts_memory_pool_t pool;
-	muggle_ts_memory_pool_init(&pool, 512, sizeof(foo_t));
+	if (use_mem_res) {
+		iret = muggle_ts_memory_pool_init_with_memres(
+				&pool, 512, sizeof(foo_t), &mem_res);
+	} else {
+		iret = muggle_ts_memory_pool_init(&pool, 512, sizeof(foo_t));
+	}
+	if (iret != 0) {
+		LOG_ERROR("failed init ts memory pool");
+		exit(EXIT_FAILURE);
+	}
 
 	// create producer threads
 	muggle_thread_t threads[NUM_PRODUCER];
@@ -108,6 +142,11 @@ int main()
 
 	// destroy channel
 	muggle_channel_destroy(&chan);
+
+	// destroy memory resource
+	if (use_mem_res) {
+		muggle_memory_res_destroy(&mem_res);
+	}
 
 	return 0;
 }
