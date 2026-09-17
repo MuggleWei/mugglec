@@ -163,7 +163,7 @@ static bool muggle_memory_res_init_huge_share(muggle_memory_resource_t *res,
 	}
 
 	// shm attach
-	void *ptr = (void *)shmat(shm_id, NULL, flag_privilege);
+	void *ptr = (void *)shmat(shm_id, NULL, 0);
 	if (ptr == (void *)(-1)) {
 		if (res->flags.share_flag & MUGGLE_MEMORY_RES_SHM_CREATE) {
 			shmctl(shm_id, IPC_RMID, NULL);

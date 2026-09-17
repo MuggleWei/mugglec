@@ -117,15 +117,27 @@ int main(int argc, char *argv[])
 	fclose(fp);
 #endif
 
+	bool use_hp = false;
+
 	// open shm
 	int flag = MUGGLE_SHM_FLAG_OPEN;
+	size_t nbytes = sizeof(data_t);
+	if (use_hp) {
+		flag |= MUGGLE_SHM_FLAG_HUGE_DEFAULT;
+		nbytes = MUGGLE_ROUND_UP_POW_OF_2_MUL(
+				nbytes, MUGGLE_MEMORY_RES_PAGE_SIZE_2MB);
+		LOG_INFO("use huge page, n_byte: %lu", (unsigned long)nbytes);
+	}
 	muggle_shm_t shm;
-	data_t *ptr = muggle_shm_open(&shm, k_name, k_num, flag, sizeof(data_t));
+	data_t *ptr = muggle_shm_open(&shm, k_name, k_num, flag, nbytes);
 	if (ptr == NULL) {
 		LOG_WARNING("failed open shm, try to create one");
 
 		flag = MUGGLE_SHM_FLAG_CREAT;
-		ptr = muggle_shm_open(&shm, k_name, k_num, flag, sizeof(data_t));
+		if (use_hp) {
+			flag |= MUGGLE_SHM_FLAG_HUGE_DEFAULT;
+		}
+		ptr = muggle_shm_open(&shm, k_name, k_num, flag, nbytes);
 		if (ptr == NULL) {
 			LOG_ERROR("failed create shm");
 			exit(EXIT_FAILURE);
