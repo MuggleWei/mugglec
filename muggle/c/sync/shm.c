@@ -106,6 +106,7 @@ void *muggle_shm_open(muggle_shm_t *shm, const char *k_name, int k_num,
 	// get shm id or create a new shm
 	int flag_open = 0;
 	int flag_privilege = SHM_R | SHM_W;
+	int flag_huge = 0;
 
 	if (flag & MUGGLE_SHM_FLAG_CREAT) {
 		flag_open = IPC_CREAT | IPC_EXCL;
@@ -117,7 +118,23 @@ void *muggle_shm_open(muggle_shm_t *shm, const char *k_name, int k_num,
 		flag_privilege |= 0006;
 	}
 
-	int shm_id = shmget(shm_key, nbytes, flag_open | flag_privilege);
+	int flag_huge_section = flag & 0x00ff0000;
+	switch (flag_huge_section) {
+	case MUGGLE_SHM_FLAG_HUGE_DEFAULT: {
+		flag_huge = SHM_HUGETLB;
+	} break;
+	#if MUGGLE_C_HAVE_SHM_HUGE_NBYTES
+	case MUGGLE_SHM_FLAG_HUGE_2MB: {
+		flag_huge = SHM_HUGETLB | SHM_HUGE_2MB;
+	} break;
+	case MUGGLE_SHM_FLAG_HUGE_1GB: {
+		flag_huge = SHM_HUGETLB | SHM_HUGE_1GB;
+	} break;
+	#endif
+	}
+
+	int shm_id =
+		shmget(shm_key, nbytes, flag_open | flag_privilege | flag_huge);
 	if (shm_id == -1) {
 		return NULL;
 	}
