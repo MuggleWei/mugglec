@@ -242,57 +242,7 @@ message("--------------------------------")
 # configure
 ################################
 
-# check support
-include(CheckIncludeFile)
-check_include_file(linux/futex.h MUGGLE_C_HAVE_LINUX_FUTEX)
-check_include_file(sys/futex.h MUGGLE_C_HAVE_SYS_FUTEX)
-
-include(CheckCSourceCompiles)
-
-check_c_source_compiles("
-	#include <stdalign.h>
-	int main() {
-		alignas(128) int data;
-		return 0;
-	}
-" MUGGLE_C_HAVE_ALIGNAS)
-
-check_c_source_compiles("
-	#include <stdlib.h>
-	int main() {
-		void *p = aligned_alloc(128, 128 * 16);
-		free(p);
-		return 0;
-	}
-" MUGGLE_C_HAVE_ALIGNED_ALLOC)
-
-include(CheckSymbolExists)
-
-check_symbol_exists(MADV_HUGEPAGE "sys/mman.h"
-	MUGGLE_C_HAVE_MADV_HUGEPAGE)
-check_symbol_exists(MADV_POPULATE_WRITE "sys/mman.h"
-	MUGGLE_C_HAVE_MADV_POPULATE_WRITE)
-
-# detech endianness
-include(TestBigEndian)
-TEST_BIG_ENDIAN(IS_BIG_ENDIAN)  # NOTE: big endian is 1, little endian is 0
-if (IS_BIG_ENDIAN)
-	set(MUGGLE_C_IS_BIG_ENDIAN 1)
-else()
-	set(MUGGLE_C_IS_BIG_ENDIAN 0)
-endif()
-
-if (CMAKE_HOST_UNIX)
-	find_package(Backtrace)
-	if (Backtrace_FOUND)
-		#message("Found Backtrace")
-		#message("Backtrace header: ${Backtrace_HEADER}")
-		#message("Backtrace libs: ${Backtrace_LIBRARIES}")
-
-		set(MUGGLE_C_HAVE_BACKTRACE 1)
-		set(MUGGLE_C_BACKTRACE_HEADER ${Backtrace_HEADER})
-	endif()
-endif()
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/check_support.cmake)
 
 set(mugglec_generated_dir ${CMAKE_CURRENT_BINARY_DIR}/generated)
 configure_file(

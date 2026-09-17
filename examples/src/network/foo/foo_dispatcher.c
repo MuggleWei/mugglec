@@ -46,7 +46,7 @@ void foo_dispatcher_dispatch(foo_dispatcher_t *dispatcher,
 							 muggle_event_loop_t *evloop,
 							 foo_session_t *session, foo_msg_hdr_t *hdr)
 {
-	if (hdr->msg_id <= 0 || hdr->msg_id > MAX_FOO_MSG_ID) {
+	if (hdr->msg_id <= 0 || hdr->msg_id >= MAX_FOO_MSG_ID) {
 		LOG_ERROR("invalid message id: %u", hdr->msg_id);
 		foo_session_shutdown(session);
 		return;

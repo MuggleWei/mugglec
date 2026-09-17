@@ -31,6 +31,13 @@ enum {
 	MUGGLE_SHM_FLAG_PRIVILEGE_OTHER = 0x02 << 8,
 };
 
+enum {
+	MUGGLE_SHM_FLAG_HUGE_NULL = 0,
+	MUGGLE_SHM_FLAG_HUGE_DEFAULT = 1 << 16,
+	MUGGLE_SHM_FLAG_HUGE_2MB = 2 << 16,
+	MUGGLE_SHM_FLAG_HUGE_1GB = 3 << 16,
+};
+
 typedef struct {
 	void *ptr; //!< pointer to shared memory
 #if MUGGLE_PLATFORM_WINDOWS

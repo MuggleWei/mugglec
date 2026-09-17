@@ -286,6 +286,13 @@ enum
 int muggle_channel_init(
 	muggle_channel_t *chan, muggle_sync_t capacity, int flags)
 {
+	return muggle_channel_init_with_memres(chan, capacity, flags, NULL);
+}
+
+int muggle_channel_init_with_memres(
+	muggle_channel_t *chan, muggle_sync_t capacity, int flags,
+	muggle_memory_resource_t *mem_res)
+{
 	memset(chan, 0, sizeof(*chan));
 
 	int ret = 0;
@@ -438,13 +445,20 @@ int muggle_channel_init(
 	chan->cached_r_cur = capacity - 1;
 	chan->read_cursor = capacity - 1;
 
+	chan->mem_res = mem_res;
+
+	size_t nbytes = sizeof(muggle_channel_block_t) * capacity;
+	if (mem_res) {
+		chan->blocks = muggle_memory_res_alloc(mem_res, nbytes);
+	} else {
 #if MUGGLE_C_HAVE_ALIGNED_ALLOC
-	chan->blocks = (muggle_channel_block_t*)aligned_alloc(
-		MUGGLE_CACHE_LINE_SIZE, sizeof(muggle_channel_block_t) * capacity);
+		chan->blocks = (muggle_channel_block_t*)aligned_alloc(
+				MUGGLE_CACHE_LINE_SIZE, nbytes);
 #else
-	chan->blocks =(muggle_channel_block_t*)malloc(
-		sizeof(muggle_channel_block_t) * capacity);
+		chan->blocks =(muggle_channel_block_t*)malloc(nbytes);
 #endif
+	}
+
 	if (chan->blocks == NULL)
 	{
 		ret = MUGGLE_ERR_MEM_ALLOC;
@@ -468,7 +482,9 @@ void muggle_channel_destroy(muggle_channel_t *chan)
 {
 	if (chan->blocks)
 	{
-		free(chan->blocks);
+		if (chan->mem_res == NULL) {
+			free(chan->blocks);
+		}
 		chan->blocks = NULL;
 	}
 

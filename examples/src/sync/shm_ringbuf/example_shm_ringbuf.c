@@ -224,9 +224,16 @@ int main(int argc, char *argv[])
 #endif
 
 	uint32_t n_bytes = 4 * 1024 * 1024;
+	bool use_hp = true;
 
 	// open shm ringbuffer
 	int flag = MUGGLE_SHM_FLAG_OPEN;
+	if (use_hp) {
+		flag |= MUGGLE_SHM_FLAG_HUGE_DEFAULT;
+		n_bytes = MUGGLE_ROUND_UP_POW_OF_2_MUL(n_bytes,
+											   MUGGLE_MEMORY_RES_PAGE_SIZE_2MB);
+		LOG_INFO("use huge page, n_byte: %u", n_bytes);
+	}
 	muggle_shm_t shm;
 	muggle_shm_ringbuf_t *shm_rbuf =
 		muggle_shm_ringbuf_open(&shm, k_name, k_num, flag, n_bytes);
@@ -239,6 +246,9 @@ int main(int argc, char *argv[])
 		LOG_WARNING("failed open shm_ringbuf, try to create one");
 
 		flag = MUGGLE_SHM_FLAG_CREAT;
+		if (use_hp) {
+			flag |= MUGGLE_SHM_FLAG_HUGE_DEFAULT;
+		}
 		shm_rbuf = muggle_shm_ringbuf_open(&shm, k_name, k_num, flag, n_bytes);
 		if (shm_rbuf == NULL) {
 			LOG_ERROR("failed create shm_ringbuf");

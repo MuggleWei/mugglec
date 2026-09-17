@@ -24,6 +24,7 @@
 
 #include "muggle/c/base/macro.h"
 #include "muggle/c/base/atomic.h"
+#include "muggle/c/memory/memory_resource.h"
 #include "muggle/c/sync/mutex.h"
 #include "muggle/c/sync/condition_variable.h"
 #include "muggle/c/sync/spinlock.h"
@@ -141,6 +142,9 @@ typedef struct muggle_channel
 	muggle_condition_variable_t *read_cv;
 
 	muggle_channel_block_t *blocks;
+
+	// memory resource
+	muggle_memory_resource_t *mem_res;
 }muggle_channel_t;
 
 /**
@@ -157,6 +161,23 @@ typedef struct muggle_channel
 MUGGLE_C_EXPORT
 int muggle_channel_init(
 	muggle_channel_t *chan, muggle_sync_t capacity, int flags);
+
+/**
+ * @brief init muggle_channel_t with memory resource
+ *
+ * @param chan      pointer to muggle_channel_t
+ * @param capacity  capacity of channel
+ * @param flags     bitwise or MUGGLE_CHANNEL_FLAG_WRITE_* and MUGGLE_CHANNEL_FLAG_READ_*
+ * @param mem_res   memory resource
+ *
+ * @return
+ *     - return 0 on success
+ *     - otherwise return error code in muggle/c/base/err.h
+ */
+MUGGLE_C_EXPORT
+int muggle_channel_init_with_memres(
+	muggle_channel_t *chan, muggle_sync_t capacity, int flags,
+	muggle_memory_resource_t *mem_res);
 
 /**
  * @brief destroy muggle_channel_t

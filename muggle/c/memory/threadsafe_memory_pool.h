@@ -12,6 +12,7 @@
 #define MUGGLE_C_THREADSAFE_MEMORY_POOL_H_
 
 #include "muggle/c/base/macro.h"
+#include "muggle/c/memory/memory_resource.h"
 #include "muggle/c/sync/sync_obj.h"
 #include "muggle/c/sync/spinlock.h"
 
@@ -71,6 +72,9 @@ typedef struct muggle_ts_memory_pool
 		MUGGLE_STRUCT_CACHE_LINE_PADDING(3);
 	};
 	MUGGLE_STRUCT_CACHE_LINE_X2_PADDING(3);
+
+	// memory resource
+	muggle_memory_resource_t *mem_res;
 }muggle_ts_memory_pool_t;
 
 /**
@@ -85,7 +89,28 @@ typedef struct muggle_ts_memory_pool
  *     - otherwise failed and return error code in muggle/c/base/err.h
  */
 MUGGLE_C_EXPORT
-int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_sync_t capacity, muggle_sync_t data_size);
+int muggle_ts_memory_pool_init(
+		muggle_ts_memory_pool_t *pool,
+		muggle_sync_t capacity,
+		muggle_sync_t data_size);
+
+/**
+ * @brief init muggle thread safe memory pool with memory resource
+ *
+ * @param pool       pointer to ts_memory_pool
+ * @param capacity   expected capacity of pool
+ * @param data_size  user data size
+ *
+ * @return
+ *     - return 0 on success
+ *     - otherwise failed and return error code in muggle/c/base/err.h
+ */
+MUGGLE_C_EXPORT
+int muggle_ts_memory_pool_init_with_memres(
+		muggle_ts_memory_pool_t *pool,
+		muggle_sync_t capacity,
+		muggle_sync_t data_size,
+		muggle_memory_resource_t *mem_res);
 
 /**
  * @brief destroy thread safe memory pool

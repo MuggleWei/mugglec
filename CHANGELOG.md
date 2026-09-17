@@ -3,6 +3,7 @@ English | [中文](./CHANGELOG_cn.md)
 
 | date | version |
 | ---- | ---- |
+| 2026-09-17 | [v2.6.0](#v260) |
 | 2026-07-17 | [v2.5.1](#v251) |
 | 2026-07-06 | [v2.5.0](#v250) |
 | 2026-06-27 | [v2.4.2](#v242) |
@@ -19,6 +20,12 @@ English | [中文](./CHANGELOG_cn.md)
 | 2025-02-27 | [v2.0.2](#v202) |
 | 2025-02-24 | [v2.0.1](#v201) |
 | 2025-02-23 | [v2.0.0](#v200) |
+
+## v2.6.0
+* Add `muggle_memory_resource_t`
+* Update `muggle_ts_memory_pool_t`, support init with `muggle_memory_resource_t`
+* Update `muggle_channel_t`, support init with `muggle_memory_resource_t`
+* Update `muggle_shm_t`, support init with huge page flags
 
 ## v2.5.1
 * Fix issue when `muggle_synclock_lock` handle CAS spurious failure

@@ -41,6 +41,7 @@
 #include "muggle/c/memory/bytes_buffer.h"
 #include "muggle/c/memory/threadsafe_memory_pool.h"
 #include "muggle/c/memory/pointer_slot.h"
+#include "muggle/c/memory/memory_resource.h"
 
 // time
 #include "muggle/c/time/win_gettimeofday.h"
