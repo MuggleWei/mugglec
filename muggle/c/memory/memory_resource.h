@@ -134,7 +134,7 @@ void *muggle_memory_res_alloc_cache_line(muggle_memory_resource_t *res,
  * @brief allocate bytes
  *
  * @param res     memory resource
- * @param nbytes  number of cache line
+ * @param nbytes  number of bytes
  *
  * @return
  *   - on success, return memory address
@@ -142,6 +142,36 @@ void *muggle_memory_res_alloc_cache_line(muggle_memory_resource_t *res,
  */
 MUGGLE_C_EXPORT
 void *muggle_memory_res_alloc(muggle_memory_resource_t *res, size_t nbytes);
+
+/**
+ * @brief allocate bytes with interval
+ *
+ * @param res                  memory resource
+ * @param nbytes               number of bytes
+ * @param interval_cache_line  number of interval cache line
+ *
+ * @return
+ *   - on success, return memory address
+ *   - on failed, return NULL
+ */
+MUGGLE_C_EXPORT
+void *muggle_memory_res_alloc_with_interval(muggle_memory_resource_t *res,
+											size_t nbytes,
+											size_t interval_cache_line);
+
+/**
+ * @brief allocate bytes and gurantee true sharing
+ *
+ * @param res     memory resource
+ * @param nbytes  number of bytes
+ *
+ * @return
+ *   - on success, return memory address
+ *   - on failed, return NULL
+ */
+MUGGLE_C_EXPORT
+void *muggle_memory_res_alloc_true_sharing(muggle_memory_resource_t *res,
+										   size_t nbytes);
 
 EXTERN_C_END
 

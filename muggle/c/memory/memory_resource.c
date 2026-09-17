@@ -410,6 +410,23 @@ void *muggle_memory_res_alloc_cache_line(muggle_memory_resource_t *res,
 
 void *muggle_memory_res_alloc(muggle_memory_resource_t *res, size_t nbytes)
 {
+	size_t n = MUGGLE_ROUND_UP_POW_OF_2_MUL(nbytes, MUGGLE_CACHE_LINE_SIZE) /
+			   MUGGLE_CACHE_LINE_SIZE;
+	return muggle_memory_res_alloc_cache_line(res, n);
+}
+
+void *muggle_memory_res_alloc_with_interval(muggle_memory_resource_t *res,
+											size_t nbytes,
+											size_t interval_cache_line)
+{
+	size_t n = MUGGLE_ROUND_UP_POW_OF_2_MUL(nbytes, MUGGLE_CACHE_LINE_SIZE) /
+			   MUGGLE_CACHE_LINE_SIZE;
+	return muggle_memory_res_alloc_cache_line(res, n + interval_cache_line);
+}
+
+void *muggle_memory_res_alloc_true_sharing(muggle_memory_resource_t *res,
+										   size_t nbytes)
+{
 	size_t n = MUGGLE_ALIGN_TRUE_SHARING(nbytes) / MUGGLE_CACHE_LINE_SIZE;
 	return muggle_memory_res_alloc_cache_line(res, n);
 }
