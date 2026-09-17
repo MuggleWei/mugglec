@@ -18,7 +18,7 @@ void *muggle_shm_open(muggle_shm_t *shm, const char *k_name, int k_num,
 		DWORD err = GetLastError();
 		if (err == ERROR_ALREADY_EXISTS) {
 			CloseHandle(shm->hMapFile);
-			return false;
+			return NULL;
 		}
 	} else {
 		shm->hMapFile = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, k_name);
