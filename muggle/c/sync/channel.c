@@ -449,7 +449,7 @@ int muggle_channel_init_with_memres(
 
 	size_t nbytes = sizeof(muggle_channel_block_t) * capacity;
 	if (mem_res) {
-		chan->blocks = muggle_memory_res_alloc_true_sharing(mem_res, nbytes);
+		chan->blocks = muggle_memory_res_alloc(mem_res, nbytes);
 	} else {
 #if MUGGLE_C_HAVE_ALIGNED_ALLOC
 		chan->blocks = (muggle_channel_block_t*)aligned_alloc(

@@ -16,6 +16,15 @@
 
 int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_sync_t capacity, muggle_sync_t data_size)
 {
+	return muggle_ts_memory_pool_init_with_memres(pool, capacity, data_size, NULL);
+}
+
+int muggle_ts_memory_pool_init_with_memres(
+		muggle_ts_memory_pool_t *pool,
+		muggle_sync_t capacity,
+		muggle_sync_t data_size,
+		muggle_memory_resource_t *mem_res)
+{
 	if (capacity <= 0)
 	{
 		return MUGGLE_ERR_INVALID_PARAM;
@@ -43,17 +52,25 @@ int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_sync_t capa
 	pool->capacity = capacity;
 	pool->block_size = block_size;
 
+	pool->mem_res = mem_res;
+
 	size_t total_bytes = (size_t)capacity * (size_t)block_size;
+	if (mem_res) {
+		pool->data = muggle_memory_res_alloc(mem_res, total_bytes);
+		pool->ptrs = muggle_memory_res_alloc(mem_res,
+				capacity * sizeof(muggle_ts_memory_pool_head_ptr_t));
+	} else {
 #if MUGGLE_C_HAVE_ALIGNED_ALLOC
-	pool->data = aligned_alloc(MUGGLE_CACHE_LINE_SIZE, total_bytes);
-	pool->ptrs = (muggle_ts_memory_pool_head_ptr_t*)aligned_alloc(
-			MUGGLE_CACHE_LINE_SIZE,
-			capacity * sizeof(muggle_ts_memory_pool_head_ptr_t));
+		pool->data = aligned_alloc(MUGGLE_CACHE_LINE_SIZE, total_bytes);
+		pool->ptrs = (muggle_ts_memory_pool_head_ptr_t*)aligned_alloc(
+				MUGGLE_CACHE_LINE_SIZE,
+				capacity * sizeof(muggle_ts_memory_pool_head_ptr_t));
 #else
-	pool->data = malloc(total_bytes);
-	pool->ptrs = (muggle_ts_memory_pool_head_ptr_t*)malloc(
-			capacity * sizeof(muggle_ts_memory_pool_head_ptr_t));
+		pool->data = malloc(total_bytes);
+		pool->ptrs = (muggle_ts_memory_pool_head_ptr_t*)malloc(
+				capacity * sizeof(muggle_ts_memory_pool_head_ptr_t));
 #endif
+	}
 	pool->alloc_idx = 0;
 	pool->cached_free_pos = 0;
 	pool->free_idx = 0;
@@ -62,14 +79,16 @@ int muggle_ts_memory_pool_init(muggle_ts_memory_pool_t *pool, muggle_sync_t capa
 
 	if (pool->data == NULL || pool->ptrs == NULL)
 	{
-		if (pool->data)
-		{
-			free(pool->data);
-		}
+		if (mem_res == NULL) {
+			if (pool->data)
+			{
+				free(pool->data);
+			}
 
-		if (pool->ptrs)
-		{
-			free(pool->ptrs);
+			if (pool->ptrs)
+			{
+				free(pool->ptrs);
+			}
 		}
 
 		return MUGGLE_ERR_MEM_ALLOC;
@@ -90,13 +109,17 @@ void muggle_ts_memory_pool_destroy(muggle_ts_memory_pool_t *pool)
 {
 	if (pool->data)
 	{
-		free(pool->data);
+		if (pool->mem_res == NULL) {
+			free(pool->data);
+		}
 		pool->data = NULL;
 	}
 
 	if (pool->ptrs)
 	{
-		free(pool->ptrs);
+		if (pool->mem_res == NULL) {
+			free(pool->ptrs);
+		}
 		pool->ptrs = NULL;
 	}
 }
